@@ -14,4 +14,3 @@
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
 ALTER TABLE llx_dolisirh_object_signature ADD INDEX idx_dolisirh_object_signature_rowid (rowid);
-ALTER TABLE llx_dolisirh_object_signature  ADD CONSTRAINT llx_dolisirh_object_signature_fk_object FOREIGN KEY (fk_object) REFERENCES llx_dolisirh_object(rowid);
