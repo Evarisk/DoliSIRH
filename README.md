@@ -2,28 +2,27 @@
 
 ## Informations
 
-Version du module: 1.3.0
-
-Dernière mise à jour: 18/08/2022
 
 Prérequis:
-* Dolibarr min version 14.0.0
-* Dolibarr min version 15.0.3
+* Dolibarr min version 15.0.0
+* Dolibarr min version 15.0.4
 
 Thème: Eldy Menu
 
-Editeur/Licence: [Eoxia](https://www.eoxia.com) / GPL-v3
+Editeur/Licence: [Evarisk](https://www.evarisk.com) / GPL-v3
 
 Assitance: [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à contact@eoxia.com
 
-Demo: [Demo DoliSIRH](https://www.dolisirh.projetm.com) - ID: demo - Password: demo
-
+à venir :
 Documentation: [Wiki DoliSIRH](https://wiki.dolibarr.org/index.php/Module_DoliSIRH)
 
 ## Fonctionnalités
 
-- Module ajoutant la possibilité de simplifier la création de tâche liée à un projet à partir d'une facture.
-- Module ajoutant la possibilité de simplifier la création d'un temps consommé lié à une tâche à partir d'un ticket.
+- Simplification de la gestion du temps
+- Génération des navettes de préparation de la fiche de paye
+
+à venir : 
+[Voir les projets](https://github.com/Evarisk/DoliSIRH/projects?query=is%3Aopen)
 
 ## Installation
 
