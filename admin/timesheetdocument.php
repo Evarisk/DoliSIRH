@@ -105,7 +105,7 @@ $morecss  = array("/dolisirh/css/dolisirh.css");
 llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 
 // Subheader
-$linkback = '<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1'.'">'.$langs->trans("BackToModuleList").'</a>';
+$linkback = '<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1">'.$langs->trans("BackToModuleList").'</a>';
 
 print load_fiche_titre($title, $linkback, 'dolisirh@dolisirh');
 
@@ -174,8 +174,7 @@ foreach ($types as $type => $documentType) {
 							$confType = 'DOLISIRH_' . strtoupper($documentType) . '_ADDON';
 							if ($conf->global->$confType == $file || $conf->global->$confType.'.php' == $file) {
 								print img_picto($langs->trans("Activated"), 'switch_on');
-							}
-							else {
+							} else {
 								print '<a class="reposition" href="'.$_SERVER["PHP_SELF"].'?action=setmod&value='.preg_replace('/\.php$/', '', $file).'&const='.$module->scandir.'&label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
 							}
 							print '</td>';
@@ -230,8 +229,7 @@ foreach ($types as $type => $documentType) {
 			$def[] = $array[0];
 			$i++;
 		}
-	}
-	else {
+	} else {
 		dol_print_error($db);
 	}
 
@@ -278,8 +276,7 @@ foreach ($types as $type => $documentType) {
 							print '<a href="'.$_SERVER["PHP_SELF"].'?action=del&value='.$name.'&const='.$module->scandir.'&label='.urlencode($module->name).'&type='. explode('_', $documentType)[0].'">';
 							print img_picto($langs->trans("Enabled"), 'switch_on');
 							print '</a>';
-						}
-						else {
+						} else {
 							print '<a href="'.$_SERVER["PHP_SELF"].'?action=set&value='.$name.'&const='.$module->scandir.'&label='.urlencode($module->name).'&type='. explode('_', $documentType)[0].'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
 						}
 						print "</td>";
@@ -289,8 +286,7 @@ foreach ($types as $type => $documentType) {
 						$defaultModelConf = 'DOLISIRH_' . strtoupper($documentType) . '_DEFAULT_MODEL';
 						if ($conf->global->$defaultModelConf == $name) {
 							print img_picto($langs->trans("Default"), 'on');
-						}
-						else {
+						} else {
 							print '<a href="'.$_SERVER["PHP_SELF"].'?action=setdoc&value='.$name.'&const='.$module->scandir.'&label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"), 'off').'</a>';
 						}
 						print '</td>';
@@ -309,8 +305,7 @@ foreach ($types as $type => $documentType) {
 						print '<td class="center">';
 						if ($module->type == 'pdf') {
 							print '<a href="'.$_SERVER["PHP_SELF"].'?action=specimen&module='.$name.'">'.img_object($langs->trans("Preview"), 'pdf').'</a>';
-						}
-						else {
+						} else {
 							print img_object($langs->trans("PreviewNotAvailable"), 'generic');
 						}
 						print '</td>';
@@ -328,4 +323,3 @@ foreach ($types as $type => $documentType) {
 print dol_get_fiche_end();
 llxFooter();
 $db->close();
-

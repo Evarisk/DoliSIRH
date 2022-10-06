@@ -1258,4 +1258,3 @@ class TimeSheetSignature extends DoliSIRHSignature
 		}
 	}
 }
-

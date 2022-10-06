@@ -173,7 +173,7 @@ print '</td>';
 print '</tr>' . "\n";
 
 print '<tr class="oddeven"><td>';
-print $form->textwithpicto($langs->trans("Tuesday"),'');
+print $form->textwithpicto($langs->trans("Tuesday"), '');
 print '</td><td>';
 print '<input name="schedule_tuesday" id="schedule_tuesday" class="minwidth100" value="' . ($object->schedule_tuesday ?: GETPOST("schedule_tuesday", 'alpha')) . '"' . (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER) ? '' : ' autofocus="autofocus"') . '>';
 print $form->textwithpicto('', $langs->trans("OpeningHoursFormatDesc"));
@@ -185,7 +185,7 @@ print '</td>';
 print '</tr>' . "\n";
 
 print '<tr class="oddeven"><td>';
-print $form->textwithpicto($langs->trans("Wednesday"),'');
+print $form->textwithpicto($langs->trans("Wednesday"), '');
 print '</td><td>';
 print '<input name="schedule_wednesday" id="schedule_wednesday" class="minwidth100" value="' . ($object->schedule_wednesday ?: GETPOST("schedule_wednesday", 'alpha')) . '"' . (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER) ? '' : ' autofocus="autofocus"') . '>';
 print $form->textwithpicto('', $langs->trans("OpeningHoursFormatDesc"));
@@ -197,7 +197,7 @@ print '</td>';
 print '</tr>' . "\n";
 
 print '<tr class="oddeven"><td>';
-print $form->textwithpicto($langs->trans("Thursday"),'');
+print $form->textwithpicto($langs->trans("Thursday"), '');
 print '</td><td>';
 print '<input name="schedule_thursday" id="schedule_thursday" class="minwidth100" value="' . ($object->schedule_thursday ?: GETPOST("schedule_thursday", 'alpha')) . '"' . (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER) ? '' : ' autofocus="autofocus"') . '>';
 print $form->textwithpicto('', $langs->trans("OpeningHoursFormatDesc"));
@@ -233,7 +233,7 @@ print '</td>';
 print '</tr>' . "\n";
 
 print '<tr class="oddeven"><td>';
-print $form->textwithpicto($langs->trans("Sunday"),'');
+print $form->textwithpicto($langs->trans("Sunday"), '');
 print '</td><td>';
 print '<input name="schedule_sunday" id="schedule_sunday" class="minwidth100" value="' . ($object->schedule_sunday ?: GETPOST("schedule_sunday", 'alpha')) . '"' . (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER) ? '' : ' autofocus="autofocus"') . '>';
 print $form->textwithpicto('', $langs->trans("OpeningHoursFormatDesc"));

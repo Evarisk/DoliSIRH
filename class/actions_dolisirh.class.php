@@ -80,7 +80,6 @@ class ActionsDolisirh
 		if (in_array($parameters['currentcontext'], array('invoicecard'))) {
 			// Action that will be done after pressing the button
 			if ($action == 'createtask-dolisirh') {
-
 				// Start
 				// Variable : ref
 				// Description : create the ref of the task
@@ -289,10 +288,9 @@ class ActionsDolisirh
 						//Filling of the llx_facture_extrafields table
 						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'facture_extrafields(fk_object, fk_task) VALUES('.$object->lines[0]->fk_facture.', '.$rowid_last_task[0].')';
 						$this->db->query($req);
-						setEventMessages($langs->trans("MessageInfo").' : '.'<a href="'.DOL_URL_ROOT.'/projet/tasks/task.php?id='.$rowid_last_task[0].'">'.$ref.'</a>', null, 'mesgs');
-					}
-					//Error messages
-					else {
+						setEventMessages($langs->trans("MessageInfo").' : <a href="'.DOL_URL_ROOT.'/projet/tasks/task.php?id='.$rowid_last_task[0].'">'.$ref.'</a>', null, 'mesgs');
+					} else {
+						//Error messages
 						if (!isset($fk_projet)) {
 							setEventMessages($langs->trans("MessageInfoNoCreateProject"), null, 'errors');
 						}
@@ -331,14 +329,13 @@ class ActionsDolisirh
 
 		$error = 0; // Error counter
 
-		if (in_array('invoicecard', explode(':', $parameters['context'])))
-		{
+		if (in_array('invoicecard', explode(':', $parameters['context']))) {
 			//Creation of the link that will be sendid
-			if ( isset( $_SERVER['HTTPS'] ) ) {
+			if ( isset($_SERVER['HTTPS']) ) {
 				if ( $_SERVER['HTTPS'] == 'on' ) {
-				$server_protocol = 'https';
+					$server_protocol = 'https';
 				} else {
-				$server_protocol = 'http';
+					$server_protocol = 'http';
 				}
 			} else {
 				$server_protocol = 'http';
@@ -471,6 +468,7 @@ class ActionsDolisirh
 	 * Overloading the printCommonFooter function : replacing the parent's function with the one below
 	 *
 	 * @param  array     $parameters Hook metadata (context, etc...)
+	 * @return void
 	 * @throws Exception
 	 */
 	public function printCommonFooter(array $parameters)
@@ -480,10 +478,10 @@ class ActionsDolisirh
 		if (in_array('ticketcard', explode(':', $parameters['context']))) {
 			if (GETPOST('action') == 'presend_addmessage') {
 				$ticket = new Ticket($this->db);
-				$result = $ticket->fetch('',GETPOST('ref','alpha'),GETPOST('track_id','alpha'));
+				$result = $ticket->fetch('', GETPOST('ref', 'alpha'), GETPOST('track_id', 'alpha'));
 				dol_syslog(var_export($ticket, true), LOG_DEBUG);
 				if ($result > 0 && ($ticket->id) > 0) {
-					if ( is_array($ticket->array_options) && array_key_exists('options_fk_task',$ticket->array_options) && $ticket->array_options['options_fk_task']>0) { ?>
+					if ( is_array($ticket->array_options) && array_key_exists('options_fk_task', $ticket->array_options) && $ticket->array_options['options_fk_task']>0) { ?>
 						<script>
 							let InputTime = document.createElement("input");
 							InputTime.id = "timespent";
@@ -498,13 +496,13 @@ class ActionsDolisirh
 							currElement.append($tr);
 						</script>
 					<?php } else {
-						setEventMessage($langs->trans('MessageNoTaskLink'),'warnings');
+						setEventMessage($langs->trans('MessageNoTaskLink'), 'warnings');
 					}
 				} else {
-					setEventMessages($ticket->error,$ticket->errors,'errors');
+					setEventMessages($ticket->error, $ticket->errors, 'errors');
 				}
 				dol_htmloutput_events();
-			}  else if ((GETPOST('action') == '' || empty(GETPOST('action')) || GETPOST('action') == 'view')) {
+			} elseif ((GETPOST('action') == '' || empty(GETPOST('action')) || GETPOST('action') == 'view')) {
 				require_once __DIR__ . '/../../../projet/class/task.class.php';
 
 				$task   = new Task($this->db);
@@ -679,6 +677,7 @@ class ActionsDolisirh
 	 * Overloading the constructCategory function : replacing the parent's function with the one below
 	 *
 	 * @param  array $parameters Hook metadata (context, etc...)
+	 * @return void
 	 */
 	public function constructCategory(array $parameters)
 	{
@@ -714,6 +713,7 @@ class ActionsDolisirh
 	 * @param array  $parameters Hook metadata (context, etc...)
 	 * @param object $object     Object
 	 * @param string $action     Current action (if set). Generally create or edit or null
+	 * @return void
 	 */
 	public function formObjectOptions(array $parameters, object $object, string $action)
 	{
@@ -732,23 +732,23 @@ class ActionsDolisirh
 					print img_picto('', 'category') . $form->multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
 					print "</td></tr>";
 				}
-			} else if ($action == 'edit') {
-//				// Tags-Categories
-//				if ($conf->categorie->enabled) {
-//					print '<tr><td>'.$langs->trans("Categories").'</td><td>';
-//					$cate_arbo = $form->select_all_categories('invoice', '', 'parent', 64, 0, 1);
-//					$c = new Categorie($this->db);
-//					$cats = $c->containing($object->id, 'invoice');
-//					$arrayselected = array();
-//					if (is_array($cats)) {
-//						foreach ($cats as $cat) {
-//							$arrayselected[] = $cat->id;
-//						}
-//					}
-//					print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
-//					print "</td></tr>";
-//				}
-			} else if ($action == '') {
+			} elseif ($action == 'edit') {
+				//              // Tags-Categories
+				//              if ($conf->categorie->enabled) {
+				//                  print '<tr><td>'.$langs->trans("Categories").'</td><td>';
+				//                  $cate_arbo = $form->select_all_categories('invoice', '', 'parent', 64, 0, 1);
+				//                  $c = new Categorie($this->db);
+				//                  $cats = $c->containing($object->id, 'invoice');
+				//                  $arrayselected = array();
+				//                  if (is_array($cats)) {
+				//                      foreach ($cats as $cat) {
+				//                          $arrayselected[] = $cat->id;
+				//                      }
+				//                  }
+				//                  print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
+				//                  print "</td></tr>";
+				//              }
+			} elseif ($action == '') {
 				// Categories
 				if ($conf->categorie->enabled) {
 					print '<tr><td class="valignmiddle">'.$langs->trans("Categories").'</td><td>';
@@ -778,8 +778,10 @@ class ActionsDolisirh
 	 *
 	 * @param array  $parameters Hook metadata (context, etc...)
 	 * @param object $object     Object
+	 * @return void
 	 */
-	public function afterCreationOfRecurringInvoice(array $parameters, object $object) {
+	public function afterCreationOfRecurringInvoice(array $parameters, object $object)
+	{
 		if (in_array($parameters['currentcontext'], array('cron', 'cronjoblist'))) {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
@@ -802,8 +804,10 @@ class ActionsDolisirh
 	 * Overloading the printObjectLine function : replacing the parent's function with the one below
 	 *
 	 * @param array $parameters Hook metadata (context, etc...)
+	 * @return void
 	 */
-	public function printObjectLine(array $parameters) {
+	public function printObjectLine(array $parameters)
+	{
 		if ($parameters['currentcontext'] == 'timesheetcard') {
 			if ($parameters['line']->fk_product > 0) {
 				require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
@@ -824,9 +828,11 @@ class ActionsDolisirh
 	 *
 	 * @param  array     $parameters Hook metadata (context, etc...)
 	 * @param  object    $object     Object
+	 * @return void
 	 * @throws Exception
 	 */
-	public function deleteFile(array $parameters, $object) {
+	public function deleteFile(array $parameters, $object)
+	{
 		if ($parameters['currentcontext'] == 'timesheetcard' && !preg_match('/signature/', $parameters['file'])) {
 			global $user;
 
@@ -864,8 +870,10 @@ class ActionsDolisirh
 	 * Overloading the printFieldListOption function : replacing the parent's function with the one below
 	 *
 	 * @param array $parameters Hook metadata (context, etc...)
+	 * @return void
 	 */
-	public function printFieldListOption(array $parameters) {
+	public function printFieldListOption(array $parameters)
+	{
 		if ($parameters['currentcontext'] == 'projecttasktime') {
 			global $langs;
 
@@ -885,8 +893,10 @@ class ActionsDolisirh
 	 * Overloading the printFieldListTitle function : replacing the parent's function with the one below
 	 *
 	 * @param array $parameters Hook metadata (context, etc...)
+	 * @return void
 	 */
-	public function printFieldListTitle(array $parameters) {
+	public function printFieldListTitle(array $parameters)
+	{
 		if ($parameters['currentcontext'] == 'projecttasktime') {
 			global $langs;
 
@@ -906,8 +916,10 @@ class ActionsDolisirh
 	 * Overloading the printFieldListValue function : replacing the parent's function with the one below
 	 *
 	 * @param array $parameters Hook metadata (context, etc...)
+	 * @return void
 	 */
-	public function printFieldListValue(array $parameters) {
+	public function printFieldListValue(array $parameters)
+	{
 		if ($parameters['currentcontext'] == 'projecttasktime') {
 			global $langs;
 

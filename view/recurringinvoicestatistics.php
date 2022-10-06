@@ -211,17 +211,17 @@ if (empty($user->rights->societe->client->voir) || $user->socid) {
 	if ($mode == 'customer') {
 		$fileurl_avg = DOL_URL_ROOT.'/viewimage.php?modulepart=dolisirh&file=invoicerecsaverage-'.$user->id.'-'.$year.'.png';
 	}
-//	if ($mode == 'supplier') {
-//		$fileurl_avg = DOL_URL_ROOT.'/viewimage.php?modulepart=orderstatssupplier&file=ordersaverage-'.$user->id.'-'.$year.'.png';
-//	}
+	//  if ($mode == 'supplier') {
+	//      $fileurl_avg = DOL_URL_ROOT.'/viewimage.php?modulepart=orderstatssupplier&file=ordersaverage-'.$user->id.'-'.$year.'.png';
+	//  }
 } else {
 	$filename_avg = $dir.'/invoicerecsaverage-'.$year.'.png';
 	if ($mode == 'customer') {
 		$fileurl_avg = DOL_URL_ROOT.'/viewimage.php?modulepart=dolisirh&file=invoicerecsaverage-'.$year.'.png';
 	}
-//	if ($mode == 'supplier') {
-//		$fileurl_avg = DOL_URL_ROOT.'/viewimage.php?modulepart=orderstatssupplier&file=ordersaverage-'.$year.'.png';
-//	}
+	//  if ($mode == 'supplier') {
+	//      $fileurl_avg = DOL_URL_ROOT.'/viewimage.php?modulepart=orderstatssupplier&file=ordersaverage-'.$year.'.png';
+	//  }
 }
 
 $px3 = new DolGraph();
@@ -315,10 +315,10 @@ if (!empty($conf->category->enabled)) {
 		$cat_type = Categorie::TYPE_CUSTOMER;
 		$cat_label = $langs->trans("Category").' '.lcfirst($langs->trans("Customer"));
 	}
-//	if ($mode == 'supplier') {
-//		$cat_type = Categorie::TYPE_SUPPLIER;
-//		$cat_label = $langs->trans("Category").' '.lcfirst($langs->trans("Supplier"));
-//	}
+	//  if ($mode == 'supplier') {
+	//      $cat_type = Categorie::TYPE_SUPPLIER;
+	//      $cat_label = $langs->trans("Category").' '.lcfirst($langs->trans("Supplier"));
+	//  }
 	print '<tr><td>'.$cat_label.'</td><td>';
 	$cate_arbo = $form->select_all_categories($cat_type, null, 'parent', null, null, 1);
 	print img_picto('', 'category', 'class="pictofixedwidth"');
@@ -333,10 +333,10 @@ if (!empty($conf->category->enabled)) {
 		$cat_type = 'invoice';
 		$cat_label = $langs->trans("Category").' '.lcfirst($langs->trans("RecurringInvoice"));
 	}
-//	if ($mode == 'supplier') {
-//		$cat_type = Categorie::TYPE_SUPPLIER;
-//		$cat_label = $langs->trans("Category").' '.lcfirst($langs->trans("Supplier"));
-//	}
+	//  if ($mode == 'supplier') {
+	//      $cat_type = Categorie::TYPE_SUPPLIER;
+	//      $cat_label = $langs->trans("Category").' '.lcfirst($langs->trans("Supplier"));
+	//  }
 	print '<tr><td>'.$cat_label.'</td><td>';
 	$cate_arbo = $form->select_all_categories($cat_type, null, 'parent', null, null, 1);
 	print img_picto('', 'category', 'class="pictofixedwidth"');

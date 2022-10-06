@@ -261,7 +261,7 @@ class Workinghours extends CommonObject
 	 */
 	public function fetchCurrentWorkingHours(int $id, string $type)
 	{
-		$current_workinghours = $this->fetchAll('', '',0,0, array('element_type' => $type, 'element_id' => $id, 'status' => 1));
+		$current_workinghours = $this->fetchAll('', '', 0, 0, array('element_type' => $type, 'element_id' => $id, 'status' => 1));
 		if (is_array($current_workinghours) && !empty($current_workinghours)) {
 			$current_workinghours = array_shift($current_workinghours);
 		}

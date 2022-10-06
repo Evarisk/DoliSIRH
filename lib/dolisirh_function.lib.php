@@ -26,7 +26,9 @@ require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 /**
  * Add or delete task from favorite by the user
  *
- * @return float|int
+ * @param $task_id integer task id
+ * @param $user_id integer id
+ * @return int
  */
 function toggleTaskFavorite($task_id, $user_id)
 {
@@ -36,7 +38,7 @@ function toggleTaskFavorite($task_id, $user_id)
 	$task->fetchObjectLinked();
 
 	if (!empty($task->linkedObjects) && key_exists('user', $task->linkedObjects)) {
-		foreach($task->linkedObjects['user'] as $userLinked) {
+		foreach ($task->linkedObjects['user'] as $userLinked) {
 			if ($userLinked->id == $user_id) {
 				$link_exists = 1;
 				$task->deleteObjectLinked($user_id, 'user');
@@ -45,22 +47,18 @@ function toggleTaskFavorite($task_id, $user_id)
 	}
 
 	if (!$link_exists) {
-		$result = $task->add_object_linked('user', $user_id,'','');
+		$result = $task->add_object_linked('user', $user_id, '', '');
 		return $result;
 	}
 	return 0;
 }
 
 /**
- * \file    dolisirh/lib/dolisirh_function.lib.php
- * \ingroup dolisirh
- * \brief   Library files with common functions for DoliCar
- */
-
-/**
  * Check if task is set to favorite by the user
  *
- * @return float|int
+ * @param $task_id integer task id
+ * @param $user_id integer id
+ * @return int
  */
 function isTaskFavorite($task_id, $user_id)
 {
@@ -70,7 +68,7 @@ function isTaskFavorite($task_id, $user_id)
 	$task->fetchObjectLinked();
 	$link_exists = 0;
 	if (!empty($task->linkedObjects) && key_exists('user', $task->linkedObjects)) {
-		foreach($task->linkedObjects['user'] as $userLinked) {
+		foreach ($task->linkedObjects['user'] as $userLinked) {
 			if ($userLinked->id == $user_id) {
 				$link_exists = 1;
 			}
@@ -84,6 +82,7 @@ function isTaskFavorite($task_id, $user_id)
  * Return list of tasks for all projects or for one particular project
  * Sort order is on project, then on position of task, and last on start date of first level task
  *
+ * @param	integer	$task_id			task Id
  * @param	User	$usert				Object user to limit tasks affected to a particular user
  * @param	User	$userp				Object user to limit projects of a particular user and public projects
  * @param	int		$projectid			Project id
@@ -165,7 +164,6 @@ function getFavoriteTasksArray($task_id = 0, $usert = null, $userp = null, $proj
 			$sql .= " AND elel.fk_target = t.rowid";
 			$sql .= " AND elel.fk_source = " . $user->id;
 		}
-
 	} elseif ($mode == 1) {
 		if ($filteronprojuser > 0) {
 			$sql .= ", ".MAIN_DB_PREFIX."element_contact as ec";
@@ -743,9 +741,10 @@ function dolisirh_timesheet_prepare_head($mode, $fuser = null)
  * @param 	int[]|int 	$categories 		Category ID or array of Categories IDs
  * @param 	string 		$type_categ 		Category type ('customer', 'supplier', 'website_page', ...) definied into const class Categorie type
  * @param 	boolean		$remove_existing 	True: Remove existings categories from Object if not supplies by $categories, False: let them
+ * @param 	CommonObject	$object 	Object
  * @return	int							<0 if KO, >0 if OK
  */
-function setCategoriesObject($categories, $type_categ = '', $remove_existing = true, $object)
+function setCategoriesObject($categories = array(), $type_categ = '', $remove_existing = true, $object)
 {
 	// Handle single category
 	if (!is_array($categories)) {
@@ -1105,15 +1104,15 @@ function projectLinesPerDayOnMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuse
 						print '<td class="right">';
 						$firstday = dol_print_date($firstdaytoshow, 'dayrfc');
 						$lastday = dol_print_date($lastdaytoshow, 'dayrfc');
-//						$currentMonth = date('m', dol_now());
-//						$year = GETPOST('reyear', 'int') ? GETPOST('reyear', 'int') : (GETPOST("year", 'int') ? GETPOST("year", "int") : date("Y"));
-//						$month = GETPOST('remonth', 'int') ? GETPOST('remonth', 'int') : (GETPOST("month", 'int') ? GETPOST("month", "int") : date("m"));
-//						if ($currentMonth == $month) {
-//							$lastday = dol_print_date(dol_now(), 'dayrfc');
-//						} else {
-//							$lastdaytoshow = dol_get_last_day($year, $month);
-//							$lastday = dol_print_date($lastdaytoshow, 'dayrfc');
-//						}
+						//                      $currentMonth = date('m', dol_now());
+						//                      $year = GETPOST('reyear', 'int') ? GETPOST('reyear', 'int') : (GETPOST("year", 'int') ? GETPOST("year", "int") : date("Y"));
+						//                      $month = GETPOST('remonth', 'int') ? GETPOST('remonth', 'int') : (GETPOST("month", 'int') ? GETPOST("month", "int") : date("m"));
+						//                      if ($currentMonth == $month) {
+						//                          $lastday = dol_print_date(dol_now(), 'dayrfc');
+						//                      } else {
+						//                          $lastdaytoshow = dol_get_last_day($year, $month);
+						//                          $lastday = dol_print_date($lastdaytoshow, 'dayrfc');
+						//                      }
 						$filter = ' AND t.task_datehour BETWEEN ' . "'" . $firstday . "'" . ' AND ' . "'" . $lastday . "'";
 						$tmptimespent = $taskstatic->getSummaryOfTimeSpent($fuser->id, $filter);
 						if ($tmptimespent['total_duration']) {
@@ -1599,8 +1598,8 @@ function projectLinesPerWeekDoliSIRH(&$inc, $firstdaytoshow, $fuser, $parent, $l
 					$Week = getWeekNumber($Date['mday'], $Date['mon'], $Date['year']);
 
 					if ($currentWeek == $Week) {
-						$firstDay = date( 'd', $firstdaytoshow);
-						$currentDay = date( 'd', dol_now());
+						$firstDay = date('d', $firstdaytoshow);
+						$currentDay = date('d', dol_now());
 						$nbday = $currentDay - $firstDay;
 					} else {
 						$nbday = 6;
@@ -1879,23 +1878,23 @@ function dolisirhshowdocuments($modulepart, $modulesubdir, $filedir, $urlsource,
 			$genbutton .= '</label>';
 		}
 
-//		if ( ! $allowgenifempty && ! is_array($modellist) && empty($modellist)) $genbutton .= ' disabled';
-//		$genbutton                                                                         .= '>';
-//		if ($allowgenifempty && ! is_array($modellist) && empty($modellist) && empty($conf->dol_no_mouse_hover) && $modulepart != 'unpaid') {
-//			$langs->load("errors");
-//			$genbutton .= ' ' . img_warning($langs->transnoentitiesnoconv("WarningNoDocumentModelActivated"));
-//		}
-//		if ( ! $allowgenifempty && ! is_array($modellist) && empty($modellist) && empty($conf->dol_no_mouse_hover) && $modulepart != 'unpaid') $genbutton = '';
-//		if (empty($modellist) && ! $showempty && $modulepart != 'unpaid') $genbutton                                                                      = '';
+		//      if ( ! $allowgenifempty && ! is_array($modellist) && empty($modellist)) $genbutton .= ' disabled';
+		//      $genbutton                                                                         .= '>';
+		//      if ($allowgenifempty && ! is_array($modellist) && empty($modellist) && empty($conf->dol_no_mouse_hover) && $modulepart != 'unpaid') {
+		//          $langs->load("errors");
+		//          $genbutton .= ' ' . img_warning($langs->transnoentitiesnoconv("WarningNoDocumentModelActivated"));
+		//      }
+		//      if ( ! $allowgenifempty && ! is_array($modellist) && empty($modellist) && empty($conf->dol_no_mouse_hover) && $modulepart != 'unpaid') $genbutton = '';
+		//      if (empty($modellist) && ! $showempty && $modulepart != 'unpaid') $genbutton                                                                      = '';
 		$out                                                                                                                                             .= $genbutton;
-//		if ( ! $active) {
-//			$htmltooltip  = '';
-//			$htmltooltip .= $tooltiptext;
-//
-//			$out .= '<span class="center">';
-//			$out .= $form->textwithpicto($langs->trans('Help'), $htmltooltip, 1, 0);
-//			$out .= '</span>';
-//		}
+		//      if ( ! $active) {
+		//          $htmltooltip  = '';
+		//          $htmltooltip .= $tooltiptext;
+		//
+		//          $out .= '<span class="center">';
+		//          $out .= $form->textwithpicto($langs->trans('Help'), $htmltooltip, 1, 0);
+		//          $out .= '</span>';
+		//      }
 
 		$out .= '</th>';
 
@@ -2146,4 +2145,3 @@ function getListOfModelsDoliSIRH($db, $type, $maxfilenamelength = 0)
 		return 0;
 	}
 }
-

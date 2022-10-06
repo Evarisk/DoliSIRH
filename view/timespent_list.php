@@ -265,12 +265,12 @@ foreach ($search as $key => $val) {
 			$sql .= " AND ptt.task_date <= '" . $db->idate($search[$key]) . "'";
 		}
 	}
-	if ($key == 'socid' && !empty($val)) $sql .= ' AND s.rowid=' . (int)$val;
-	if ($key == 'projectref' && !empty($val)) $sql .= ' AND p.rowid=' . (int)$val;
-	if ($key == 'taskid' && !empty($val)) $sql .= ' AND pt.rowid=' . (int)$val;
-	if ($key == 'fk_user' && !empty($val)) $sql .= ' AND ptt.fk_user=' . (int)$val;
-	if ($key == 'invoice_id' && !empty($val)) $sql .= ' AND ptt.invoice_id=' . (int)$val;
-	if ($key == 'timesheetid' && !empty($val)) $sql .= ' AND ts.rowid=' . (int)$val;
+	if ($key == 'socid' && !empty($val)) $sql .= ' AND s.rowid=' . (int) $val;
+	if ($key == 'projectref' && !empty($val)) $sql .= ' AND p.rowid=' . (int) $val;
+	if ($key == 'taskid' && !empty($val)) $sql .= ' AND pt.rowid=' . (int) $val;
+	if ($key == 'fk_user' && !empty($val)) $sql .= ' AND ptt.fk_user=' . (int) $val;
+	if ($key == 'invoice_id' && !empty($val)) $sql .= ' AND ptt.invoice_id=' . (int) $val;
+	if ($key == 'timesheetid' && !empty($val)) $sql .= ' AND ts.rowid=' . (int) $val;
 }
 
 if (!empty($conf->categorie->enabled)) {
@@ -625,4 +625,3 @@ print '</form>' . "\n";
 // End of page
 llxFooter();
 $db->close();
-

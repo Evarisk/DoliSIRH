@@ -69,7 +69,7 @@ class modDolisirh extends DolibarrModules
 			'js' 						=> array(),
 			'hooks' 					=> array(
 				  'data' 				=> array(
-				      'invoicecard',
+					  'invoicecard',
 					  'ticketcard',
 					  'projecttaskcard',
 					  'projecttaskscard',
@@ -434,14 +434,14 @@ class modDolisirh extends DolibarrModules
 		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 		$extra_fields = new ExtraFields($this->db);
 
-		$param['options']['Task:projet/class/task.class.php'] = NULL;
-		$extra_fields->addExtraField('fk_task', 'Tâche', 'link', 100, NULL, 'facture', 1, 0, NULL, $param, 1, 1, 1); //extrafields invoice
+		$param['options']['Task:projet/class/task.class.php'] = null;
+		$extra_fields->addExtraField('fk_task', 'Tâche', 'link', 100, null, 'facture', 1, 0, null, $param, 1, 1, 1); //extrafields invoice
 		unset($param);
-		$param['options']['Facture:compta/facture/class/facture.class.php'] = NULL;
-		$extra_fields->addExtraField('fk_facture_name', 'Facture', 'link', 100, NULL, 'projet_task', 1, 0, NULL, $param, 1, 1, 1); //extrafields task
+		$param['options']['Facture:compta/facture/class/facture.class.php'] = null;
+		$extra_fields->addExtraField('fk_facture_name', 'Facture', 'link', 100, null, 'projet_task', 1, 0, null, $param, 1, 1, 1); //extrafields task
 		unset($param);
 		//$extra_fields->update('fk_task', 'Tâche', 'sellist', '', 'ticket', 0, 0, 100, 'a:1:{s:7:"options";a:1:{s:110:"projet_task:ref:rowid::entity = $ENTITY$ AND fk_projet = ($SEL$ fk_project FROM '. MAIN_DB_PREFIX .'ticket WHERE rowid = $ID$)";N;}}', 1, 1, '1');
-		$extra_fields->addExtraField('fk_task', 'Tâche', 'sellist', 100, NULL, 'ticket', 0, 0, NULL, 'a:1:{s:7:"options";a:1:{s:110:"projet_task:ref:rowid::entity = $ENTITY$ AND fk_projet = ($SEL$ fk_project FROM '. MAIN_DB_PREFIX .'ticket WHERE rowid = $ID$)";N;}}', 1, 1, '1'); //extrafields ticket
+		$extra_fields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, 'a:1:{s:7:"options";a:1:{s:110:"projet_task:ref:rowid::entity = $ENTITY$ AND fk_projet = ($SEL$ fk_project FROM '. MAIN_DB_PREFIX .'ticket WHERE rowid = $ID$)";N;}}', 1, 1, '1'); //extrafields ticket
 
 		// Document templates
 		delDocumentModel('timesheetdocument_odt', 'timesheetdocument');

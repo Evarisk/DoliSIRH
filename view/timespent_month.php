@@ -789,76 +789,76 @@ if (count($tasksarray) > 0) {
 	$level = 0;
 	$totalforvisibletasks = projectLinesPerDayOnMonth($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $dayInMonth);
 
-//	if (is_array($tasksarraywithoutfilter) && count($tasksarraywithoutfilter)) {
-//		$totalforalltasks = projectLinesPerDayOnMonth($j, $firstdaytoshow, $usertoprocess, 0, $tasksarraywithoutfilter, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $dayInMonth);
-//	}
+	//  if (is_array($tasksarraywithoutfilter) && count($tasksarraywithoutfilter)) {
+	//      $totalforalltasks = projectLinesPerDayOnMonth($j, $firstdaytoshow, $usertoprocess, 0, $tasksarraywithoutfilter, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $dayInMonth);
+	//  }
 	//var_dump($totalforvisibletasks);
 
 
 	// Show total for all other tasks
 
 	// Calculate total for all tasks
-//	$listofdistinctprojectid = array(); // List of all distinct projects
-//	if (is_array($tasksarraywithoutfilter) && count($tasksarraywithoutfilter)) {
-//		foreach ($tasksarraywithoutfilter as $tmptask) {
-//			$listofdistinctprojectid[$tmptask->fk_project] = $tmptask->fk_project;
-//		}
-//	}
-//	//var_dump($listofdistinctprojectid);
-//	$totalforeachday = array();
-//	foreach ($listofdistinctprojectid as $tmpprojectid) {
-//		$projectstatic->id = $tmpprojectid;
-//		loadTimeSpentMonthByDay($firstdaytoshow, 0, $usertoprocess->id, $projectstatic); // Load time spent from table projet_task_time for the project into this->weekWorkLoad and this->weekWorkLoadPerTask for all days of a week
-//		for ($idw = 0; $idw < $dayInMonth; $idw++) {
-//			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-//			$totalforeachday[$tmpday] += $projectstatic->monthWorkLoad[$tmpday];
-//		}
-//	}
-//
-//	//var_dump($totalforeachday);
-//	//var_dump($totalforvisibletasks);
-//
-//	// Is there a diff between selected/filtered tasks and all tasks ?
-//	$isdiff = 0;
-//	if (count($totalforeachday)) {
-//		for ($idw = 0; $idw < $dayInMonth; $idw++) {
-//			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-//			$timeonothertasks = ($totalforeachday[$tmpday] - $totalforvisibletasks[$tmpday]);
-//			if ($timeonothertasks) {
-//				$isdiff = 1;
-//				break;
-//			}
-//		}
-//	}
-//
-//	// There is a diff between total shown on screen and total spent by user, so we add a line with all other cumulated time of user
-//  	if ($isdiff) {
-//		print '<tr class="oddeven othertaskwithtime">';
-//		print '<td colspan="'.($colspan + $addcolspan).'" class="opacitymedium">';
-//		print $langs->trans("OtherFilteredTasks");
-//		print '</td>';
-//		if (!empty($arrayfields['timeconsumed']['checked'])) {
-//			print '<td class="liste_total right"><div class="totalDayAll">&nbsp;</div></td>';
-//		}
-//		for ($idw = 0; $idw < $dayInMonth; $idw++) {
-//			$cssweekend = '';
-//			if ((($idw + 1) < $numstartworkingday) || (($idw + 1) > $numendworkingday)) {	// This is a day is not inside the setup of working days, so we use a week-end css.
-//				//$cssweekend = 'weekend';
-//			}
-//
-//			print '<td class="center '.$idw.' '.($cssweekend ? ' '.$cssweekend : '').'">';
-//			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-//			$timeonothertasks = ($totalforeachday[$tmpday] - $totalforvisibletasks[$tmpday]);
-//			if ($timeonothertasks) {
-//				print '<span class="timesheetalreadyrecorded" title="texttoreplace"><input type="text" class="center smallpadd" size="2" disabled="" id="timespent[-1]['.$idw.']" name="task[-1]['.$idw.']" value="';
-//				print convertSecondToTime($timeonothertasks, 'allhourmin');
-//				print '"></span>';
-//			}
-//			print '</td>';
-//		}
-//		print ' <td class="liste_total"></td>';
-//		print '</tr>';
-//	}
+	//  $listofdistinctprojectid = array(); // List of all distinct projects
+	//  if (is_array($tasksarraywithoutfilter) && count($tasksarraywithoutfilter)) {
+	//      foreach ($tasksarraywithoutfilter as $tmptask) {
+	//          $listofdistinctprojectid[$tmptask->fk_project] = $tmptask->fk_project;
+	//      }
+	//  }
+	//  //var_dump($listofdistinctprojectid);
+	//  $totalforeachday = array();
+	//  foreach ($listofdistinctprojectid as $tmpprojectid) {
+	//      $projectstatic->id = $tmpprojectid;
+	//      loadTimeSpentMonthByDay($firstdaytoshow, 0, $usertoprocess->id, $projectstatic); // Load time spent from table projet_task_time for the project into this->weekWorkLoad and this->weekWorkLoadPerTask for all days of a week
+	//      for ($idw = 0; $idw < $dayInMonth; $idw++) {
+	//          $tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+	//          $totalforeachday[$tmpday] += $projectstatic->monthWorkLoad[$tmpday];
+	//      }
+	//  }
+	//
+	//  //var_dump($totalforeachday);
+	//  //var_dump($totalforvisibletasks);
+	//
+	//  // Is there a diff between selected/filtered tasks and all tasks ?
+	//  $isdiff = 0;
+	//  if (count($totalforeachday)) {
+	//      for ($idw = 0; $idw < $dayInMonth; $idw++) {
+	//          $tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+	//          $timeonothertasks = ($totalforeachday[$tmpday] - $totalforvisibletasks[$tmpday]);
+	//          if ($timeonothertasks) {
+	//              $isdiff = 1;
+	//              break;
+	//          }
+	//      }
+	//  }
+	//
+	//  // There is a diff between total shown on screen and total spent by user, so we add a line with all other cumulated time of user
+	//      if ($isdiff) {
+	//      print '<tr class="oddeven othertaskwithtime">';
+	//      print '<td colspan="'.($colspan + $addcolspan).'" class="opacitymedium">';
+	//      print $langs->trans("OtherFilteredTasks");
+	//      print '</td>';
+	//      if (!empty($arrayfields['timeconsumed']['checked'])) {
+	//          print '<td class="liste_total right"><div class="totalDayAll">&nbsp;</div></td>';
+	//      }
+	//      for ($idw = 0; $idw < $dayInMonth; $idw++) {
+	//          $cssweekend = '';
+	//          if ((($idw + 1) < $numstartworkingday) || (($idw + 1) > $numendworkingday)) {   // This is a day is not inside the setup of working days, so we use a week-end css.
+	//              //$cssweekend = 'weekend';
+	//          }
+	//
+	//          print '<td class="center '.$idw.' '.($cssweekend ? ' '.$cssweekend : '').'">';
+	//          $tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+	//          $timeonothertasks = ($totalforeachday[$tmpday] - $totalforvisibletasks[$tmpday]);
+	//          if ($timeonothertasks) {
+	//              print '<span class="timesheetalreadyrecorded" title="texttoreplace"><input type="text" class="center smallpadd" size="2" disabled="" id="timespent[-1]['.$idw.']" name="task[-1]['.$idw.']" value="';
+	//              print convertSecondToTime($timeonothertasks, 'allhourmin');
+	//              print '"></span>';
+	//          }
+	//          print '</td>';
+	//      }
+	//      print ' <td class="liste_total"></td>';
+	//      print '</tr>';
+	//  }
 
 	if ($conf->use_javascript_ajax) {
 		$workinghoursMonth = 0;
@@ -866,8 +866,8 @@ if (count($tasksarray) > 0) {
 		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
 		print $langs->trans("Total");
 
-		$currentDayCurrent = date( 'd', $now);
-		$currentMonth = date( 'm', $now);
+		$currentDayCurrent = date('d', $now);
+		$currentMonth = date('m', $now);
 
 		if ($currentMonth == $month) {
 			$dayInMonthCurrent = $currentDayCurrent;
@@ -973,11 +973,11 @@ if (count($tasksarray) > 0) {
 		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
 		print $langs->trans("Total");
 		$difftotaltime = $totalspenttime * 60 * 60 - $totalconsumedtime;
-		if  ($difftotaltime < 0) {
+		if ($difftotaltime < 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-		} else if ($difftotaltime > 0) {
+		} elseif ($difftotaltime > 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-		} else if ($difftotaltime == 0) {
+		} elseif ($difftotaltime == 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 		}
 		print '<span class="opacitymediumbycolor">  - '.$langs->trans("DiffSpentAndConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></span>';
@@ -996,11 +996,11 @@ if (count($tasksarray) > 0) {
 				$workinghoursMonth = 0;
 			}
 			$difftime = $workinghoursMonth - $totalforvisibletasks[$dayinloopfromfirstdaytoshow];
-			if  ($difftime < 0) {
+			if ($difftime < 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-			} else if ($difftime > 0) {
+			} elseif ($difftime > 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-			} else if ($difftime == 0) {
+			} elseif ($difftime == 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 			}
 			$cssweekend = '';

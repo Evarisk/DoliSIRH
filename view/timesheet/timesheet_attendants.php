@@ -209,7 +209,7 @@ if ($action == 'send') {
 					$signatory->email = $usertmp->email;
 					$signatory->update($user, true);
 				}
-			} else if ($signatory->element_type == 'socpeople') {
+			} elseif ($signatory->element_type == 'socpeople') {
 				$contact->fetch($signatory->element_id);
 				if (dol_strlen($contact->email)) {
 					$signatory->email = $contact->email;

@@ -129,4 +129,3 @@ print '</table>';
 print dol_get_fiche_end();
 llxFooter();
 $db->close();
-

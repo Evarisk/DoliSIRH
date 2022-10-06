@@ -91,21 +91,21 @@ class InterfaceDolisirhTriggers extends DolibarrTriggers
 			// Actions
 			case 'ACTION_CREATE':
 				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
-				if (((int)$object->fk_element) > 0 && $object->elementtype == 'ticket' && preg_match('/^TICKET_/',$object->code)) {
+				if (((int) $object->fk_element) > 0 && $object->elementtype == 'ticket' && preg_match('/^TICKET_/', $object->code)) {
 					dol_syslog("Add time spent");
 					$result= 0;
 					$ticket = new Ticket($this->db);
 					$result = $ticket->fetch($object->fk_element);
 					dol_syslog(var_export($ticket, true), LOG_DEBUG);
 					if ($result > 0 && ($ticket->id) > 0) {
-						if (is_array($ticket->array_options) && array_key_exists('options_fk_task',$ticket->array_options) && $ticket->array_options['options_fk_task']>0) {
+						if (is_array($ticket->array_options) && array_key_exists('options_fk_task', $ticket->array_options) && $ticket->array_options['options_fk_task']>0) {
 							require_once DOL_DOCUMENT_ROOT .'/projet/class/task.class.php';
 							$task = new Task($this->db);
 							$result = $task->fetch($ticket->array_options['options_fk_task']);
 							dol_syslog(var_export($task, true), LOG_DEBUG);
 							if ($result > 0 && ($task->id) > 0) {
 								$task->timespent_note = $object->note_private;
-								$task->timespent_duration = GETPOST('timespent','int') * 60; // We store duration in seconds
+								$task->timespent_duration = GETPOST('timespent', 'int') * 60; // We store duration in seconds
 								$task->timespent_date = dol_now();
 								$task->timespent_withhour = 1;
 								$task->timespent_fk_user = $user->id;
@@ -116,12 +116,12 @@ class InterfaceDolisirhTriggers extends DolibarrTriggers
 								$task->addTimeSpent($user);
 								setEventMessages($langs->trans("MessageTimeSpentCreate").' : '.'<a href="'.DOL_URL_ROOT.'/projet/tasks/time.php?id='.$id_message.'">'.$name_message.'</a>', array());
 							} else {
-								setEventMessages($task->error,$task->errors,'errors');
+								setEventMessages($task->error, $task->errors, 'errors');
 								return -1;
 							}
 						}
 					} else {
-						setEventMessages($ticket->error,$ticket->errors,'errors');
+						setEventMessages($ticket->error, $ticket->errors, 'errors');
 						return -1;
 					}
 				}
@@ -139,7 +139,7 @@ class InterfaceDolisirhTriggers extends DolibarrTriggers
 				require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 				require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 				$cat = new Categorie($this->db);
-				$categories = $cat->containing(GETPOST('facid'),'invoice');
+				$categories = $cat->containing(GETPOST('facid'), 'invoice');
 				if (is_array($categories) && !empty($categories)) {
 					foreach ($categories as $category) {
 						$categoryArray[] =  $category->id;

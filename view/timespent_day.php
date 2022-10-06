@@ -308,7 +308,7 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilterac
 
 	if (count($timespent_duration) > 0) {
 		$timespent_minutes = 0;
-		foreach($timespent_duration as $key => $val) {
+		foreach ($timespent_duration as $key => $val) {
 			$timespent_minutes += $val / 60;
 		}
 		if (!$conf->global->DOLISIRH_SPEND_MORE_TIME_THAN_PLANNED) {
@@ -364,7 +364,6 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilterac
 	} else {
 		setEventMessages($langs->trans("ErrorTimeSpentIsEmpty"), null, 'errors');
 	}
-
 }
 
 if ($action == 'showOnlyFavoriteTasks') {
@@ -414,23 +413,23 @@ if ($id) {
 
 if (GETPOST('year')) {
 	$year_post = GETPOST('year');
-} else if (GETPOST('reyear')) {
+} elseif (GETPOST('reyear')) {
 	$year_post = GETPOST('reyear');
-} else if (GETPOST('addtimeyear')) {
+} elseif (GETPOST('addtimeyear')) {
 	$year_post = GETPOST('addtimeyear');
 }
 if (GETPOST('month')) {
 	$month_post = GETPOST('month');
-} else if (GETPOST('remonth')) {
+} elseif (GETPOST('remonth')) {
 	$month_post = GETPOST('remonth');
-} else if (GETPOST('addtimemonth')) {
+} elseif (GETPOST('addtimemonth')) {
 	$month_post = GETPOST('addtimemonth');
 }
 if (GETPOST('day')) {
 	$day_post = GETPOST('day');
-} else if (GETPOST('reday')) {
+} elseif (GETPOST('reday')) {
 	$day_post = GETPOST('reday');
-} else if (GETPOST('addtimeday')) {
+} elseif (GETPOST('addtimeday')) {
 	$day_post = GETPOST('addtimeday');
 }
 
@@ -794,8 +793,8 @@ if ($conf->use_javascript_ajax) {
 
 	print '<td class="liste_total center'.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'"><div class="totalDay0">&nbsp;</div></td>';
 
-//	print '<td class="liste_total"></td>';
-//	print '<td class="liste_total"></td>';
+	//  print '<td class="liste_total"></td>';
+	//  print '<td class="liste_total"></td>';
 	print '</tr>';
 }
 
@@ -882,7 +881,7 @@ if (count($tasksarray) > 0) {
 
 		print '<td class="liste_total center'.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'"><div class="totalDay0">&nbsp;</div></td>';
 
-//		print '<td class="liste_total"></td><td class="liste_total"></td>';
+		//      print '<td class="liste_total"></td><td class="liste_total"></td>';
 		print '</tr>';
 	}
 } else {

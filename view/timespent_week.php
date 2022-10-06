@@ -451,7 +451,7 @@ $search_options_pattern = 'search_task_options_';
 $extrafieldsobjectkey = 'projet_task';
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 
-$tasksarray = $taskstatic->getTasksArray( 0, 0, ($project->id ? $project->id : 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields); // We want to see all tasks of open project i am allowed to see and that match filter, not only my tasks. Later only mine will be editable later.
+$tasksarray = $taskstatic->getTasksArray(0, 0, ($project->id ? $project->id : 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields); // We want to see all tasks of open project i am allowed to see and that match filter, not only my tasks. Later only mine will be editable later.
 if ($morewherefilter) {	// Get all task without any filter, so we can show total of time spent for not visible tasks
 	$tasksarraywithoutfilter = getFavoriteTasksArray($taskstatic->id, 0, 0, ($project->id ? $project->id : 0), $socid, 0, '', $onlyopenedproject, '', ($search_usertoprocessid ? $search_usertoprocessid : 0)); // We want to see all tasks of open project i am allowed to see and that match filter, not only my tasks. Later only mine will be editable later.
 }
@@ -884,8 +884,8 @@ if (count($tasksarray) > 0) {
 		$CurrentDate = dol_getdate($now);
 		$currentWeek = getWeekNumber($CurrentDate['mday'], $CurrentDate['mon'], $CurrentDate['year']);
 		if ($currentWeek == $week) {
-			$firstDay = date( 'd', $firstdaytoshow);
-			$currentDay = date( 'd', $now);
+			$firstDay = date('d', $firstdaytoshow);
+			$currentDay = date('d', $now);
 			$nbday = $currentDay - $firstDay + 1;
 		} else {
 			$nbday = 7;
@@ -992,11 +992,11 @@ if (count($tasksarray) > 0) {
 		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
 		print $langs->trans("Total");
 		$difftotaltime = $totalspenttime * 60 * 60 - $totalconsumedtime;
-		if  ($difftotaltime < 0) {
+		if ($difftotaltime < 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-		} else if ($difftotaltime > 0) {
+		} elseif ($difftotaltime > 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-		} else if ($difftotaltime == 0) {
+		} elseif ($difftotaltime == 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 		}
 		print '<span class="opacitymediumbycolor">  - '.$langs->trans("DiffSpentAndConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($nbday == 7) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></span>';
@@ -1016,11 +1016,11 @@ if (count($tasksarray) > 0) {
 				$workinghoursWeek = 0;
 			}
 			$difftime = $workinghoursWeek - $totalforvisibletasks[$dayinloopfromfirstdaytoshow];
-			if  ($difftime < 0) {
+			if ($difftime < 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-			} else if ($difftime > 0) {
+			} elseif ($difftime > 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-			} else if ($difftime == 0) {
+			} elseif ($difftime == 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 			}
 			$cssweekend = '';

@@ -711,11 +711,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		}
 	}
 	$diffworkinghoursMonth = $nbworkinghoursMonth - $nbconsumedworkinghoursMonth;
-	if  ($diffworkinghoursMonth < 0) {
+	if ($diffworkinghoursMonth < 0) {
 		$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-	} else if ($diffworkinghoursMonth > 0) {
+	} elseif ($diffworkinghoursMonth > 0) {
 		$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-	} else if ($diffworkinghoursMonth == 0) {
+	} elseif ($diffworkinghoursMonth == 0) {
 		$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 	}
 	print '<span class="opacitymediumbycolor">  - '.$langs->trans("ConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong>';
@@ -725,15 +725,15 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	$difftotaltime = $totalspenttime * 60 * 60 - $totalconsumedtime;
-	if  ($difftotaltime < 0) {
+	if ($difftotaltime < 0) {
 		$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
 		$morecssnotice = 'error';
 		$noticetitle = $langs->trans('TimeSpentDiff', dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat")), dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y"));
-	} else if ($difftotaltime > 0) {
+	} elseif ($difftotaltime > 0) {
 		$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
 		$morecssnotice = 'warning';
 		$noticetitle = $langs->trans('TimeSpentMustBeCompleted', dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat")), dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y"));
-	} else if ($difftotaltime == 0) {
+	} elseif ($difftotaltime == 0) {
 		$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 		$morecssnotice = 'success';
 		$noticetitle = $langs->trans('TimeSpentPerfect');

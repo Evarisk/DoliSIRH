@@ -224,9 +224,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 			$objectref = dol_sanitizeFileName($object->ref);
 			$dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1] . '/timesheetdocument/' . $objectref;
 
-//			if (!preg_match('/specimen/i', $objectref)) {
-//				$dir .= "/".$objectref;
-//			}
+			//          if (!preg_match('/specimen/i', $objectref)) {
+			//              $dir .= "/".$objectref;
+			//          }
 
 			if (!file_exists($dir)) {
 				if (dol_mkdir($dir) < 0) {
@@ -242,7 +242,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 				$newfiletmp = preg_replace('/template_/i', '', $newfiletmp);
 				$newfiletmp = preg_replace('/modele_/i', '', $newfiletmp);
 
-				$date = dol_print_date(dol_now(),'dayxcard');
+				$date = dol_print_date(dol_now(), 'dayxcard');
 
 				$newfiletmp = $objectref . '_' . $date . '_' . $newfiletmp . '_' . $conf->global->MAIN_INFO_SOCIETE_NOM;
 
@@ -520,9 +520,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 							}
 						}
 
-//						$linenumber++;
-//						$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-//						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+						//                      $linenumber++;
+						//                      $tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
+						//                      complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
 
 						unset($tmparray['object_fields']);
 						unset($tmparray['object_lines']);
@@ -582,9 +582,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 										}
 									}
 
-//						$linenumber++;
-//						$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-//						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+									//                      $linenumber++;
+									//                      $tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
+									//                      complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
 
 									unset($tmparray['object_fields']);
 									unset($tmparray['object_lines']);
@@ -657,9 +657,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 									}
 								}
 
-//						$linenumber++;
-//						$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-//						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+								//                      $linenumber++;
+								//                      $tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
+								//                      complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
 
 								unset($tmparray['object_fields']);
 								unset($tmparray['object_lines']);
@@ -703,9 +703,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 							}
 						}
 
-//						$linenumber++;
-//						$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-//						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+						//                      $linenumber++;
+						//                      $tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
+						//                      complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
 
 						unset($tmparray['object_fields']);
 						unset($tmparray['object_lines']);
@@ -748,9 +748,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 							}
 						}
 
-//						$linenumber++;
-//						$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-//						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+						//                      $linenumber++;
+						//                      $tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
+						//                      complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
 
 						unset($tmparray['object_fields']);
 						unset($tmparray['object_lines']);
@@ -791,9 +791,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 							}
 						}
 
-//						$linenumber++;
-//						$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-//						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+						//                      $linenumber++;
+						//                      $tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
+						//                      complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
 
 						unset($tmparray['object_fields']);
 						unset($tmparray['object_lines']);
@@ -846,9 +846,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 							}
 						}
 
-//						$linenumber++;
-//						$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-//						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+						//                      $linenumber++;
+						//                      $tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
+						//                      complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
 
 						unset($tmparray['object_fields']);
 						unset($tmparray['object_lines']);
@@ -902,9 +902,9 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 							}
 						}
 
-//						$linenumber++;
-//						$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-//						complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
+						//                      $linenumber++;
+						//                      $tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
+						//                      complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
 
 						unset($tmparray['object_fields']);
 						unset($tmparray['object_lines']);
@@ -975,7 +975,6 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 						}
 						$odfHandler->mergeSegment($listlines);
 					}
-
 				} catch (OdfException $e) {
 					$this->error = $e->getMessage();
 					dol_syslog($this->error, LOG_WARNING);
