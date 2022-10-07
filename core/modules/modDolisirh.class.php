@@ -53,7 +53,7 @@ class modDolisirh extends DolibarrModules
 		$this->descriptionlong 			= "Dolisirh description (Long)";
 		$this->editor_name 				= 'Evarisk';
 		$this->editor_url 				= 'https://evarisk.com';
-		$this->version 					= '1.3.0';
+		$this->version 					= '1.0.0';
 		$this->const_name 				= 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto 					= 'dolisirh256px@dolisirh';
 
