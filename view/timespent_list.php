@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2022 EOXIA <dev@eoxia.com>
+/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
  * Copyright (C) 2022 Florian HENRY <florian.henry@scopen.fr>
  *
  * This program is free software; you can redistribute it and/or modify

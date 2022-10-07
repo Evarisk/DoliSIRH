@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2022 EOXIA <dev@eoxia.com>
+/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,7 +117,7 @@ class ActionsDolisirh
 				$wording = $title[0];
 
 				//Tag retrieval
-				//@todo REGEX à construire dans les réglages dans notre cas : DATEDEBUTPERIODE-NOMPROJET-TAGS EX: 20200801-eoxia.fr-ref
+				//@todo REGEX à construire dans les réglages dans notre cas : DATEDEBUTPERIODE-NOMPROJET-TAGS EX: 20200801-evarisk.fr-ref
 				$query = "SELECT ref, fk_projet FROM ".MAIN_DB_PREFIX."facture";
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {

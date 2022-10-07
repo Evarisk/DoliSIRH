@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2022 EOXIA <dev@eoxia.com>
+/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,8 +76,8 @@ if (empty($dolibarr_nocache)) {
 /**
  * @namespace EO_Framework_Init
  *
- * @author Eoxia <dev@eoxia.com>
- * @copyright 2015-20222 Eoxia
+ * @author Evarisk <dev@evarisk.com>
+ * @copyright 2015-20222 Evarisk
  */
 
 if ( ! window.eoxiaJS ) {
@@ -415,8 +415,8 @@ window.eoxiaJS.dropdown.toggleAngleClass = function( button ) {
 /**
  * @namespace EO_Framework_Tooltip
  *
- * @author Eoxia <dev@eoxia.com>
- * @copyright 2015-2018 Eoxia
+ * @author Evarisk <dev@eoxia.com>
+ * @copyright 2015-2018 Evarisk
  */
 
 if ( ! window.eoxiaJS.tooltip ) {

@@ -43,15 +43,16 @@ class modDolisirh extends DolibarrModules
 		global $langs, $conf;
 		$this->db = $db;
 
-		$this->numero = 436370; // TODO Go on page https://wiki.dolibarr.org/index.php/List_of_modules_id to reserve an id number for your module
+		$this->numero = 436310; // TODO Go on page https://wiki.dolibarr.org/index.php/List_of_modules_id to reserve an id number for your module
 		$this->rights_class 			= 'dolisirh';
-		$this->family 					= "other";
-		$this->module_position 			= '90';
+		$this->family					= "";
+		$this->module_position			= '';
+		$this->familyinfo				= array('Evarisk' => array('position' => '01', 'label' => $langs->trans("Evarisk")));
 		$this->name 					= preg_replace('/^mod/i', '', get_class($this));
 		$this->description 				= "DolisirhDescription";
 		$this->descriptionlong 			= "Dolisirh description (Long)";
-		$this->editor_name 				= 'Eoxia';
-		$this->editor_url 				= 'https://eoxia.com';
+		$this->editor_name 				= 'Evarisk';
+		$this->editor_url 				= 'https://evarisk.com';
 		$this->version 					= '1.3.0';
 		$this->const_name 				= 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto 					= 'dolisirh256px@dolisirh';

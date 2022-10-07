@@ -11,7 +11,7 @@ Thème: Eldy Menu
 
 Editeur/Licence: [Evarisk](https://www.evarisk.com) / GPL-v3
 
-Assitance: [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à contact@eoxia.com
+Assitance: [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à contact@evarisk.com
 
 à venir :
 Documentation: [Wiki DoliSIRH](https://wiki.dolibarr.org/index.php/Module_DoliSIRH)
@@ -36,5 +36,5 @@ Documentation: [Wiki DoliSIRH](https://wiki.dolibarr.org/index.php/Module_DoliSI
 
 - Dans le dossier "dolibarr/htdocs/custom" copier la ligne suivante :
 ``` 
-git clone https://github.com/Eoxia/dolisirh.git
+git clone https://github.com/Evarisk/dolisirh.git
 ```
