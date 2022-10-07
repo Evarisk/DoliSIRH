@@ -508,7 +508,7 @@ class ActionsDolisirh
 				$task   = new Task($this->db);
 				$ticket = new Ticket($this->db);
 
-				$ticket->fetch(GETPOST('id'));
+				$ticket->fetch(!empty(GETPOST('id')) ? (GETPOST('id')) : '', !empty(GETPOST('ref')) ? GETPOST('ref') : '', !empty(GETPOST('track_id')) ? GETPOST('track_id') : '');
 				$ticket->fetch_optionals();
 
 				$task_id = $ticket->array_options['options_fk_task'];
