@@ -117,7 +117,7 @@ class TimeSheet extends CommonObject
 		'tms'            => array('type'=>'timestamp', 'label'=>'DateModification', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>0,),
 		'import_key'     => array('type'=>'varchar(14)', 'label'=>'ImportId', 'enabled'=>'1', 'position'=>60, 'notnull'=>-1, 'visible'=>0,),
 		'status'         => array('type'=>'integer', 'label'=>'Status', 'enabled'=>'1', 'position'=>70, 'notnull'=>1, 'visible'=>2, 'arrayofkeyval'=>array('0'=>'Draft', '1'=>'Validate', '2'=>'Locked', '3'=>'Archived'),),
-		'label'          => array('type'=>'varchar(255)', 'label'=>'Label', 'enabled'=>'1', 'position'=>80, 'notnull'=>0, 'visible'=>1, 'searchall'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'cssview'=>'wordbreak', 'help'=>"Help text", 'showoncombobox'=>'2',),
+		'label'          => array('type'=>'varchar(255)', 'label'=>'Label', 'enabled'=>'1', 'position'=>80, 'notnull'=>0, 'visible'=>1, 'searchall'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'cssview'=>'wordbreak', 'showoncombobox'=>'2',),
 		'date_start'     => array('type'=>'date', 'label'=>'DateStart', 'enabled'=>'1', 'position'=>90, 'notnull'=>1, 'visible'=>1,),
 		'date_end'       => array('type'=>'date', 'label'=>'DateEnd', 'enabled'=>'1', 'position'=>100, 'notnull'=>1, 'visible'=>1,),
 		'description'    => array('type'=>'html', 'label'=>'Description', 'enabled'=>'1', 'position'=>110, 'notnull'=>0, 'visible'=>3,),
@@ -129,7 +129,7 @@ class TimeSheet extends CommonObject
 		'fk_user_creat'  => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'enabled'=>'1', 'position'=>170, 'notnull'=>1, 'visible'=>0, 'foreignkey'=>'user.rowid',),
 		'fk_user_modif'  => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserModif', 'enabled'=>'1', 'position'=>180, 'notnull'=>-1, 'visible'=>0,),
 		'fk_project'     => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'enabled'=>'1', 'position'=>82, 'notnull'=>-1, 'visible'=>3, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx',),
-		'fk_soc'         => array('type'=>'integer:Societe:societe/class/societe.class.php:1', 'label'=>'ThirdParty', 'enabled'=>'1', 'position'=>101, 'notnull'=>-1, 'visible'=>3, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx',),
+		'fk_societe'     => array('type'=>'integer:Societe:societe/class/societe.class.php:1', 'label'=>'ThirdParty', 'enabled'=>'1', 'position'=>101, 'notnull'=>-1, 'visible'=>3, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx',),
 		'fk_user_assign' => array('type'=>'integer:User:user/class/user.class.php:1:t.fk_soc IS NULL', 'label'=>'UserAssign', 'enabled'=>'1', 'position'=>85, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx',),
 	);
 
@@ -153,7 +153,7 @@ class TimeSheet extends CommonObject
 	public $fk_user_creat;
 	public $fk_user_modif;
 	public $fk_project;
-	public $fk_soc;
+	public $fk_societe;
 	public $fk_user_assign;
 
 	// If this object has a subtable with lines
