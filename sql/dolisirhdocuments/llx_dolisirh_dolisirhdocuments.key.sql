@@ -13,7 +13,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
-ALTER TABLE llx_dolisirh_object_signature ADD INDEX idx_dolisirh_object_signature_rowid (rowid);
-ALTER TABLE llx_dolisirh_certificate_extrafields ADD INDEX idx_dolisirh_object_signature_status (status);
-ALTER TABLE llx_dolisirh_certificate_extrafields ADD INDEX idx_dolisirh_object_signature_element_id (element_id);
-ALTER TABLE llx_dolisirh_certificate_extrafields ADD INDEX idx_dolisirh_object_signature_fk_object (fk_object);
+ALTER TABLE llx_dolisirh_dolisirhdocuments ADD INDEX idx_dolisirh_dolisirhdocuments_rowid (rowid);
+ALTER TABLE llx_dolisirh_dolisirhdocuments ADD INDEX idx_dolisirh_dolisirhdocuments_ref (ref);
+ALTER TABLE llx_dolisirh_dolisirhdocuments ADD UNIQUE uk_dolisirhdocuments_ref (ref, entity);
+ALTER TABLE llx_dolisirh_dolisirhdocuments ADD CONSTRAINT llx_dolisirh_dolisirhdocuments_fk_user_creat FOREIGN KEY (fk_user_creat) REFERENCES llx_user(rowid);

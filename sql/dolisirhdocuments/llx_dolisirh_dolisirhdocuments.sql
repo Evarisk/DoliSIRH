@@ -13,7 +13,21 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
-ALTER TABLE llx_dolisirh_object_signature ADD INDEX idx_dolisirh_object_signature_rowid (rowid);
-ALTER TABLE llx_dolisirh_certificate_extrafields ADD INDEX idx_dolisirh_object_signature_status (status);
-ALTER TABLE llx_dolisirh_certificate_extrafields ADD INDEX idx_dolisirh_object_signature_element_id (element_id);
-ALTER TABLE llx_dolisirh_certificate_extrafields ADD INDEX idx_dolisirh_object_signature_fk_object (fk_object);
+CREATE TABLE llx_dolisirh_dolisirhdocuments(
+	rowid         integer AUTO_INCREMENT PRIMARY KEY NOT NULL,
+	ref           varchar(128) DEFAULT '(PROV)' NOT NULL,
+	ref_ext       varchar(128),
+	entity        integer DEFAULT 1 NOT NULL,
+	date_creation datetime NOT NULL,
+	tms           timestamp,
+	import_key    integer DEFAULT NULL,
+	status        smallint DEFAULT 1 NOT NULL,
+	type          varchar(128),
+	json          text,
+	model_pdf     varchar(255),
+	model_odt     varchar(255),
+	last_main_doc varchar(128),
+	fk_user_creat integer NOT NULL,
+	parent_type   varchar(255),
+	parent_id     integer NOT NULL
+) ENGINE=innodb;
