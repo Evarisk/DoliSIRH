@@ -17,17 +17,17 @@
 # Generic
 #
 
-# Module label 'ModuleDolisirhName'
-ModuleDolisirhName = Dolisirh
-# Module description 'ModuleDolisirhDesc'
-ModuleDolisirhDesc = Dolisirh description
+# Module label 'ModuleDoliSIRHName'
+ModuleDoliSIRHName = DoliSIRH
+# Module description 'ModuleDoliSIRHDesc'
+ModuleDoliSIRHDesc = DoliSIRH description
 
 #
 # Admin page
 #
-DolisirhSetup = Dolisirh setup
+DoliSIRHSetup = DoliSIRH setup
 Settings = Settings
-DolisirhSetupPage = Dolisirh setup page
+DoliSIRHSetupPage = DoliSIRH setup page
 DOLISIRH_MYPARAM1 = My param 1
 DOLISIRH_MYPARAM1Tooltip = My param 1 tooltip
 DOLISIRH_MYPARAM2=My param 2
@@ -38,8 +38,8 @@ DOLISIRH_MYPARAM2Tooltip=My param 2 tooltip
 # About page
 #
 About = About
-DolisirhAbout = About Dolisirh
-DolisirhAboutPage = Dolisirh about page
+DoliSIRHAbout = About DoliSIRH
+DoliSIRHAboutPage = DoliSIRH about page
 
 #
 # Sample page

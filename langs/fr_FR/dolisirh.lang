@@ -142,30 +142,6 @@ InvoicesCategoriesArea = Espace des tags/catégories des factures
 
 
 #
-# TimeSheetDocument - Fiche de navette
-#
-
-# Right - Droit
-
-# Trigger - Déclencheur
-TimeSheetDocumentGeneratedWithDolibarr = Fiche de navette générée avec Dolibarr
-
-# Mod Numbering - Modèle de numérotation
-DoliSIRHTimeSheetDocumentDocumentNumberingModule = Modèle de numérotation des fiches de navette de DoliSIRH
-DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TSDn où n est un compteur séquentiel sans rupture et sans remise à 0.
-
-# ODT Template - Template ODT
-DoliSIRHTemplateDocumentTimeSheetDocument = Modèle de documents des fiches de navette de DoliSIRH
-TimeSheetDocumentCustomDoliSIRHTemplate = ODT custom des fiches de navette
-TimeSheetDocumentDoliSIRHTemplate = ODT par défaut des fiches de navette
-
-# Data - Donnée
-TimeSheetDocument = Fiche de Navette
-timesheetdocument.odt = Navette ODT
-
-
-
-#
 # TimeSheet - Navette
 #
 
@@ -190,13 +166,8 @@ TimeSheetLineModifyTrigger = Ligne de navette modifiée
 TimeSheetLineDeleteTrigger = Ligne de navette supprimée
 
 # Mod Numbering - Modèle de numérotation
-DoliSIRHTimeSheetDocumentDocumentNumberingModule = Modèle de numérotation des fiches de navette de DoliSIRH
-DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TSDn où n est un compteur séquentiel sans rupture et sans remise à 0.
-
-# ODT Template - Template ODT
-DoliSIRHTemplateDocumentTimeSheetDocument = Modèle de documents des fiches de navette de DoliSIRH
-TimeSheetDocumentCustomDoliSIRHTemplate = ODT custom des fiches de navette
-TimeSheetDocumentDoliSIRHTemplate = ODT par défaut des fiches de navette
+DoliSIRHTimeSheetNumberingModule = Modèle de numérotation des navettes de DoliSIRH
+DoliSIRHTimeSheetStandardModel = Renvoie le numéro sous la forme TSyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
 
 # SetEventMessage - Notice info
 TimeSheetMustBeDraft = La navette doit être en brouillon pour accéder à cette fonctionnalité
@@ -254,6 +225,74 @@ ExpectedWorkedDayMonth = Nombre de jours ouvrés :
 ExpectedWorkedHoursMonthTimeSheet = Heures de travail prévues du %s au %s
 CheckDateEnd = Vérifier la date fin de navette
 CheckDateEndDescription = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
+
+
+
+#
+# TimeSheetDocument - Document Navette
+#
+
+# Trigger - Déclencheur
+TimeSheetDocumentGeneratedWithDolibarr = Document navette générée avec Dolibarr
+
+# Mod Numbering - Modèle de numérotation
+DoliSIRHTimeSheetDocumentNumberingModule = Modèle de numérotation des documents navette de DoliSIRH
+DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TSDyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
+
+# ODT Template - Template ODT
+DoliSIRHTimeSheetDocumentTemplateDocument = Modèle de documents des documents navette de DoliSIRH
+DoliSIRHTimeSheetDocumentCustomTemplate = ODT custom des documents navette
+DoliSIRHTimeSheetDocumentTemplate = ODT par défaut des documents navette
+
+# Data - Donnée
+TimeSheetDocument = Document Navette
+timesheetdocument.odt = Navette ODT
+
+
+
+#
+# Certificate - Certificat et Diplôme
+#
+
+# Right - Droit
+ReadCertificate = Consulter le certificat
+CreateCertificate = Créer/Modifier le certificat
+DeleteCertificate = Supprimer le certificat
+
+# Trigger - Déclencheur
+CertificateCreateTrigger = Certificat %s créé
+CertificateModifyTrigger = Certificat %s modifié
+CertificateDeleteTrigger = Certificat %s supprimé
+
+# Mod Numbering - Modèle de numérotation
+DoliSIRHCertificateNumberingModule = Modèle de numérotation des certificats de DoliSIRH
+DoliSIRHCertificateStandardModel = Renvoie le numéro sous la forme CERTyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
+
+# Data - Donnée
+Certificate = Certificat
+NewCertificate = Nouveau certificat
+ModifyCertificate = Modifer le certificat
+CertificateList = Liste des certificats
+
+#
+# CertificateDocument - Document certificat
+#
+
+# Trigger - Déclencheur
+CertificateDocumentGeneratedWithDolibarr = Document certificat générée avec Dolibarr
+
+# Mod Numbering - Modèle de numérotation
+DoliSIRHCertificateDocumentNumberingModule = Modèle de numérotation des documents certificat de DoliSIRH
+DoliSIRHCertificateDocumentStandardModel = Renvoie le numéro sous la forme CERTDyymm-nnnn où yy est l'année, mm le mois et nnnnn est un compteur séquentiel sans rupture et sans remise à 0.
+
+# ODT Template - Template ODT
+DoliSIRHCertificateDocumentTemplateDocument = Modèle de documents des documents certificat de DoliSIRH
+DoliSIRHCertificateDocumentCustomTemplate = ODT custom des documents certificat
+DoliSIRHCertificateDocumentTemplate = ODT par défaut des documents certificat
+
+# Data - Donnée
+CertificateDocument = Document Certificat
+certificatedocument.odt = Certificat ODT
 
 
 
@@ -322,3 +361,4 @@ SpecialBonus = Prime spéciale
 MinimizeMenu = Réduire le menu
 ErrorFileNotFound = Fichier non trouvé
 NoData = N/A
+YourDocuments = Documents
