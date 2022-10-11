@@ -16,8 +16,9 @@
 ALTER TABLE llx_dolisirh_timesheet ADD INDEX idx_dolisirh_timesheet_rowid (rowid);
 ALTER TABLE llx_dolisirh_timesheet ADD INDEX idx_dolisirh_timesheet_ref (ref);
 ALTER TABLE llx_dolisirh_timesheet ADD INDEX idx_dolisirh_timesheet_status (status);
-ALTER TABLE llx_dolisirh_timesheet ADD INDEX idx_dolisirh_timesheet_fk_user_assign (fk_user_assign);
-ALTER TABLE llx_dolisirh_timesheet ADD INDEX idx_dolisirh_timesheet_fk_soc (fk_soc);
+ALTER TABLE llx_dolisirh_timesheet ADD INDEX idx_dolisirh_timesheet_fk_societe (fk_societe);
 ALTER TABLE llx_dolisirh_timesheet ADD INDEX idx_dolisirh_timesheet_fk_project (fk_project);
+ALTER TABLE llx_dolisirh_timesheet ADD UNIQUE INDEX uk_dolisirh_timesheet_ref (ref, entity);
+ALTER TABLE llx_dolisirh_timesheet ADD CONSTRAINT llx_dolisirh_timesheet_fk_user_assign FOREIGN KEY (fk_user_assign) REFERENCES llx_user(rowid);
 ALTER TABLE llx_dolisirh_timesheet ADD CONSTRAINT llx_dolisirh_timesheet_fk_user_creat FOREIGN KEY (fk_user_creat) REFERENCES llx_user(rowid);
 

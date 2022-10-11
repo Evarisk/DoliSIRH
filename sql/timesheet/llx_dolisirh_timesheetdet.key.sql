@@ -16,6 +16,5 @@
 ALTER TABLE llx_dolisirh_timesheetdet ADD INDEX idx_dolisirh_timesheetdet_rowid (rowid);
 ALTER TABLE llx_dolisirh_timesheetdet ADD INDEX idx_dolisirh_timesheetdet_fk_timesheet (fk_timesheet);
 ALTER TABLE llx_dolisirh_timesheetdet ADD INDEX idx_dolisirh_timesheetdet_fk_product (fk_product);
-
 ALTER TABLE llx_dolisirh_timesheetdet ADD CONSTRAINT llx_dolisirh_timesheetdet_fk_timesheet FOREIGN KEY (fk_timesheet) REFERENCES llx_dolisirh_timesheet (rowid);
 
