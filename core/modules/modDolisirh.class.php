@@ -19,19 +19,19 @@
  */
 
 /**
- * 	\defgroup   dolisirh     Module Dolisirh
- *  \brief      Dolisirh module descriptor.
+ * 	\defgroup   dolisirh     Module DoliSIRH
+ *  \brief      DoliSIRH module descriptor.
  *
- *  \file       htdocs/dolisirh/core/modules/modDolisirh.class.php
+ *  \file       htdocs/dolisirh/core/modules/modDoliSIRH.class.php
  *  \ingroup    dolisirh
- *  \brief      Description and activation file for module Dolisirh
+ *  \brief      Description and activation file for module DoliSIRH
  */
 include_once DOL_DOCUMENT_ROOT.'/core/modules/DolibarrModules.class.php';
 
 /**
- *  Description and activation class for module Dolisirh
+ *  Description and activation class for module DoliSIRH
  */
-class modDolisirh extends DolibarrModules
+class modDoliSIRH extends DolibarrModules
 {
 	/**
 	 * Constructor. Define names, constants, directories, boxes, permissions
@@ -49,8 +49,8 @@ class modDolisirh extends DolibarrModules
 		$this->module_position			= '';
 		$this->familyinfo				= array('Evarisk' => array('position' => '01', 'label' => $langs->trans("Evarisk")));
 		$this->name 					= preg_replace('/^mod/i', '', get_class($this));
-		$this->description 				= "DolisirhDescription";
-		$this->descriptionlong 			= "Dolisirh description (Long)";
+		$this->description 				= "DoliSIRHDescription";
+		$this->descriptionlong 			= "DoliSIRH description (Long)";
 		$this->editor_name 				= 'Evarisk';
 		$this->editor_url 				= 'https://evarisk.com';
 		$this->version 					= '1.0.0';
@@ -87,19 +87,27 @@ class modDolisirh extends DolibarrModules
 			'moduleforexternal' => 0,
 		);
 
-		$this->dirs 					= array("/dolisirh/temp");
+		$this->dirs = array(
+			"/dolisirh/temp",
+			"/ecm/dolisirh/timesheetdocument",
+			"/ecm/dolisirh/certificatedocument"
+		);
+
+		// Config pages
 		$this->config_page_url 			= array("setup.php@dolisirh");
+
+		// Dependencies
 		$this->hidden 					= false;
-		$this->depends 					= array('modProjet', 'modBookmark', 'modHoliday', 'modFckeditor', 'modSalaries', 'modProduct', 'modService', 'modSociete');
+		$this->depends 					= array('modProjet', 'modBookmark', 'modHoliday', 'modFckeditor', 'modSalaries', 'modProduct', 'modService', 'modSociete', 'modECM');
 		$this->requiredby 				= array(); // List of module class names as string to disable if this one is disabled. Example: array('modModuleToDisable1', ...)
 		$this->conflictwith 			= array(); // List of module class names as string this module is in conflict with. Example: array('modModuleToDisable1', ...)
 		$this->langfiles 				= array("dolisirh@dolisirh");
-		$this->phpmin 					= array(5, 5); // Minimum version of PHP required by module
-		$this->need_dolibarr_version 	= array(11, -3); // Minimum version of Dolibarr required by module
+		$this->phpmin 					= array(7, 0); // Minimum version of PHP required by module
+		$this->need_dolibarr_version 	= array(14, 0); // Minimum version of Dolibarr required by module
 		$this->warnings_activation 		= array(); // Warning to show when we activate module. array('always'='text') or array('FR'='textfr','ES'='textes'...)
 		$this->warnings_activation_ext 	= array(); // Warning to show when we activate an external module. array('always'='text') or array('FR'='textfr','ES'='textes'...)
-		$this->const 					= array();
 
+		// Constants
 		$this->const = array(
 			// CONST CONFIGURATION
 			1 => array('DOLISIRH_DEFAUT_TICKET_TIME', 'chaine', '15', 'Default Time', 0, 'current'),
@@ -123,8 +131,20 @@ class modDolisirh extends DolibarrModules
 			20 => array('MAIN_AGENDA_ACTIONAUTO_TIMESHEETDOCUMENT_CREATE', 'integer', 1, '', 0, 'current'),
 			21 => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON', 'chaine', 'mod_timesheetdocument_standard', '', 0, 'current'),
 			22 => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/timesheetdocument/', '', 0, 'current'),
-			23 => array('DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT/ecm/dolisirh/timesheetdocument/', '', 0, 'current'),
+			23 => array('DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/timesheetdocument/', '', 0, 'current'),
 			24 => array('DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument_odt', '', 0, 'current'),
+
+			// CONST CERTIFICATE
+			30 => array('MAIN_AGENDA_ACTIONAUTO_CERTIFICATE_CREATE', 'integer', 1, '', 0, 'current'),
+			31 => array('MAIN_AGENDA_ACTIONAUTO_CERTIFICATE_EDIT', 'integer', 1, '', 0, 'current'),
+			32 => array('DOLISIRH_CERTIFICATE_ADDON', 'chaine', 'mod_certificate_standard', '', 0, 'current'),
+
+			// CONST CERTIFICATE DOCUMENT
+			40 => array('MAIN_AGENDA_ACTIONAUTO_CERTIFICATEDOCUMENT_CREATE', 'integer', 1, '', 0, 'current'),
+			41 => array('DOLISIRH_CERTIFICATEDOCUMENT_ADDON', 'chaine', 'mod_certificatedocument_standard', '', 0, 'current'),
+			42 => array('DOLISIRH_CERTIFICATEDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/certificatedocument/', '', 0, 'current'),
+			43 => array('DOLISIRH_CERTIFICATEDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/certificatedocument/', '', 0, 'current'),
+			44 => array('DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL', 'chaine', 'certificatedocument_odt', '', 0, 'current'),
 		);
 
 		if (!isset($conf->dolisirh) || !isset($conf->dolisirh->enabled)) {
@@ -170,6 +190,23 @@ class modDolisirh extends DolibarrModules
 		$this->rights[$r][5] = 'delete';
 		$r++;
 
+		/* CERTIFICATE PERMISSIONS */
+		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
+		$this->rights[$r][1] = $langs->trans('ReadCertificate');
+		$this->rights[$r][4] = 'certificate';
+		$this->rights[$r][5] = 'read';
+		$r++;
+		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
+		$this->rights[$r][1] = $langs->transnoentities('CreateCertificate');
+		$this->rights[$r][4] = 'certificate';
+		$this->rights[$r][5] = 'write';
+		$r++;
+		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
+		$this->rights[$r][1] = $langs->trans('DeleteCertificate');
+		$this->rights[$r][4] = 'certificate';
+		$this->rights[$r][5] = 'delete';
+		$r++;
+
 		/* ADMINPAGE PANEL ACCESS PERMISSIONS */
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
 		$this->rights[$r][1] = $langs->transnoentities('ReadAdminPage');
@@ -177,15 +214,14 @@ class modDolisirh extends DolibarrModules
 		$this->rights[$r][5] = 'read';
 
 		// Main menu entries to add
-		$this->menu = array();
-
 		$langs->load('dolisirh@dolisirh');
-		// Add here entries to declare new menus
-		/* BEGIN MODULEBUILDER TOPMENU */
 		$pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh32px.png', 1);
 		$pictoDoliSIRH = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoDoliSIRH');
 
-		$r = 0;
+		$this->menu = array();
+		$r          = 0;
+
+		// Add here entries to declare new menus
 		$this->menu[$r++] = array(
 			'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'     => 'left', // This is a Top menu entry
@@ -197,7 +233,7 @@ class modDolisirh extends DolibarrModules
 			'langs'    => 'dolisirh@dolisirh', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position' => 1000 + $r,
 			'enabled'  => '$conf->dolisirh->enabled', // Define condition to show or hide menu entry. Use '$conf->dolisirh->enabled' if entry must be visible if module is enabled.
-			'perms'    => '1', // Use 'perms'=>'$user->rights->dolisirh->myobject->read' if you want your menu with a permission rules
+			'perms'    => '1', // Use 'perms'=>'$user->rights->dolisirh->certificate->read' if you want your menu with a permission rules
 			'target'   => '',
 			'user'     => 2, // 0=Menu for internal users, 1=external users, 2=both
 		);
@@ -221,7 +257,7 @@ class modDolisirh extends DolibarrModules
 		$this->menu[$r++] = array(
 			'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'     => 'left', // This is a Top menu entry
-			'titre'    => 'DolisirhTimeSpent',
+			'titre'    => 'DoliSIRHTimeSpent',
 			'prefix'   => $pictoDoliSIRH,
 			'mainmenu' => 'hrm',
 			'leftmenu' => 'dolisirh_timespent_list',
@@ -229,7 +265,7 @@ class modDolisirh extends DolibarrModules
 			'langs'    => 'dolisirh@dolisirh', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position' => 1000 + $r,
 			'enabled'  => '$conf->dolisirh->enabled', // Define condition to show or hide menu entry. Use '$conf->dolisirh->enabled' if entry must be visible if module is enabled.
-			'perms'    => '1', // Use 'perms'=>'$user->rights->dolisirh->myobject->read' if you want your menu with a permission rules
+			'perms'    => '1', // Use 'perms'=>'$user->rights->dolisirh->certificate->read' if you want your menu with a permission rules
 			'target'   => '',
 			'user'     => 2, // 0=Menu for internal users, 1=external users, 2=both
 		);
@@ -313,6 +349,22 @@ class modDolisirh extends DolibarrModules
 			'user'     => 2,
 		);
 
+		$this->menu[$r++]=array(
+			'fk_menu'  => 'fk_mainmenu=dolisirh',
+			'type'     => 'left',
+			'titre'    => $langs->trans('Certificate'),
+			'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i> ',
+			'mainmenu' => 'dolisirh',
+			'leftmenu' => 'certificate',
+			'url'      => '/dolisirh/view/certificate/certificate_list.php',
+			'langs'    => 'dolisirh@dolisirh',
+			'position' => 1100 + $r,
+			'enabled'  => '$conf->dolisirh->enabled',
+			'perms'    => '$user->rights->dolisirh->certificate->read',
+			'target'   => '',
+			'user'     => 2,
+		);
+
 		$this->menu[$r++] = array(
 			'fk_menu'  => 'fk_mainmenu=dolisirh',
 			'type'     => 'left',
@@ -360,7 +412,6 @@ class modDolisirh extends DolibarrModules
 			'target'   => '',
 			'user'     => 0,				                // 0=Menu for internal users, 1=external users, 2=both
 		);
-		/* END MODULEBUILDER TOPMENU */
 	}
 
 	/**
@@ -446,7 +497,9 @@ class modDolisirh extends DolibarrModules
 
 		// Document templates
 		delDocumentModel('timesheetdocument_odt', 'timesheetdocument');
+		delDocumentModel('certificatedocument_odt', 'certificatedocument');
 		addDocumentModel('timesheetdocument_odt', 'timesheetdocument', 'ODT templates', 'DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH');
+		addDocumentModel('certificatedocument_odt', 'certificatedocument', 'ODT templates', 'DOLISIRH_CERTIFICATEDOCUMENT_ADDON_ODT_PATH');
 
 		return $this->_init(array(), $options);
 	}
