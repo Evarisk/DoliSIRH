@@ -18,7 +18,7 @@
 /**
  * \file    lib/dolisirh.lib.php
  * \ingroup dolisirh
- * \brief   Library files with common functions for Dolisirh
+ * \brief   Library files with common functions for DoliSIRH
  */
 
 /**
@@ -45,9 +45,24 @@ function dolisirhAdminPrepareHead(): array
 	$head[$h][2] = 'timesheet';
 	$h++;
 
-	$head[$h][0] = dol_buildpath("/dolisirh/admin/timesheetdocument.php", 1);
-	$head[$h][1] = '<i class="fas fa-file"></i>  ' . $langs->trans("TimeSheetDocument");
-	$head[$h][2] = 'timesheetdocument';
+	$head[$h][0] = dol_buildpath("/dolisirh/admin/certificate.php", 1);
+	$head[$h][1] = '<i class="fas fa-user-graduate"></i>  ' . $langs->trans("Certificate");
+	$head[$h][2] = 'certificate';
+	$h++;
+
+//	$head[$h][0] = dol_buildpath("/dolisirh/admin/timesheetdocument.php", 1);
+//	$head[$h][1] = '<i class="fas fa-file"></i>  ' . $langs->trans("TimeSheetDocument");
+//	$head[$h][2] = 'timesheetdocument';
+//	$h++;
+//
+//	$head[$h][0] = dol_buildpath("/dolisirh/admin/certificatedocument.php", 1);
+//	$head[$h][1] = '<i class="fas fa-file"></i>  ' . $langs->trans("CertificateDocument");
+//	$head[$h][2] = 'certificatedocument';
+//	$h++;
+
+	$head[$h][0] = dol_buildpath("/dolisirh/admin/dolisirhdocuments.php", 1);
+	$head[$h][1] = '<i class="fas fa-file-alt"></i> ' . $langs->trans("YourDocuments");
+	$head[$h][2] = 'dolisirhdocuments';
 	$h++;
 
 	$head[$h][0] = dol_buildpath("/dolisirh/admin/setup.php", 1);

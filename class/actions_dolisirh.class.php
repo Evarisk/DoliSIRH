@@ -22,9 +22,9 @@
  */
 
 /**
- * Class ActionsDolisirh
+ * Class ActionsDoliSIRH
  */
-class ActionsDolisirh
+class ActionsDoliSIRH
 {
 	/**
 	 * @var DoliDB Database handler.

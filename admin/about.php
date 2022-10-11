@@ -37,7 +37,7 @@ if (!$res) die("Include of main fails");
 
 // Libraries
 require_once '../lib/dolisirh.lib.php';
-require_once '../core/modules/modDolisirh.class.php';
+require_once '../core/modules/modDoliSIRH.class.php';
 
 // Global variables definitions
 global $db, $langs, $user;
@@ -47,7 +47,7 @@ $langs->loadLangs(array("errors", "admin", "dolisirh@dolisirh"));
 
 // Initialize objects
 // Technical objets
-$modDolisirh = new modDolisirh($db);
+$modDoliSIRH = new modDoliSIRH($db);
 
 // Access control
 if (!$user->admin) accessforbidden();
@@ -72,7 +72,7 @@ print load_fiche_titre($title, $linkback, 'object_dolisirh@dolisirh');
 $head = dolisirhAdminPrepareHead();
 print dol_get_fiche_head($head, 'about', '', 0, 'dolisirh@dolisirh');
 
-print $modDolisirh->getDescLong();
+print $modDoliSIRH->getDescLong();
 
 // Page end
 print dol_get_fiche_end();

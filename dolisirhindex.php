@@ -37,7 +37,7 @@ if (!$res && file_exists("../../../main.inc.php")) $res = @include "../../../mai
 if (!$res) die("Include of main fails");
 
 // Libraries
-require_once './core/modules/modDolisirh.class.php';
+require_once './core/modules/modDoliSIRH.class.php';
 
 // Global variables definitions
 global $conf, $db, $langs, $user;
@@ -49,7 +49,7 @@ $langs->loadLangs(array("dolisirh@dolisirh"));
 $action = GETPOST('action', 'alpha');
 
 // Initialize technical objects
-$dolisirh = new modDolisirh($db);
+$dolisirh = new modDoliSIRH($db);
 
 // Security check
 if (! $user->rights->dolisirh->lire) accessforbidden();

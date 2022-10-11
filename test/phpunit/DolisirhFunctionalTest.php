@@ -17,7 +17,7 @@
  */
 
 /**
- * \file    test/phpunit/DolisirhFunctionalTest.php
+ * \file    test/phpunit/DoliSIRHFunctionalTest.php
  * \ingroup dolisirh
  * \brief   Example Selenium test.
  *
@@ -29,7 +29,7 @@ namespace test\functional;
 use PHPUnit_Extensions_Selenium2TestCase_WebDriverException;
 
 /**
- * Class DolisirhFunctionalTest
+ * Class DoliSIRHFunctionalTest
  *
  * Requires chromedriver for Google Chrome
  * Requires geckodriver for Mozilla Firefox
@@ -41,7 +41,7 @@ use PHPUnit_Extensions_Selenium2TestCase_WebDriverException;
  *
  * @package Testdolisirh
  */
-class DolisirhFunctionalTest extends \PHPUnit_Extensions_Selenium2TestCase
+class DoliSIRHFunctionalTest extends \PHPUnit_Extensions_Selenium2TestCase
 {
 	// TODO: move to a global configuration file?
 	/** @var string Base URL of the webserver under test */
@@ -176,12 +176,12 @@ class DolisirhFunctionalTest extends \PHPUnit_Extensions_Selenium2TestCase
 		$module_status_image = $this->byXPath($module_status_image_path);
 		if (strstr($module_status_image->attribute('src'), 'switch_off.png')) {
 			// Enable the module
-			$this->byHref('modDolisirh')->click();
+			$this->byHref('modDoliSIRH')->click();
 		} else {
 			// Disable the module
-			$this->byHref('modDolisirh')->click();
+			$this->byHref('modDoliSIRH')->click();
 			// Reenable the module
-			$this->byHref('modDolisirh')->click();
+			$this->byHref('modDoliSIRH')->click();
 		}
 		// Page reloaded, we need a new Xpath
 		$module_status_image = $this->byXPath($module_status_image_path);
@@ -255,7 +255,7 @@ class DolisirhFunctionalTest extends \PHPUnit_Extensions_Selenium2TestCase
 		$this->url('/admin/triggers.php');
 		$this->authenticate();
 		return $this->assertContains(
-			'interface_99_modDolisirh_DolisirhTriggers.class.php',
+			'interface_99_modDoliSIRH_DoliSIRHTriggers.class.php',
 			$this->byTag('body')->text(),
 			"Trigger declared"
 		);
@@ -273,7 +273,7 @@ class DolisirhFunctionalTest extends \PHPUnit_Extensions_Selenium2TestCase
 		$this->authenticate();
 		return $this->assertContains(
 			'tick.png',
-			$this->byXPath('//td[text()="interface_99_modDolisirh_MyTrigger.class.php"]/following::img')->attribute('src'),
+			$this->byXPath('//td[text()="interface_99_modDoliSIRH_MyTrigger.class.php"]/following::img')->attribute('src'),
 			"Trigger enabled"
 		);
 	}

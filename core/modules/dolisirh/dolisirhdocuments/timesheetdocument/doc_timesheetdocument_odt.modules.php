@@ -67,7 +67,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 		$langs->loadLangs(array("main", "companies"));
 
 		$this->db = $db;
-		$this->name = $langs->trans('TimeSheetDocumentDoliSIRHTemplate');
+		$this->name = $langs->trans('DoliSIRHTimeSheetDocumentTemplate');
 		$this->description = $langs->trans("DocumentModelOdt");
 		$this->scandir = 'DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH'; // Name of constant that is used to save list of directories to scan
 
@@ -112,12 +112,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 		// Load translation files required by the page
 		$langs->loadLangs(array("errors", "companies"));
 
-		$texte = $this->description.".<br>\n";
-		$texte .= '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
-		$texte .= '<input type="hidden" name="token" value="'.newToken().'">';
-		$texte .= '<input type="hidden" name="page_y" value="">';
-		$texte .= '<input type="hidden" name="action" value="setModuleOptions">';
-		$texte .= '<input type="hidden" name="param1" value="DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH">';
+		$texte = $this->description.".<br>";
 		$texte .= '<table class="nobordernopadding centpercent">';
 
 		// List of directories area
@@ -129,7 +124,6 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 			$tmpdir = trim($tmpdir);
 			$tmpdir = preg_replace('/DOL_DATA_ROOT/', DOL_DATA_ROOT, $tmpdir);
 			$tmpdir = preg_replace('/DOL_DOCUMENT_ROOT/', DOL_DOCUMENT_ROOT, $tmpdir);
-
 			if (!$tmpdir) {
 				unset($listofdir[$key]);
 				continue;
@@ -148,9 +142,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 		$nbofiles = count($listoffiles);
 		if (!empty($conf->global->DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH)) {
 			$texte .= $langs->trans("DoliSIRHNumberOfModelFilesFound").': <b>';
-			//$texte.=$nbofiles?'<a id="a_'.get_class($this).'" href="#">':'';
 			$texte .= count($listoffiles);
-			//$texte.=$nbofiles?'</a>':'';
 			$texte .= '</b>';
 		}
 
