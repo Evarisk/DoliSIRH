@@ -559,6 +559,9 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 				if (!empty($val['isameasure']) && $val['isameasure'] == 1) {
 					if (!$i) {
 						$totalarray['pos'][$totalarray['nbfield']] = $key;
+						if ($key == 'task_duration') {
+							$totalarray['type'][$totalarray['nbfield']]='duration';
+						}
 					}
 					if (!isset($totalarray['val'])) {
 						$totalarray['val'] = array();
@@ -566,9 +569,10 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 					if (!isset($totalarray['val'][$key])) {
 						$totalarray['val'][$key] = 0;
 					}
-					$totalarray['val'][$key] += $obj->{$key};
 					if ($key == 'thm') {
 						$totalarray['val'][$key] += $value;
+					} else {
+						$totalarray['val'][$key] += $obj->{$key};
 					}
 				}
 			}
