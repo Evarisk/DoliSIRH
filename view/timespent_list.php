@@ -568,9 +568,10 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 					if (!isset($totalarray['val'][$key])) {
 						$totalarray['val'][$key] = 0;
 					}
-					$totalarray['val'][$key] += $obj->{$key};
 					if ($key == 'thm') {
 						$totalarray['val'][$key] += $value;
+					} else {
+						$totalarray['val'][$key] += $obj->{$key};
 					}
 				}
 			}
