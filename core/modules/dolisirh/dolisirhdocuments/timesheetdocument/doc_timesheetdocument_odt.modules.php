@@ -161,19 +161,20 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 		return $texte;
 	}
 
-	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
-	/**
-	 *  Function to build a document on disk using the generic odt module.
-	 *
-	 *	@param		TimeSheet	$object				Object source to build document
-	 *	@param		Translate	$outputlangs		Lang output object
-	 * 	@param		string		$srctemplatepath	Full path of source filename for generator using a template file
-	 *  @param		int			$hidedetails		Do not show line details
-	 *  @param		int			$hidedesc			Do not show desc
-	 *  @param		int			$hideref			Do not show ref
-	 *	@return		int         					1 if OK, <=0 if KO
-	 */
-	public function write_file($object, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0)
+    /**
+     *  Function to build a document on disk using the generic odt module.
+     *
+     * @param  TimeSheetDocument $object            Object source to build document
+     * @param  Translate         $outputlangs       Lang output object
+     * @param  string            $srctemplatepath   Full path of source filename for generator using a template file
+     * @param  int               $hidedetails       Do not show line details
+     * @param  int               $hidedesc          Do not show desc
+     * @param  int               $hideref           Do not show ref
+     * @param  TimeSheet         $timesheet         TimeSheet Object
+     * @return int                                  1 if OK, <=0 if KO
+     * @throws Exception
+     */
+	public function write_file($object, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $timesheet)
 	{
 		// phpcs:enable
 		global $user, $langs, $conf, $mysoc, $hookmanager;
@@ -288,24 +289,11 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 				}
 
 				// Make substitution
-				$substitutionarray = array(
-					'__FROM_NAME__' => $this->emetteur->name,
-					'__FROM_EMAIL__' => $this->emetteur->email,
-					'__TOTAL_TTC__' => $object->total_ttc,
-					'__TOTAL_HT__' => $object->total_ht,
-					'__TOTAL_VAT__' => $object->total_tva
-				);
+                $substitutionarray = array();
 				complete_substitutions_array($substitutionarray, $langs, $object);
 				// Call the ODTSubstitution hook
-				$parameters = array('file'=>$file, 'object'=>$object, 'outputlangs'=>$outputlangs, 'substitutionarray'=>&$substitutionarray);
+				$parameters = array('file' => $file, 'object' => $object, 'outputlangs' => $outputlangs, 'substitutionarray' => &$substitutionarray);
 				$reshook = $hookmanager->executeHooks('ODTSubstitution', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
-
-				// Line of free text
-				$newfreetext = '';
-				$paramfreetext = 'ORDER_FREE_TEXT';
-				if (!empty($conf->global->$paramfreetext)) {
-					$newfreetext = make_substitutions($conf->global->$paramfreetext, $substitutionarray);
-				}
 
 				// Open and load template
 				require_once ODTPHP_PATH.'odf.php';

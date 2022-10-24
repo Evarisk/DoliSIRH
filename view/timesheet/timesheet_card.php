@@ -65,6 +65,7 @@ require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/holiday/class/holiday.class.php';
 
 require_once __DIR__ . '/../../class/timesheet.class.php';
+require_once __DIR__ . '/../../class/dolisirhdocuments/timesheetdocument.class.php';
 require_once __DIR__ . '/../../class/workinghours.class.php';
 require_once __DIR__ . '/../../lib/dolisirh_timesheet.lib.php';
 require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
@@ -90,16 +91,17 @@ $month               = (GETPOST("month", 'int') ? GETPOST("month", "int") : date
 $day                 = (GETPOST("day", 'int') ? GETPOST("day", "int") : date("d"));
 
 // Initialize technical objects
-$object       = new TimeSheet($db);
-$objectline   = new TimeSheetLine($db);
-$signatory    = new TimeSheetSignature($db);
-$extrafields  = new ExtraFields($db);
-$project      = new Project($db);
-$product      = new Product($db);
-$workinghours = new Workinghours($db);
-$holiday      = new Holiday($db);
-$task         = new Task($db);
-$usertmp      = new User($db);
+$object            = new TimeSheet($db);
+$objectline        = new TimeSheetLine($db);
+$signatory         = new TimeSheetSignature($db);
+$timesheetdocument = new TimeSheetDocument($db);
+$extrafields       = new ExtraFields($db);
+$project           = new Project($db);
+$product           = new Product($db);
+$workinghours      = new Workinghours($db);
+$holiday           = new Holiday($db);
+$task              = new Task($db);
+$usertmp           = new User($db);
 
 $hookmanager->initHooks(array('timesheetcard', 'globalcard')); // Note that conf->hooks_modules contains array
 
@@ -209,8 +211,67 @@ if (empty($reshook)) {
 	$conf->global->MAIN_DISABLE_PDF_AUTOUPDATE = 1;
 	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
 
-	// Action to build doc
-	include DOL_DOCUMENT_ROOT.'/core/actions_builddoc.inc.php';
+    // Action to build doc
+    if ($action == 'builddoc' && $permissiontoadd) {
+        $outputlangs = $langs;
+        $newlang     = '';
+
+        if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09')) $newlang = GETPOST('lang_id', 'aZ09');
+        if ( ! empty($newlang)) {
+            $outputlangs = new Translate("", $conf);
+            $outputlangs->setDefaultLang($newlang);
+        }
+
+        // To be sure vars is defined
+        if (empty($hidedetails)) $hidedetails = 0;
+        if (empty($hidedesc)) $hidedesc       = 0;
+        if (empty($hideref)) $hideref         = 0;
+        if (empty($moreparams)) $moreparams   = null;
+
+        $model = GETPOST('model', 'alpha');
+
+        $moreparams['object'] = $object;
+        $moreparams['user']   = $user;
+
+        $result = $timesheetdocument->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
+        if ($result <= 0) {
+            setEventMessages($object->error, $object->errors, 'errors');
+            $action = '';
+        } else {
+            if (empty($donotredirect)) {
+                setEventMessages($langs->trans("FileGenerated") . ' - ' . $timesheetdocument->last_main_doc, null);
+                $urltoredirect = $_SERVER['REQUEST_URI'];
+                $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
+                $urltoredirect = preg_replace('/action=builddoc&?/', '', $urltoredirect); // To avoid infinite loop
+                header('Location: ' . $urltoredirect . '#builddoc');
+                exit;
+            }
+        }
+    }
+
+    // Delete file in doc form
+    if ($action == 'remove_file' && $permissiontodelete) {
+        if ( ! empty($upload_dir)) {
+            require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
+
+            $langs->load("other");
+            $filetodelete = GETPOST('file', 'alpha');
+            $file         = $upload_dir . '/' . $filetodelete;
+            $ret          = dol_delete_file($file, 0, 0, 0, $object);
+            if ($ret) setEventMessages($langs->trans("FileWasRemoved", $filetodelete), null, 'mesgs');
+            else setEventMessages($langs->trans("ErrorFailToDeleteFile", $filetodelete), null, 'errors');
+
+            // Make a redirect to avoid to keep the remove_file into the url that create side effects
+            $urltoredirect = $_SERVER['REQUEST_URI'];
+            $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
+            $urltoredirect = preg_replace('/action=remove_file&?/', '', $urltoredirect);
+
+            header('Location: ' . $urltoredirect);
+            exit;
+        } else {
+            setEventMessages('BugFoundVarUploaddirnotDefined', null, 'errors');
+        }
+    }
 
 	if ($action == 'set_thirdparty' && $permissiontoadd) {
 		$object->setValueFrom('fk_soc', GETPOST('fk_soc', 'int'), '', '', 'date', '', $user, $triggermodname);
@@ -393,7 +454,7 @@ if ($action == 'create') {
 		exit;
 	}
 
-	print load_fiche_titre($langs->trans("NewTimeSheet"), '', 'dolisirh32px@dolisirh');
+	print load_fiche_titre($langs->trans("NewTimeSheet"), '', 'dolisirh.png@dolisirh');
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';

@@ -41,7 +41,7 @@ abstract class ModeleODTCertificate extends CommonDocGenerator
 		$type = 'certificatedocument';
 		$list = array();
 
-		require_once __DIR__ . '/../../../../lib/dolisirh_function.lib.php';
+        require_once __DIR__ . '/../../../../../lib/dolisirh_function.lib.php';
 		return getListOfModelsDoliSIRH($db, $type, $maxfilenamelength);
 	}
 }

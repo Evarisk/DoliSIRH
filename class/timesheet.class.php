@@ -814,44 +814,6 @@ class TimeSheet extends CommonObject
 	{
 		return parent::setCategoriesCommon($categories, 'timesheet');
 	}
-
-	/**
-	 *  Create a document onto disk according to template module.
-	 *
-	 *  @param  string     $modele	    Force template to use ('' to not force)
-	 *  @param  Translate  $outputlangs	Objet lang use for translate
-	 *  @param  int        $hidedetails Hide details of lines
-	 *  @param  int        $hidedesc    Hide description
-	 *  @param  int        $hideref     Hide ref
-	 *  @param  array|null $moreparams  Array to provide more information
-	 *  @return int         		    0 if KO, 1 if OK
-	 */
-	public function generateDocument(string $modele, Translate $outputlangs, int $hidedetails = 0, int $hidedesc = 0, int $hideref = 0, array $moreparams = null): int
-	{
-		global $conf, $langs;
-
-		$result = 0;
-
-		$langs->load("dolisirh@dolisirh");
-
-		if (!dol_strlen($modele)) {
-			$modele = 'standard_timesheet';
-
-			if (!empty($this->model_pdf)) {
-				$modele = $this->model_pdf;
-			} elseif (!empty($conf->global->TIMESHEET_ADDON_PDF)) {
-				$modele = $conf->global->TIMESHEET_ADDON_PDF;
-			}
-		}
-
-		$modelpath = "core/modules/dolisirh/timesheetdocument/";
-
-		if (!empty($modele)) {
-			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams['object']);
-		}
-
-		return $result;
-	}
 }
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobjectline.class.php';
