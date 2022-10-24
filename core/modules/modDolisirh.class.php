@@ -215,7 +215,7 @@ class modDoliSIRH extends DolibarrModules
 
 		// Main menu entries to add
 		$langs->load('dolisirh@dolisirh');
-		$pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh32px.png', 1);
+		$pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh.png.png', 1);
 		$pictoDoliSIRH = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoDoliSIRH');
 
 		$this->menu = array();

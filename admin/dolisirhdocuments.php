@@ -210,7 +210,7 @@ foreach ($types as $type => $documentType) {
 }
 $selectorAnchor .= '</select>';
 
-print load_fiche_titre($title, $selectorAnchor, 'dolisirh32px@dolisirh');
+print load_fiche_titre($title, $selectorAnchor, 'dolisirh.png@dolisirh');
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();

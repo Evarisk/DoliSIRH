@@ -233,7 +233,7 @@ if ($action == 'create') {
 		exit;
 	}
 
-	print load_fiche_titre($langs->trans("NewCertificate"), '', 'dolisirh32px@dolisirh');
+	print load_fiche_titre($langs->trans("NewCertificate"), '', 'dolisirh.png@dolisirh');
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -273,7 +273,7 @@ if ($action == 'create') {
 
 // Part to edit record
 if (($id || $ref) && $action == 'edit') {
-	print load_fiche_titre($langs->trans("ModifyCertificate"), '', 'dolisirh32px@dolisirh');
+	print load_fiche_titre($langs->trans("ModifyCertificate"), '', 'dolisirh.png@dolisirh');
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
