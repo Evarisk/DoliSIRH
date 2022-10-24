@@ -65,6 +65,7 @@ $mode        = GETPOST("mode", 'alpha');
 $id          = GETPOST('id', 'int');
 $taskid      = GETPOST('taskid', 'int');
 $contextpage = GETPOST('contextpage', 'aZ') ?GETPOST('contextpage', 'aZ') : 'permonthcard';
+$backtopage  = GETPOST('backtopage', 'alpha');
 
 $mine = 0;
 if ($mode == 'mine') {
@@ -369,7 +370,11 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilterac
 			include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
 			// Redirect to avoid submit twice on back
-			header('Location: '.$_SERVER["PHP_SELF"].'?'.$param);
+            if (!empty($backtopage)) {
+                header('Location: ' . $backtopage);
+            } else {
+                header('Location: '.$_SERVER["PHP_SELF"].'?'.$param);
+            }
 			exit;
 		}
 	}
@@ -492,6 +497,9 @@ print '<input type="hidden" name="mode" value="'.$mode.'">';
 print '<input type="hidden" name="day" value="'.$day.'">';
 print '<input type="hidden" name="month" value="'.$month.'">';
 print '<input type="hidden" name="year" value="'.$year.'">';
+if ($backtopage) {
+    print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
+}
 
 $head = dolisirh_timesheet_prepare_head($mode, $usertoprocess);
 print dol_get_fiche_head($head, 'inputpermonth', $langs->trans('TimeSpent'), -1, $picto);

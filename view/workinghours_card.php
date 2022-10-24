@@ -49,7 +49,8 @@ global $db, $hookmanager, $langs, $user;
 $langs->loadLangs(array("dolisirh@dolisirh"));
 
 // Parameters
-$action = (GETPOST('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view');
+$action     = (GETPOST('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view');
+$backtopage = GETPOST('backtopage', 'alpha');
 
 $socid                                          = GETPOST('socid', 'int') ? GETPOST('socid', 'int') : GETPOST('id', 'int');
 if ($usertmp->socid) $socid                        = $usertmp->socid;
@@ -101,6 +102,9 @@ if (($action == 'update' && ! GETPOST("cancel", 'alpha')) || ($action == 'update
 	$result = $object->create($usertmp);
 	if ($result > 0) {
 		setEventMessages($langs->trans('UserWorkingHoursSaved'), null, 'mesgs');
+        if (!empty($backtopage)) {
+            header('Location: ' . $backtopage);
+        }
 	} else {
 		setEventMessages($langs->trans('UserWorkingHoursSave'), null, 'error');
 	}
@@ -154,6 +158,9 @@ print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '?id=' . GETPOST('
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="update">';
 print '<input type="hidden" name="id" value="' . GETPOST('id') . '">';
+if ($backtopage) {
+    print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
+}
 
 print '<table class="noborder centpercent editmode">';
 
