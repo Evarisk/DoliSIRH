@@ -94,7 +94,10 @@ if ($user->rights->dolisirh->adminpage->read) { ?>
                 } else {
                     $dataUpdateUser = 0;
                 }
-                print $langs->trans("DataUpdateUserHaveTodo", $dataUpdateUser) ?>
+                print $langs->trans("DataUpdateUserAll") . '<br>';
+                print $langs->trans("DataUpdateUserInternalNotEmployees",  0)  . '<br>';
+                print $langs->trans("DataUpdateUserInternal",  3 - $dataUpdateUser)  . '<br>';
+                print $langs->trans("DataUpdateUserExternal", $dataUpdateUser) ?>
             </div>
         </div>
     </div>
