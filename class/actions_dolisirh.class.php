@@ -69,7 +69,7 @@ class ActionsDoliSIRH
 	 * @param  string $action     Current action (if set). Generally create or edit or null
 	 * @return int                0 < on error, 0 on success, 1 to replace standard code
 	 */
-	public function doActions(array $parameters, object $object, string $action): int
+	public function doActions(array $parameters, $object, string $action): int
 	{
 		require_once DOL_DOCUMENT_ROOT.'/core/modules/project/task/mod_task_simple.php';
 

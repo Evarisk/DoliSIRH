@@ -30,6 +30,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/images.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/doc.lib.php';
 
 require_once __DIR__ . '/modules_timesheetdocument.php';
+require_once __DIR__ . '/mod_timesheetdocument_standard.php';
 require_once DOL_DOCUMENT_ROOT.'/custom/dolisirh/class/workinghours.class.php';
 
 /**
@@ -164,20 +165,20 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
     /**
      *  Function to build a document on disk using the generic odt module.
      *
-     * @param  TimeSheetDocument $object            Object source to build document
+     * @param  TimeSheetDocument $objectDocument    Object source to build document
      * @param  Translate         $outputlangs       Lang output object
      * @param  string            $srctemplatepath   Full path of source filename for generator using a template file
      * @param  int               $hidedetails       Do not show line details
      * @param  int               $hidedesc          Do not show desc
      * @param  int               $hideref           Do not show ref
-     * @param  TimeSheet         $timesheet         TimeSheet Object
+     * @param  TimeSheet         $object            TimeSheet Object
      * @return int                                  1 if OK, <=0 if KO
      * @throws Exception
      */
-	public function write_file($object, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $timesheet)
+	public function write_file($objectDocument, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $object)
 	{
 		// phpcs:enable
-		global $user, $langs, $conf, $mysoc, $hookmanager;
+		global $action, $conf, $hookmanager, $langs, $mysoc, $user;
 
 		if (empty($srctemplatepath)) {
 			dol_syslog("doc_generic_odt::write_file parameter srctemplatepath empty", LOG_WARNING);
@@ -190,7 +191,6 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 			$hookmanager = new HookManager($this->db);
 		}
 		$hookmanager->initHooks(array('odtgeneration'));
-		global $action;
 
 		if (!is_object($outputlangs)) {
 			$outputlangs = $langs;
@@ -200,22 +200,30 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 
 		$outputlangs->loadLangs(array("main", "dict", "companies", "bills"));
 
+        $mod = new $conf->global->DOLISIRH_TIMESHEETDOCUMENT_ADDON($this->db);
+        $ref = $mod->getNextValue($objectDocument);
+
+        $objectDocument->ref = $ref;
+        $id          = $objectDocument->create($user, true, $object);
+
+        $objectDocument->fetch($id);
+
 		if ($conf->dolisirh->dir_output) {
-			// If $object is id instead of object
-			if (!is_object($object)) {
-				$id = $object;
-				$object = new TimeSheet($this->db);
-				$result = $object->fetch($id);
-				if ($result < 0) {
-					dol_print_error($this->db, $object->error);
-					return -1;
-				}
-			}
+//			// If $object is id instead of object
+//			if (!is_object($object)) {
+//				$id = $object;
+//				$object = new TimeSheet($this->db);
+//				$result = $object->fetch($id);
+//				if ($result < 0) {
+//					dol_print_error($this->db, $object->error);
+//					return -1;
+//				}
+//			}
 
-			$object->fetch_thirdparty();
+			//$object->fetch_thirdparty();
 
-			$objectref = dol_sanitizeFileName($object->ref);
-			$dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1] . '/timesheetdocument/' . $objectref;
+			$objectref = dol_sanitizeFileName($objectDocument->ref);
+			$dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1] . '/timesheetdocument/' . $object->ref;
 
 			//          if (!preg_match('/specimen/i', $objectref)) {
 			//              $dir .= "/".$objectref;
@@ -263,30 +271,30 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 					return -1;
 				}
 
-				// If CUSTOMER contact defined on order, we use it
-				$usecontact = false;
-				$arrayidcontact = $object->getIdContact('external', 'CUSTOMER');
-				if (count($arrayidcontact) > 0) {
-					$usecontact = true;
-					$result = $object->fetch_contact($arrayidcontact[0]);
-				}
-
-				// Recipient name
-				$contactobject = null;
-				if (!empty($usecontact)) {
-					// We can use the company of contact instead of thirdparty company
-					if ($object->contact->socid != $object->thirdparty->id && (!isset($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT) || !empty($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT))) {
-						$object->contact->fetch_thirdparty();
-						$socobject = $object->contact->thirdparty;
-						$contactobject = $object->contact;
-					} else {
-						$socobject = $object->thirdparty;
-						// if we have a CUSTOMER contact and we dont use it as thirdparty recipient we store the contact object for later use
-						$contactobject = $object->contact;
-					}
-				} else {
-					$socobject = $object->thirdparty;
-				}
+//				// If CUSTOMER contact defined on order, we use it
+//				$usecontact = false;
+//				$arrayidcontact = $object->getIdContact('external', 'CUSTOMER');
+//				if (count($arrayidcontact) > 0) {
+//					$usecontact = true;
+//					$result = $object->fetch_contact($arrayidcontact[0]);
+//				}
+//
+//				// Recipient name
+//				$contactobject = null;
+//				if (!empty($usecontact)) {
+//					// We can use the company of contact instead of thirdparty company
+//					if ($object->contact->socid != $object->thirdparty->id && (!isset($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT) || !empty($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT))) {
+//						$object->contact->fetch_thirdparty();
+//						$socobject = $object->contact->thirdparty;
+//						$contactobject = $object->contact;
+//					} else {
+//						$socobject = $object->thirdparty;
+//						// if we have a CUSTOMER contact and we dont use it as thirdparty recipient we store the contact object for later use
+//						$contactobject = $object->contact;
+//					}
+//				} else {
+//					$socobject = $object->thirdparty;
+//				}
 
 				// Make substitution
                 $substitutionarray = array();

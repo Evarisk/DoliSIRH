@@ -95,7 +95,7 @@ class mod_timesheetdocument_standard
 
 		$posindice = strlen($this->prefix) + 6;
 		$sql = "SELECT MAX(CAST(SUBSTRING(ref FROM ".$posindice.") AS SIGNED)) as max";
-		$sql .= " FROM ".MAIN_DB_PREFIX."dolisirh_documents";
+		$sql .= " FROM ".MAIN_DB_PREFIX."dolisirh_dolisirhdocuments";
 		$sql .= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		if ($object->ismultientitymanaged == 1) {
 			$sql .= " AND entity = ".$conf->entity;
@@ -133,7 +133,7 @@ class mod_timesheetdocument_standard
 		// first we get the max value
 		$posindice = strlen($this->prefix) + 6;
 		$sql = "SELECT MAX(CAST(SUBSTRING(ref FROM ".$posindice.") AS SIGNED)) as max";
-		$sql .= " FROM ".MAIN_DB_PREFIX."dolisirh_documents";
+		$sql .= " FROM ".MAIN_DB_PREFIX."dolisirh_dolisirhdocuments";
 		$sql .= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		if ($object->ismultientitymanaged == 1) {
 			$sql .= " AND entity = ".$conf->entity;
@@ -155,7 +155,7 @@ class mod_timesheetdocument_standard
 		}
 
 		//$date=time();
-		$date = $object->date_creation;
+		$date = !empty($object->date_creation) ? $object->date_creation : dol_now();
 		$yymm = strftime("%y%m", $date);
 
 		if ($max >= (pow(10, 4) - 1)) {
