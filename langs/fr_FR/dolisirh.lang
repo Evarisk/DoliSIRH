@@ -167,7 +167,7 @@ TimeSheetLineDeleteTrigger = Ligne de navette supprimée
 
 # Mod Numbering - Modèle de numérotation
 DoliSIRHTimeSheetNumberingModule = Modèle de numérotation des navettes de DoliSIRH
-DoliSIRHTimeSheetStandardModel = Renvoie le numéro sous la forme TSyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
+DoliSIRHTimeSheetStandardModel = Renvoie le numéro sous la forme TRyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
 
 # SetEventMessage - Notice info
 TimeSheetMustBeDraft = La navette doit être en brouillon pour accéder à cette fonctionnalité
@@ -206,7 +206,7 @@ TimeSheetData = Données configurables de la navette
 PrefillDate = Préremplir la date de début et de fin de la navette
 PrefillDateDescription = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
 TimeSheetAttendants = Navette - Signataires
-StatusDraft = Brouillon ( à valider)
+StatusDraft = Brouillon (à valider)
 Lock = Verrouiller
 Locked = Verrouillée
 Archive = Archiver
@@ -237,7 +237,7 @@ TimeSheetDocumentGeneratedWithDolibarr = Document navette générée avec Doliba
 
 # Mod Numbering - Modèle de numérotation
 DoliSIRHTimeSheetDocumentNumberingModule = Modèle de numérotation des documents navette de DoliSIRH
-DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TSDyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
+DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TRDyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
 
 # ODT Template - Template ODT
 DoliSIRHTimeSheetDocumentTemplateDocument = Modèle de documents des documents navette de DoliSIRH

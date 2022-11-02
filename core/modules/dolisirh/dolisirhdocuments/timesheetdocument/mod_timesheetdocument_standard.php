@@ -36,7 +36,7 @@ class mod_timesheetdocument_standard
 	/**
 	 * @var string document prefix
 	 */
-	public $prefix = 'TSD';
+	public $prefix = 'TRD';
 
 	/**
 	 * @var string Error code (or message)
