@@ -46,7 +46,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 		$this->family = "demo";
 		$this->description = "DoliSIRH triggers.";
 		// 'development', 'experimental', 'dolibarr' or version
-		$this->version = '1.0.0';
+		$this->version = '1.1.0';
 		$this->picto = 'dolisirh@dolisirh';
 	}
 
