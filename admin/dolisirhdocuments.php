@@ -210,11 +210,11 @@ foreach ($types as $type => $documentType) {
 }
 $selectorAnchor .= '</select>';
 
-print load_fiche_titre($title, $selectorAnchor, 'dolisirh.png@dolisirh');
+print load_fiche_titre($title, $selectorAnchor, 'dolisirh_red.png@dolisirh');
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();
-print dol_get_fiche_head($head, 'dolisirhdocuments', '', -1, "dolisirh@dolisirh");
+print dol_get_fiche_head($head, 'dolisirhdocuments', $title, -1, 'dolisirh_red@dolisirh');
 
 foreach ($types as $type => $documentType) {
 	print load_fiche_titre($pictos[$type] . $langs->trans($type), '', '', 0, $langs->trans($type));

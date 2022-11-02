@@ -76,54 +76,107 @@ llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 // Subheader
 $linkback = '<a href="'.($backtopage ?: DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1').'">'.$langs->trans("BackToModuleList").'</a>';
 
-print load_fiche_titre($title, $linkback, 'dolisirh@dolisirh');
+print load_fiche_titre($title, $linkback, 'object_'.$certificate->picto);
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();
-print dol_get_fiche_head($head, 'certificate', '', -1, "certificate@dolisirh");
+print dol_get_fiche_head($head, 'certificate', $title, -1, 'dolisirh_red@dolisirh');
 
-// Certificate
-print load_fiche_titre($langs->transnoentities("CertificateData"), '', 'object_certificate@dolisirh');
+print load_fiche_titre($pictos[$type] . $langs->trans($type), '', '', 0, $langs->trans($type));
+print '<hr>';
+
+/*
+ *  Numbering module
+ */
+
+print load_fiche_titre($langs->trans("DoliSIRHCertificateNumberingModule"), '', '');
 
 print '<table class="noborder centpercent">';
-
 print '<tr class="liste_titre">';
-print '<td>' . $langs->transnoentities("Parameters") . '</td>';
-print '<td>' . $langs->transnoentities("Description") . '</td>';
-print '<td class="center">' . $langs->transnoentities("Status") . '</td>';
+print '<td>'.$langs->trans("Name").'</td>';
+print '<td>'.$langs->trans("Description").'</td>';
+print '<td class="nowrap">'.$langs->trans("Example").'</td>';
+print '<td class="center">'.$langs->trans("Status").'</td>';
+print '<td class="center">'.$langs->trans("ShortInfo").'</td>';
 print '</tr>';
 
-print '<tr class="oddeven"><td>';
-print $langs->trans('PrefillDate');
-print "</td><td>";
-print $langs->trans('PrefillDateDescription');
-print '</td>';
-print '<td class="center">';
-print ajax_constantonoff('DOLISIRH_TIMESHEET_PREFILL_DATE');
-print '</td>';
-print '</tr>';
+clearstatcache();
 
-print '<tr class="oddeven"><td>';
-print $langs->trans('AddAttendantsConf');
-print "</td><td>";
-print $langs->trans('AddAttendantsDescription');
-print '</td>';
-print '<td class="center">';
-print ajax_constantonoff('DOLISIRH_TIMESHEET_ADD_ATTENDANTS');
-print '</td>';
-print '</tr>';
+$dir = dol_buildpath("/custom/dolisirh/core/modules/dolisirh/dolisirh/certificat/");
+if (is_dir($dir)) {
+    $handle = opendir($dir);
+    if (is_resource($handle)) {
+        while (($file = readdir($handle)) !== false ) {
+            if (!is_dir($dir.$file) || (substr($file, 0, 1) <> '.' && substr($file, 0, 3) <> 'CVS')) {
+                $filebis = $file;
 
-print '<tr class="oddeven"><td>';
-print $langs->trans('CheckDateEnd');
-print "</td><td>";
-print $langs->trans('CheckDateEndDescription');
-print '</td>';
-print '<td class="center">';
-print ajax_constantonoff('DOLISIRH_TIMESHEET_CHECK_DATE_END');
-print '</td>';
-print '</tr>';
+                $classname = preg_replace('/\.php$/', '', $file);
+                $classname = preg_replace('/-.*$/', '', $classname);
 
-print '</table>';
+                if (!class_exists($classname) && is_readable($dir.$filebis) && (preg_match('/mod_/', $filebis) || preg_match('/mod_/', $classname)) && substr($filebis, dol_strlen($filebis) - 3, 3) == 'php') {
+                    // Charging the numbering class
+                    require_once $dir.$filebis;
+
+                    $module = new $classname($db);
+
+                    if ($module->isEnabled()) {
+                        print '<tr class="oddeven"><td>';
+                        print $langs->trans($module->name);
+                        print "</td><td>";
+                        print $module->info();
+                        print '</td>';
+
+                        // Show example of numbering module
+                        print '<td class="nowrap">';
+                        $tmp = $module->getExample();
+                        if (preg_match('/^Error/', $tmp)) print '<div class="error">'.$langs->trans($tmp).'</div>';
+                        elseif ($tmp == 'NotConfigured') print $langs->trans($tmp);
+                        else print $tmp;
+                        print '</td>';
+
+                        print '<td class="center">';
+                        $confType = 'DOLISIRH_CERTIFICATE_ADDON';
+                        if ($conf->global->$confType == $file || $conf->global->$confType.'.php' == $file) {
+                            print img_picto($langs->trans("Activated"), 'switch_on');
+                        }
+                        else {
+                            print '<a class="reposition" href="'.$_SERVER["PHP_SELF"].'?action=setmod&value='.preg_replace('/\.php$/', '', $file).'&const='.$module->scandir.'&label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
+                        }
+                        print '</td>';
+
+                        // Example for listing risks action
+                        $htmltooltip = '' . $langs->trans("Version") . ': <b>' . $module->getVersion() . '</b><br>';
+
+                        require_once __DIR__ . '/../class/dolisirh/'.$type.'document.class.php';
+                        $classdocumentname = $type.'Document';
+                        $object_document   = new $classdocumentname($db);
+
+                        $nextval = $module->getNextValue($object_document);
+                        if ("$nextval" != $langs->trans("NotAvailable")) {  // Keep " on nextval
+                            $htmltooltip .= $langs->trans("NextValue").': ';
+                            if ($nextval) {
+                                if (preg_match('/^Error/', $nextval) || $nextval == 'NotConfigured')
+                                    $nextval = $langs->trans($nextval);
+                                $htmltooltip .= $nextval.'<br>';
+                            } else {
+                                $htmltooltip .= $langs->trans($module->error).'<br>';
+                            }
+                        }
+
+                        print '<td class="center">';
+                        print $form->textwithpicto('', $htmltooltip, 1, 0);
+                        if ($conf->global->$confType.'.php' == $file) { // If module is the one used, we show existing errors
+                            if (!empty($module->error)) dol_htmloutput_mesg($module->error, '', 'error', 1);
+                        }
+                        print '</td>';
+                        print "</tr>";
+                    }
+                }
+            }
+        }
+        closedir($handle);
+    }
+}
 
 // Page end
 print dol_get_fiche_end();

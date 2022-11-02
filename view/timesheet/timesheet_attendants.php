@@ -316,7 +316,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	$prepareHead = $object->element . 'PrepareHead';
 	$head = $prepareHead($object);
-	print dol_get_fiche_head($head, 'attendants', $langs->trans("TimeSheet"), -1, 'dolisirh@dolisirh');
+	print dol_get_fiche_head($head, 'attendants', $langs->trans("TimeSheet"), -1, $object->picto);
 
 	$linkback = '<a href="'.dol_buildpath('/dolisirh/view/timesheet/timesheet_list.php', 1).'">'.$langs->trans("BackToList").'</a>';
 
@@ -339,6 +339,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	}
 	$morehtmlref .= '</div>';
 
+    $object->picto = 'timesheet_small@dolisirh';
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
 
 	print '<div class="underbanner clearboth"></div>';

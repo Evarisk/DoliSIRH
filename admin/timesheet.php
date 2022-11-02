@@ -76,11 +76,11 @@ llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 // Subheader
 $linkback = '<a href="'.($backtopage ?: DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1').'">'.$langs->trans("BackToModuleList").'</a>';
 
-print load_fiche_titre($title, $linkback, 'dolisirh@dolisirh');
+print load_fiche_titre($title, $linkback, 'object_'.$timesheet->picto);
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();
-print dol_get_fiche_head($head, 'timesheet', '', -1, "timesheet@dolisirh");
+print dol_get_fiche_head($head, 'timesheet', $title, -1, 'dolisirh_red@dolisirh');
 
 //Time spent
 print load_fiche_titre($langs->transnoentities("TimeSheetData"), '', 'object_timesheet@dolisirh');

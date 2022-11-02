@@ -1,0 +1,7 @@
+div.mainmenu.dolisirh {
+    background-image: none;
+}
+
+div.mainmenu.dolisirh::before {
+    content: "\f2c2";
+}

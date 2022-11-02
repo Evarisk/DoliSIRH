@@ -71,7 +71,7 @@ $morecss  = array("/dolisirh/css/dolisirh.css");
 
 llxHeader('', $title . ' ' . $dolisirh->version, $help_url, '', 0, 0, $morejs, $morecss);
 
-print load_fiche_titre($title . ' ' . $dolisirh->version, '', 'dolisirh.png@dolisirh');
+print load_fiche_titre($title . ' ' . $dolisirh->version, '', 'dolisirh_red.png@dolisirh');
 
 // End of page
 llxFooter();

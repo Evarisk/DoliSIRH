@@ -721,7 +721,7 @@ class Certificate extends CommonObject
 
 		$result = '';
 
-		$label = '<i class="fas fa-user-graduate"></i> <u>'.$langs->trans("Certificate").'</u>';
+		$label = '<i class="fas fa-user-graduate" style="color: #d35968;"></i> <u>'.$langs->trans("Certificate").'</u>';
 		if (isset($this->status)) {
 			$label .= ' '.$this->getLibStatut(5);
 		}
@@ -765,10 +765,9 @@ class Certificate extends CommonObject
 			$linkend = '</a>';
 		}
 
-		$result .= $linkstart;
-
-		if ($withpicto) $result .= '<i class="fas fa-user-graduate"></i>' . ' ';
-		if ($withpicto != 2) {
+        if ($withpicto) $result .= '<i class="fas fa-user-graduate" style="color: #d35968;"></i>' . ' ';
+        $result .= $linkstart;
+        if ($withpicto != 2) {
 			$result .= $this->ref;
 		}
 

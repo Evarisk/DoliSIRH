@@ -66,11 +66,11 @@ llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 // Subheader
 $linkback = '<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1'.'">'.$langs->trans("BackToModuleList").'</a>';
 
-print load_fiche_titre($title, $linkback, 'object_dolisirh@dolisirh');
+print load_fiche_titre($title, $linkback, 'dolisirh_red@dolisirh');
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();
-print dol_get_fiche_head($head, 'about', '', 0, 'dolisirh@dolisirh');
+print dol_get_fiche_head($head, 'about', $title, -1, 'dolisirh_red@dolisirh');
 
 print $modDoliSIRH->getDescLong();
 

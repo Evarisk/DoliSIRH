@@ -37,7 +37,7 @@ function certificatePrepareHead($object)
 	$head = array();
 
 	$head[$h][0] = dol_buildpath("/dolisirh/view/certificate/certificate_card.php", 1).'?id='.$object->id;
-	$head[$h][1] = '<i class="fas fa-info-circle"></i> ' . $langs->trans("Card");
+	$head[$h][1] = '<i class="fas fa-info-circle pictofixedwidth"></i>' . $langs->trans("Card");
 	$head[$h][2] = 'card';
 	$h++;
 
@@ -50,7 +50,7 @@ function certificatePrepareHead($object)
 			$nbNote++;
 		}
 		$head[$h][0] = dol_buildpath('/dolisirh/view/certificate/certificate_note.php', 1).'?id='.$object->id;
-		$head[$h][1] = '<i class="fas fa-comment"></i> ' . $langs->trans('Notes');
+		$head[$h][1] = '<i class="fas fa-comment pictofixedwidth"></i>' . $langs->trans('Notes');
 		if ($nbNote > 0) {
 			$head[$h][1] .= (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER) ? '<span class="badge marginleftonlyshort">'.$nbNote.'</span>' : '');
 		}
@@ -72,12 +72,12 @@ function certificatePrepareHead($object)
 //	$h++;
 
 	$head[$h][0] = dol_buildpath("/dolisirh/view/certificate/certificate_agenda.php", 1).'?id='.$object->id;
-	$head[$h][1] = '<i class="fas fa-calendar-alt"></i> ' . $langs->trans("Events");
+	$head[$h][1] = '<i class="fas fa-calendar-alt pictofixedwidth"></i>' . $langs->trans("Events");
 	$head[$h][2] = 'agenda';
 	$h++;
 
 	$head[$h][0] = dol_buildpath("/dolisirh/view/certificate/certificate_attendants.php", 1) . '?id=' . $object->id;
-	$head[$h][1] = '<i class="fas fa-file-signature"></i> ' . $langs->trans("Attendants");
+	$head[$h][1] = '<i class="fas fa-file-signature pictofixedwidth"></i>' . $langs->trans("Attendants");
 	$head[$h][2] = 'attendants';
 	$h++;
 

@@ -66,7 +66,7 @@ class modDoliSIRH extends DolibarrModules
 			'barcode' 					=> 0,
 			'models' 					=> 1,
 			'theme' 					=> 0,
-			'css' 						=> array(),
+			'css' 						=> array("/dolisirh/css/dolisirh_all.css"),
 			'js' 						=> array(),
 			'hooks' 					=> array(
 				  'data' 				=> array(
@@ -215,7 +215,7 @@ class modDoliSIRH extends DolibarrModules
 
 		// Main menu entries to add
 		$langs->load('dolisirh@dolisirh');
-		$pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh.png.png', 1);
+		$pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_red.png', 1);
 		$pictoDoliSIRH = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoDoliSIRH');
 
 		$this->menu = array();
@@ -321,7 +321,7 @@ class modDoliSIRH extends DolibarrModules
 			'fk_menu'  => 'fk_mainmenu=dolisirh',
 			'type'     => 'top',
 			'titre'    => $langs->trans('DoliSIRH'),
-			'prefix'   =>  '<i class="fas fa-home pictofixedwidth"></i>  ',
+			'prefix'   =>  '<i class="fas fa-home pictofixedwidth"></i>',
 			'mainmenu' => 'dolisirh',
 			'leftmenu' => '',
 			'url'      => '/dolisirh/dolisirhindex.php',
@@ -337,7 +337,7 @@ class modDoliSIRH extends DolibarrModules
 			'fk_menu'  => 'fk_mainmenu=dolisirh',
 			'type'     => 'left',
 			'titre'    => $langs->trans('TimeSheet'),
-			'prefix'   => '<i class="fas fa-calendar-check pictofixedwidth"></i> ',
+			'prefix'   => '<i class="fas fa-calendar-check pictofixedwidth"></i>',
 			'mainmenu' => 'dolisirh',
 			'leftmenu' => 'timesheet',
 			'url'      => '/dolisirh/view/timesheet/timesheet_list.php',
@@ -353,7 +353,7 @@ class modDoliSIRH extends DolibarrModules
 			'fk_menu'  => 'fk_mainmenu=dolisirh',
 			'type'     => 'left',
 			'titre'    => $langs->trans('Certificate'),
-			'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i> ',
+			'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i>',
 			'mainmenu' => 'dolisirh',
 			'leftmenu' => 'certificate',
 			'url'      => '/dolisirh/view/certificate/certificate_list.php',
@@ -385,7 +385,7 @@ class modDoliSIRH extends DolibarrModules
 			'fk_menu'  => 'fk_mainmenu=dolisirh',
 			'type'     => 'left',
 			'titre'    => $langs->trans('Categories'),
-			'prefix'   => '<i class="fas fa-tags pictofixedwidth"></i>  ',
+			'prefix'   => '<i class="fas fa-tags pictofixedwidth"></i>',
 			'mainmenu' => 'dolisirh',
 			'leftmenu' => 'timesheettags',
 			'url'      => '/categories/index.php?type=timesheet',
@@ -401,7 +401,7 @@ class modDoliSIRH extends DolibarrModules
             'fk_menu'  => 'fk_mainmenu=dolisirh',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'     => 'left',			                // This is a Left menu entry
             'titre'    => $langs->trans('Tools'),
-            'prefix'   => '<i class="fas fa-wrench pictofixedwidth"></i>  ',
+            'prefix'   => '<i class="fas fa-wrench pictofixedwidth"></i>',
             'mainmenu' => 'dolisirh',
             'leftmenu' => 'dolisirhtools',
             'url'      => '/dolisirh/view/dolisirhtools.php',
@@ -417,7 +417,7 @@ class modDoliSIRH extends DolibarrModules
 			'fk_menu'  => 'fk_mainmenu=dolisirh',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'     => 'left',			                // This is a Left menu entry
 			'titre'    => $langs->trans('DoliSIRHConfig'),
-			'prefix'   => '<i class="fas fa-cog pictofixedwidth"></i>  ',
+			'prefix'   => '<i class="fas fa-cog pictofixedwidth"></i>',
 			'mainmenu' => 'dolisirh',
 			'leftmenu' => 'dolisirhconfig',
 			'url'      => '/dolisirh/admin/setup.php',
@@ -433,7 +433,7 @@ class modDoliSIRH extends DolibarrModules
 			'fk_menu'  => 'fk_mainmenu=dolisirh',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'     => 'left',			                // This is a Left menu entry
 			'titre'    => $langs->transnoentities('MinimizeMenu'),
-			'prefix'   => '<i class="fas fa-chevron-circle-left pictofixedwidth"></i> ',
+			'prefix'   => '<i class="fas fa-chevron-circle-left pictofixedwidth"></i>',
 			'mainmenu' => 'dolisirh',
 			'leftmenu' => '',
 			'url'      => '',

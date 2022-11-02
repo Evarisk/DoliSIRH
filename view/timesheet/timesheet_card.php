@@ -454,7 +454,7 @@ if ($action == 'create') {
 		exit;
 	}
 
-	print load_fiche_titre($langs->trans("NewTimeSheet"), '', 'dolisirh.png@dolisirh');
+	print load_fiche_titre($langs->trans("NewTimeSheet"), '', 'object_'.$object->picto);
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -528,7 +528,7 @@ if ($action == 'create') {
 
 // Part to edit record
 if (($id || $ref) && $action == 'edit') {
-	print load_fiche_titre($langs->trans("ModifyTimeSheet"), '', 'dolisirh@dolisirh');
+	print load_fiche_titre($langs->trans("ModifyTimeSheet"), '', 'object_'.$object->picto);
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -590,7 +590,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$res = $object->fetch_optionals();
 
 	$head = timesheetPrepareHead($object);
-	print dol_get_fiche_head($head, 'card', $langs->trans("TimeSheet"), -1, 'dolisirh@dolisirh');
+	print dol_get_fiche_head($head, 'card', $langs->trans("TimeSheet"), -1, $object->picto);
 
 	$formconfirm = '';
 	// setDraft confirmation
@@ -656,6 +656,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	}
 	$morehtmlref .= '</div>';
 
+    $object->picto = 'timesheet_small@dolisirh';
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
 
 	print '<div class="fichecenter">';

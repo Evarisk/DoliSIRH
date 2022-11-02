@@ -173,7 +173,7 @@ if ($object->id > 0) {
 	}
 	$head = certificatePrepareHead($object);
 
-	print dol_get_fiche_head($head, 'agenda', $langs->trans("Certificate"), -1, 'dolisirh@dolisirh');
+	print dol_get_fiche_head($head, 'agenda', $langs->trans("Certificate"), -1, $object->picto);
 
 	// Object card
 	// ------------------------------------------------------------
@@ -198,6 +198,7 @@ if ($object->id > 0) {
     }
     $morehtmlref .= '</div>';
 
+    $object->picto = 'certificate_small@dolisirh';
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
 
 	print '<div class="fichecenter">';

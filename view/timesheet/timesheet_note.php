@@ -162,7 +162,7 @@ if ($id > 0 || !empty($ref)) {
 
 	$head = timesheetPrepareHead($object);
 
-	print dol_get_fiche_head($head, 'note', $langs->trans("TimeSheet"), -1, 'dolisirh@dolisirh');
+	print dol_get_fiche_head($head, 'note', $langs->trans("TimeSheet"), -1, $object->picto);
 
 	// Object card
 	// ------------------------------------------------------------
@@ -187,7 +187,7 @@ if ($id > 0 || !empty($ref)) {
 	}
 	$morehtmlref .= '</div>';
 
-
+    $object->picto = 'timesheet_small@dolisirh';
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
 
 

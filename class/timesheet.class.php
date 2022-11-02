@@ -569,7 +569,7 @@ class TimeSheet extends CommonObject
 
 		$result = '';
 
-		$label = '<i class="fas fa-calendar-check"></i> <u>'.$langs->trans("TimeSheet").'</u>';
+		$label = '<i class="fas fa-calendar-check" style="color: #d35968;"></i> <u>'.$langs->trans("TimeSheet").'</u>';
 		if (isset($this->status)) {
 			$label .= ' '.$this->getLibStatut(5);
 		}
@@ -613,9 +613,8 @@ class TimeSheet extends CommonObject
 			$linkend = '</a>';
 		}
 
-		$result .= $linkstart;
-
-		if ($withpicto) $result .= '<i class="fas fa-calendar-check"></i>' . ' ';
+		if ($withpicto) $result .= '<i class="fas fa-calendar-check" style="color: #d35968;"></i>' . ' ';
+        $result .= $linkstart;
 		if ($withpicto != 2) {
 			$result .= $this->ref;
 		}
