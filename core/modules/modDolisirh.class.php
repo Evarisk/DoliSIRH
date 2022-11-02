@@ -241,7 +241,7 @@ class modDoliSIRH extends DolibarrModules
 		$this->menu[$r++] = array(
 			'fk_menu'  =>'fk_mainmenu=project,fk_leftmenu=timespent', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'     => 'left', // This is a Top menu entry
-			'titre'    => $langs->trans('AddTimeSpent'),
+			'titre'    => $langs->trans('TimeSpending'),
 			'prefix'   => $pictoDoliSIRH,
 			'mainmenu' => 'project',
 			'leftmenu' => 'timespent',
@@ -273,7 +273,7 @@ class modDoliSIRH extends DolibarrModules
 		$this->menu[$r++] = array(
 			'fk_menu'  =>'fk_mainmenu=hrm,fk_leftmenu=timespent', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'     => 'left', // This is a Top menu entry
-			'titre'    => $langs->trans('AddTimeSpent'),
+			'titre'    => $langs->trans('TimeSpending'),
 			'prefix'   => $pictoDoliSIRH,
 			'mainmenu' => 'hrm',
 			'leftmenu' => 'timespent',
@@ -363,6 +363,22 @@ class modDoliSIRH extends DolibarrModules
 			'perms'    => '$user->rights->dolisirh->certificate->read',
 			'target'   => '',
 			'user'     => 2,
+		);
+
+		$this->menu[$r++] = array(
+			'fk_menu'  =>'fk_mainmenu=dolisirh', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'     => 'left', // This is a Top menu entry
+			'titre'    => $langs->trans('TimeSpending'),
+			'prefix'   => '<i class="far fa-clock pictofixedwidth"></i> ',
+			'mainmenu' => 'dolisirh',
+			'leftmenu' => 'timespent',
+			'url'      => '/dolisirh/view/timespent_month.php',
+			'langs'    => 'dolisirh@dolisirh', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position' => 1100 + $r,
+			'enabled'  => '$conf->dolisirh->enabled', // Define condition to show or hide menu entry. Use '$conf->dolisirh->enabled' if entry must be visible if module is enabled.
+			'perms'    => '$user->rights->dolisirh->lire', // Use 'perms'=>'$user->rights->dolisirh->digiriskconst->read' if you want your menu with a permission rules
+			'target'   => '',
+			'user'     => 2, // 0=Menu for internal users, 1=external users, 2=both
 		);
 
 		$this->menu[$r++] = array(
