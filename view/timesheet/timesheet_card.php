@@ -56,9 +56,6 @@ if (!$res) {
 }
 
 // Libraries
-require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
-require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
-require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
@@ -126,6 +123,7 @@ if (empty($action) && empty($id) && empty($ref)) {
 // Load object
 include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
 
+// There is several ways to check permission.
 $permissiontoread   = $user->rights->dolisirh->timesheet->read;
 $permissiontoadd    = $user->rights->dolisirh->timesheet->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
 $permissiontodelete = $user->rights->dolisirh->timesheet->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
@@ -436,9 +434,8 @@ if (empty($reshook)) {
  * View
  */
 
-$form        = new Form($db);
-$formfile    = new FormFile($db);
-$formproject = new FormProjets($db);
+// Initialize view objects
+$form = new Form($db);
 
 $title    = $langs->trans("TimeSheet");
 $help_url = '';
@@ -498,8 +495,9 @@ if ($action == 'create') {
 		$_POST['date_endmonth'] = $lastday['mon'];
 		$_POST['date_endyear'] = $lastday['year'];
 	}
-	$object->fields['note_public']['visible']  = 1;
-	$object->fields['note_private']['visible'] = 1;
+
+//	$object->fields['note_public']['visible']  = 1;
+//	$object->fields['note_private']['visible'] = 1;
 
 	// Common attributes
 	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_add.tpl.php';

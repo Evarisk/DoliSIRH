@@ -33,7 +33,7 @@ CREATE TABLE llx_dolisirh_timesheet(
 	model_odt      varchar(255),
 	status         integer NOT NULL,
 	fk_user_assign integer NOT NULL,
-    fk_societe     integer,
+    fk_soc         integer,
 	fk_project     integer,
 	fk_user_creat  integer NOT NULL,
 	fk_user_modif  integer

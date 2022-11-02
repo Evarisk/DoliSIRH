@@ -243,9 +243,17 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 				$newfiletmp = preg_replace('/template_/i', '', $newfiletmp);
 				$newfiletmp = preg_replace('/modele_/i', '', $newfiletmp);
 
-				$date = dol_print_date(dol_now(), 'dayxcard');
-
+				$date       = dol_print_date(dol_now(), 'dayxcard');
 				$newfiletmp = $objectref . '_' . $date . '_' . $newfiletmp . '_' . $conf->global->MAIN_INFO_SOCIETE_NOM;
+
+                $objectDocument->last_main_doc = $newfiletmp;
+
+                $sql  = "UPDATE " . MAIN_DB_PREFIX . "dolisirh_dolisirhdocuments";
+                $sql .= " SET last_main_doc =" . ( ! empty($newfiletmp) ? "'" . $this->db->escape($newfiletmp) . "'" : 'null');
+                $sql .= " WHERE rowid = " . $objectDocument->id;
+
+                dol_syslog("admin.lib::Insert last main doc", LOG_DEBUG);
+                $this->db->query($sql);
 
 				// Get extension (ods or odt)
 				$newfileformat = substr($newfile, strrpos($newfile, '.') + 1);

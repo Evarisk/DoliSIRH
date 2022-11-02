@@ -108,43 +108,40 @@ class modDoliSIRH extends DolibarrModules
 		$this->warnings_activation_ext 	= array(); // Warning to show when we activate an external module. array('always'='text') or array('FR'='textfr','ES'='textes'...)
 
 		// Constants
+        $i = 0;
 		$this->const = array(
 			// CONST CONFIGURATION
-			1 => array('DOLISIRH_DEFAUT_TICKET_TIME', 'chaine', '15', 'Default Time', 0, 'current'),
-			2 => array('DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 'integer', 1, '', 0, 'current'),
-			3 => array('DOLISIRH_HR_PROJECT', 'integer', 0, '', 0, 'current'),
-			4 => array('DOLISIRH_TIMESPENT_BOOKMARK_SET', 'integer', 0, '', 0, 'current'),
-			5 => array('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR', 'chaine', '#FF0000', '', 0, 'current'),
-			6 => array('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR', 'chaine', '#FFA500', '', 0, 'current'),
-			7 => array('DOLISIRH_PERFECT_TIME_SPENT_COLOR', 'chaine', '#008000', '', 0, 'current'),
-			8 => array('DOLISIRH_PRODUCT_SERVICE_SET', 'integer', 0, '', 0, 'current'),
+			$i++ => array('DOLISIRH_DEFAUT_TICKET_TIME', 'chaine', '15', 'Default Time', 0, 'current'),
+            $i++ => array('DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 'integer', 1, '', 0, 'current'),
+            $i++ => array('DOLISIRH_HR_PROJECT', 'integer', 0, '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESPENT_BOOKMARK_SET', 'integer', 0, '', 0, 'current'),
+            $i++ => array('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR', 'chaine', '#FF0000', '', 0, 'current'),
+            $i++ => array('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR', 'chaine', '#FFA500', '', 0, 'current'),
+            $i++ => array('DOLISIRH_PERFECT_TIME_SPENT_COLOR', 'chaine', '#008000', '', 0, 'current'),
+            $i++ => array('DOLISIRH_PRODUCT_SERVICE_SET', 'integer', 0, '', 0, 'current'),
 
 			// CONST TIME SHEET
-			10 => array('MAIN_AGENDA_ACTIONAUTO_TIMESHEET_CREATE', 'integer', 1, '', 0, 'current'),
-			11 => array('MAIN_AGENDA_ACTIONAUTO_TIMESHEET_EDIT', 'integer', 1, '', 0, 'current'),
-			12 => array('DOLISIRH_TIMESHEET_ADDON', 'chaine', 'mod_timesheet_standard', '', 0, 'current'),
-			13 => array('DOLISIRH_TIMESHEET_PREFILL_DATE', 'integer', 1, '', 0, 'current'),
-			14 => array('DOLISIRH_TIMESHEET_ADD_ATTENDANTS', 'integer', 0, '', 0, 'current'),
-			15 => array('DOLISIRH_TIMESHEET_CHECK_DATE_END', 'integer', 1, '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESHEET_ADDON', 'chaine', 'mod_timesheet_standard', '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESHEET_PREFILL_DATE', 'integer', 1, '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESHEET_ADD_ATTENDANTS', 'integer', 0, '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESHEET_CHECK_DATE_END', 'integer', 1, '', 0, 'current'),
 
 			// CONST TIMESHEET DOCUMENT
-			20 => array('MAIN_AGENDA_ACTIONAUTO_TIMESHEETDOCUMENT_CREATE', 'integer', 1, '', 0, 'current'),
-			21 => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON', 'chaine', 'mod_timesheetdocument_standard', '', 0, 'current'),
-			22 => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/timesheetdocument/', '', 0, 'current'),
-			23 => array('DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/timesheetdocument/', '', 0, 'current'),
-			24 => array('DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument_odt', '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON', 'chaine', 'mod_timesheetdocument_standard', '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/timesheetdocument/', '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/timesheetdocument/', '', 0, 'current'),
+            $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument_odt', '', 0, 'current'),
 
 			// CONST CERTIFICATE
-			30 => array('MAIN_AGENDA_ACTIONAUTO_CERTIFICATE_CREATE', 'integer', 1, '', 0, 'current'),
-			31 => array('MAIN_AGENDA_ACTIONAUTO_CERTIFICATE_EDIT', 'integer', 1, '', 0, 'current'),
-			32 => array('DOLISIRH_CERTIFICATE_ADDON', 'chaine', 'mod_certificate_standard', '', 0, 'current'),
+            $i++ => array('MAIN_AGENDA_ACTIONAUTO_CERTIFICATE_CREATE', 'integer', 1, '', 0, 'current'),
+            $i++ => array('MAIN_AGENDA_ACTIONAUTO_CERTIFICATE_EDIT', 'integer', 1, '', 0, 'current'),
+            $i++ => array('DOLISIRH_CERTIFICATE_ADDON', 'chaine', 'mod_certificate_standard', '', 0, 'current'),
 
 			// CONST CERTIFICATE DOCUMENT
-			40 => array('MAIN_AGENDA_ACTIONAUTO_CERTIFICATEDOCUMENT_CREATE', 'integer', 1, '', 0, 'current'),
-			41 => array('DOLISIRH_CERTIFICATEDOCUMENT_ADDON', 'chaine', 'mod_certificatedocument_standard', '', 0, 'current'),
-			42 => array('DOLISIRH_CERTIFICATEDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/certificatedocument/', '', 0, 'current'),
-			43 => array('DOLISIRH_CERTIFICATEDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/certificatedocument/', '', 0, 'current'),
-			44 => array('DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL', 'chaine', 'certificatedocument_odt', '', 0, 'current'),
+            $i++ => array('DOLISIRH_CERTIFICATEDOCUMENT_ADDON', 'chaine', 'mod_certificatedocument_standard', '', 0, 'current'),
+            $i++ => array('DOLISIRH_CERTIFICATEDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/certificatedocument/', '', 0, 'current'),
+            $i++ => array('DOLISIRH_CERTIFICATEDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/certificatedocument/', '', 0, 'current'),
+            $i++ => array('DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL', 'chaine', 'certificatedocument_odt', '', 0, 'current'),
 		);
 
 		if (!isset($conf->dolisirh) || !isset($conf->dolisirh->enabled)) {
