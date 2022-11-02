@@ -164,18 +164,19 @@ class doc_certificatedocument_odt extends ModeleODTCertificate
 	/**
 	 *  Function to build a document on disk using the generic odt module.
 	 *
-	 *	@param		Certificate	$object				Object source to build document
-	 *	@param		Translate	$outputlangs		Lang output object
-	 * 	@param		string		$srctemplatepath	Full path of source filename for generator using a template file
-	 *  @param		int			$hidedetails		Do not show line details
-	 *  @param		int			$hidedesc			Do not show desc
-	 *  @param		int			$hideref			Do not show ref
-	 *	@return		int         					1 if OK, <=0 if KO
+	 *	@param		CertificateDocument	$objectDocument	   Object source to build document
+	 *	@param		Translate	        $outputlangs	   Lang output object
+	 * 	@param		string		        $srctemplatepath   Full path of source filename for generator using a template file
+	 *  @param		int			        $hidedetails	   Do not show line details
+	 *  @param		int			        $hidedesc		   Do not show desc
+	 *  @param		int			        $hideref		   Do not show ref
+     *  @param      Certificate         $object            Certificate Object
+	 *	@return		int         					       1 if OK, <=0 if KO
 	 */
-	public function write_file($object, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0)
+	public function write_file($objectDocument, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $object)
 	{
 		// phpcs:enable
-		global $user, $langs, $conf, $mysoc, $hookmanager;
+        global $action, $conf, $hookmanager, $langs, $mysoc, $user;
 
 		if (empty($srctemplatepath)) {
 			dol_syslog("doc_generic_odt::write_file parameter srctemplatepath empty", LOG_WARNING);
@@ -188,7 +189,6 @@ class doc_certificatedocument_odt extends ModeleODTCertificate
 			$hookmanager = new HookManager($this->db);
 		}
 		$hookmanager->initHooks(array('odtgeneration'));
-		global $action;
 
 		if (!is_object($outputlangs)) {
 			$outputlangs = $langs;
@@ -198,26 +198,34 @@ class doc_certificatedocument_odt extends ModeleODTCertificate
 
 		$outputlangs->loadLangs(array("main", "dict", "companies", "bills"));
 
+        $mod = new $conf->global->DOLISIRH_TIMESHEETDOCUMENT_ADDON($this->db);
+        $ref = $mod->getNextValue($objectDocument);
+
+        $objectDocument->ref = $ref;
+        $id          = $objectDocument->create($user, true, $object);
+
+        $objectDocument->fetch($id);
+
 		if ($conf->dolisirh->dir_output) {
 			// If $object is id instead of object
-			if (!is_object($object)) {
-				$id = $object;
-				$object = new Certificate($this->db);
-				$result = $object->fetch($id);
-				if ($result < 0) {
-					dol_print_error($this->db, $object->error);
-					return -1;
-				}
-			}
+//			if (!is_object($object)) {
+//				$id = $object;
+//				$object = new Certificate($this->db);
+//				$result = $object->fetch($id);
+//				if ($result < 0) {
+//					dol_print_error($this->db, $object->error);
+//					return -1;
+//				}
+//			}
 
-			$object->fetch_thirdparty();
+			//$object->fetch_thirdparty();
 
-			$dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1];
 			$objectref = dol_sanitizeFileName($object->ref);
-			if (!preg_match('/specimen/i', $objectref)) {
-				$dir .= "/".$objectref;
-			}
-			$file = $dir."/".$objectref.".odt";
+			$dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1] . '/certificatedocument/' . $object->ref;
+//			if (!preg_match('/specimen/i', $objectref)) {
+//				$dir .= "/".$objectref;
+//			}
+			//$file = $dir."/".$objectref.".odt";
 
 			if (!file_exists($dir)) {
 				if (dol_mkdir($dir) < 0) {
@@ -232,7 +240,22 @@ class doc_certificatedocument_odt extends ModeleODTCertificate
 				$newfiletmp = preg_replace('/\.od(t|s)/i', '', $newfile);
 				$newfiletmp = preg_replace('/template_/i', '', $newfiletmp);
 				$newfiletmp = preg_replace('/modele_/i', '', $newfiletmp);
-				$newfiletmp = $objectref.'_'.$newfiletmp;
+
+                $date       = dol_print_date(dol_now(), 'dayxcard');
+                $newfiletmp = $objectref . '_' . $date . '_' . $newfiletmp . '_' . $conf->global->MAIN_INFO_SOCIETE_NOM;
+                $newfiletmp = str_replace(' ', '_', $newfiletmp);
+                $newfiletmp = dol_sanitizeFileName($newfiletmp);
+
+                $objectDocument->last_main_doc = $newfiletmp;
+
+                $sql  = "UPDATE " . MAIN_DB_PREFIX . "dolisirh_dolisirhdocuments";
+                $sql .= " SET last_main_doc =" . ( ! empty($newfiletmp) ? "'" . $this->db->escape($newfiletmp) . "'" : 'null');
+                $sql .= " WHERE rowid = " . $objectDocument->id;
+
+                dol_syslog("admin.lib::Insert last main doc", LOG_DEBUG);
+                $this->db->query($sql);
+
+				//$newfiletmp = $objectref.'_'.$newfiletmp;
 				//$file=$dir.'/'.$newfiletmp.'.'.dol_print_date(dol_now(),'%Y%m%d%H%M%S').'.odt';
 				// Get extension (ods or odt)
 				$newfileformat = substr($newfile, strrpos($newfile, '.') + 1);
@@ -259,29 +282,29 @@ class doc_certificatedocument_odt extends ModeleODTCertificate
 				}
 
 				// If CUSTOMER contact defined on order, we use it
-				$usecontact = false;
-				$arrayidcontact = $object->getIdContact('external', 'CUSTOMER');
-				if (count($arrayidcontact) > 0) {
-					$usecontact = true;
-					$result = $object->fetch_contact($arrayidcontact[0]);
-				}
+//				$usecontact = false;
+//				$arrayidcontact = $object->getIdContact('external', 'CUSTOMER');
+//				if (count($arrayidcontact) > 0) {
+//					$usecontact = true;
+//					$result = $object->fetch_contact($arrayidcontact[0]);
+//				}
 
 				// Recipient name
-				$contactobject = null;
-				if (!empty($usecontact)) {
-					// We can use the company of contact instead of thirdparty company
-					if ($object->contact->socid != $object->thirdparty->id && (!isset($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT) || !empty($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT))) {
-						$object->contact->fetch_thirdparty();
-						$socobject = $object->contact->thirdparty;
-						$contactobject = $object->contact;
-					} else {
-						$socobject = $object->thirdparty;
-						// if we have a CUSTOMER contact and we dont use it as thirdparty recipient we store the contact object for later use
-						$contactobject = $object->contact;
-					}
-				} else {
-					$socobject = $object->thirdparty;
-				}
+//				$contactobject = null;
+//				if (!empty($usecontact)) {
+//					// We can use the company of contact instead of thirdparty company
+//					if ($object->contact->socid != $object->thirdparty->id && (!isset($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT) || !empty($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT))) {
+//						$object->contact->fetch_thirdparty();
+//						$socobject = $object->contact->thirdparty;
+//						$contactobject = $object->contact;
+//					} else {
+//						$socobject = $object->thirdparty;
+//						// if we have a CUSTOMER contact and we dont use it as thirdparty recipient we store the contact object for later use
+//						$contactobject = $object->contact;
+//					}
+//				} else {
+//					$socobject = $object->thirdparty;
+//				}
 
 				// Make substitution
 				$substitutionarray = array(

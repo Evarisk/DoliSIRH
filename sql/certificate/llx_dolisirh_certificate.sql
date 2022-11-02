@@ -35,7 +35,7 @@ CREATE TABLE llx_dolisirh_certificate(
 	element_type  text,
 	fk_element    integer,
 	fk_product    integer,
-    fk_societe    integer,
+    fk_soc        integer,
 	fk_project    integer,
 	fk_user_creat integer NOT NULL,
 	fk_user_modif integer

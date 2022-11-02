@@ -137,7 +137,7 @@ if ($id > 0 || !empty($ref)) {
     $morehtmlref = '<div class="refidno">';
     // Thirdparty
     if (! empty($conf->societe->enabled)) {
-        $object->fetch_thirdparty($object->fk_societe);
+        $object->fetch_thirdparty();
         $morehtmlref .= $langs->trans('ThirdParty') . ' : ' . (is_object($object->thirdparty) ? $object->thirdparty->getNomUrl(1) : '');
     }
     // Project
@@ -160,6 +160,9 @@ if ($id > 0 || !empty($ref)) {
 	print '<div class="underbanner clearboth"></div>';
 
 	$cssclass = "titlefield";
+    if ($object->status >= $object::STATUS_VALIDATED) {
+        $permissionnote = 0;
+    }
 	include DOL_DOCUMENT_ROOT . '/core/tpl/notes.tpl.php';
 
 	print '</div>';

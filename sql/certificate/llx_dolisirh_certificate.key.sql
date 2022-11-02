@@ -18,7 +18,7 @@ ALTER TABLE llx_dolisirh_certificate ADD INDEX idx_dolisirh_certificate_ref (ref
 ALTER TABLE llx_dolisirh_certificate ADD INDEX idx_dolisirh_certificate_status (status);
 ALTER TABLE llx_dolisirh_certificate ADD INDEX idx_dolisirh_certificate_fk_element (fk_element);
 ALTER TABLE llx_dolisirh_certificate ADD INDEX idx_dolisirh_certificate_fk_product (fk_product);
-ALTER TABLE llx_dolisirh_certificate ADD INDEX idx_dolisirh_certificate_fk_societe (fk_societe);
+ALTER TABLE llx_dolisirh_certificate ADD INDEX idx_dolisirh_certificate_fk_soc (fk_soc);
 ALTER TABLE llx_dolisirh_certificate ADD INDEX idx_dolisirh_certificate_fk_project (fk_project);
 ALTER TABLE llx_dolisirh_certificate ADD UNIQUE INDEX uk_dolisirh_certificate_ref (ref, entity);
 ALTER TABLE llx_dolisirh_certificate ADD CONSTRAINT llx_dolisirh_certificate_fk_user_creat FOREIGN KEY (fk_user_creat) REFERENCES llx_user(rowid);

@@ -117,10 +117,6 @@ $extrafields->fetch_name_optionals_label($object->table_element);
 // Load object
 include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be included, not include_once  // Must be included, not include_once. Include fetch and fetch_thirdparty but not fetch_optionals
 
-if ($id > 0 || !empty($ref)) {
-	$upload_dir = $conf->dolisirh->multidir_output[!empty($object->entity) ? $object->entity : $conf->entity]."/".$object->id;
-}
-
 // There is several ways to check permission.
 $permissiontoread = $user->rights->dolisirh->certificate->read;
 $permissiontoadd = $user->rights->dolisirh->certificate->write;
@@ -182,7 +178,7 @@ if ($object->id > 0) {
     $morehtmlref = '<div class="refidno">';
     // Thirdparty
     if (! empty($conf->societe->enabled)) {
-        $object->fetch_thirdparty($object->fk_societe);
+        $object->fetch_thirdparty();
         $morehtmlref .= $langs->trans('ThirdParty') . ' : ' . (is_object($object->thirdparty) ? $object->thirdparty->getNomUrl(1) : '');
     }
     // Project
@@ -243,14 +239,13 @@ if ($object->id > 0) {
 	print '</div>';
 
 	if (!empty($conf->agenda->enabled) && (!empty($user->rights->agenda->myactions->read) || !empty($user->rights->agenda->allactions->read))) {
-		$param = '&id='.$object->id.'&socid='.$socid;
+		$param = '&id='.$object->id;
 		if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) {
 			$param .= '&contextpage='.urlencode($contextpage);
 		}
 		if ($limit > 0 && $limit != $conf->liste_limit) {
 			$param .= '&limit='.urlencode($limit);
 		}
-
 
 		print load_fiche_titre($langs->trans("ActionsOnCertificate"), '', '');
 
