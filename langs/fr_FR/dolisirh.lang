@@ -225,7 +225,7 @@ ExpectedWorkedDayMonth = Nombre de jours ouvrés :
 ExpectedWorkedHoursMonthTimeSheet = Heures de travail prévues du %s au %s
 CheckDateEnd = Vérifier la date fin de navette
 CheckDateEndDescription = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
-
+TimeSheetManagement = Gestion des navettes
 
 
 #
@@ -273,6 +273,7 @@ Certificate = Certificat
 NewCertificate = Nouveau certificat
 ModifyCertificate = Modifer le certificat
 CertificateList = Liste des certificats
+CertificateManagement = Gestion des certificats
 
 #
 # CertificateDocument - Document certificat

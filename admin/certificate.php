@@ -54,10 +54,7 @@ $backtopage = GETPOST('backtopage', 'alpha');
 
 // Initialize objects
 // Technical objets
-$certificate = new Certificate($db);
-
-// View objects
-$form = new Form($db);
+$object = new Certificate($db);
 
 // Access control
 if (!$user->admin) accessforbidden();
@@ -65,6 +62,9 @@ if (!$user->admin) accessforbidden();
 /*
  * View
  */
+
+// Initialize view objects
+$form = new Form($db);
 
 $help_url = 'FR:Module_DoliSIRH';
 $title    = $langs->trans("Certificate");
@@ -76,17 +76,17 @@ llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 // Subheader
 $linkback = '<a href="'.($backtopage ?: DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1').'">'.$langs->trans("BackToModuleList").'</a>';
 
-print load_fiche_titre($title, $linkback, 'object_'.$certificate->picto);
+print load_fiche_titre($title, $linkback, 'object_'.$object->picto);
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();
 print dol_get_fiche_head($head, 'certificate', $title, -1, 'dolisirh_red@dolisirh');
 
-print load_fiche_titre($pictos[$type] . $langs->trans($type), '', '', 0, $langs->trans($type));
+print load_fiche_titre($langs->trans("CertificateManagement"), '', 'object_'.$object->picto);
 print '<hr>';
 
 /*
- *  Numbering module
+ *  Numbering module Certificate
  */
 
 print load_fiche_titre($langs->trans("DoliSIRHCertificateNumberingModule"), '', '');
@@ -102,7 +102,7 @@ print '</tr>';
 
 clearstatcache();
 
-$dir = dol_buildpath("/custom/dolisirh/core/modules/dolisirh/dolisirh/certificat/");
+$dir = dol_buildpath("/custom/dolisirh/core/modules/dolisirh/certificate/");
 if (is_dir($dir)) {
     $handle = opendir($dir);
     if (is_resource($handle)) {
@@ -140,18 +140,13 @@ if (is_dir($dir)) {
                             print img_picto($langs->trans("Activated"), 'switch_on');
                         }
                         else {
-                            print '<a class="reposition" href="'.$_SERVER["PHP_SELF"].'?action=setmod&value='.preg_replace('/\.php$/', '', $file).'&const='.$module->scandir.'&label='.urlencode($module->name).'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
+                            print '<a class="reposition" href="'.$_SERVER["PHP_SELF"].'?action=setmod&value='.preg_replace('/\.php$/', '', $file).'&const='.$module->scandir.'&label='.urlencode($module->name).'&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
                         }
                         print '</td>';
 
-                        // Example for listing risks action
+                        // Example for certificate
                         $htmltooltip = '' . $langs->trans("Version") . ': <b>' . $module->getVersion() . '</b><br>';
-
-                        require_once __DIR__ . '/../class/dolisirh/'.$type.'document.class.php';
-                        $classdocumentname = $type.'Document';
-                        $object_document   = new $classdocumentname($db);
-
-                        $nextval = $module->getNextValue($object_document);
+                        $nextval = $module->getNextValue($object);
                         if ("$nextval" != $langs->trans("NotAvailable")) {  // Keep " on nextval
                             $htmltooltip .= $langs->trans("NextValue").': ';
                             if ($nextval) {
@@ -177,6 +172,7 @@ if (is_dir($dir)) {
         closedir($handle);
     }
 }
+print '</table>';
 
 // Page end
 print dol_get_fiche_end();

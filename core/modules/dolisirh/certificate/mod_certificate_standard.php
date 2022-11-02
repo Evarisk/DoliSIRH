@@ -22,10 +22,12 @@
  *  \brief      File of class to manage Certificate numbering rules standard
  */
 
+require_once __DIR__ . '/../modules_dolisirh.php';
+
 /**
  *	Class to manage customer order numbering rules standard
  */
-class mod_certificate_standard
+class mod_certificate_standard extends ModeleNumRefDoliSIRH
 {
 	/**
 	 * Dolibarr version of the loaded document
@@ -50,7 +52,7 @@ class mod_certificate_standard
 	 *
 	 *  @return     string      Text with description
 	 */
-	public function info()
+	public function info(): string
 	{
 		global $langs;
 		return $langs->trans("DoliSIRHCertificateStandardModel", $this->prefix);
@@ -61,7 +63,7 @@ class mod_certificate_standard
 	 *
 	 *  @return     string      Example
 	 */
-	public function getExample()
+	public function getExample(): string
 	{
 		return $this->prefix."0501-0001";
 	}
@@ -71,9 +73,9 @@ class mod_certificate_standard
 	 *  cause conflicts that would prevent this numbering working.
 	 *
 	 *  @param  Object		$object		Object we need next value for
-	 *  @return boolean     			false if conflict, true if ok
+	 *  @return boolean     			false if conflicted, true if ok
 	 */
-	public function canBeActivated($object)
+	public function canBeActivated(object $object): bool
 	{
 		global $conf, $langs, $db;
 
@@ -112,7 +114,7 @@ class mod_certificate_standard
 	 * @return string                Value if KO, <0 if KO
 	 * @throws Exception
 	 */
-	public function getNextValue($object)
+	public function getNextValue(object $object)
 	{
 		global $db, $conf;
 
@@ -141,7 +143,7 @@ class mod_certificate_standard
 		}
 
 		//$date=time();
-		$date = $object->date_creation;
+        $date = !empty($object->date_creation) ? $object->date_creation : dol_now();
 		$yymm = strftime("%y%m", $date);
 
 		if ($max >= (pow(10, 4) - 1)) {

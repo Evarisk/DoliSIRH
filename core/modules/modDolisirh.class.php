@@ -369,7 +369,7 @@ class modDoliSIRH extends DolibarrModules
 			'fk_menu'  =>'fk_mainmenu=dolisirh', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'     => 'left', // This is a Top menu entry
 			'titre'    => $langs->trans('TimeSpending'),
-			'prefix'   => '<i class="far fa-clock pictofixedwidth"></i> ',
+			'prefix'   => '<i class="far fa-clock pictofixedwidth"></i>',
 			'mainmenu' => 'dolisirh',
 			'leftmenu' => 'timespent',
 			'url'      => '/dolisirh/view/timespent_month.php',

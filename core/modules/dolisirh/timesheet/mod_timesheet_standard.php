@@ -22,10 +22,12 @@
  *  \brief      File of class to manage TimeSheet numbering rules standard
  */
 
+require_once __DIR__ . '/../modules_dolisirh.php';
+
 /**
  *	Class to manage customer order numbering rules standard
  */
-class mod_timesheet_standard
+class mod_timesheet_standard extends ModeleNumRefDoliSIRH
 {
 	/**
 	 * Dolibarr version of the loaded document
@@ -58,16 +60,6 @@ class mod_timesheet_standard
 		global $langs;
 		$langs->load("dolisirh@dolisirh");
 		return $langs->trans("DoliSIRHTimeSheetStandardModel", $this->prefix);
-	}
-
-	/**
-	 *	Return if a module can be used or not
-	 *
-	 *	@return boolean true if module can be used
-	 */
-	public function isEnabled(): bool
-	{
-		return true;
 	}
 
 	/**
@@ -155,7 +147,7 @@ class mod_timesheet_standard
 		}
 
 		//$date=time();
-		$date = $object->date_creation;
+		$date = !empty($object->date_creation) ? $object->date_creation : dol_now();
 		$yymm = strftime("%y%m", $date);
 
 		if ($max >= (pow(10, 4) - 1)) {
@@ -166,30 +158,5 @@ class mod_timesheet_standard
 
 		dol_syslog("mod_timesheet_standard::getNextValue return ".$this->prefix.$yymm."-".$num);
 		return $this->prefix.$yymm."-".$num;
-	}
-
-	/**
-	 *	Returns version of numbering module
-	 *
-	 *	@return string Value
-	 */
-	public function getVersion(): string
-	{
-		global $langs;
-		$langs->load("admin");
-
-		if ($this->version == 'development') {
-			return $langs->trans("VersionDevelopment");
-		}
-		if ($this->version == 'experimental') {
-			return $langs->trans("VersionExperimental");
-		}
-		if ($this->version == 'dolibarr') {
-			return DOL_VERSION;
-		}
-		if ($this->version) {
-			return $this->version;
-		}
-		return $langs->trans("NotAvailable");
 	}
 }
