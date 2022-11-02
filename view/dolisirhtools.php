@@ -122,7 +122,7 @@ if ($user->rights->dolisirh->adminpage->read) { ?>
 	print '</td>';
 
 	print '<td class="center data-update">';
-	print '<input type="submit" class="button reposition data-update" name="dataUpdate" value="' . $langs->trans("DataUpdate") . '">';
+	print '<input type="submit" class="button reposition data-update" name="dataUpdate" value="' . $langs->trans("Validate") . '">';
 	print '</td>';
 	print '</tr>';
 	print '</table>';
