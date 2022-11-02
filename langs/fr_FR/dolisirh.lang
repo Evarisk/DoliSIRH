@@ -121,7 +121,7 @@ WarningShowOnlyFavoriteTasks = Attention quand l'option 'Afficher uniquement les
 ExpectedWorkedHoursWeek = Heures de travail prévues du %s au %s
 ThemeDashboardTimeSpent = Thème du Rapport de pointage de temps
 TimeSpentList = Liste des temps consommés
-
+ShowOnlyTasksWithTimeSpent = Afficher uniquement les tâches avec du temps consommé
 
 
 #

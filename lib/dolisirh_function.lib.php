@@ -157,6 +157,9 @@ function getFavoriteTasksArray($task_id = 0, $usert = null, $userp = null, $proj
 		if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
 			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as elel ON (t.rowid = elel.fk_target AND elel.targettype='project_task')";
 		}
+		if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task_time as ptt ON (t.rowid = ptt.fk_task)";
+		}
 		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task_extrafields as efpt ON (t.rowid = efpt.fk_object)";
 		$sql .= " WHERE p.entity IN (".getEntity('project').")";
 		$sql .= " AND t.fk_projet = p.rowid";
@@ -164,6 +167,10 @@ function getFavoriteTasksArray($task_id = 0, $usert = null, $userp = null, $proj
 			$sql .= " AND elel.fk_target = t.rowid";
 			$sql .= " AND elel.fk_source = " . $user->id;
 		}
+		if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+			$sql .= " AND ptt.fk_task = t.rowid";
+		}
+
 	} elseif ($mode == 1) {
 		if ($filteronprojuser > 0) {
 			$sql .= ", ".MAIN_DB_PREFIX."element_contact as ec";
@@ -879,7 +886,6 @@ function projectLinesPerDayOnMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuse
 
 		if ($lines[$i]->fk_task_parent == $parent) {
 			$obj = &$lines[$i]; // To display extrafields
-
 			// If we want all or we have a role on task, we show it
 			if (empty($mine) || !empty($tasksrole[$lines[$i]->id])) {
 				//dol_syslog("projectLinesPerWeek Found line ".$i.", a qualified task (i have role or want to show all tasks) with id=".$lines[$i]->id." project id=".$lines[$i]->fk_project);
@@ -938,13 +944,23 @@ function projectLinesPerDayOnMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuse
 					}
 
 					if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
-						$taskfavorite = isTaskFavorite($lines[$i]->id, $fuser->id);
+						$taskFavorite = isTaskFavorite($lines[$i]->id, $fuser->id);
 					} else {
-						$taskfavorite = 1;
+						$taskFavorite = 1;
 					}
 
+					if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+						$filter = ' AND ptt.fk_task = ' . $lines[$i]->id;
+						$timeSpentArray = $lines[$i]->fetchAllTimeSpent($fuser, $filter);
+						$taskHasTimeSpent = (is_array($timeSpentArray) && !empty($timeSpentArray));
+					} else {
+						$taskHasTimeSpent = 1;
+					}
+
+					$displayTask = $taskFavorite && $taskHasTimeSpent;
+
 					if (!$noprint) {
-						print '<tr class="oddeven trforbreak nobold"' . (!$taskfavorite ? 'style="display:none;"' : '') . '>' . "\n";
+						print '<tr class="oddeven trforbreak nobold"' . (!$displayTask ? 'style="display:none;"' : '') . '>' . "\n";
 						print '<td colspan="' . (2 + $addcolspan + $dayInMonth) . '">';
 						print $projectstatic->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv("YourRole") . ':</strong> ' . $projectsrole[$lines[$i]->fk_project]);
 						if ($thirdpartystatic->id > 0) {
@@ -956,65 +972,6 @@ function projectLinesPerDayOnMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuse
 						}
 					}
 
-					/*$colspan=5+(empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)?0:2);
-					print '<table class="">';
-
-					print '<tr class="liste_titre">';
-
-					// PROJECT fields
-					if (! empty($arrayfields['p.fk_opp_status']['checked'])) print_liste_field_titre($arrayfields['p.fk_opp_status']['label'], $_SERVER["PHP_SELF"], 'p.fk_opp_status', "", $param, '', $sortfield, $sortorder, 'center ');
-					if (! empty($arrayfields['p.opp_amount']['checked']))    print_liste_field_titre($arrayfields['p.opp_amount']['label'], $_SERVER["PHP_SELF"], 'p.opp_amount', "", $param, '', $sortfield, $sortorder, 'right ');
-					if (! empty($arrayfields['p.opp_percent']['checked']))   print_liste_field_titre($arrayfields['p.opp_percent']['label'], $_SERVER["PHP_SELF"], 'p.opp_percent', "", $param, '', $sortfield, $sortorder, 'right ');
-					if (! empty($arrayfields['p.budget_amount']['checked'])) print_liste_field_titre($arrayfields['p.budget_amount']['label'], $_SERVER["PHP_SELF"], 'p.budget_amount', "", $param, '', $sortfield, $sortorder, 'right ');
-					if (! empty($arrayfields['p.usage_bill_time']['checked']))     print_liste_field_titre($arrayfields['p.usage_bill_time']['label'], $_SERVER["PHP_SELF"], 'p.usage_bill_time', "", $param, '', $sortfield, $sortorder, 'right ');
-
-					$extrafieldsobjectkey='projet';
-					$extrafieldsobjectprefix='efp.';
-					include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
-
-					print '</tr>';
-					print '<tr>';
-
-					// PROJECT fields
-					if (! empty($arrayfields['p.fk_opp_status']['checked']))
-					{
-						print '<td class="nowrap">';
-						$code = dol_getIdFromCode($db, $lines[$i]->fk_opp_status, 'c_lead_status', 'rowid', 'code');
-						if ($code) print $langs->trans("OppStatus".$code);
-						print "</td>\n";
-					}
-					if (! empty($arrayfields['p.opp_amount']['checked']))
-					{
-						print '<td class="nowrap">';
-						print price($lines[$i]->opp_amount, 0, $langs, 1, 0, -1, $conf->currency);
-						print "</td>\n";
-					}
-					if (! empty($arrayfields['p.opp_percent']['checked']))
-					{
-						print '<td class="nowrap">';
-						print price($lines[$i]->opp_percent, 0, $langs, 1, 0).' %';
-						print "</td>\n";
-					}
-					if (! empty($arrayfields['p.budget_amount']['checked']))
-					{
-						print '<td class="nowrap">';
-						print price($lines[$i]->budget_amount, 0, $langs, 1, 0, 0, $conf->currency);
-						print "</td>\n";
-					}
-					if (! empty($arrayfields['p.usage_bill_time']['checked']))
-					{
-						print '<td class="nowrap">';
-						print yn($lines[$i]->usage_bill_time);
-						print "</td>\n";
-					}
-
-					$extrafieldsobjectkey='projet';
-					$extrafieldsobjectprefix='efp.';
-					include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_print_fields.tpl.php';
-
-					print '</tr>';
-					print '</table>';
-					*/
 					if (!$noprint) {
 						print '</td>';
 						print '</tr>';
@@ -1026,23 +983,26 @@ function projectLinesPerDayOnMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuse
 				}
 
 				if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
-					$taskfavorite = isTaskFavorite($lines[$i]->id, $fuser->id);
+					$taskFavorite = isTaskFavorite($lines[$i]->id, $fuser->id);
 				} else {
-					$taskfavorite = 1;
+					$taskFavorite = 1;
+				}
+
+				if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+					$filter = ' AND ptt.fk_task = ' . $lines[$i]->id;
+					$timeSpentArray = $lines[$i]->fetchAllTimeSpent($fuser, $filter);
+					$taskHasTimeSpent = (is_array($timeSpentArray) && !empty($timeSpentArray));
+				} else {
+					$taskHasTimeSpent = 1;
+				}
+
+				$displayTask = $taskFavorite && $taskHasTimeSpent;
+
+				if (!$noprint) {
+					print '<tr class="oddeven"' . (!$displayTask ? 'style="display:none;"' : '') . 'data-taskid="' . $lines[$i]->id . '" >' . "\n";
 				}
 
 				if (!$noprint) {
-					print '<tr class="oddeven"' . (!$taskfavorite ? 'style="display:none;"' : '') . 'data-taskid="' . $lines[$i]->id . '" >' . "\n";
-				}
-
-				if (!$noprint) {
-					// User
-					/*
-					print '<td class="nowrap">';
-					print $fuser->getNomUrl(1, 'withproject', 'time');
-					print '</td>';
-					*/
-
 					// Project
 					if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
 						print '<td class="nowrap">';
@@ -1421,12 +1381,12 @@ function projectLinesPerWeekDoliSIRH(&$inc, $firstdaytoshow, $fuser, $parent, $l
 					}
 
 					if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
-						$taskfavorite = isTaskFavorite($lines[$i]->id, $fuser->id);
+						$displayTask = isTaskFavorite($lines[$i]->id, $fuser->id);
 					} else {
-						$taskfavorite = 1;
+						$displayTask = 1;
 					}
 
-					print '<tr class="oddeven trforbreak nobold"'.(!$taskfavorite ? 'style="display:none;"': '').'>'."\n";
+					print '<tr class="oddeven trforbreak nobold"'.(!$displayTask ? 'style="display:none;"': '').'>'."\n";
 					print '<td colspan="'.(11 + $addcolspan).'">';
 					print $projectstatic->getNomUrl(1, '', 0, '<strong>'.$langs->transnoentitiesnoconv("YourRole").':</strong> '.$projectsrole[$lines[$i]->fk_project]);
 					if ($thirdpartystatic->id > 0) {
@@ -1437,66 +1397,6 @@ function projectLinesPerWeekDoliSIRH(&$inc, $firstdaytoshow, $fuser, $parent, $l
 						print '<span class="secondary" title="'.$projectstatic->title.'">'.dol_trunc($projectstatic->title, '64').'</span>';
 					}
 
-					/*$colspan=5+(empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)?0:2);
-					print '<table class="">';
-
-					print '<tr class="liste_titre">';
-
-					// PROJECT fields
-					if (! empty($arrayfields['p.fk_opp_status']['checked'])) print_liste_field_titre($arrayfields['p.fk_opp_status']['label'], $_SERVER["PHP_SELF"], 'p.fk_opp_status', "", $param, '', $sortfield, $sortorder, 'center ');
-					if (! empty($arrayfields['p.opp_amount']['checked']))    print_liste_field_titre($arrayfields['p.opp_amount']['label'], $_SERVER["PHP_SELF"], 'p.opp_amount', "", $param, '', $sortfield, $sortorder, 'right ');
-					if (! empty($arrayfields['p.opp_percent']['checked']))   print_liste_field_titre($arrayfields['p.opp_percent']['label'], $_SERVER["PHP_SELF"], 'p.opp_percent', "", $param, '', $sortfield, $sortorder, 'right ');
-					if (! empty($arrayfields['p.budget_amount']['checked'])) print_liste_field_titre($arrayfields['p.budget_amount']['label'], $_SERVER["PHP_SELF"], 'p.budget_amount', "", $param, '', $sortfield, $sortorder, 'right ');
-					if (! empty($arrayfields['p.usage_bill_time']['checked']))     print_liste_field_titre($arrayfields['p.usage_bill_time']['label'], $_SERVER["PHP_SELF"], 'p.usage_bill_time', "", $param, '', $sortfield, $sortorder, 'right ');
-
-					$extrafieldsobjectkey='projet';
-					$extrafieldsobjectprefix='efp.';
-					include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
-
-					print '</tr>';
-					print '<tr>';
-
-					// PROJECT fields
-					if (! empty($arrayfields['p.fk_opp_status']['checked']))
-					{
-						print '<td class="nowrap">';
-						$code = dol_getIdFromCode($db, $lines[$i]->fk_opp_status, 'c_lead_status', 'rowid', 'code');
-						if ($code) print $langs->trans("OppStatus".$code);
-						print "</td>\n";
-					}
-					if (! empty($arrayfields['p.opp_amount']['checked']))
-					{
-						print '<td class="nowrap">';
-						print price($lines[$i]->opp_amount, 0, $langs, 1, 0, -1, $conf->currency);
-						print "</td>\n";
-					}
-					if (! empty($arrayfields['p.opp_percent']['checked']))
-					{
-						print '<td class="nowrap">';
-						print price($lines[$i]->opp_percent, 0, $langs, 1, 0).' %';
-						print "</td>\n";
-					}
-					if (! empty($arrayfields['p.budget_amount']['checked']))
-					{
-						print '<td class="nowrap">';
-						print price($lines[$i]->budget_amount, 0, $langs, 1, 0, 0, $conf->currency);
-						print "</td>\n";
-					}
-					if (! empty($arrayfields['p.usage_bill_time']['checked']))
-					{
-						print '<td class="nowrap">';
-						print yn($lines[$i]->usage_bill_time);
-						print "</td>\n";
-					}
-
-					$extrafieldsobjectkey='projet';
-					$extrafieldsobjectprefix='efp.';
-					include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_print_fields.tpl.php';
-
-					print '</tr>';
-					print '</table>';
-					*/
-
 					print '</td>';
 					print '</tr>';
 				}
@@ -1506,19 +1406,12 @@ function projectLinesPerWeekDoliSIRH(&$inc, $firstdaytoshow, $fuser, $parent, $l
 				}
 
 				if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
-					$taskfavorite = isTaskFavorite($lines[$i]->id, $fuser->id);
+					$displayTask = isTaskFavorite($lines[$i]->id, $fuser->id);
 				} else {
-					$taskfavorite = 1;
+					$displayTask = 1;
 				}
 
-				print '<tr class="oddeven"'.(!$taskfavorite ? 'style="display:none;"': '').'data-taskid="'.$lines[$i]->id.'">'."\n";
-
-				// User
-				/*
-				print '<td class="nowrap">';
-				print $fuser->getNomUrl(1, 'withproject', 'time');
-				print '</td>';
-				*/
+				print '<tr class="oddeven"'.(!$displayTask ? 'style="display:none;"': '').'data-taskid="'.$lines[$i]->id.'">'."\n";
 
 				// Project
 				if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
