@@ -36,7 +36,7 @@ class mod_timesheet_standard
 	/**
 	 * @var string document prefix
 	 */
-	public $prefix = 'TS';
+	public $prefix = 'TR';
 
 	/**
 	 * @var string Error code (or message)
