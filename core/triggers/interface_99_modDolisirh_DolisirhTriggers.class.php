@@ -98,7 +98,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 					$result = $ticket->fetch($object->fk_element);
 					dol_syslog(var_export($ticket, true), LOG_DEBUG);
 					if ($result > 0 && ($ticket->id) > 0) {
-						if (is_array($ticket->array_options) && array_key_exists('options_fk_task', $ticket->array_options) && $ticket->array_options['options_fk_task']>0) {
+						if (is_array($ticket->array_options) && array_key_exists('options_fk_task', $ticket->array_options) && $ticket->array_options['options_fk_task']>0 && !empty(GETPOST('timespent', 'int'))) {
 							require_once DOL_DOCUMENT_ROOT .'/projet/class/task.class.php';
 							$task = new Task($this->db);
 							$result = $task->fetch($ticket->array_options['options_fk_task']);
