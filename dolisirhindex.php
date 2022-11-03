@@ -67,7 +67,7 @@ llxHeader('', $title . ' ' . $dolisirh->version, $help_url, '', 0, 0, $morejs, $
 
 print load_fiche_titre($title . ' ' . $dolisirh->version, '', 'dolisirh_red.png@dolisirh');
 
-if ($conf->global->DOLISIRH_HR_PROJECT_SET == 1) : ?>
+if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) : ?>
     <div class="wpeo-notice notice-info">
         <div class="notice-content">
             <div class="notice-title"><strong><?php echo $langs->trans("SetupDefaultDataNotCreated"); ?></strong></div>
