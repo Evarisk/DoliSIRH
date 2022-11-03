@@ -492,7 +492,6 @@ print '</tr>' . "\n";
 $i = 0;
 $totalarray = array();
 $totalarray['nbfield'] = 0;
-$totalarray['type'][8]='duration';
 while ($i < ($limit ? min($num, $limit) : $num)) {
 	$obj = $db->fetch_object($resql);
 	if (empty($obj)) {
@@ -559,6 +558,9 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 				if (!empty($val['isameasure']) && $val['isameasure'] == 1) {
 					if (!$i) {
 						$totalarray['pos'][$totalarray['nbfield']] = $key;
+						if ($key == 'task_duration') {
+							$totalarray['type'][$totalarray['nbfield']]='duration';
+						}
 					}
 					if (!isset($totalarray['val'])) {
 						$totalarray['val'] = array();
@@ -566,9 +568,10 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 					if (!isset($totalarray['val'][$key])) {
 						$totalarray['val'][$key] = 0;
 					}
-					$totalarray['val'][$key] += convertSecondToTime($obj->{$key}, 'allhourmin');
 					if ($key == 'thm') {
 						$totalarray['val'][$key] += $value;
+					} else {
+						$totalarray['val'][$key] += $obj->{$key};
 					}
 				}
 			}
