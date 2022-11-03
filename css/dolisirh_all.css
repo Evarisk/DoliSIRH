@@ -5,3 +5,10 @@ div.mainmenu.dolisirh {
 div.mainmenu.dolisirh::before {
     content: "\f2c2";
 }
+
+.pictoDoliSIRH {
+    vertical-align: middle;
+    text-align: left;
+    width: 20px;
+    padding-right: 4px;
+}
