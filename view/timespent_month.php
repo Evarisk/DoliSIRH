@@ -423,49 +423,14 @@ if ($id) {
 	$project->fetch_thirdparty();
 }
 
-$onlyopenedproject = 1; // or -1
-$morewherefilter = '';
-
-if ($search_project_ref) {
-	$morewherefilter .= natural_search(array("p.ref", "p.title"), $search_project_ref);
-}
-if ($search_task_ref) {
-	$morewherefilter .= natural_search("t.ref", $search_task_ref);
-}
-if ($search_task_label) {
-	$morewherefilter .= natural_search(array("t.ref", "t.label"), $search_task_label);
-}
-if ($search_thirdparty) {
-	$morewherefilter .= natural_search("s.nom", $search_thirdparty);
-}
-if ($search_declared_progress) {
-	$morewherefilter .= natural_search("t.progress", $search_declared_progress, 1);
-}
-if (!empty($conf->categorie->enabled)) {
-	$morewherefilter .= Categorie::getFilterSelectQuery(Categorie::TYPE_PROJECT, "p.rowid", $search_category_array);
-}
-
-$sql = &$morewherefilter;
-
-/*$search_array_options = $search_array_options_project;
- $extrafieldsobjectprefix='efp.';
- $search_options_pattern='search_options_';
- $extrafieldsobjectkey='projet';
- include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
- */
 $search_array_options = $search_array_options_task;
 $extrafieldsobjectprefix = 'efpt.';
 $search_options_pattern = 'search_task_options_';
 $extrafieldsobjectkey = 'projet_task';
 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
+$timeArray = array('year' => $year, 'month' => $month, 'week' => $week, 'day' => $day);
+$tasksarray = doliSirhGetTasksArray(0, 0, ($project->id ?: 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields,0,array(), 0,$timeArray, 'month');
 
-$tasksarray = $taskstatic->getTasksArray(0, 0, ($project->id ? $project->id : 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields);
-//if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
-//	$tasksarray = getFavoriteTasksArray($taskstatic->id, 0, 0, ($project->id ? $project->id : 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields); // We want to see all tasks of open project i am allowed to see and that match filter, not only my tasks. Later only mine will be editable later.
-//}
-if (!empty($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS)) {	// Get all task without any filter, so we can show total of time spent for not visible tasks
-	$tasksarraywithoutfilter = $taskstatic->getTasksArray(0, 0, ($project->id ? $project->id : 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0)); // We want to see all tasks of open project i am allowed to see and that match filter, not only my tasks. Later only mine will be editable later.
-}
 $projectsrole = $taskstatic->getUserRolesForProjectsOrTasks($usertoprocess, 0, ($project->id ? $project->id : 0), 0, $onlyopenedproject);
 $tasksrole = $taskstatic->getUserRolesForProjectsOrTasks(0, $usertoprocess, ($project->id ? $project->id : 0), 0, $onlyopenedproject);
 
@@ -808,7 +773,7 @@ if (count($tasksarray) > 0) {
 
 	$j = 0;
 	$level = 0;
-	$totalforvisibletasks = projectLinesPerDayOnMonth($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $dayInMonth);
+	$totalforvisibletasks = doliSirhLinesPerMonth($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $dayInMonth);
 
 	//  if (is_array($tasksarraywithoutfilter) && count($tasksarraywithoutfilter)) {
 	//      $totalforalltasks = projectLinesPerDayOnMonth($j, $firstdaytoshow, $usertoprocess, 0, $tasksarraywithoutfilter, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $dayInMonth);
