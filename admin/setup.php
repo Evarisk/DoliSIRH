@@ -65,7 +65,159 @@ if (!$permissiontoread) accessforbidden();
 
 include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
 
-require_once '../core/tpl/dolisirh_projectcreation_action.tpl.php';
+/*
+ * Actions
+ */
+
+if (GETPOST('HRProjectSet', 'alpha')) {
+    if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) {
+        require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
+        require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+        require_once DOL_DOCUMENT_ROOT . '/projet/class/project.class.php';
+        require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+        require_once DOL_DOCUMENT_ROOT . '/core/modules/project/mod_project_simple.php';
+
+        $project = new Project($db);
+        $usertmp = new User($db);
+
+        $obj = empty($conf->global->PROJECT_ADDON) ? 'mod_project_simple' : $conf->global->PROJECT_ADDON;
+
+        if (!empty($conf->global->PROJECT_ADDON) && is_readable(DOL_DOCUMENT_ROOT . "/core/modules/project/" . $conf->global->PROJECT_ADDON . ".php")) {
+            require_once DOL_DOCUMENT_ROOT . "/core/modules/project/" . $conf->global->PROJECT_ADDON . '.php';
+            $modProject = new $obj;
+            $projectRef = $modProject->getNextValue('', null);
+        }
+
+        $project->ref         = $projectRef;
+        $project->title       = $langs->transnoentities('HumanResources') . ' - ' . $conf->global->MAIN_INFO_SOCIETE_NOM;
+        $project->description = $langs->transnoentities('HRDescription');
+        $project->date_c      = dol_now();
+        $currentYear          = dol_print_date(dol_now(), '%Y');
+        $fiscalMonthStart     = $conf->global->SOCIETE_FISCAL_MONTH_START;
+        $startdate            = dol_mktime('0', '0', '0', $fiscalMonthStart ? $fiscalMonthStart : '1', '1', $currentYear);
+        $project->date_start  = $startdate;
+
+        $project->usage_task = 1;
+
+        $startdateAddYear      = dol_time_plus_duree($startdate, 1, 'y');
+        $startdateAddYearMonth = dol_time_plus_duree($startdateAddYear, -1, 'd');
+        $enddate               = dol_print_date($startdateAddYearMonth, 'dayrfc');
+        $project->date_end     = $enddate;
+        $project->statut       = 1;
+
+        $result = $project->create($user);
+
+        if ($result > 0) {
+            dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT', $result, 'integer', 0, '', $conf->entity);
+            $allusers = $usertmp->get_full_tree(0, 'u.employee = 1 AND u.fk_soc IS NULL AND u.statut = 1');
+            if (!empty($allusers) && is_array($allusers)) {
+                foreach ($allusers as $usersingle) {
+                    $project->add_contact($usersingle['id'], 161, 'internal');
+                }
+            }
+
+            $task       = new Task($db);
+            $defaultref = '';
+            $obj        = empty($conf->global->PROJECT_TASK_ADDON) ? 'mod_task_simple' : $conf->global->PROJECT_TASK_ADDON;
+
+            if (!empty($conf->global->PROJECT_TASK_ADDON) && is_readable(DOL_DOCUMENT_ROOT . "/core/modules/project/task/" . $conf->global->PROJECT_TASK_ADDON . ".php")) {
+                require_once DOL_DOCUMENT_ROOT . "/core/modules/project/task/" . $conf->global->PROJECT_TASK_ADDON . '.php';
+                $modTask = new $obj;
+                $defaultref = $modTask->getNextValue('', null);
+            }
+
+            $task->fk_project = $result;
+            $task->ref        = $defaultref;
+            $task->label      = $langs->transnoentities('Holidays');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
+            $task->fk_project = $result;
+            $task->ref        = $modTask->getNextValue('', null);;
+            $task->label      = $langs->transnoentities('PaidHolidays');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
+            $task->fk_project  = $result;
+            $task->ref         = $modTask->getNextValue('', null);;
+            $task->label       = $langs->transnoentities('SickLeave');
+            $task->date_c      = dol_now();
+            $task->create($user);
+
+            $task->fk_project = $result;
+            $task->ref        = $modTask->getNextValue('', null);;
+            $task->label      = $langs->transnoentities('PublicHoliday');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
+            $task->fk_project = $result;
+            $task->ref        = $modTask->getNextValue('', null);;
+            $task->label      = $langs->trans('RTT');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
+            $taskarray = $task->getTasksArray(0, 0, $result);
+
+            if (!empty($allusers) && is_array($allusers)) {
+                foreach ($allusers as $usersingle) {
+                    if (is_array($taskarray) && !empty($taskarray)) {
+                        foreach ($taskarray as $tasksingle) {
+                            $tasksingle->add_contact($usersingle['id'], 181, 'internal');
+                        }
+                    }
+                }
+            }
+
+            dolibarr_set_const($db, 'DOLISIRH_RTT_TASK', 1, 'integer', 0, '', $conf->entity);
+            dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT_SET', 1, 'integer', 0, '', $conf->entity);
+        }
+    }
+}
+
+if (GETPOST('ProductServiceSet', 'alpha')) {
+    if ($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 0) {
+        require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
+
+        $product = new Product($db);
+
+        $product->ref   = $langs->transnoentities('MealTicket');
+        $product->label = $langs->transnoentities('MealTicket');
+        $product->create($user);
+
+        $product->ref   = $langs->transnoentities('JourneySubscription');
+        $product->label = $langs->transnoentities('JourneySubscription');
+        $product->type  = $product::TYPE_SERVICE;
+        $product->create($user);
+
+        $product->ref   = $langs->transnoentities('13thMonthBonus');
+        $product->label = $langs->transnoentities('13thMonthBonus');
+        $product->type  = $product::TYPE_SERVICE;
+        $product->create($user);
+
+        $product->ref   = $langs->transnoentities('SpecialBonus');
+        $product->label = $langs->transnoentities('SpecialBonus');
+        $product->type  = $product::TYPE_SERVICE;
+        $product->create($user);
+
+        dolibarr_set_const($db, 'DOLISIRH_PRODUCT_SERVICE_SET', 1, 'integer', 0, '', $conf->entity);
+    }
+}
+
+if (GETPOST('BookmarkSet', 'alpha')) {
+    if ($conf->global->DOLISIRH_TIMESPENT_BOOKMARK_SET == 0) {
+        require_once DOL_DOCUMENT_ROOT . '/bookmarks/class/bookmark.class.php';
+
+        $bookmark = new Bookmark($db);
+
+        $bookmark->title    = $langs->transnoentities('TimeSpent');
+        $bookmark->url      = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_day.php?mainmenu=project';
+        $bookmark->target   = 0;
+        $bookmark->position = 10;
+        $bookmark->create();
+
+        dolibarr_set_const($db, 'DOLISIRH_TIMESPENT_BOOKMARK_SET', 1, 'integer', 0, '', $conf->entity);
+    }
+}
 
 /*
  * View
@@ -134,6 +286,62 @@ if ($action == 'edit') {
 		print '</div>';
 	}
 }
+
+print load_fiche_titre($langs->transnoentities("SetupDefaultData"), '', '');
+
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<td>' . $langs->transnoentities("Parameters") . '</td>';
+print '<td>' . $langs->transnoentities("Description") . '</td>';
+print '<td class="center">' . $langs->transnoentities("Status") . '</td>';
+print '<td class="center">' . $langs->transnoentities("Action") . '</td>';
+print '</tr>';
+
+print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '">';
+print '<input type="hidden" name="token" value="' . newToken() . '">';
+print '<input type="hidden" name="action" value="">';
+
+// HR project set
+print '<tr class="oddeven"><td>' . $langs->transnoentities("HRProjectSet") . '</td>';
+print '<td>';
+print $langs->transnoentities("HRProjectSetHelp");
+print '</td>';
+print '<td class="center">';
+print $conf->global->DOLISIRH_HR_PROJECT_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
+print '</td>';
+print '<td class="center">';
+print $conf->global->DOLISIRH_HR_PROJECT_SET ? '<a type="" class=" butActionRefused" value="">'.$langs->transnoentities('Create') .'</a>' : '<input type="submit" class="button" name="HRProjectSet" value="'.$langs->transnoentities('Create') .'">';
+print '</td>';
+print '</tr>';
+
+// Product/service set
+print '<tr class="oddeven"><td>' . $langs->transnoentities("ProductServiceSet") . '</td>';
+print '<td>';
+print $langs->transnoentities("ProductServiceSetHelp");
+print '</td>';
+print '<td class="center">';
+print $conf->global->DOLISIRH_PRODUCT_SERVICE_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
+print '</td>';
+print '<td class="center">';
+print $conf->global->DOLISIRH_PRODUCT_SERVICE_SET ? '<a type="" class=" butActionRefused" value="">'.$langs->transnoentities('Create') .'</a>' : '<input type="submit" class="button" name="ProductServiceSet" value="'.$langs->transnoentities('Create') .'">';
+print '</td>';
+print '</tr>';
+
+// Bookmark set
+print '<tr class="oddeven"><td>' . $langs->transnoentities("BookmarkSet") . '</td>';
+print '<td>';
+print $langs->transnoentities("BookmarkSetHelp");
+print '</td>';
+print '<td class="center">';
+print $conf->global->DOLISIRH_TIMESPENT_BOOKMARK_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
+print '</td>';
+print '<td class="center">';
+print $conf->global->DOLISIRH_TIMESPENT_BOOKMARK_SET ? '<a type="" class=" butActionRefused" value="">'.$langs->transnoentities('Create') .'</a>' : '<input type="submit" class="button" name="BookmarkSet" value="'.$langs->transnoentities('Create') .'">';
+print '</td>';
+print '</tr>';
+
+print '</form>';
+print '</table>';
 
 // Page end
 print dol_get_fiche_end();

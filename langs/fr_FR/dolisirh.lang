@@ -65,6 +65,19 @@ ActionAC_TEL_OUT = Appel téléphonique sortant
 DoliSIRHConfig = Configuration
 DoliSIRHArea  = Bienvenue sur DoliSIRH
 DoliSIRHNumberOfModelFilesFound = Nombre de modèles par défaut
+SetupDefaultData = Gestion des données par défaut de DoliSIRH
+HRProjectSet = Création du Projet Ressources Humaines
+HRProjectSetHelp = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
+ProductServiceSet = Création des produits et services pour la navette
+ProductServiceSetHelp = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
+BookmarkSet = Création d'un marque-page pour le temps consommé
+BookmarkSetHelp = Cette option permet d'accéder rapidement à la gestion du pointage de temps
+Create = Créer
+NotCreated = Pas encore créé(e)s
+AlreadyCreated = Déjà créé(e)s
+SetupDefaultDataNotCreated = Vous n'avez pas créé les données par défaut de DOLISIRH
+HowToSetupDefaultData = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
+ConfigDefaultData = Configuration des données par défaut de DOLISIRH
 
 
 

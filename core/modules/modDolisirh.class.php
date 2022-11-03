@@ -118,6 +118,7 @@ class modDoliSIRH extends DolibarrModules
             $i++ => array('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR', 'chaine', '#FFA500', '', 0, 'current'),
             $i++ => array('DOLISIRH_PERFECT_TIME_SPENT_COLOR', 'chaine', '#008000', '', 0, 'current'),
             $i++ => array('DOLISIRH_PRODUCT_SERVICE_SET', 'integer', 0, '', 0, 'current'),
+            $i++ => array('DOLISIRH_HR_PROJECT_SET', 'integer', 0, '', 0, 'current'),
 
 			// CONST TIME SHEET
             $i++ => array('DOLISIRH_TIMESHEET_ADDON', 'chaine', 'mod_timesheet_standard', '', 0, 'current'),
@@ -463,47 +464,6 @@ class modDoliSIRH extends DolibarrModules
 		$result = $this->_load_tables('/dolisirh/sql/');
 		if ($result < 0) {
 			return -1; // Do not activate module if error 'not allowed' returned when loading module SQL queries (the _load_table run sql with run_sql with the error allowed parameter set to 'default')
-		}
-
-		if ($conf->global->DOLISIRH_TIMESPENT_BOOKMARK_SET < 1) {
-			include_once DOL_DOCUMENT_ROOT.'/bookmarks/class/bookmark.class.php';
-
-			$bookmark = new Bookmark($db);
-
-			$bookmark->title = $langs->transnoentities('TimeSpent');
-			$bookmark->url = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_day.php?mainmenu=project';
-			$bookmark->target = 0;
-			$bookmark->position = 10;
-			$bookmark->create();
-
-			dolibarr_set_const($db, 'DOLISIRH_TIMESPENT_BOOKMARK_SET', 1, 'integer', 0, '', $conf->entity);
-		}
-
-		if ($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 0 ) {
-			require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
-
-			$product = new Product($db);
-
-			$product->ref   = $langs->transnoentities('MealTicket');
-			$product->label = $langs->transnoentities('MealTicket');
-			$product->create($user);
-
-			$product->ref   = $langs->transnoentities('JourneySubscription');
-			$product->label = $langs->transnoentities('JourneySubscription');
-			$product->type  = $product::TYPE_SERVICE;
-			$product->create($user);
-
-			$product->ref   = $langs->transnoentities('13thMonthBonus');
-			$product->label = $langs->transnoentities('13thMonthBonus');
-			$product->type  = $product::TYPE_SERVICE;
-			$product->create($user);
-
-			$product->ref   = $langs->transnoentities('SpecialBonus');
-			$product->label = $langs->transnoentities('SpecialBonus');
-			$product->type  = 1;
-			$product->create($user);
-
-			dolibarr_set_const($db, 'DOLISIRH_PRODUCT_SERVICE_SET', 1, 'integer', 0, '', $conf->entity);
 		}
 
 		// Create extrafields during init

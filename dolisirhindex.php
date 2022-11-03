@@ -55,12 +55,6 @@ $dolisirh = new modDoliSIRH($db);
 if (!$user->rights->dolisirh->lire) accessforbidden();
 
 /*
- * Actions
- */
-
-require_once './core/tpl/dolisirh_projectcreation_action.tpl.php';
-
-/*
  * View
  */
 
@@ -73,6 +67,14 @@ llxHeader('', $title . ' ' . $dolisirh->version, $help_url, '', 0, 0, $morejs, $
 
 print load_fiche_titre($title . ' ' . $dolisirh->version, '', 'dolisirh_red.png@dolisirh');
 
+if ($conf->global->DOLISIRH_HR_PROJECT_SET == 1) : ?>
+    <div class="wpeo-notice notice-info">
+        <div class="notice-content">
+            <div class="notice-title"><strong><?php echo $langs->trans("SetupDefaultDataNotCreated"); ?></strong></div>
+            <div class="notice-subtitle"><strong><?php echo $langs->trans("HowToSetupDefaultData") . '  ' ?><a href="admin/setup.php"><?php echo $langs->trans('ConfigDefaultData'); ?></a></strong></div>
+        </div>
+    </div>
+<?php endif;
 // End of page
 llxFooter();
 $db->close();

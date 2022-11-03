@@ -177,7 +177,6 @@ print '</table>';
 print load_fiche_titre($langs->transnoentities("TimeSheetData"), '', '');
 
 print '<table class="noborder centpercent">';
-
 print '<tr class="liste_titre">';
 print '<td>' . $langs->transnoentities("Parameters") . '</td>';
 print '<td>' . $langs->transnoentities("Description") . '</td>';
