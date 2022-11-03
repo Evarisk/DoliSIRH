@@ -1,4 +1,4 @@
-<?php
+ <?php
 /* Copyright (C) 2023 EVARISK <dev@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -143,39 +143,10 @@ $object = new Task($db);
 // Extra fields
 $extrafields = new ExtraFields($db);
 
-// fetch optionals attributes and labels
-$extrafields->fetch_name_optionals_label($object->table_element);
-
 // Definition of fields for list
 $arrayfields = array();
-/*$arrayfields=array(
- // Project
- 'p.opp_amount'=>array('label'=>$langs->trans("OpportunityAmountShort"), 'checked'=>0, 'enabled'=>($conf->global->PROJECT_USE_OPPORTUNITIES?1:0), 'position'=>103),
- 'p.fk_opp_status'=>array('label'=>$langs->trans("OpportunityStatusShort"), 'checked'=>0, 'enabled'=>($conf->global->PROJECT_USE_OPPORTUNITIES?1:0), 'position'=>104),
- 'p.opp_percent'=>array('label'=>$langs->trans("OpportunityProbabilityShort"), 'checked'=>0, 'enabled'=>($conf->global->PROJECT_USE_OPPORTUNITIES?1:0), 'position'=>105),
- 'p.budget_amount'=>array('label'=>$langs->trans("Budget"), 'checked'=>0, 'position'=>110),
- 'p.usage_bill_time'=>array('label'=>$langs->trans("BillTimeShort"), 'checked'=>0, 'position'=>115),
- );*/
 $arrayfields['timeconsumed'] = array('label'=>'TimeConsumed', 'checked'=>1, 'enabled'=>1, 'position'=>15);
-/*foreach($object->fields as $key => $val)
- {
- // If $val['visible']==0, then we never show the field
- if (! empty($val['visible'])) $arrayfields['t.'.$key]=array('label'=>$val['label'], 'checked'=>(($val['visible']<0)?0:1), 'enabled'=>$val['enabled'], 'position'=>$val['position']);
- }*/
-// Definition of fields for list
-// Extra fields
-if (!empty($extrafields->attributes['projet_task']['label']) && is_array($extrafields->attributes['projet_task']['label']) && count($extrafields->attributes['projet_task']['label']) > 0) {
-	foreach ($extrafields->attributes['projet_task']['label'] as $key => $val) {
-		if (!empty($extrafields->attributes['projet_task']['list'][$key])) {
-			$arrayfields["efpt.".$key] = array('label'=>$extrafields->attributes['projet_task']['label'][$key], 'checked'=>(($extrafields->attributes['projet_task']['list'][$key] < 0) ? 0 : 1), 'position'=>$extrafields->attributes['projet_task']['pos'][$key], 'enabled'=>(abs((int) $extrafields->attributes['projet_task']['list'][$key]) != 3 && $extrafields->attributes['projet_task']['perms'][$key]));
-		}
-	}
-}
 $arrayfields = dol_sort_array($arrayfields, 'position');
-
-$search_array_options = array();
-$search_array_options_project = $extrafields->getOptionalsFromPost('projet', '', 'search_');
-$search_array_options_task = $extrafields->getOptionalsFromPost('projet_task', '', 'search_task_');
 
 /*
  * Actions
@@ -195,10 +166,7 @@ if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x'
 	$search_task_label = '';
 	$search_project_ref = '';
 	$search_thirdparty = '';
-	$search_declared_progress = '';
 
-	$search_array_options_project = array();
-	$search_array_options_task = array();
 	$search_category_array = array();
 
 	// We redefine $usertoprocess
@@ -215,8 +183,6 @@ if (GETPOST('submitdateselect')) {
 
 	$action = '';
 }
-
-include DOL_DOCUMENT_ROOT.'/core/actions_changeselectedfields.inc.php';
 
 if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('assigntask') && GETPOST('formfilteraction') != 'listafterchangingselectedfields') {
 	$action = 'assigntask';
@@ -360,15 +326,6 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilterac
 			$param .= ($search_task_ref ? '&search_task_ref='.urlencode($search_task_ref) : '');
 			$param .= ($search_task_label ? '&search_task_label='.urlencode($search_task_label) : '');
 
-			/*$search_array_options=$search_array_options_project;
-			 $search_options_pattern='search_options_';
-			 include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
-			 */
-
-			$search_array_options = $search_array_options_task;
-			$search_options_pattern = 'search_task_options_';
-			include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
-
 			// Redirect to avoid submit twice on back
             if (!empty($backtopage)) {
                 header('Location: ' . $backtopage);
@@ -423,11 +380,6 @@ if ($id) {
 	$project->fetch_thirdparty();
 }
 
-$search_array_options = $search_array_options_task;
-$extrafieldsobjectprefix = 'efpt.';
-$search_options_pattern = 'search_task_options_';
-$extrafieldsobjectkey = 'projet_task';
-include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_sql.tpl.php';
 $timeArray = array('year' => $year, 'month' => $month, 'week' => $week, 'day' => $day);
 $tasksarray = doliSirhGetTasksArray(0, 0, ($project->id ?: 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields,0,array(), 0,$timeArray, 'month');
 
@@ -445,14 +397,6 @@ $param .= ($search_usertoprocessid > 0 ? '&search_usertoprocessid='.urlencode($s
 $param .= ($search_thirdparty ? '&search_thirdparty='.urlencode($search_thirdparty) : '');
 $param .= ($search_task_ref ? '&search_task_ref='.urlencode($search_task_ref) : '');
 $param .= ($search_task_label ? '&search_task_label='.urlencode($search_task_label) : '');
-
-$search_array_options = $search_array_options_project;
-$search_options_pattern = 'search_options_';
-include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
-
-$search_array_options = $search_array_options_task;
-$search_options_pattern = 'search_task_options_';
-include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_param.tpl.php';
 
 // Show navigation bar
 $nav = '<a class="inline-block valignmiddle" href="?year='.$prev_year."&month=".$prev_month.$param.'">'.img_previous($langs->trans("Previous")).'</a>';
@@ -600,24 +544,6 @@ if (!empty($moreforfilter)) {
 	print '</div>';
 }
 
-$varpage = empty($contextpage) ? $_SERVER["PHP_SELF"] : $contextpage;
-
-$selectedfields = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage); // This also change content of $arrayfields
-
-// This must be after the $selectedfields
-$addcolspan = 0;
-if (!empty($arrayfields['t.planned_workload']['checked'])) {
-	$addcolspan++;
-}
-if (!empty($arrayfields['t.progress']['checked'])) {
-	$addcolspan++;
-}
-foreach ($arrayfields as $key => $val) {
-	if ($val['checked'] && substr($key, 0, 5) == 'efpt.') {
-		$addcolspan++;
-	}
-}
-
 print '<div class="div-table-responsive">';
 print '<table class="tagtable liste'.($moreforfilter ? " listwithfilterbefore" : "").'" id="tablelines3">'."\n";
 
@@ -630,16 +556,6 @@ if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
 }
 print '<td class="liste_titre"><input type="text" size="4" name="search_task_label" value="'.dol_escape_htmltag($search_task_label).'"></td>';
 // TASK fields
-$search_options_pattern = 'search_task_options_';
-$extrafieldsobjectkey = 'projet_task';
-$extrafieldsobjectprefix = 'efpt.';
-include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_input.tpl.php';
-if (!empty($arrayfields['t.planned_workload']['checked'])) {
-	print '<td class="liste_titre"></td>';
-}
-if (!empty($arrayfields['t.progress']['checked'])) {
-	print '<td class="liste_titre right"><input type="text" size="4" name="search_declared_progress" value="'.dol_escape_htmltag($search_declared_progress).'"></td>';
-}
 if (!empty($arrayfields['timeconsumed']['checked'])) {
 	print '<td class="liste_titre"></td>';
 }
@@ -662,9 +578,6 @@ if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
 }
 print '<th>'.$langs->trans("Task").'</th>';
 // TASK fields
-$extrafieldsobjectkey = 'projet_task';
-$extrafieldsobjectprefix = 'efpt.';
-include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_search_title.tpl.php';
 if (!empty($arrayfields['t.planned_workload']['checked'])) {
 	print '<th class="leftborder plannedworkload minwidth75 maxwidth100 right" title="'.dol_escape_htmltag($langs->trans("PlannedWorkload")).'">'.$langs->trans("PlannedWorkload").'</th>';
 }
@@ -703,7 +616,7 @@ for ($idw = 0; $idw < $dayInMonth; $idw++) {
 	print '<br>'.dol_print_date($dayinloopfromfirstdaytoshow, '%d/%m').'</th>';
 }
 //print '<td></td>';
-print_liste_field_titre($selectedfields, $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
+print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
 
 
 print "</tr>\n";

@@ -1048,18 +1048,6 @@ function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &
 
 				if (empty($oldprojectforbreak) || ($oldprojectforbreak != -1 && $oldprojectforbreak != $projectstatic->id)) {
 					$addcolspan = 0;
-					if (!empty($arrayfields['t.planned_workload']['checked'])) {
-						$addcolspan++;
-					}
-					if (!empty($arrayfields['t.progress']['checked'])) {
-						$addcolspan++;
-					}
-					foreach ($arrayfields as $key => $val) {
-						if ($val['checked'] && substr($key, 0, 5) == 'efpt.') {
-							$addcolspan++;
-						}
-					}
-
 					print '<tr class="oddeven trforbreak nobold">'."\n";
 					print '<td colspan="'.(11 + $addcolspan).'">';
 					print $projectstatic->getNomUrl(1, '', 0, '<strong>'.$langs->transnoentitiesnoconv("YourRole").':</strong> '.$projectsrole[$lines[$i]->fk_project]);
@@ -1113,29 +1101,6 @@ function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &
 					print "</div>";
 				}
 				print "</td>\n";
-
-				// TASK extrafields
-				$extrafieldsobjectkey = 'projet_task';
-				$extrafieldsobjectprefix = 'efpt.';
-				include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_list_print_fields.tpl.php';
-
-				// Planned Workload
-				if (!empty($arrayfields['t.planned_workload']['checked'])) {
-					print '<td class="leftborder plannedworkload right">';
-					if ($lines[$i]->planned_workload) {
-						print convertSecondToTime($lines[$i]->planned_workload, 'allhourmin');
-					} else {
-						print '--:--';
-					}
-					print '</td>';
-				}
-
-				if (!empty($arrayfields['t.progress']['checked'])) {
-					// Progress declared %
-					print '<td class="right">';
-					print $formother->select_percent($lines[$i]->progress, $lines[$i]->id.'progress');
-					print '</td>';
-				}
 
 				if (!empty($arrayfields['timeconsumed']['checked'])) {
 					// Time spent by everybody
@@ -1200,67 +1165,58 @@ function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &
 				$modeinput = 'hours';
 				for ($idw = 0; $idw < 7; $idw++) {
 					$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+                    if ($tmpday <= dol_now()) {
+                        $cssonholiday = '';
+                        if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
+                            $cssonholiday .= 'onholidayallday ';
+                        } elseif (!$isavailable[$tmpday]['morning']) {
+                            $cssonholiday .= 'onholidaymorning ';
+                        } elseif (!$isavailable[$tmpday]['afternoon']) {
+                            $cssonholiday .= 'onholidayafternoon ';
+                        }
 
-					$cssonholiday = '';
-					if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-						$cssonholiday .= 'onholidayallday ';
-					} elseif (!$isavailable[$tmpday]['morning']) {
-						$cssonholiday .= 'onholidaymorning ';
-					} elseif (!$isavailable[$tmpday]['afternoon']) {
-						$cssonholiday .= 'onholidayafternoon ';
-					}
+                        $tmparray = dol_getdate($tmpday);
+                        $dayWorkLoad = $projectstatic->weekWorkLoadPerTask[$tmpday][$lines[$i]->id];
+                        $totalforeachday[$tmpday] += $dayWorkLoad;
 
-					$tmparray = dol_getdate($tmpday);
-					$dayWorkLoad = $projectstatic->weekWorkLoadPerTask[$tmpday][$lines[$i]->id];
-					$totalforeachday[$tmpday] += $dayWorkLoad;
+                        $alreadyspent = '';
+                        if ($dayWorkLoad > 0) {
+                            $alreadyspent = convertSecondToTime($dayWorkLoad, 'allhourmin');
+                        }
+                        $alttitle = $langs->trans("AddHereTimeSpentForDay", $tmparray['day'], $tmparray['mon']);
 
-					$alreadyspent = '';
-					if ($dayWorkLoad > 0) {
-						$alreadyspent = convertSecondToTime($dayWorkLoad, 'allhourmin');
-					}
-					$alttitle = $langs->trans("AddHereTimeSpentForDay", $tmparray['day'], $tmparray['mon']);
+                        global $numstartworkingday, $numendworkingday;
+                        $cssweekend = '';
+                        if (($idw + 1 < $numstartworkingday) || ($idw + 1 > $numendworkingday)) {    // This is a day is not inside the setup of working days, so we use a week-end css.
+                            $cssweekend = 'weekend';
+                        }
 
-					global $numstartworkingday, $numendworkingday;
-					$cssweekend = '';
-					if (($idw + 1 < $numstartworkingday) || ($idw + 1 > $numendworkingday)) {	// This is a day is not inside the setup of working days, so we use a week-end css.
-						$cssweekend = 'weekend';
-					}
+                        $disabledtaskday = $disabledtask;
 
-					$disabledtaskday = $disabledtask;
+                        if (!$disabledtask && $restrictBefore && $tmpday < $restrictBefore) {
+                            $disabledtaskday = 1;
+                        }
 
-					if (! $disabledtask && $restrictBefore && $tmpday < $restrictBefore) {
-						$disabledtaskday = 1;
-					}
-
-					$tableCell = '<td class="center hide'.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'">';
-					//$tableCell .= 'idw='.$idw.' '.$conf->global->MAIN_START_WEEK.' '.$numstartworkingday.'-'.$numendworkingday;
-					$placeholder = '';
-					if ($alreadyspent) {
-						$tableCell .= '<span class="timesheetalreadyrecorded" title="texttoreplace"><input type="text" class="center smallpadd" size="2" disabled id="timespent['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" value="'.$alreadyspent.'"></span>';
-						//$placeholder=' placeholder="00:00"';
-						//$tableCell.='+';
-					}
-					$tableCell .= '<input type="text" alt="'.($disabledtaskday ? '' : $alttitle).'" title="'.($disabledtaskday ? '' : $alttitle).'" '.($disabledtaskday ? 'disabled' : $placeholder).' class="center smallpadd" size="2" id="timeadded['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" value="" cols="2"  maxlength="5"';
-					$tableCell .= ' onkeypress="return regexEvent(this,event,\'timeChar\')"';
-					$tableCell .= ' onkeyup="updateTotal('.$idw.',\''.$modeinput.'\')"';
-					$tableCell .= ' onblur="regexEvent(this,event,\''.$modeinput.'\'); updateTotal('.$idw.',\''.$modeinput.'\')" />';
-					$tableCell .= '</td>';
-					print $tableCell;
+                        $tableCell = '<td class="center hide' . $idw . ($cssonholiday ? ' ' . $cssonholiday : '') . ($cssweekend ? ' ' . $cssweekend : '') . '">';
+                        //$tableCell .= 'idw='.$idw.' '.$conf->global->MAIN_START_WEEK.' '.$numstartworkingday.'-'.$numendworkingday;
+                        $placeholder = '';
+                        if ($alreadyspent) {
+                            $tableCell .= '<span class="timesheetalreadyrecorded" title="texttoreplace"><input type="text" class="center smallpadd" size="2" disabled id="timespent[' . $inc . '][' . $idw . ']" name="task[' . $lines[$i]->id . '][' . $idw . ']" value="' . $alreadyspent . '"></span>';
+                            //$placeholder=' placeholder="00:00"';
+                            //$tableCell.='+';
+                        }
+                        $tableCell .= '<input type="text" alt="' . ($disabledtaskday ? '' : $alttitle) . '" title="' . ($disabledtaskday ? '' : $alttitle) . '" ' . ($disabledtaskday ? 'disabled' : $placeholder) . ' class="center smallpadd" size="2" id="timeadded[' . $inc . '][' . $idw . ']" name="task[' . $lines[$i]->id . '][' . $idw . ']" value="" cols="2"  maxlength="5"';
+                        $tableCell .= ' onkeypress="return regexEvent(this,event,\'timeChar\')"';
+                        $tableCell .= ' onkeyup="updateTotal(' . $idw . ',\'' . $modeinput . '\')"';
+                        $tableCell .= ' onblur="regexEvent(this,event,\'' . $modeinput . '\'); updateTotal(' . $idw . ',\'' . $modeinput . '\')" />';
+                        $tableCell .= '</td>';
+                        print $tableCell;
+                    }
 				}
 
-				// Warning
-				print '<td class="right">';
-				if ((!$lines[$i]->public) && $disabledproject) {
-					print $form->textwithpicto('', $langs->trans("UserIsNotContactOfProject"));
-				} elseif ($disabledtask) {
-					$titleassigntask = $langs->trans("AssignTaskToMe");
-					if ($fuser->id != $user->id) {
-						$titleassigntask = $langs->trans("AssignTaskToUser", '...');
-					}
-
-					print $form->textwithpicto('', $langs->trans("TaskIsNotAssignedToUser", $titleassigntask));
-				}
-				print '</td>';
+                if ($currentWeek != $Week) {
+                    print '<td></td>';
+                }
 
 				print "</tr>\n";
 			}
@@ -1390,19 +1346,8 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 
 				if (empty($oldprojectforbreak) || ($oldprojectforbreak != -1 && $oldprojectforbreak != $projectstatic->id)) {
 					$addcolspan = 0;
-					if (!empty($arrayfields['t.planned_workload']['checked'])) {
-						$addcolspan++;
-					}
-					if (!empty($arrayfields['t.progress']['checked'])) {
-						$addcolspan++;
-					}
 					if (!empty($arrayfields['timeconsumed']['checked'])) {
 						$addcolspan++;
-					}
-					foreach ($arrayfields as $key => $val) {
-						if ($val['checked'] && substr($key, 0, 5) == 'efpt.') {
-							$addcolspan++;
-						}
 					}
 
 					print '<tr class="oddeven trforbreak nobold">' . "\n";
@@ -1458,29 +1403,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					print "</div>";
 				}
 				print "</td>\n";
-
-				// TASK extrafields
-				$extrafieldsobjectkey = 'projet_task';
-				$extrafieldsobjectprefix = 'efpt.';
-				include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_list_print_fields.tpl.php';
-//
-//				// Planned Workload
-//				if (!empty($arrayfields['t.planned_workload']['checked'])) {
-//					print '<td class="leftborder plannedworkload right">';
-//					if ($lines[$i]->planned_workload) {
-//						print convertSecondToTime($lines[$i]->planned_workload, 'allhourmin');
-//					} else {
-//						print '--:--';
-//					}
-//					print '</td>';
-//				}
-//
-//				if (!empty($arrayfields['t.progress']['checked'])) {
-//					// Progress declared %
-//					print '<td class="right">';
-//					print $formother->select_percent($lines[$i]->progress, $lines[$i]->id . 'progress');
-//					print '</td>';
-//				}
 
 				if (!empty($arrayfields['timeconsumed']['checked'])) {
 					// Time spent by user
@@ -1556,19 +1478,10 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					print $tableCell;
 				}
 
-				// Warning
-				print '<td class="right">';
-				if ((!$lines[$i]->public) && $disabledproject) {
-					print $form->textwithpicto('', $langs->trans("UserIsNotContactOfProject"));
-				} elseif ($disabledtask) {
-					$titleassigntask = $langs->trans("AssignTaskToMe");
-					if ($fuser->id != $user->id) {
-						$titleassigntask = $langs->trans("AssignTaskToUser", '...');
-					}
-
-					print $form->textwithpicto('', $langs->trans("TaskIsNotAssignedToUser", $titleassigntask));
-				}
-				print '</td>';
+                $currentMonth = date('m', dol_now());
+                if ($currentMonth != GETPOST("month", 'int')) {
+                    print '<td></td>';
+                }
 
 				print "</tr>\n";
 			}
