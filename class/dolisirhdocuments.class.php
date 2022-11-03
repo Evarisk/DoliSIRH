@@ -156,8 +156,6 @@ class DoliSIRHDocuments extends CommonObject
 	 */
 	public function create(User $user, $notrigger = false, $parentObject = 0)
 	{
-		global $conf;
-
 		$now = dol_now();
 
 		$this->ref_ext       = 'dolisirh_' . $this->ref;
@@ -166,45 +164,27 @@ class DoliSIRHDocuments extends CommonObject
 		$this->import_key    = "";
 		$this->status        = 1;
 		$this->type          = $this->element;
-
 		$this->fk_user_creat = $user->id ?: 1;
+		$this->parent_id     = $parentObject->id;
+		$this->parent_type   = $parentObject->element_type ?: $parentObject->element;
 
-		if ($parentObject->id > 0) {
-			$this->parent_id     = $parentObject->id;
-			$this->parent_type   = $parentObject->element_type ?: $parentObject->element;
-		} else {
-			$this->parent_id    = $conf->global->DIGIRISKDOLIBARR_ACTIVE_STANDARD;
-			$this->parent_type  = 'digiriskstandard';
-		}
-
-		$this->DigiriskFillJSON($this);
+		$this->DocumentFillJSON($this);
 		$this->element = $this->element . '@dolisirh';
 		return $this->createCommon($user, $notrigger);
 	}
-	/**
-	 * Function for JSON filling before saving in database
-	 *
-	 * @param $object
-	 */
-	public function DigiriskFillJSON($object) {
-		switch ($object->element) {
-			case "legaldisplay":
-				$this->json = $this->LegalDisplayFillJSON($object);
-				break;
-			case "informationssharing":
-				$this->json = $this->InformationsSharingFillJSON($object);
-				break;
-			case "riskassessmentdocument":
-				$this->json = $this->RiskAssessmentDocumentFillJSON($object);
-				break;
-			case "preventionplandocument":
-				$this->json = $this->PreventionPlanDocumentFillJSON();
-				break;
-			case "firepermitdocument":
-				$this->json = $this->FirePermitDocumentFillJSON();
-				break;
-		}
-	}
+
+//	/**
+//	 * Function for JSON filling before saving in database
+//	 *
+//	 * @param $object
+//	 */
+//	public function DocumentFillJSON($object) {
+//		switch ($object->element) {
+//			case "timesheetdocument":
+//				$this->json = $this->TimeSheetDocumentFillJSON($object);
+//				break;
+//		}
+//	}
 
 	/**
 	 * Load object in memory from the database
@@ -318,62 +298,6 @@ class DoliSIRHDocuments extends CommonObject
 	public function delete(User $user, $notrigger = false)
 	{
 		return $this->deleteCommon($user, $notrigger);
-	}
-
-	/**
-	 *	Load the info information of the object
-	 *
-	 *	@param  int		$id       ID of object
-	 *	@return	int
-	 */
-	public function info($id)
-	{
-		$fieldlist = $this->getFieldList();
-
-		if (empty($fieldlist)) return 0;
-
-		$sql = 'SELECT '.$fieldlist;
-		$sql .= ' FROM '.MAIN_DB_PREFIX.$this->table_element.' as t';
-		$sql .= ' WHERE t.rowid = '.$id;
-		$result = $this->db->query($sql);
-		if ($result)
-		{
-			if ($this->db->num_rows($result))
-			{
-				$obj = $this->db->fetch_object($result);
-				$this->id = $obj->rowid;
-//				if ($obj->fk_user_author)
-//				{
-//					$cuser = new User($this->db);
-//					$cuser->fetch($obj->fk_user_author);
-//					$this->user_creation = $cuser;
-//				}
-//
-//				if ($obj->fk_user_valid)
-//				{
-//					$vuser = new User($this->db);
-//					$vuser->fetch($obj->fk_user_valid);
-//					$this->user_validation = $vuser;
-//				}
-//
-//				if ($obj->fk_user_cloture)
-//				{
-//					$cluser = new User($this->db);
-//					$cluser->fetch($obj->fk_user_cloture);
-//					$this->user_cloture = $cluser;
-//				}
-
-				$this->date_creation = $this->db->jdate($obj->date_creation);
-				//$this->date_modification = $this->db->jdate($obj->datem);
-				//$this->date_validation   = $this->db->jdate($obj->datev);
-			}
-
-			$this->db->free($result);
-		}
-		else
-		{
-			dol_print_error($this->db);
-		}
 	}
 
 	/**

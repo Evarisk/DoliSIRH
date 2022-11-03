@@ -697,7 +697,8 @@ class TimeSheet extends CommonObject
 				$obj = $this->db->fetch_object($result);
 				$this->id = $obj->rowid;
 
-				$this->date_creation = $this->db->jdate($obj->date_creation);
+				$this->date_creation     = $this->db->jdate($obj->date_creation);
+                $this->date_modification = $this->db->jdate($obj->datem);
 			}
 
 			$this->db->free($result);
