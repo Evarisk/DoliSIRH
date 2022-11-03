@@ -333,7 +333,7 @@ abstract class DoliSIRHStats
 	 * @return array
 	 * @throws Exception
 	 */
-	protected function getNbByYear(string $sql): array
+	protected function _getNbByYear(string $sql): array
 	{
 		// phpcs:enable
 		$result = array();
@@ -362,7 +362,7 @@ abstract class DoliSIRHStats
 	 * @return array          Array with nb, total amount, average for each year
 	 * @throws Exception
 	 */
-	protected function getAllByYear(string $sql): array
+	protected function _getAllByYear(string $sql): array
 	{
 		// phpcs:enable
 		$result = array();
@@ -411,7 +411,7 @@ abstract class DoliSIRHStats
 	 * @return array              Array of nb each month
 	 * @throws Exception
 	 */
-	protected function getNbByMonth(string $sql, int $format = 0): array
+	protected function _getNbByMonth(string $sql, int $format = 0): array
 	{
 		// phpcs:enable
 		global $langs;
@@ -464,7 +464,7 @@ abstract class DoliSIRHStats
 	 * @return array              Array of amount each month
 	 * @throws Exception
 	 */
-	protected function getAmountByMonth(string $sql, int $format = 0): array
+	protected function _getAmountByMonth(string $sql, int $format = 0): array
 	{
 		// phpcs:enable
 		global $langs;
@@ -518,7 +518,7 @@ abstract class DoliSIRHStats
 	 * @return array
 	 * @throws Exception
 	 */
-	protected function getAverageByMonth(string $sql, int $format = 0): array
+	protected function _getAverageByMonth(string $sql, int $format = 0): array
 	{
 		// phpcs:enable
 		global $langs;
@@ -569,7 +569,7 @@ abstract class DoliSIRHStats
 	 *  @param  string $sql SQL
 	 *  @return array
 	 */
-	protected function getAmountByYear(string $sql): array
+	protected function _getAmountByYear(string $sql): array
 	{
 		$result = array();
 		$resql = $this->db->query($sql);
