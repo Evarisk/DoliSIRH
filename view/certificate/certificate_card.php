@@ -524,7 +524,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             $genallowed = $permissiontoadd; // If you can read, you can build the PDF to read content
             $delallowed = $permissiontodelete; // If you can create/edit, you can remove a file on card
 
-            print dolisirhshowdocuments('dolisirh:CertificateDocument', $dir_files, $filedir, $urlsource, $genallowed, $object->status == $object::STATUS_VALIDATED ? $delallowed : 0, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'removefile', $object->status == $object::STATUS_VALIDATED && empty(dol_dir_list($filedir)), $langs->trans('CertificateMustBeLocked'));
+            print doliSirhShowDocuments('dolisirh:CertificateDocument', $dir_files, $filedir, $urlsource, $genallowed, $object->status == $object::STATUS_VALIDATED ? $delallowed : 0, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'removefile', $object->status == $object::STATUS_VALIDATED && empty(dol_dir_list($filedir)), $langs->trans('CertificateMustBeLocked'));
 		}
 
 		print '</div><div class="fichehalfright">';

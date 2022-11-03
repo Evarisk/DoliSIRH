@@ -726,7 +726,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$tasksrole = $task->getUserRolesForProjectsOrTasks(0, $usertmp, 0, 0, 1);
 		$restrictviewformytask = ((!isset($conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED)) ? 2 : $conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED);
 		$conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS = 0;
-		$totalforvisibletasks = projectLinesPerDayOnMonth($j, $firstdaytoshow, $lastdaytoshow, $usertmp, 0, $tasksarray, $level, $projectsrole, $tasksrole, 0, $restrictviewformytask, $isavailable, 0, array(), array(), $dayInMonth, 1);
+		$totalforvisibletasks = loadTimeSpentWithinRange($object->date_start, $object->date_end, 0, $object->fk_user_assign);
 	}
 
 	print '<tr class="liste_total"><td class="liste_total">';
@@ -964,7 +964,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			$genallowed = $permissiontoadd; // If you can read, you can build the PDF to read content
 			$delallowed = $permissiontodelete; // If you can create/edit, you can remove a file on card
 
-			print dolisirhshowdocuments('dolisirh:TimeSheetDocument', $dir_files, $filedir, $urlsource, $genallowed, $object->status == $object::STATUS_LOCKED ? $delallowed : 0, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'removefile', $object->status == $object::STATUS_LOCKED && empty(dol_dir_list($filedir)), $langs->trans('TimeSheetMustBeLocked'));
+			print doliSirhShowDocuments('dolisirh:TimeSheetDocument', $dir_files, $filedir, $urlsource, $genallowed, $object->status == $object::STATUS_LOCKED ? $delallowed : 0, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'removefile', $object->status == $object::STATUS_LOCKED && empty(dol_dir_list($filedir)), $langs->trans('TimeSheetMustBeLocked'));
 		}
 
 		print '</div><div class="fichehalfright">';

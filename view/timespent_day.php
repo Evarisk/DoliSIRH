@@ -558,7 +558,7 @@ print '<input type="hidden" name="addtimeyear" value="'.$tmp['year'].'">';
 print '<input type="hidden" name="addtimemonth" value="'.$tmp['mon'].'">';
 print '<input type="hidden" name="addtimeday" value="'.$tmp['mday'].'">';
 
-$head = dolisirh_timesheet_prepare_head($mode, $usertoprocess);
+$head = timeSpendPrepareHead($mode, $usertoprocess);
 print dol_get_fiche_head($head, 'inputperday', $langs->trans('TimeSpent'), -1, $picto);
 
 // Show description of content

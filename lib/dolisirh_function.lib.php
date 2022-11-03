@@ -79,6 +79,263 @@ function isTaskFavorite($task_id, $user_id)
 }
 
 /**
+ * Prepare array with list of tabs
+ *
+ * @param	string	$mode		Mode
+ * @param   string  $fuser      Filter on user
+ * @return  array				Array of tabs to show
+ */
+function timeSpendPrepareHead($mode, $fuser = null)
+{
+	global $langs, $conf, $user;
+	$h = 0;
+	$head = array();
+
+	$h = 0;
+
+	$param = '';
+	$param .= ($mode ? '&mode='.$mode : '');
+	if (is_object($fuser) && $fuser->id > 0 && $fuser->id != $user->id) {
+		$param .= '&search_usertoprocessid='.$fuser->id;
+	}
+
+	if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERMONTH)) {
+		$head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_month.php".($param ? '?'.$param : '');
+		$head[$h][1] = $langs->trans("InputPerMonth");
+		$head[$h][2] = 'inputpermonth';
+		$h++;
+	}
+
+	if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERWEEK)) {
+		$head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_week.php".($param ? '?'.$param : '');
+		$head[$h][1] = $langs->trans("InputPerWeek");
+		$head[$h][2] = 'inputperweek';
+		$h++;
+	}
+
+	if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERTIME)) {
+		$head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_day.php".($param ? '?'.$param : '');
+		$head[$h][1] = $langs->trans("InputPerDay");
+		$head[$h][2] = 'inputperday';
+		$h++;
+	}
+
+	complete_head_from_modules($conf, $langs, null, $head, $h, 'project_timesheet');
+
+	complete_head_from_modules($conf, $langs, null, $head, $h, 'project_timesheet', 'remove');
+
+	return $head;
+}
+
+/**
+ * Sets object to given categories.
+ *
+ * Adds it to non existing supplied categories.
+ * Deletes object from existing categories not supplied (if remove_existing==true).
+ * Existing categories are left untouch.
+ *
+ * @param 	int[]|int 	$categories 		Category ID or array of Categories IDs
+ * @param 	string 		$type_categ 		Category type ('customer', 'supplier', 'website_page', ...) definied into const class Categorie type
+ * @param 	boolean		$remove_existing 	True: Remove existings categories from Object if not supplies by $categories, False: let them
+ * @param 	CommonObject	$object 	Object
+ * @return	int							<0 if KO, >0 if OK
+ */
+function setCategoriesObject($categories = array(), $type_categ = '', $remove_existing = true, $object)
+{
+	// Handle single category
+	if (!is_array($categories)) {
+		$categories = array($categories);
+	}
+
+	dol_syslog(get_class($object)."::setCategoriesCommon Oject Id:".$object->id.' type_categ:'.$type_categ.' nb tag add:'.count($categories), LOG_DEBUG);
+
+	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+
+	if (empty($type_categ)) {
+		dol_syslog(__METHOD__.': Type '.$type_categ.'is an unknown category type. Done nothing.', LOG_ERR);
+		return -1;
+	}
+
+	// Get current categories
+	$c = new Categorie($object->db);
+	$existing = $c->containing($object->id, $type_categ, 'id');
+	if ($remove_existing) {
+		// Diff
+		if (is_array($existing)) {
+			$to_del = array_diff($existing, $categories);
+			$to_add = array_diff($categories, $existing);
+		} else {
+			$to_del = array(); // Nothing to delete
+			$to_add = $categories;
+		}
+	} else {
+		$to_del = array(); // Nothing to delete
+		$to_add = array_diff($categories, $existing);
+	}
+
+	$error = 0;
+	$ok = 0;
+
+	// Process
+	foreach ($to_del as $del) {
+		if ($c->fetch($del) > 0) {
+			$result=$c->del_type($object, $type_categ);
+			if ($result < 0) {
+				$error++;
+				$object->error = $c->error;
+				$object->errors = $c->errors;
+				break;
+			} else {
+				$ok += $result;
+			}
+		}
+	}
+	foreach ($to_add as $add) {
+		if ($c->fetch($add) > 0) {
+			$result = $c->add_type($object, $type_categ);
+			if ($result < 0) {
+				$error++;
+				$object->error = $c->error;
+				$object->errors = $c->errors;
+				break;
+			} else {
+				$ok += $result;
+			}
+		}
+	}
+
+	return $error ? -1 * $error : $ok;
+}
+
+/**
+ * Load time spent into this->weekWorkLoad and this->weekWorkLoadPerTask for all day of a week of project.
+ * Note: array weekWorkLoad and weekWorkLoadPerTask are reset and filled at each call.
+ *
+ * @param  int       $datestart First day
+ * @param  int       $dateend   Last day
+ * @param  int       $project_id id of project
+ * @param  int       $taskid    Filter on a task id
+ * @param  int       $userid    Time spent by a particular user
+ * @return array
+ * @throws Exception
+ */
+function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $taskid = 0, $userid = 0)
+{
+	global $db;
+
+	$workLoad['monthWorkLoad'] = array();
+	$workLoad['monthWorkLoadPerTask'] = array();
+
+	if (empty($datestart)) {
+		dol_print_error('', 'Error datestart parameter is empty');
+	}
+
+	$sql = "SELECT ptt.rowid as taskid, ptt.task_duration, ptt.task_date, ptt.task_datehour, ptt.fk_task";
+	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
+	$sql .= " WHERE ptt.fk_task = pt.rowid";
+	$sql .= " AND pt.fk_projet = ".((int) $project_id);
+	$sql .= " AND (ptt.task_date >= '".$db->idate($datestart)."' ";
+	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
+	if ($taskid) {
+		$sql .= " AND ptt.fk_task=".((int) $taskid);
+	}
+	if (is_numeric($userid)) {
+		$sql .= " AND ptt.fk_user=".((int) $userid);
+	}
+
+	//print $sql;
+	$resql = $db->query($sql);
+	if ($resql) {
+		$daylareadyfound = array();
+
+		$num = $db->num_rows($resql);
+		$i = 0;
+		// Loop on each record found, so each couple (project id, task id)
+		while ($i < $num) {
+			$obj = $db->fetch_object($resql);
+			$day = $db->jdate($obj->task_date); // task_date is date without hours
+			if (empty($daylareadyfound[$day])) {
+				$workLoad['monthWorkLoad'][$day] = $obj->task_duration;
+				$workLoad['monthWorkLoadPerTask'][$day][$obj->fk_task] = $obj->task_duration;
+			} else {
+				$workLoad['monthWorkLoad'][$day] += $obj->task_duration;
+				$workLoad['monthWorkLoadPerTask'][$day][$obj->fk_task] += $obj->task_duration;
+			}
+			$daylareadyfound[$day] = 1;
+			$i++;
+		}
+		$db->free($resql);
+		return $workLoad;
+	} else {
+		$project->error = "Error ".$db->lasterror();
+		dol_syslog(get_class($project)."::fetch ".$project->error, LOG_ERR);
+		return array();
+	}
+}
+
+/**
+ * Load time spent into this->weekWorkLoad and this->weekWorkLoadPerTask for all day of a week of project.
+ * Note: array weekWorkLoad and weekWorkLoadPerTask are reset and filled at each call.
+ *
+ * @param  int       $datestart First day
+ * @param  int       $dateend   Last day
+ * @param  int       $taskid    Filter on a task id
+ * @param  int       $userid    Time spent by a particular user
+ * @return int                  0 < if OK, >0 if KO
+ * @throws Exception
+ */
+function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+{
+	global $db;
+	$error = 0;
+
+	$task = new Task($db);
+
+	if (empty($datestart)) {
+		dol_print_error('', 'Error datestart parameter is empty');
+	}
+
+	$sql = "SELECT ptt.rowid as taskid, ptt.task_duration, ptt.task_date, ptt.task_datehour, ptt.fk_task";
+	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
+	$sql .= " WHERE ptt.fk_task = pt.rowid";
+	$sql .= " AND (ptt.task_date >= '".$db->idate($datestart)."' ";
+	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
+	if ($taskid) {
+		$sql .= " AND ptt.fk_task=".((int) $taskid);
+	}
+	if ($userid) {
+		$sql .= " AND ptt.fk_user=".((int) $userid);
+	}
+
+	$timeSpent = array();
+
+	$objects = array();
+
+	//print $sql;
+	$resql = $db->query($sql);
+	if ($resql) {
+		$num = $db->num_rows($resql);
+		$i = 0;
+		// Loop on each record found, so each couple (project id, task id)
+		while ($i < $num) {
+			$obj = $db->fetch_object($resql);
+
+			$hours = floor($obj->task_duration / 3600);
+			$minutes = ($obj->task_duration % 3600);
+
+			$timeSpent['hours'] += $hours;
+			$timeSpent['minutes'] += $minutes;
+			$timeSpent['total'] += $obj->task_duration;
+			$i++;
+		}
+		$db->free($resql);
+		return $timeSpent;
+	} else {
+		return -1;
+	}
+}
+
+/**
  * Return list of tasks for all projects or for one particular project
  * Sort order is on project, then on position of task, and last on start date of first level task
  *
@@ -357,200 +614,6 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 	}
 
 	return $tasks;
-}
-
-/**
- * Prepare array with list of tabs
- *
- * @param	string	$mode		Mode
- * @param   string  $fuser      Filter on user
- * @return  array				Array of tabs to show
- */
-function dolisirh_timesheet_prepare_head($mode, $fuser = null)
-{
-	global $langs, $conf, $user;
-	$h = 0;
-	$head = array();
-
-	$h = 0;
-
-	$param = '';
-	$param .= ($mode ? '&mode='.$mode : '');
-	if (is_object($fuser) && $fuser->id > 0 && $fuser->id != $user->id) {
-		$param .= '&search_usertoprocessid='.$fuser->id;
-	}
-
-	if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERMONTH)) {
-		$head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_month.php".($param ? '?'.$param : '');
-		$head[$h][1] = $langs->trans("InputPerMonth");
-		$head[$h][2] = 'inputpermonth';
-		$h++;
-	}
-
-	if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERWEEK)) {
-		$head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_week.php".($param ? '?'.$param : '');
-		$head[$h][1] = $langs->trans("InputPerWeek");
-		$head[$h][2] = 'inputperweek';
-		$h++;
-	}
-
-	if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERTIME)) {
-		$head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_day.php".($param ? '?'.$param : '');
-		$head[$h][1] = $langs->trans("InputPerDay");
-		$head[$h][2] = 'inputperday';
-		$h++;
-	}
-
-	complete_head_from_modules($conf, $langs, null, $head, $h, 'project_timesheet');
-
-	complete_head_from_modules($conf, $langs, null, $head, $h, 'project_timesheet', 'remove');
-
-	return $head;
-}
-
-/**
- * Sets object to given categories.
- *
- * Adds it to non existing supplied categories.
- * Deletes object from existing categories not supplied (if remove_existing==true).
- * Existing categories are left untouch.
- *
- * @param 	int[]|int 	$categories 		Category ID or array of Categories IDs
- * @param 	string 		$type_categ 		Category type ('customer', 'supplier', 'website_page', ...) definied into const class Categorie type
- * @param 	boolean		$remove_existing 	True: Remove existings categories from Object if not supplies by $categories, False: let them
- * @param 	CommonObject	$object 	Object
- * @return	int							<0 if KO, >0 if OK
- */
-function setCategoriesObject($categories = array(), $type_categ = '', $remove_existing = true, $object)
-{
-	// Handle single category
-	if (!is_array($categories)) {
-		$categories = array($categories);
-	}
-
-	dol_syslog(get_class($object)."::setCategoriesCommon Oject Id:".$object->id.' type_categ:'.$type_categ.' nb tag add:'.count($categories), LOG_DEBUG);
-
-	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
-
-	if (empty($type_categ)) {
-		dol_syslog(__METHOD__.': Type '.$type_categ.'is an unknown category type. Done nothing.', LOG_ERR);
-		return -1;
-	}
-
-	// Get current categories
-	$c = new Categorie($object->db);
-	$existing = $c->containing($object->id, $type_categ, 'id');
-	if ($remove_existing) {
-		// Diff
-		if (is_array($existing)) {
-			$to_del = array_diff($existing, $categories);
-			$to_add = array_diff($categories, $existing);
-		} else {
-			$to_del = array(); // Nothing to delete
-			$to_add = $categories;
-		}
-	} else {
-		$to_del = array(); // Nothing to delete
-		$to_add = array_diff($categories, $existing);
-	}
-
-	$error = 0;
-	$ok = 0;
-
-	// Process
-	foreach ($to_del as $del) {
-		if ($c->fetch($del) > 0) {
-			$result=$c->del_type($object, $type_categ);
-			if ($result < 0) {
-				$error++;
-				$object->error = $c->error;
-				$object->errors = $c->errors;
-				break;
-			} else {
-				$ok += $result;
-			}
-		}
-	}
-	foreach ($to_add as $add) {
-		if ($c->fetch($add) > 0) {
-			$result = $c->add_type($object, $type_categ);
-			if ($result < 0) {
-				$error++;
-				$object->error = $c->error;
-				$object->errors = $c->errors;
-				break;
-			} else {
-				$ok += $result;
-			}
-		}
-	}
-
-	return $error ? -1 * $error : $ok;
-}
-
-/**
- * Load time spent into this->weekWorkLoad and this->weekWorkLoadPerTask for all day of a week of project.
- * Note: array weekWorkLoad and weekWorkLoadPerTask are reset and filled at each call.
- *
- * @param  int       $datestart First day
- * @param  int       $dateend   Last day
- * @param  int       $taskid    Filter on a task id
- * @param  int       $userid    Time spent by a particular user
- * @return int                  0 < if OK, >0 if KO
- * @throws Exception
- */
-function loadTimeSpentMonthByDay($datestart, $dateend, $taskid = 0, $userid = 0, $project)
-{
-	$error = 0;
-
-	$project->monthWorkLoad = array();
-	$project->monthWorkLoadPerTask = array();
-
-	if (empty($datestart)) {
-		dol_print_error('', 'Error datestart parameter is empty');
-	}
-
-	$sql = "SELECT ptt.rowid as taskid, ptt.task_duration, ptt.task_date, ptt.task_datehour, ptt.fk_task";
-	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
-	$sql .= " WHERE ptt.fk_task = pt.rowid";
-	$sql .= " AND pt.fk_projet = ".((int) $project->id);
-	$sql .= " AND (ptt.task_date >= '".$project->db->idate($datestart)."' ";
-	$sql .= " AND ptt.task_date <= '".$project->db->idate($dateend)."')";
-	if ($task_id) {
-		$sql .= " AND ptt.fk_task=".((int) $taskid);
-	}
-	if (is_numeric($userid)) {
-		$sql .= " AND ptt.fk_user=".((int) $userid);
-	}
-
-	//print $sql;
-	$resql = $project->db->query($sql);
-	if ($resql) {
-		$daylareadyfound = array();
-
-		$num = $project->db->num_rows($resql);
-		$i = 0;
-		// Loop on each record found, so each couple (project id, task id)
-		while ($i < $num) {
-			$obj = $project->db->fetch_object($resql);
-			$day = $project->db->jdate($obj->task_date); // task_date is date without hours
-			if (empty($daylareadyfound[$day])) {
-				$project->monthWorkLoad[$day] = $obj->task_duration;
-				$project->monthWorkLoadPerTask[$day][$obj->fk_task] = $obj->task_duration;
-			} else {
-				$project->monthWorkLoad[$day] += $obj->task_duration;
-				$project->monthWorkLoadPerTask[$day][$obj->fk_task] += $obj->task_duration;
-			}
-			$daylareadyfound[$day] = 1;
-			$i++;
-		}
-		$project->db->free($resql);
-		return 1;
-	} else {
-		$project->error = "Error ".$project->db->lasterror();
-		dol_syslog(get_class($project)."::fetch ".$project->error, LOG_ERR);
-		return -1;
-	}
 }
 
 /**
@@ -1246,7 +1309,7 @@ function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &
  * @param	Extrafields	$extrafields		    Object extrafields
  * @return  array								Array with time spent for $fuser for each day of week on tasks in $lines and substasks
  */
-function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null, $dayInMonth, $noprint = 0)
+function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null, $dayInMonth)
 {
 	global $conf, $db, $user, $langs;
 
@@ -1308,15 +1371,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					$projectstatic->id = $lines[$i]->fk_project;
 				}
 
-
-				//var_dump('--- '.$level.' '.$firstdaytoshow.' '.$fuser->id.' '.$projectstatic->id.' '.$workloadforid[$projectstatic->id]);
-				//var_dump($projectstatic->monthWorkLoadPerTask);
-				if (empty($workloadforid[$projectstatic->id])) {
-					loadTimeSpentMonthByDay($firstdaytoshow, $lastdaytoshow, 0, $fuser->id, $projectstatic); // Load time spent from table projet_task_time for the project into this->weekWorkLoad and this->monthWorkLoadPerTask for all days of a week
-					$workloadforid[$projectstatic->id] = 1;
-				}
-				//var_dump('--- '.$projectstatic->id.' '.$workloadforid[$projectstatic->id]);
-
 				$projectstatic->id = $lines[$i]->fk_project;
 				$projectstatic->ref = $lines[$i]->projectref;
 				$projectstatic->title = $lines[$i]->projectlabel;
@@ -1351,104 +1405,96 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 						}
 					}
 
-					if (!$noprint) {
-						print '<tr class="oddeven trforbreak nobold">' . "\n";
-						print '<td colspan="' . (2 + $addcolspan + $dayInMonth) . '">';
-						print $projectstatic->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv("YourRole") . ':</strong> ' . $projectsrole[$lines[$i]->fk_project]);
-						if ($thirdpartystatic->id > 0) {
-							print ' - ' . $thirdpartystatic->getNomUrl(1);
-						}
-						if ($projectstatic->title) {
-							print ' - ';
-							print '<span class="secondary" title="' . $projectstatic->title . '">' . dol_trunc($projectstatic->title, '64') . '</span>';
-						}
+					print '<tr class="oddeven trforbreak nobold">' . "\n";
+					print '<td colspan="' . (2 + $addcolspan + $dayInMonth) . '">';
+					print $projectstatic->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv("YourRole") . ':</strong> ' . $projectsrole[$lines[$i]->fk_project]);
+					if ($thirdpartystatic->id > 0) {
+						print ' - ' . $thirdpartystatic->getNomUrl(1);
+					}
+					if ($projectstatic->title) {
+						print ' - ';
+						print '<span class="secondary" title="' . $projectstatic->title . '">' . dol_trunc($projectstatic->title, '64') . '</span>';
 					}
 
-					if (!$noprint) {
-						print '</td>';
-						print '</tr>';
-					}
+					print '</td>';
+					print '</tr>';
 				}
 
 				if ($oldprojectforbreak != -1) {
 					$oldprojectforbreak = $projectstatic->id;
 				}
 
-				if (!$noprint) {
-					print '<tr class="oddeven" data-taskid="' . $lines[$i]->id . '" >' . "\n";
+				print '<tr class="oddeven" data-taskid="' . $lines[$i]->id . '" >' . "\n";
+
+				// Project
+				if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
+					print '<td class="nowrap">';
+					if ($oldprojectforbreak == -1) {
+						print $projectstatic->getNomUrl(1, '', 0, $langs->transnoentitiesnoconv("YourRole") . ': ' . $projectsrole[$lines[$i]->fk_project]);
+					}
+					print "</td>";
 				}
 
-				if (!$noprint) {
-					// Project
-					if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-						print '<td class="nowrap">';
-						if ($oldprojectforbreak == -1) {
-							print $projectstatic->getNomUrl(1, '', 0, $langs->transnoentitiesnoconv("YourRole") . ': ' . $projectsrole[$lines[$i]->fk_project]);
-						}
-						print "</td>";
+				// Thirdparty
+				if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
+					print '<td class="tdoverflowmax100">';
+					if ($thirdpartystatic->id > 0) {
+						print $thirdpartystatic->getNomUrl(1, 'project');
 					}
+					print '</td>';
+				}
 
-					// Thirdparty
-					if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-						print '<td class="tdoverflowmax100">';
-						if ($thirdpartystatic->id > 0) {
-							print $thirdpartystatic->getNomUrl(1, 'project');
-						}
-						print '</td>';
-					}
+				// Ref
+				print '<td class="nowrap">';
+				print '<!-- Task id = ' . $lines[$i]->id . ' -->';
+				for ($k = 0; $k < $level; $k++) {
+					print '<div class="marginleftonly">';
+				}
+				print $taskstatic->getNomUrl(1, 'withproject', 'time');
+				// Label task
+				print '<br>';
+				print '<span class="opacitymedium" title="' . $taskstatic->label . '">' . dol_trunc($taskstatic->label, '64') . '</span>';
+				for ($k = 0; $k < $level; $k++) {
+					print "</div>";
+				}
+				print "</td>\n";
 
-					// Ref
-					print '<td class="nowrap">';
-					print '<!-- Task id = ' . $lines[$i]->id . ' -->';
-					for ($k = 0; $k < $level; $k++) {
-						print '<div class="marginleftonly">';
-					}
-					print $taskstatic->getNomUrl(1, 'withproject', 'time');
-					// Label task
-					print '<br>';
-					print '<span class="opacitymedium" title="' . $taskstatic->label . '">' . dol_trunc($taskstatic->label, '64') . '</span>';
-					for ($k = 0; $k < $level; $k++) {
-						print "</div>";
+				// TASK extrafields
+				$extrafieldsobjectkey = 'projet_task';
+				$extrafieldsobjectprefix = 'efpt.';
+				include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_list_print_fields.tpl.php';
+//
+//				// Planned Workload
+//				if (!empty($arrayfields['t.planned_workload']['checked'])) {
+//					print '<td class="leftborder plannedworkload right">';
+//					if ($lines[$i]->planned_workload) {
+//						print convertSecondToTime($lines[$i]->planned_workload, 'allhourmin');
+//					} else {
+//						print '--:--';
+//					}
+//					print '</td>';
+//				}
+//
+//				if (!empty($arrayfields['t.progress']['checked'])) {
+//					// Progress declared %
+//					print '<td class="right">';
+//					print $formother->select_percent($lines[$i]->progress, $lines[$i]->id . 'progress');
+//					print '</td>';
+//				}
+
+				if (!empty($arrayfields['timeconsumed']['checked'])) {
+					// Time spent by user
+					print '<td class="right">';
+					$firstday = dol_print_date($firstdaytoshow, 'dayrfc');
+					$lastday = dol_print_date($lastdaytoshow, 'dayrfc');
+					$filter = ' AND t.task_datehour BETWEEN ' . "'" . $firstday . "'" . ' AND ' . "'" . $lastday . "'";
+					$tmptimespent = $taskstatic->getSummaryOfTimeSpent($fuser->id, $filter);
+					if ($tmptimespent['total_duration']) {
+						print convertSecondToTime($tmptimespent['total_duration'], 'allhourmin');
+					} else {
+						print '--:--';
 					}
 					print "</td>\n";
-
-					// TASK extrafields
-					$extrafieldsobjectkey = 'projet_task';
-					$extrafieldsobjectprefix = 'efpt.';
-					include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_list_print_fields.tpl.php';
-
-					// Planned Workload
-					if (!empty($arrayfields['t.planned_workload']['checked'])) {
-						print '<td class="leftborder plannedworkload right">';
-						if ($lines[$i]->planned_workload) {
-							print convertSecondToTime($lines[$i]->planned_workload, 'allhourmin');
-						} else {
-							print '--:--';
-						}
-						print '</td>';
-					}
-
-					if (!empty($arrayfields['t.progress']['checked'])) {
-						// Progress declared %
-						print '<td class="right">';
-						print $formother->select_percent($lines[$i]->progress, $lines[$i]->id . 'progress');
-						print '</td>';
-					}
-
-					if (!empty($arrayfields['timeconsumed']['checked'])) {
-						// Time spent by user
-						print '<td class="right">';
-						$firstday = dol_print_date($firstdaytoshow, 'dayrfc');
-						$lastday = dol_print_date($lastdaytoshow, 'dayrfc');
-						$filter = ' AND t.task_datehour BETWEEN ' . "'" . $firstday . "'" . ' AND ' . "'" . $lastday . "'";
-						$tmptimespent = $taskstatic->getSummaryOfTimeSpent($fuser->id, $filter);
-						if ($tmptimespent['total_duration']) {
-							print convertSecondToTime($tmptimespent['total_duration'], 'allhourmin');
-						} else {
-							print '--:--';
-						}
-						print "</td>\n";
-					}
 				}
 
 				$disabledproject = 1;
@@ -1479,16 +1525,16 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					}
 
 					$tmparray = dol_getdate($tmpday);
-					$dayWorkLoad = $projectstatic->monthWorkLoadPerTask[$tmpday][$lines[$i]->id];
-					$totalforeachday[$tmpday] += $dayWorkLoad;
+					$dayWorkLoad = loadTimeSpentWithinRange($tmpday, dol_time_plus_duree($tmpday, 1, 'd'), $lines[$i]->id, $user->id);
+
+					$totalforeachday[$tmpday] += $dayWorkLoad['total'];
 
 					$alreadyspent = '';
-					if ($dayWorkLoad > 0) {
-						$alreadyspent = convertSecondToTime($dayWorkLoad, 'allhourmin');
+					if ($dayWorkLoad['total'] > 0) {
+						$alreadyspent = convertSecondToTime($dayWorkLoad['total'], 'allhourmin');
 					}
 					$alttitle = $langs->trans("AddHereTimeSpentForDay", $tmparray['day'], $tmparray['mon']);
 
-					global $numstartworkingday, $numendworkingday;
 					$cssweekend = '';
 					$disabledtaskday = $disabledtask;
 
@@ -1507,28 +1553,24 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					$tableCell .= ' onkeyup="updateTotal('.$idw.',\''.$modeinput.'\')"';
 					$tableCell .= ' onblur="regexEvent(this,event,\''.$modeinput.'\'); updateTotal('.$idw.',\''.$modeinput.'\')" />';
 					$tableCell .= '</td>';
-					if (!$noprint) {
-						print $tableCell;
-					}
+					print $tableCell;
 				}
 
-				if (!$noprint) {
-					// Warning
-					print '<td class="right">';
-					if ((!$lines[$i]->public) && $disabledproject) {
-						print $form->textwithpicto('', $langs->trans("UserIsNotContactOfProject"));
-					} elseif ($disabledtask) {
-						$titleassigntask = $langs->trans("AssignTaskToMe");
-						if ($fuser->id != $user->id) {
-							$titleassigntask = $langs->trans("AssignTaskToUser", '...');
-						}
-
-						print $form->textwithpicto('', $langs->trans("TaskIsNotAssignedToUser", $titleassigntask));
+				// Warning
+				print '<td class="right">';
+				if ((!$lines[$i]->public) && $disabledproject) {
+					print $form->textwithpicto('', $langs->trans("UserIsNotContactOfProject"));
+				} elseif ($disabledtask) {
+					$titleassigntask = $langs->trans("AssignTaskToMe");
+					if ($fuser->id != $user->id) {
+						$titleassigntask = $langs->trans("AssignTaskToUser", '...');
 					}
-					print '</td>';
 
-					print "</tr>\n";
+					print $form->textwithpicto('', $langs->trans("TaskIsNotAssignedToUser", $titleassigntask));
 				}
+				print '</td>';
+
+				print "</tr>\n";
 			}
 
 			// Call to show task with a lower level (task under the current task)
@@ -1583,7 +1625,7 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
  *      @param      string              $tooltiptext       (optional) Tooltip text when gen button disabled
  * 		@return		string              					Output string with HTML array of documents (might be empty string)
  */
-function dolisirhshowdocuments($modulepart, $modulesubdir, $filedir, $urlsource, $genallowed, $delallowed = 0, $modelselected = '', $allowgenifempty = 1, $forcenomultilang = 0, $notused = 0, $noform = 0, $param = '', $title = '', $buttonlabel = '', $codelang = '', $morepicto = '', $object = null, $hideifempty = 0, $removeaction = 'remove_file', $active = 1, $tooltiptext = '')
+function doliSirhShowDocuments($modulepart, $modulesubdir, $filedir, $urlsource, $genallowed, $delallowed = 0, $modelselected = '', $allowgenifempty = 1, $forcenomultilang = 0, $notused = 0, $noform = 0, $param = '', $title = '', $buttonlabel = '', $codelang = '', $morepicto = '', $object = null, $hideifempty = 0, $removeaction = 'remove_file', $active = 1, $tooltiptext = '')
 {
 	global $db, $langs, $conf, $user, $hookmanager, $form;
 
@@ -1885,7 +1927,7 @@ function remove_indexdolisirh($model)
  *  @param  int		    $maxfilenamelength  Max length of value to show
  * 	@return	array|int			    		0 if no module is activated, or array(key=>label). For modules that need directory scan, key is completed with ":filename".
  */
-function getListOfModelsDoliSIRH($db, $type, $maxfilenamelength = 0)
+function doliSirhGetListOfModels($db, $type, $maxfilenamelength = 0)
 {
 	global $conf, $langs;
 	$liste = array();

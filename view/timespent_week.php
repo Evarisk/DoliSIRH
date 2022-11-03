@@ -504,7 +504,7 @@ print '<input type="hidden" name="day" value="'.$day.'">';
 print '<input type="hidden" name="month" value="'.$month.'">';
 print '<input type="hidden" name="year" value="'.$year.'">';
 
-$head = dolisirh_timesheet_prepare_head($mode, $usertoprocess);
+$head = timeSpendPrepareHead($mode, $usertoprocess);
 print dol_get_fiche_head($head, 'inputperweek', $langs->trans('TimeSpent'), -1, $picto);
 
 // Show description of content
