@@ -45,10 +45,10 @@ function dolisirhAdminPrepareHead(): array
 	$head[$h][2] = 'timesheet';
 	$h++;
 
-	$head[$h][0] = dol_buildpath("/dolisirh/admin/certificate.php", 1);
-	$head[$h][1] = '<i class="fas fa-user-graduate pictofixedwidth"></i>' . $langs->trans("Certificate");
-	$head[$h][2] = 'certificate';
-	$h++;
+//	$head[$h][0] = dol_buildpath("/dolisirh/admin/certificate.php", 1);
+//	$head[$h][1] = '<i class="fas fa-user-graduate pictofixedwidth"></i>' . $langs->trans("Certificate");
+//	$head[$h][2] = 'certificate';
+//	$h++;
 
 	$head[$h][0] = dol_buildpath("/dolisirh/admin/dolisirhdocuments.php", 1);
 	$head[$h][1] = '<i class="fas fa-file-alt pictofixedwidth"></i>' . $langs->trans("YourDocuments");

@@ -341,21 +341,21 @@ class modDoliSIRH extends DolibarrModules
 			'user'     => 0,
 		);
 
-		$this->menu[$r++] = array(
-			'fk_menu'  => 'fk_mainmenu=dolisirh',
-			'type'     => 'left',
-			'titre'    => $langs->trans('Certificate'),
-			'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i>',
-			'mainmenu' => 'dolisirh',
-			'leftmenu' => 'certificate',
-			'url'      => '/dolisirh/view/certificate/certificate_list.php',
-			'langs'    => 'dolisirh@dolisirh',
-			'position' => 1000 + $r,
-			'enabled'  => '$conf->dolisirh->enabled',
-			'perms'    => '$user->rights->dolisirh->certificate->read',
-			'target'   => '',
-			'user'     => 0,
-		);
+//		$this->menu[$r++] = array(
+//			'fk_menu'  => 'fk_mainmenu=dolisirh',
+//			'type'     => 'left',
+//			'titre'    => $langs->trans('Certificate'),
+//			'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i>',
+//			'mainmenu' => 'dolisirh',
+//			'leftmenu' => 'certificate',
+//			'url'      => '/dolisirh/view/certificate/certificate_list.php',
+//			'langs'    => 'dolisirh@dolisirh',
+//			'position' => 1000 + $r,
+//			'enabled'  => '$conf->dolisirh->enabled',
+//			'perms'    => '$user->rights->dolisirh->certificate->read',
+//			'target'   => '',
+//			'user'     => 0,
+//		);
 
 		$this->menu[$r++] = array(
 			'fk_menu'  => 'fk_mainmenu=dolisirh',                                           // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
