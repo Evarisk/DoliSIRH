@@ -37,25 +37,27 @@ if (!$res) die("Include of main fails");
 
 // Libraries
 require_once DOL_DOCUMENT_ROOT."/core/lib/admin.lib.php";
+
 require_once '../lib/dolisirh.lib.php';
 
+// Global variables definitions
 global $conf, $db, $langs, $user;
 
 // Translations
 $langs->loadLangs(array("admin", "dolisirh@dolisirh"));
 
-// Parameters
+// Get parameters
 $action = GETPOST('action', 'alpha');
-$backtopage = GETPOST('backtopage', 'alpha');
-
-$value = GETPOST('value', 'alpha');
+$value  = GETPOST('value', 'alpha');
 
 $arrayofparameters = array(
-	'DOLISIRH_DEFAUT_TICKET_TIME'=>array('css'=>'minwidth200', 'enabled'=>1),
+    'DOLISIRH_DEFAUT_TICKET_TIME' => array('css' => 'minwidth200', 'enabled' => 1),
 );
 
 // Access control
-if (!$user->admin) accessforbidden();
+$permissiontoread = $user->rights->dolisirh->adminpage->read;
+if (empty($conf->dolisirh->enabled)) accessforbidden();
+if (!$permissiontoread) accessforbidden();
 
 /*
  * Actions
@@ -69,8 +71,8 @@ require_once '../core/tpl/dolisirh_projectcreation_action.tpl.php';
  * View
  */
 
+// Initialize view objects
 $form = new Form($db);
-
 
 $help_url = 'FR:Module_DoliSIRH';
 $title    = $langs->trans("DoliSIRHSetup");

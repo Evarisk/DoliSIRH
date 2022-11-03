@@ -52,12 +52,13 @@ $langs->loadLangs(array("admin", "dolisirh@dolisirh"));
 $action     = GETPOST('action', 'alpha');
 $backtopage = GETPOST('backtopage', 'alpha');
 
-// Initialize objects
-// Technical objets
+// Initialize technical objects
 $object = new TimeSheet($db);
 
 // Access control
-if (!$user->admin) accessforbidden();
+$permissiontoread = $user->rights->dolisirh->adminpage->read;
+if (empty($conf->dolisirh->enabled)) accessforbidden();
+if (!$permissiontoread) accessforbidden();
 
 /*
  * View
@@ -74,9 +75,7 @@ $morecss  = array("/dolisirh/css/dolisirh.css");
 llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 
 // Subheader
-$linkback = '<a href="'.($backtopage ?: DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1').'">'.$langs->trans("BackToModuleList").'</a>';
-
-print load_fiche_titre($title, $linkback, 'object_'.$object->picto);
+print load_fiche_titre($title, '', 'object_'.$object->picto);
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();

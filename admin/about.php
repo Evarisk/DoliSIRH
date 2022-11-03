@@ -45,12 +45,13 @@ global $db, $langs, $user;
 // Translations
 $langs->loadLangs(array("errors", "admin", "dolisirh@dolisirh"));
 
-// Initialize objects
-// Technical objets
+// Initialize technical objects
 $modDoliSIRH = new modDoliSIRH($db);
 
 // Access control
-if (!$user->admin) accessforbidden();
+$permissiontoread = $user->rights->dolisirh->adminpage->read;
+if (empty($conf->dolisirh->enabled)) accessforbidden();
+if (!$permissiontoread) accessforbidden();
 
 /*
  * View
@@ -64,9 +65,7 @@ $morecss  = array("/dolisirh/css/dolisirh.css");
 llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 
 // Subheader
-$linkback = '<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1'.'">'.$langs->trans("BackToModuleList").'</a>';
-
-print load_fiche_titre($title, $linkback, 'dolisirh_red@dolisirh');
+print load_fiche_titre($title, '', 'dolisirh_red@dolisirh');
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();

@@ -36,22 +36,20 @@ if (!$res && file_exists("../../../main.inc.php")) $res = @include "../../../mai
 if (!$res && file_exists("../../../../main.inc.php")) $res = @include "../../../../main.inc.php";
 if (!$res) die("Include of main fails");
 
-// Global variables definitions
-global $conf, $db, $langs, $user;
-
 // Libraries
 require_once DOL_DOCUMENT_ROOT . "/core/lib/admin.lib.php";
 require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
 
 require_once '../lib/dolisirh.lib.php';
 
+// Global variables definitions
+global $conf, $db, $langs, $user;
+
 // Translations
 $langs->loadLangs(array("admin", "dolisirh@dolisirh"));
 
-
-// Parameters
+// Get parameters
 $action     = GETPOST('action', 'alpha');
-$backtopage = GETPOST('backtopage', 'alpha');
 $value      = GETPOST('value', 'alpha');
 $type       = GETPOST('type', 'alpha');
 $const 		= GETPOST('const', 'alpha');
@@ -59,7 +57,9 @@ $label 		= GETPOST('label', 'alpha');
 $modulepart = GETPOST('modulepart', 'aZ09');	// Used by actions_setmoduleoptions.inc.php
 
 // Access control
-if (!$user->admin) accessforbidden();
+$permissiontoread = $user->rights->dolisirh->adminpage->read;
+if (empty($conf->dolisirh->enabled)) accessforbidden();
+if (!$permissiontoread) accessforbidden();
 
 /*
  * Actions
@@ -183,7 +183,7 @@ if ($action == 'setModuleOptions') {
  * View
  */
 
-// Initialize objects
+// Initialize view objects
 $form = new Form($db);
 
 $help_url = 'FR:Module_DoliSIRH';
