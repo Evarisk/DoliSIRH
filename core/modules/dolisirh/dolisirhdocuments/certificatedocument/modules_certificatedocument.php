@@ -22,7 +22,7 @@
  *  \brief			File that contains parent class for certificates document models
  */
 
-require_once DOL_DOCUMENT_ROOT.'/core/class/commondocgenerator.class.php';
+require_once DOL_DOCUMENT_ROOT . '/core/class/commondocgenerator.class.php';
 
 /**
  *	Parent class for documents models

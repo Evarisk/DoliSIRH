@@ -49,7 +49,7 @@ class mod_timesheetdocument_standard
 	public $name = 'Égéon';
 
 	/**
-	 *  Return description of numbering module
+	 *  Return description of document
 	 *
 	 *  @return string Text with description
 	 */
@@ -71,7 +71,7 @@ class mod_timesheetdocument_standard
 	}
 
 	/**
-	 *  Return an example of numbering
+	 *  Return an example of document
 	 *
 	 *  @return string Example
 	 */
@@ -82,7 +82,7 @@ class mod_timesheetdocument_standard
 
 	/**
 	 *  Checks if the numbers already in the database do not
-	 *  cause conflicts that would prevent this numbering working.
+	 *  cause conflicts that would prevent this document working.
 	 *
 	 *  @param  Object  $object	Object we need next value for
 	 *  @return boolean         false if are conflict, true if ok
@@ -99,8 +99,6 @@ class mod_timesheetdocument_standard
 		$sql .= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		if ($object->ismultientitymanaged == 1) {
 			$sql .= " AND entity = ".$conf->entity;
-		} elseif ($object->ismultientitymanaged == 2) {
-			// TODO
 		}
 
 		$resql = $db->query($sql);
@@ -137,8 +135,6 @@ class mod_timesheetdocument_standard
 		$sql .= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		if ($object->ismultientitymanaged == 1) {
 			$sql .= " AND entity = ".$conf->entity;
-		} elseif ($object->ismultientitymanaged == 2) {
-			// TODO
 		}
 
 		$resql = $db->query($sql);
@@ -169,7 +165,7 @@ class mod_timesheetdocument_standard
 	}
 
 	/**
-	 *	Returns version of numbering module
+	 *	Returns version of document
 	 *
 	 *	@return string Value
 	 */

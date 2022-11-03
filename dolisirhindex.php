@@ -45,18 +45,18 @@ global $conf, $db, $langs, $user;
 // Load translation files required by the page
 $langs->loadLangs(array("dolisirh@dolisirh"));
 
-// Parameters
+// Get parameters
 $action = GETPOST('action', 'alpha');
 
 // Initialize technical objects
 $dolisirh = new modDoliSIRH($db);
 
 // Security check
-if (! $user->rights->dolisirh->lire) accessforbidden();
+if (!$user->rights->dolisirh->lire) accessforbidden();
 
 /*
- *  Actions
-*/
+ * Actions
+ */
 
 require_once './core/tpl/dolisirh_projectcreation_action.tpl.php';
 

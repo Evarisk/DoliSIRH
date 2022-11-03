@@ -30,11 +30,14 @@ require_once __DIR__ . '/../modules_dolisirh.php';
 class mod_certificate_standard extends ModeleNumRefDoliSIRH
 {
 	/**
-	 * Dolibarr version of the loaded document
+	 * Dolibarr version of the loaded numbering module ref
 	 * @var string
 	 */
 	public $version = 'dolibarr'; // 'development', 'experimental', 'dolibarr'
 
+    /**
+     * @var string numbering module ref prefix
+     */
 	public $prefix = 'CERT';
 
 	/**
@@ -87,8 +90,6 @@ class mod_certificate_standard extends ModeleNumRefDoliSIRH
 		$sql .= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		if ($object->ismultientitymanaged == 1) {
 			$sql .= " AND entity = ".$conf->entity;
-		} elseif ($object->ismultientitymanaged == 2) {
-			// TODO
 		}
 
 		$resql = $db->query($sql);
@@ -125,8 +126,6 @@ class mod_certificate_standard extends ModeleNumRefDoliSIRH
 		$sql .= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		if ($object->ismultientitymanaged == 1) {
 			$sql .= " AND entity = ".$conf->entity;
-		} elseif ($object->ismultientitymanaged == 2) {
-			// TODO
 		}
 
 		$resql = $db->query($sql);
