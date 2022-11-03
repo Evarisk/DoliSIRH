@@ -801,7 +801,7 @@ if (count($tasksarray) > 0) {
 				$workinghoursMonth += $workinghoursArray->{$currentDay} * 60;
 			}
 		}
-		$totalspenttime = $workinghoursMonth/60/60;
+		$totalspenttime = $workinghoursMonth/3600;
 		print '<span class="opacitymediumbycolor">  - '.$langs->trans("SpentWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong>'.(($workinghoursMonth != 0) ? convertSecondToTime($workinghoursMonth, 'allhourmin') : '00:00').'</strong></span>';
 		print '</td>';
 		if (!empty($arrayfields['timeconsumed']['checked'])) {
@@ -891,7 +891,7 @@ if (count($tasksarray) > 0) {
 		print '<tr class="liste_total planned-worked-difference">';
 		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
 		print $langs->trans("Total");
-		$difftotaltime = $totalspenttime * 60 * 60 - $totalconsumedtime;
+		$difftotaltime = $totalspenttime * 3600 - $totalconsumedtime;
 		if ($difftotaltime < 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
 		} elseif ($difftotaltime > 0) {

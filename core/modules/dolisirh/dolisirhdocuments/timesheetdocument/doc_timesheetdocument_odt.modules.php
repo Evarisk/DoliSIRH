@@ -378,10 +378,10 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 				$firstdaytoshow     = dol_get_first_day($datestart['year'], $datestart['mon']);
 				$firstdaytoshowgmt  = dol_get_first_day($datestart['year'], $datestart['mon'], true);
 				$dayInMonth         = cal_days_in_month(CAL_GREGORIAN, $datestart['mon'], $datestart['year']);
-				$daystarttoshow     = $object->date_start - 12 * 60 * 60;
-				$daystarttoshowgmt  = $object->date_start - 12 * 60 * 60;
+				$daystarttoshow     = $object->date_start - 12 * 3600;
+				$daystarttoshowgmt  = $object->date_start - 12 * 3600;
 				$dayInDateRange     = num_between_day($object->date_start, $object->date_end, 1);
-				$lastdaytoshow      = $object->date_end - 12 * 60 * 60;
+				$lastdaytoshow      = $object->date_end - 12 * 3600;
 
 				for ($idw = 0; $idw < $dayInDateRange; $idw++) {
 					$dayinloopfromfirstdaytoshow = dol_time_plus_duree($daystarttoshow, $idw, 'd');

@@ -683,12 +683,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	//$firstdaytoshowgmt = dol_get_first_day($datestart['year'], $datestart['mon'], true);
 
 	// Due to Dolibarr issue in common field add we do substract 12 hours in timestamp
-	$firstdaytoshow = $object->date_start - 12 * 60 * 60;
-	$firstdaytoshowgmt = $object->date_start - 12 * 60 * 60;
+	$firstdaytoshow = $object->date_start - 12 * 3600;
+	$firstdaytoshowgmt = $object->date_start - 12 * 3600;
 	//$dayInMonth = cal_days_in_month(CAL_GREGORIAN, $datestart['mon'], $datestart['year']);
 	$dayInMonth = num_between_day($object->date_start, $object->date_end, 1);
 	//$lastdaytoshow = dol_get_last_day($datestart['year'], $datestart['mon']);
-	$lastdaytoshow = $object->date_end - 12 * 60 * 60;
+	$lastdaytoshow = $object->date_end - 12 * 3600;
 	$currentDayCurrent = date('d', $now);
 	$currentMonth = date('m', $now);
 	$isavailable = array();
@@ -729,6 +729,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$totalforvisibletasks = loadTimeSpentWithinRange($object->date_start, $object->date_end, 0, $object->fk_user_assign);
 	}
 
+	$start_date = dol_print_date($firstdaytoshow, "dayreduceformat");
+	$end_date = dol_print_date($lastdaytoshow, "dayreduceformat");
+
+	// Planned working hours
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	for ($idw = 0; $idw < $dayInMonth; $idw++) {
@@ -736,55 +740,59 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
 			$currentDay = date('l', $dayinloopfromfirstdaytoshow);
 			$currentDay = 'workinghours_' . strtolower($currentDay);
-			$workinghoursMonth += $workinghoursArray->{$currentDay} * 60;
+			$plannedWorkingHours += $workinghoursArray->{$currentDay} * 60;
 			if ($workinghoursArray->{$currentDay} / 60 > 0) {
 				$nbworkinghoursMonth++;
 			}
-			if ($totalforvisibletasks[$dayinloopfromfirstdaytoshow] > 0) {
+			if ($totalforvisibletasks['total'] > 0) {
 				$nbconsumedworkinghoursMonth++;
 			}
 		}
 	}
-	print '<span class="opacitymediumbycolor">  - ' . $langs->trans("ExpectedWorkedHoursMonthTimeSheet", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))) . ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '" target="_blank">' . (($workinghoursMonth != 0) ? convertSecondToTime($workinghoursMonth, 'allhourmin') : '00:00') . '</a></strong>';
+
+	print '<span class="opacitymediumbycolor">  - ';
+	print $langs->trans("ExpectedWorkedHoursMonthTimeSheet", $start_date, $end_date);
+	print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '" target="_blank">';
+	print (($plannedWorkingHours != 0) ? convertSecondToTime($plannedWorkingHours, 'allhourmin') : '00:00') . '</a></strong>';
 	print '<span>' . ' - ' . $langs->trans("ExpectedWorkedDayMonth") . ' <strong>' . $nbworkinghoursMonth . '</strong></span>';
 	print '</span>';
 	print '</td></tr>';
+
+	// Hours passed
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
-	$workinghoursMonth = 0;
+	$passedWorkingHours = 0;
 	for ($idw = 0; $idw < $dayInMonthCurrent; $idw++) {
 		$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 		if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
 			$currentDay = date('l', $dayinloopfromfirstdaytoshow);
 			$currentDay = 'workinghours_' . strtolower($currentDay);
-			$workinghoursMonth += $workinghoursArray->{$currentDay} * 60;
+			$passedWorkingHours += $workinghoursArray->{$currentDay} * 60;
+
 		}
 	}
-	$totalspenttime = $workinghoursMonth/60/60;
-	print '<span class="opacitymediumbycolor">  - ' . $langs->trans("SpentWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))) . ' : <strong>' . (($workinghoursMonth != 0) ? convertSecondToTime($workinghoursMonth, 'allhourmin') : '00:00') . '</strong></span>';
+	print '<span class="opacitymediumbycolor">  - ';
+	print $langs->trans("SpentWorkedHoursMonth", $start_date, $end_date);
+	print ' : <strong>' . (($passedWorkingHours != 0) ? convertSecondToTime($passedWorkingHours, 'allhourmin') : '00:00') . '</strong></span>';
 	print '</td></tr>';
+
+	//Worked hours
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
-	if (!empty($totalforvisibletasks)) {
-		foreach ($totalforvisibletasks as $tasksingle) {
-			$totalconsumedtime += $tasksingle;
+	for ($idw = 0; $idw < $dayInMonthCurrent; $idw++) {
+		$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+		if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
+			$workedHoursOnDay = loadTimeSpentWithinRange($dayinloopfromfirstdaytoshow, dol_time_plus_duree($dayinloopfromfirstdaytoshow, 1, 'd'), 0, $object->fk_user_assign);
+			if (!empty($workedHoursOnDay)) {
+				$workedHoursArray[$dayinloopfromfirstdaytoshow] = $workedHoursOnDay;
+				$workedHours += $workedHoursOnDay['total'];
+			}
 		}
 	}
-	$diffworkinghoursMonth = $nbworkinghoursMonth - $nbconsumedworkinghoursMonth;
-	if ($diffworkinghoursMonth < 0) {
-		$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-	} elseif ($diffworkinghoursMonth > 0) {
-		$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-	} elseif ($diffworkinghoursMonth == 0) {
-		$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
-	}
-	print '<span class="opacitymediumbycolor">  - '.$langs->trans("ConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong>';
-	print '<span>' . ' - ' . $langs->trans("ConsumedWorkedDayMonth") . ' <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">' . (!empty($nbconsumedworkinghoursMonth) ? $nbconsumedworkinghoursMonth : 0) . '</strong></span>';
-	print '</span>';
-	print '</td></tr>';
-	print '<tr class="liste_total"><td class="liste_total">';
-	print $langs->trans("Total");
-	$difftotaltime = $totalspenttime * 60 * 60 - $totalconsumedtime;
+	$workedDays = is_array($workedHoursArray) ? count($workedHoursArray) : 0;
+
+	$difftotaltime = $passedWorkingHours - $workedHours;
+
 	if ($difftotaltime < 0) {
 		$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
 		$morecssnotice = 'error';
@@ -798,7 +806,23 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$morecssnotice = 'success';
 		$noticetitle = $langs->trans('TimeSpentPerfect');
 	}
-	print '<span class="opacitymediumbycolor">  - '.$langs->trans("DiffSpentAndConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></span>';
+
+	print '<span class="opacitymediumbycolor">  - ';
+	print $langs->trans("ConsumedWorkedHoursMonth", $start_date, $end_date);
+	print ' : <strong>'.convertSecondToTime($workedHours, 'allhourmin').'</strong>';
+	print '<span>' . ' - ' . $langs->trans("ConsumedWorkedDayMonth") . ' <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">';
+	print $workedDays . '</strong></span>';
+	print '</span>';
+	print '</td></tr>';
+
+	//Difference between worked hours & planned working hours
+	print '<tr class="liste_total"><td class="liste_total">';
+	print $langs->trans("Total");
+	print '<span class="opacitymediumbycolor">  - ';
+	print $langs->trans("DiffSpentAndConsumedWorkedHoursMonth", $start_date, $end_date);
+	print ' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">';
+	print (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong>';
+	print '</span>';
 	print '</td></tr>';
 
 	// Other attributes. Fields from hook formObjectOptions and Extrafields.
@@ -812,7 +836,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	print '<div class="clearboth"></div>'; ?>
 
-	<?php if ($workinghoursMonth == 0) : ?>
+	<?php if ($plannedWorkingHours == 0) : ?>
 		<div class="wpeo-notice notice-error">
 			<div class="notice-content">
 				<div class="notice-title"><?php echo $langs->trans('ErrorConfigWorkingHours') ?></div>

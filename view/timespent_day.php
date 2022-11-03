@@ -293,7 +293,7 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilterac
 					if ($id > 0) {
 						// We store HOURS in seconds
 						if ($matches[2] == 'hour') {
-							$timespent_duration[$id] += $time * 60 * 60;
+							$timespent_duration[$id] += $time * 3600;
 						}
 
 						// We store MINUTES in seconds
