@@ -1206,9 +1206,10 @@ function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &
 				//var_dump('--- '.$level.' '.$firstdaytoshow.' '.$fuser->id.' '.$projectstatic->id.' '.$workloadforid[$projectstatic->id]);
 				//var_dump($projectstatic->weekWorkLoadPerTask);
 				if (empty($workloadforid[$projectstatic->id])) {
-					$projectstatic->loadTimeSpent($firstdaytoshow, 0, $fuser->id); // Load time spent from table projet_task_time for the project into this->weekWorkLoad and this->weekWorkLoadPerTask for all days of a week
-					$workloadforid[$projectstatic->id] = 1;
+                    $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($firstdaytoshow, 7, 'd'));
+                    $workloadforid[$projectstatic->id] = 1;
 				}
+
 				//var_dump($projectstatic->weekWorkLoadPerTask);
 				//var_dump('--- '.$projectstatic->id.' '.$workloadforid[$projectstatic->id]);
 
@@ -1289,9 +1290,9 @@ function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &
 					// Time spent by everybody
 					print '<td class="right">';
 					// $lines[$i]->duration is a denormalised field = summ of time spent by everybody for task. What we need is time consummed by user
-					if ($lines[$i]->duration) {
+					if ($timeSpent['total'] > 0 && $lines[$i]->duration) {
 						print '<a href="'.DOL_URL_ROOT.'/projet/tasks/time.php?id='.$lines[$i]->id.'">';
-						print convertSecondToTime($lines[$i]->duration, 'allhourmin');
+						print convertSecondToTime($timeSpent['total'], 'allhourmin');
 						print '</a>';
 					} else {
 						print '--:--';
