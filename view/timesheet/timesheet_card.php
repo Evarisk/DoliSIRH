@@ -663,8 +663,6 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<table class="border centpercent tableforfield">' . "\n";
 
 	// Common attributes
-	//$keyforbreak='fieldkeytoswitchonsecondcolumn';	// We change column just before this field
-
 	unset($object->fields['fk_project']);                // Hide field already shown in banner
 	unset($object->fields['fk_soc']);                    // Hide field already shown in banner
 
@@ -679,119 +677,41 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	$now = dol_now();
 	$datestart = dol_getdate($object->date_start, false, 'Europe/Paris');
-	//$firstdaytoshow = dol_get_first_day($datestart['year'], $datestart['mon']);
-	//$firstdaytoshowgmt = dol_get_first_day($datestart['year'], $datestart['mon'], true);
 
 	// Due to Dolibarr issue in common field add we do substract 12 hours in timestamp
 	$firstdaytoshow = $object->date_start - 12 * 3600;
-	$firstdaytoshowgmt = $object->date_start - 12 * 3600;
-	//$dayInMonth = cal_days_in_month(CAL_GREGORIAN, $datestart['mon'], $datestart['year']);
-	$dayInMonth = num_between_day($object->date_start, $object->date_end, 1);
-	//$lastdaytoshow = dol_get_last_day($datestart['year'], $datestart['mon']);
 	$lastdaytoshow = $object->date_end - 12 * 3600;
-	$currentDayCurrent = date('d', $now);
-	$currentMonth = date('m', $now);
-	$isavailable = array();
-	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
-	$workinghoursMonth = 0;
-	$nbworkinghoursMonth = 0;
-	if ($currentMonth == $datestart['mon']) {
-		$dayInMonthCurrent = $dayInMonth;
-	} else {
-		$dayInMonthCurrent = $dayInMonth;
-	}
-
-	for ($idw = 0; $idw < $dayInMonth; $idw++) {
-		$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-		$dayinloopfromfirstdaytoshowgmt = dol_time_plus_duree($firstdaytoshowgmt, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-
-		$statusofholidaytocheck = Holiday::STATUS_APPROVED;
-
-		$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($object->fk_user_assign, $dayinloopfromfirstdaytoshow, $statusofholidaytocheck);
-		$isavailable[$dayinloopfromfirstdaytoshow] = $isavailablefordayanduser; // in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
-
-		$test = num_public_holiday($dayinloopfromfirstdaytoshowgmt, $dayinloopfromfirstdaytoshowgmt + 86400, $mysoc->country_code);
-		if ($test) {
-			$isavailable[$dayinloopfromfirstdaytoshow] = array('morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday');
-		}
-	}
-
-	$tasksarray = $task->getTasksArray(0, 0, 0, 0, 0, '', '', '', $object->fk_user_assign, 0, array());
-
-	if (count($tasksarray) > 0) {
-		$usertmp->fetch($object->fk_user_assign);
-		$j = 0;
-		$level = 0;
-		$projectsrole = $task->getUserRolesForProjectsOrTasks($usertmp, 0, 0, 0, 1);
-		$tasksrole = $task->getUserRolesForProjectsOrTasks(0, $usertmp, 0, 0, 1);
-		$restrictviewformytask = ((!isset($conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED)) ? 2 : $conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED);
-		$conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS = 0;
-		$totalforvisibletasks = loadTimeSpentWithinRange($object->date_start, $object->date_end, 0, $object->fk_user_assign);
-	}
 
 	$start_date = dol_print_date($firstdaytoshow, "dayreduceformat");
 	$end_date = dol_print_date($lastdaytoshow, "dayreduceformat");
 
-	// Planned working hours
+	$timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, $lastdaytoshow, 0, $object->fk_user_assign);
+
+	// Planned working time
+	$planned_working_time = $timeSpendingInfos['planned'];
+
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
-	for ($idw = 0; $idw < $dayInMonth; $idw++) {
-		$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-		if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-			$currentDay = date('l', $dayinloopfromfirstdaytoshow);
-			$currentDay = 'workinghours_' . strtolower($currentDay);
-			$plannedWorkingHours += $workinghoursArray->{$currentDay} * 60;
-			if ($workinghoursArray->{$currentDay} / 60 > 0) {
-				$nbworkinghoursMonth++;
-			}
-			if ($totalforvisibletasks['total'] > 0) {
-				$nbconsumedworkinghoursMonth++;
-			}
-		}
-	}
-
 	print '<span class="opacitymediumbycolor">  - ';
 	print $langs->trans("ExpectedWorkedHoursMonthTimeSheet", $start_date, $end_date);
 	print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '" target="_blank">';
-	print (($plannedWorkingHours != 0) ? convertSecondToTime($plannedWorkingHours, 'allhourmin') : '00:00') . '</a></strong>';
-	print '<span>' . ' - ' . $langs->trans("ExpectedWorkedDayMonth") . ' <strong>' . $nbworkinghoursMonth . '</strong></span>';
+	print (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong>';
+	print '<span>' . ' - ' . $langs->trans("ExpectedWorkedDayMonth") . ' <strong>' . $planned_working_time['days'] . '</strong></span>';
 	print '</span>';
 	print '</td></tr>';
 
 	// Hours passed
+	$passed_working_time = $timeSpendingInfos['passed'];
+
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
-	$passedWorkingHours = 0;
-	for ($idw = 0; $idw < $dayInMonthCurrent; $idw++) {
-		$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-		if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-			$currentDay = date('l', $dayinloopfromfirstdaytoshow);
-			$currentDay = 'workinghours_' . strtolower($currentDay);
-			$passedWorkingHours += $workinghoursArray->{$currentDay} * 60;
-
-		}
-	}
 	print '<span class="opacitymediumbycolor">  - ';
 	print $langs->trans("SpentWorkedHoursMonth", $start_date, $end_date);
-	print ' : <strong>' . (($passedWorkingHours != 0) ? convertSecondToTime($passedWorkingHours, 'allhourmin') : '00:00') . '</strong></span>';
+	print ' : <strong>' . (($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</strong></span>';
 	print '</td></tr>';
 
-	//Worked hours
-	print '<tr class="liste_total"><td class="liste_total">';
-	print $langs->trans("Total");
-	for ($idw = 0; $idw < $dayInMonthCurrent; $idw++) {
-		$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-		if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-			$workedHoursOnDay = loadTimeSpentWithinRange($dayinloopfromfirstdaytoshow, dol_time_plus_duree($dayinloopfromfirstdaytoshow, 1, 'd'), 0, $object->fk_user_assign);
-			if (!empty($workedHoursOnDay)) {
-				$workedHoursArray[$dayinloopfromfirstdaytoshow] = $workedHoursOnDay;
-				$workedHours += $workedHoursOnDay['total'];
-			}
-		}
-	}
-	$workedDays = is_array($workedHoursArray) ? count($workedHoursArray) : 0;
-
-	$difftotaltime = $passedWorkingHours - $workedHours;
+	//Difference between passed and worked hours
+	$difftotaltime = $timeSpendingInfos['difference'];
 
 	if ($difftotaltime < 0) {
 		$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
@@ -807,11 +727,15 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$noticetitle = $langs->trans('TimeSpentPerfect');
 	}
 
+	//Worked hours
+	$worked_time = $timeSpendingInfos['spent'];
+	print '<tr class="liste_total"><td class="liste_total">';
+	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
 	print $langs->trans("ConsumedWorkedHoursMonth", $start_date, $end_date);
-	print ' : <strong>'.convertSecondToTime($workedHours, 'allhourmin').'</strong>';
+	print ' : <strong>'.convertSecondToTime($worked_time['total'], 'allhourmin').'</strong>';
 	print '<span>' . ' - ' . $langs->trans("ConsumedWorkedDayMonth") . ' <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">';
-	print $workedDays . '</strong></span>';
+	print $worked_time['days'] . '</strong></span>';
 	print '</span>';
 	print '</td></tr>';
 
@@ -821,7 +745,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<span class="opacitymediumbycolor">  - ';
 	print $langs->trans("DiffSpentAndConsumedWorkedHoursMonth", $start_date, $end_date);
 	print ' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">';
-	print (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong>';
+	print (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime * 60), 'allhourmin') : '00:00').'</strong>';
 	print '</span>';
 	print '</td></tr>';
 
@@ -836,7 +760,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	print '<div class="clearboth"></div>'; ?>
 
-	<?php if ($plannedWorkingHours == 0) : ?>
+	<?php if ($planned_working_time['minutes'] == 0) : ?>
 		<div class="wpeo-notice notice-error">
 			<div class="notice-content">
 				<div class="notice-title"><?php echo $langs->trans('ErrorConfigWorkingHours') ?></div>

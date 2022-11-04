@@ -22,6 +22,8 @@
 												   */
 
 require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+require_once DOL_DOCUMENT_ROOT.'/holiday/class/holiday.class.php';
+require_once __DIR__ . '/../class/workinghours.class.php';
 
 /**
  * Add or delete task from favorite by the user
@@ -208,7 +210,7 @@ function setCategoriesObject($categories = array(), $type_categ = '', $remove_ex
 }
 
 /**
- * Load time spent into this->weekWorkLoad and this->weekWorkLoadPerTask for all day of a week of project.
+ * Load time spent within a time range for a project.
  * Note: array weekWorkLoad and weekWorkLoadPerTask are reset and filled at each call.
  *
  * @param  int       $datestart First day
@@ -274,26 +276,28 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
 }
 
 /**
- * Load time spent into this->weekWorkLoad and this->weekWorkLoadPerTask for all day of a week of project.
- * Note: array weekWorkLoad and weekWorkLoadPerTask are reset and filled at each call.
+ * Load time spent within a time range.
  *
  * @param  int       $datestart First day
  * @param  int       $dateend   Last day
  * @param  int       $taskid    Filter on a task id
  * @param  int       $userid    Time spent by a particular user
- * @return int                  0 < if OK, >0 if KO
+ * @return array                Array with minutes, hours and total time spent
  * @throws Exception
  */
 function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
 {
 	global $db;
-	$error = 0;
-
-	$task = new Task($db);
 
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
+
+	$workinghours = new Workinghours($db);
+	$holiday      = new Holiday($db);
+
+	$daysInRange = num_between_day($datestart, $dateend, 1);
+	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
 
 	$sql = "SELECT ptt.rowid as taskid, ptt.task_duration, ptt.task_date, ptt.task_datehour, ptt.fk_task";
 	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
@@ -307,9 +311,28 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 		$sql .= " AND ptt.fk_user=".((int) $userid);
 	}
 
-	$timeSpent = array();
+	$timeSpent = array(
+		'days' => 0,
+		'hours' => 0,
+		'minutes' => 0,
+		'total' => 0
+	);
 
-	$objects = array();
+	for ($idw = 0; $idw < $daysInRange; $idw++) {
+		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
+		$day_end_date = dol_time_plus_duree($datestart, $idw + 1, 'd'); // $firstdaytoshow is a date with hours = 0
+
+		$statusofholidaytocheck = Holiday::STATUS_APPROVED;
+
+		$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($userid, $day_start_date, $statusofholidaytocheck);
+		$isavailable[dol_print_date($day_start_date,'dayrfc')] = $isavailablefordayanduser; // in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
+
+		$day_is_available = !num_public_holiday($day_start_date, $day_end_date);
+
+		if (!$day_is_available) {
+			$isavailable[dol_print_date($day_start_date,'dayrfc')] = 0;
+		}
+	}
 
 	//print $sql;
 	$resql = $db->query($sql);
@@ -321,18 +344,178 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 			$obj = $db->fetch_object($resql);
 
 			$hours = floor($obj->task_duration / 3600);
-			$minutes = ($obj->task_duration % 3600);
+			$minutes = floor($obj->task_duration / 60);
 
 			$timeSpent['hours'] += $hours;
 			$timeSpent['minutes'] += $minutes;
 			$timeSpent['total'] += $obj->task_duration;
+
+			if ($isavailable[$obj->task_date]) {
+				$days_worked[$obj->task_date] = 1;
+			}
+
 			$i++;
 		}
 		$db->free($resql);
-		return $timeSpent;
-	} else {
-		return -1;
 	}
+	$timeSpent['days'] = is_array($days_worked) && !empty($days_worked) ? count($days_worked) : 0;
+
+	return $timeSpent;
+}
+
+/**
+ * Load time to spend within a time range.
+ *
+ * @param  int       $datestart First day
+ * @param  int       $dateend   Last day
+ * @param  int       $taskid    Filter on a task id
+ * @param  int       $userid    Time spent by a particular user
+ * @return int                  0 < if OK, >0 if KO
+ * @throws Exception
+ */
+function loadTimeToSpendWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+{
+	global $db;
+
+	if (empty($datestart)) {
+		dol_print_error('', 'Error datestart parameter is empty');
+	}
+
+	$workinghours = new Workinghours($db);
+	$holiday      = new Holiday($db);
+
+	$daysInRange = num_between_day($datestart, $dateend, 1);
+	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
+
+	$time_to_spend = array(
+		'days' => 0,
+		'minutes' => 0
+	);
+
+	for ($idw = 0; $idw < $daysInRange; $idw++) {
+		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
+		$day_end_date = dol_time_plus_duree($datestart, $idw + 1, 'd'); // $firstdaytoshow is a date with hours = 0
+
+		$statusofholidaytocheck = Holiday::STATUS_APPROVED;
+
+		$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($userid, $day_start_date, $statusofholidaytocheck);
+		$isavailable[$day_start_date] = $isavailablefordayanduser; // in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
+
+		$day_is_available = !num_public_holiday($day_start_date, $day_end_date);
+
+		if ($day_is_available) {
+			$currentDay = date('l', $day_start_date);
+			$currentDay = 'workinghours_' . strtolower($currentDay);
+			$time_to_spend['minutes'] += $workinghoursArray->{$currentDay};
+			if ($workinghoursArray->{$currentDay} / 60 > 0) {
+				$time_to_spend['days']++;
+			}
+		}
+	}
+	return $time_to_spend;
+}
+
+/**
+ * Load time to spend within a time range.
+ *
+ * @param  int       $datestart First day
+ * @param  int       $dateend   Last day
+ * @param  int       $taskid    Filter on a task id
+ * @param  int       $userid    Time spent by a particular user
+ * @return int                  0 < if OK, >0 if KO
+ * @throws Exception
+ */
+function loadPassedTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+{
+	global $db;
+
+	if (empty($datestart)) {
+		dol_print_error('', 'Error datestart parameter is empty');
+	}
+
+	$workinghours = new Workinghours($db);
+	$holiday      = new Holiday($db);
+
+	$daysInRange = num_between_day($datestart, $dateend, 1);
+	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
+
+	$passed_working_time = array(
+		'minutes' => 0
+	);
+
+	for ($idw = 0; $idw < $daysInRange; $idw++) {
+		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
+		$day_end_date = dol_time_plus_duree($datestart, $idw + 1, 'd'); // $firstdaytoshow is a date with hours = 0
+
+		$statusofholidaytocheck = Holiday::STATUS_APPROVED;
+
+		$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($userid, $day_start_date, $statusofholidaytocheck);
+		$isavailable[$day_start_date] = $isavailablefordayanduser; // in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
+
+		$day_is_available = !num_public_holiday($day_start_date, $day_end_date);
+
+		if ($day_is_available) {
+			$currentDay = date('l', $day_start_date);
+			$currentDay = 'workinghours_' . strtolower($currentDay);
+			$passed_working_time['minutes'] += $workinghoursArray->{$currentDay};
+		}
+	}
+	return $passed_working_time;
+}
+
+/**
+ * Load difference between passed time and spent time within a time range.
+ *
+ * @param  int       $datestart First day
+ * @param  int       $dateend   Last day
+ * @param  int       $taskid    Filter on a task id
+ * @param  int       $userid    Time spent by a particular user
+ * @return int                  0 < if OK, >0 if KO
+ * @throws Exception
+ */
+function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+{
+	global $db;
+
+	if (empty($datestart)) {
+		dol_print_error('', 'Error datestart parameter is empty');
+	}
+	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $taskid, $userid);
+	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $taskid, $userid);
+
+	return $passed_working_time['minutes'] - $spent_working_time['minutes'];
+}
+
+/**
+ * Load all time spending infos within a time range.
+ *
+ * @param  int       $datestart First day
+ * @param  int       $dateend   Last day
+ * @param  int       $taskid    Filter on a task id
+ * @param  int       $userid    Time spent by a particular user
+ * @return int                  0 < if OK, >0 if KO
+ * @throws Exception
+ */
+function loadTimeSpendingInfosWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+{
+	global $db;
+
+	if (empty($datestart)) {
+		dol_print_error('', 'Error datestart parameter is empty');
+	}
+	$planned_working_time = loadTimeToSpendWithinRange($datestart, $dateend, $taskid, $userid);
+	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $taskid, $userid);
+	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $taskid, $userid);
+	$working_time_difference = loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $taskid, $userid);
+
+	$time_spending_infos = array(
+		'planned' => $planned_working_time,
+		'passed' => $passed_working_time,
+		'spent' => $spent_working_time,
+		'difference' => $working_time_difference
+	);
+
+	return $time_spending_infos;
 }
 
 /**
