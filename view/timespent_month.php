@@ -491,17 +491,11 @@ if (!empty($conf->global->MAIN_DEFAULT_WORKING_DAYS)) {
 }
 
 for ($idw = 0; $idw < $dayInMonth; $idw++) {
-	$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-	$dayinloopfromfirstdaytoshowgmt = dol_time_plus_duree($firstdaytoshowgmt, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-
-	$statusofholidaytocheck = Holiday::STATUS_APPROVED;
-
-	$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($usertoprocess->id, $dayinloopfromfirstdaytoshow, $statusofholidaytocheck);
-	$isavailable[$dayinloopfromfirstdaytoshow] = $isavailablefordayanduser; // in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
-
-	$test = num_public_holiday($dayinloopfromfirstdaytoshowgmt, $dayinloopfromfirstdaytoshowgmt + 86400, $mysoc->country_code);
-	if ($test) {
-		$isavailable[$dayinloopfromfirstdaytoshow] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
+	$dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+	if (isDayAvailable($dayInLoop, $user->id)) {
+		$isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
+	} else {
+		$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
 	}
 }
 
@@ -591,9 +585,6 @@ for ($idw = 0; $idw < $dayInMonth; $idw++) {
 	$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
 
 	$cssweekend = '';
-	if ((($idw + 1) < $numstartworkingday) || (($idw + 1) > $numendworkingday)) {	// This is a day is not inside the setup of working days, so we use a week-end css.
-		//$cssweekend = 'weekend';
-	}
 
 	$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
@@ -615,9 +606,7 @@ for ($idw = 0; $idw < $dayInMonth; $idw++) {
 	print ' <a href="timespent_day.php?year='. $year .'&month='. $month .'&day='. $day .'&search_usertoprocessid=' . $usertoprocess->id .'"><i class="fas fa-external-link-alt"></i></a>';
 	print '<br>'.dol_print_date($dayinloopfromfirstdaytoshow, '%d/%m').'</th>';
 }
-//print '<td></td>';
 print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
-
 
 print "</tr>\n";
 
@@ -625,52 +614,21 @@ $colspan = 1 + (empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT) 
 
 $workinghours = new Workinghours($db);
 $workinghoursArray = $workinghours->fetchCurrentWorkingHours($usertoprocess->id, 'user');
+$planned_working_time = loadTimeToSpendWithinRange($firstdaytoshow, dol_time_plus_duree($firstdaytoshow, $dayInMonth, 'd'), 0, $user->id);
+
 $workinghoursMonth = 0;
 
 if ($conf->use_javascript_ajax) {
 	print '<tr class="liste_total">';
 	print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
 	print $langs->trans("Total");
-	for ($idw = 0; $idw < $dayInMonth; $idw++) {
-		$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-		if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-			$currentDay = date('l', $dayinloopfromfirstdaytoshow);
-			$currentDay = 'workinghours_' . strtolower($currentDay);
-			$workinghoursMonth += $workinghoursArray->{$currentDay} * 60;
-		}
-	}
-	print '<span class="opacitymediumbycolor">  - '.$langs->trans("ExpectedWorkedHoursMonth", dol_print_date(dol_mktime(0, 0, 0, $month, $day, $year), "%B %Y")).' : <strong><a href="'. DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $usertoprocess->id.'" target="_blank">'.(($workinghoursMonth != 0) ? convertSecondToTime($workinghoursMonth, 'allhourmin') : '00:00').'</a></strong></span>';
+	print '<span class="opacitymediumbycolor">  - ';
+	print $langs->trans("ExpectedWorkedHoursMonth", dol_print_date(dol_mktime(0, 0, 0, $month, $day, $year), "%B %Y"));
+	print ' : <strong><a href="'. DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $usertoprocess->id.'" target="_blank">';
+	print (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00').'</a></strong></span>';
 	print '</td>';
 	if (!empty($arrayfields['timeconsumed']['checked'])) {
 		print '<td class="liste_total"></td>';
-	}
-	for ($idw = 0; $idw < $dayInMonth; $idw++) {
-		$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-		if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-			$currentDay = date('l', $dayinloopfromfirstdaytoshow);
-			$currentDay = 'workinghours_' . strtolower($currentDay);
-			$workinghoursMonth = $workinghoursArray->{$currentDay} * 60;
-		} else {
-			$workinghoursMonth = 0;
-		}
-
-		$cssweekend = '';
-		if ((($idw + 1) < $numstartworkingday) || (($idw + 1) > $numendworkingday)) {	// This is a day is not inside the setup of working days, so we use a week-end css.
-			//$cssweekend = 'weekend';
-		}
-
-		$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-
-		$cssonholiday = '';
-		if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-			$cssonholiday .= 'onholidayallday ';
-		} elseif (!$isavailable[$tmpday]['morning']) {
-			$cssonholiday .= 'onholidaymorning ';
-		} elseif (!$isavailable[$tmpday]['afternoon']) {
-			$cssonholiday .= 'onholidayafternoon ';
-		}
-
-		print '<td class="liste_total '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'" align="center"><div class="'.$idw.'">'.(($workinghoursMonth != 0) ? convertSecondToTime($workinghoursMonth, 'allhourmin') : '00:00').'</div></td>';
 	}
 	print '<td class="liste_total"></td>';
 	print '</tr>';
@@ -679,9 +637,6 @@ if ($conf->use_javascript_ajax) {
 // By default, we can edit only tasks we are assigned to
 $restrictviewformytask = ((!isset($conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED)) ? 2 : $conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED);
 if (count($tasksarray) > 0) {
-	//var_dump($tasksarray);				// contains only selected tasks
-	//var_dump($tasksarraywithoutfilter);	// contains all tasks (if there is a filter, not defined if no filter)
-	//var_dump($tasksrole);
 
 	$j = 0;
 	$level = 0;
@@ -690,51 +645,28 @@ if (count($tasksarray) > 0) {
 	doliSirhLinesPerMonth($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $dayInMonth);
 
 	if ($conf->use_javascript_ajax) {
-		$workinghoursMonth = 0;
 
-		//Planned working hours within start date & end date
+		//Passed working hours
+		$passed_working_time = loadPassedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), 0, $user->id);
+
 		print '<tr class="liste_total planned-working-hours">';
 		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
 		print $langs->trans("Total");
 
-		$currentDayCurrent = date('d', $now);
-		$currentMonth = date('m', $now);
+		$daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
 
-		if ($currentMonth == $month) {
-			$dayInMonthCurrent = $currentDayCurrent;
-		} else {
-			$dayInMonthCurrent = $dayInMonth;
-		}
-
-		for ($idw = 0; $idw < $dayInMonthCurrent; $idw++) {
-			$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-			if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-				$currentDay = date('l', $dayinloopfromfirstdaytoshow);
-				$currentDay = 'workinghours_' . strtolower($currentDay);
-				$workinghoursMonth += $workinghoursArray->{$currentDay} * 60;
-			}
-		}
-		$totalspenttime = $workinghoursMonth/3600;
-		print '<span class="opacitymediumbycolor">  - '.$langs->trans("SpentWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong>'.(($workinghoursMonth != 0) ? convertSecondToTime($workinghoursMonth, 'allhourmin') : '00:00').'</strong></span>';
+		print '<span class="opacitymediumbycolor">  - ';
+		print $langs->trans("SpentWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), dol_print_date($lastdaytoshow, "dayreduceformat"));
+		print ' : <strong>'.(($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00').'</strong></span>';
 		print '</td>';
 		if (!empty($arrayfields['timeconsumed']['checked'])) {
 			print '<td class="liste_total right"></td>';
 		}
 
-		for ($idw = 0; $idw < $dayInMonthCurrent; $idw++) {
-			$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-			if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-				$currentDay = date('l', $dayinloopfromfirstdaytoshow);
-				$currentDay = 'workinghours_' . strtolower($currentDay);
-				$workinghoursMonth = $workinghoursArray->{$currentDay} * 60;
-			} else {
-				$workinghoursMonth = 0;
-			}
-
+		//Fill days data
+		for ($idw = 0; $idw < $daysInRange; $idw++) {
+			$passed_hours_on_day = loadPassedTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'),dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), 0, $user->id);
 			$cssweekend = '';
-			if ((($idw + 1) < $numstartworkingday) || (($idw + 1) > $numendworkingday)) {	// This is a day is not inside the setup of working days, so we use a week-end css.
-				//$cssweekend = 'weekend';
-			}
 
 			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
@@ -747,10 +679,9 @@ if (count($tasksarray) > 0) {
 				$cssonholiday .= 'onholidayafternoon ';
 			}
 
-			print '<td class="liste_total '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'" align="center"><div class="'.$idw.'">'.(($workinghoursMonth != 0) ? convertSecondToTime($workinghoursMonth, 'allhourmin') : '00:00').'</div></td>';
-		}
-		if ($dayInMonth == $dayInMonthCurrent) {
-			print '<td class="liste_total"></td>';
+			print '<td class="liste_total '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '');
+			print '" align="center"><div class="'.$idw.'">';
+			print (($passed_hours_on_day['minutes'] != 0) ? convertSecondToTime($passed_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
 		}
 		print '</tr>';
 
@@ -767,7 +698,7 @@ if (count($tasksarray) > 0) {
 			print '<td class="liste_total right"><strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></td>';
 		}
 
-		for ($idw = 0; $idw < $dayInMonthCurrent; $idw++) {
+		for ($idw = 0; $idw < $daysInRange; $idw++) {
 			$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 			if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
 				$currentDay = date('l', $dayinloopfromfirstdaytoshow);
@@ -778,9 +709,6 @@ if (count($tasksarray) > 0) {
 			}
 
 			$cssweekend = '';
-			if ((($idw + 1) < $numstartworkingday) || (($idw + 1) > $numendworkingday)) {	// This is a day is not inside the setup of working days, so we use a week-end css.
-				//$cssweekend = 'weekend';
-			}
 
 			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
@@ -793,18 +721,18 @@ if (count($tasksarray) > 0) {
 				$cssonholiday .= 'onholidayafternoon ';
 			}
 
-			print '<td class="liste_total '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'" align="center"><div class="totalDay'.$idw.'">'.dol_print_date($workinghoursMonth, 'hour').'</div></td>';
-		}
-		if ($dayInMonth == $dayInMonthCurrent) {
-			print '<td class="liste_total"></td>';
+			print '<td class="liste_total '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '');
+			print '" align="center"><div class="totalDay'.$idw.'">'.dol_print_date($workinghoursMonth, 'hour').'</div></td>';
 		}
 		print '</tr>';
 
 		//Difference between planned & worked hours
+		$timeSpentDiff = loadDifferenceBetweenPassedAndSpentTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), 0, $user->id);
+
 		print '<tr class="liste_total planned-worked-difference">';
 		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
 		print $langs->trans("Total");
-		$difftotaltime = $totalspenttime * 3600 - $totalconsumedtime;
+		$difftotaltime = $timeSpentDiff * 60;
 		if ($difftotaltime < 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
 		} elseif ($difftotaltime > 0) {
@@ -818,31 +746,17 @@ if (count($tasksarray) > 0) {
 			print '<td class="liste_total right" style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'"><strong>'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></td>';
 		}
 
-		for ($idw = 0; $idw < $dayInMonthCurrent; $idw++) {
-			$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-			if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-				$currentDay = date('l', $dayinloopfromfirstdaytoshow);
-				$currentDay = 'workinghours_' . strtolower($currentDay);
-				$workinghoursMonth = $workinghoursArray->{$currentDay} * 60;
-			} else {
-				$workinghoursMonth = 0;
-			}
+		for ($idw = 0; $idw < $daysInRange; $idw++) {
+			$timeSpentDiffThisDay = loadDifferenceBetweenPassedAndSpentTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'), dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), 0, $user->id);
 
-
-			$timeSpentThisDay = loadTimeSpentWithinRange($dayinloopfromfirstdaytoshow, dol_time_plus_duree($dayinloopfromfirstdaytoshow, 1, 'd'), 0, $user->id);
-
-			$difftime = $workinghoursMonth - $timeSpentThisDay['total'];
-			if ($difftime < 0) {
+			if ($timeSpentDiffThisDay < 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-			} elseif ($difftime > 0) {
+			} elseif ($timeSpentDiffThisDay > 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-			} elseif ($difftime == 0) {
+			} elseif ($timeSpentDiffThisDay == 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 			}
 			$cssweekend = '';
-			if ((($idw + 1) < $numstartworkingday) || (($idw + 1) > $numendworkingday)) {	// This is a day is not inside the setup of working days, so we use a week-end css.
-				//$cssweekend = 'weekend';
-			}
 
 			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
@@ -855,10 +769,9 @@ if (count($tasksarray) > 0) {
 				$cssonholiday .= 'onholidayafternoon ';
 			}
 
-			print '<td class="liste_total bold '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'" align="center" style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'"><div class="'.$idw.'">'.(($difftime != 0) ? convertSecondToTime(abs($difftime), 'allhourmin') : '00:00').'</div></td>';
-		}
-		if ($dayInMonth == $dayInMonthCurrent) {
-			print '<td class="liste_total"></td>';
+			print '<td class="liste_total bold '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '');
+			print '" align="center" style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'"><div class="'.$idw.'">';
+			print (($timeSpentDiffThisDay != 0) ? convertSecondToTime(abs($timeSpentDiffThisDay*60), 'allhourmin') : '00:00').'</div></td>';
 		}
 		print '</tr>';
 	}

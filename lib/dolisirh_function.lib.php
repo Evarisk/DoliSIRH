@@ -402,7 +402,7 @@ function loadTimeToSpendWithinRange($datestart, $dateend, $taskid = 0, $userid =
 	$workinghours = new Workinghours($db);
 	$holiday      = new Holiday($db);
 
-	$daysInRange = num_between_day($datestart, $dateend, 1);
+	$daysInRange = num_between_day($datestart, $dateend);
 	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
 
 	$time_to_spend = array(
@@ -448,7 +448,7 @@ function loadPassedTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 
 
 	$workinghours = new Workinghours($db);
 
-	$daysInRange = num_between_day($datestart, $dateend, 1);
+	$daysInRange = num_between_day($datestart, $dateend);
 	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
 
 	$passed_working_time = array(
