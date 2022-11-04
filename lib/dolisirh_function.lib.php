@@ -264,7 +264,7 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
 	$sql .= " WHERE ptt.fk_task = pt.rowid";
 	$sql .= " AND pt.fk_projet = ".((int) $project_id);
 	$sql .= " AND (ptt.task_date >= '".$db->idate($datestart)."' ";
-	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
+	$sql .= " AND ptt.task_date < '".$db->idate(dol_time_plus_duree($dateend, 1,'d'))."')";
 	if ($taskid) {
 		$sql .= " AND ptt.fk_task=".((int) $taskid);
 	}
@@ -447,7 +447,6 @@ function loadPassedTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 
 	}
 
 	$workinghours = new Workinghours($db);
-	$holiday      = new Holiday($db);
 
 	$daysInRange = num_between_day($datestart, $dateend, 1);
 	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
