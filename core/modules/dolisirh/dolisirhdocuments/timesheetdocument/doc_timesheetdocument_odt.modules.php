@@ -413,7 +413,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 				$projectsrole = $task->getUserRolesForProjectsOrTasks($usertmp, 0, ($project->id ?: 0), 0, 1);
 				$tasksrole = $task->getUserRolesForProjectsOrTasks(0, $usertmp, ($project->id ?: 0), 0, 1);
 				$restrictviewformytask = ((!isset($conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED)) ? 2 : $conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED);
-				$totalforvisibletasks = projectLinesPerDayOnMonth($j, $daystarttoshow, $lastdaytoshow, $usertmp, 0, $tasksarray, $level, $projectsrole, $tasksrole, 0, $restrictviewformytask, $isavailable, 0, array(), $extrafields, $dayInMonth, 1);
+				$totalforvisibletasks = doliSirhLinesPerMonth($j, $daystarttoshow, $lastdaytoshow, $usertmp, 0, $tasksarray, $level, $projectsrole, $tasksrole, 0, $restrictviewformytask, $isavailable, 0, array(), $extrafields, $dayInMonth, 1);
 
 				$tmparray['employee_firstname'] = $usertmp->firstname;
 				$tmparray['employee_lastname']  = $usertmp->lastname;

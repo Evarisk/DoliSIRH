@@ -168,7 +168,7 @@ class DoliSIRHDocuments extends CommonObject
 		$this->parent_id     = $parentObject->id;
 		$this->parent_type   = $parentObject->element_type ?: $parentObject->element;
 
-		$this->DocumentFillJSON($this);
+		//$this->DocumentFillJSON($this);
 		$this->element = $this->element . '@dolisirh';
 		return $this->createCommon($user, $notrigger);
 	}
