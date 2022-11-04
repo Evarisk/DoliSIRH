@@ -685,7 +685,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$start_date = dol_print_date($firstdaytoshow, "dayreduceformat");
 	$end_date = dol_print_date($lastdaytoshow, "dayreduceformat");
 
-	$timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, $lastdaytoshow, 0, $object->fk_user_assign);
+	$timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), 0, $object->fk_user_assign);
 
 	// Planned working time
 	$planned_working_time = $timeSpendingInfos['planned'];

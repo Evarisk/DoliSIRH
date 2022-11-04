@@ -264,7 +264,7 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
 	$sql .= " WHERE ptt.fk_task = pt.rowid";
 	$sql .= " AND pt.fk_projet = ".((int) $project_id);
 	$sql .= " AND (ptt.task_date >= '".$db->idate($datestart)."' ";
-	$sql .= " AND ptt.task_date < '".$db->idate(dol_time_plus_duree($dateend, 1,'d'))."')";
+	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
 	if ($taskid) {
 		$sql .= " AND ptt.fk_task=".((int) $taskid);
 	}
@@ -326,7 +326,7 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
 	$sql .= " WHERE ptt.fk_task = pt.rowid";
 	$sql .= " AND (ptt.task_date >= '".$db->idate($datestart)."' ";
-	$sql .= " AND ptt.task_date < '".$db->idate(dol_time_plus_duree($dateend, 1,'d'))."')";
+	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
 	if ($taskid) {
 		$sql .= " AND ptt.fk_task=".((int) $taskid);
 	}
@@ -1506,7 +1506,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 			$obj = &$lines[$i]; // To display extrafields
 			// If we want all or we have a role on task, we show it
 			if (empty($mine) || !empty($tasksrole[$lines[$i]->id])) {
-				//dol_syslog("projectLinesPerWeek Found line ".$i.", a qualified task (i have role or want to show all tasks) with id=".$lines[$i]->id." project id=".$lines[$i]->fk_project);
 
 				if ($restricteditformytask == 2 && empty($tasksrole[$lines[$i]->id])) {    // we have no role on task and we request to hide such cases
 					continue;
@@ -1610,7 +1609,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					print "</td>\n";
 				}
 
-				$disabledproject = 1;
 				$disabledtask = 1;
 
 				if ($lines[$i]->public || !empty($projectsrole[$lines[$i]->fk_project]) || $user->rights->projet->all->creer) {
