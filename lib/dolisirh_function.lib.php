@@ -326,7 +326,7 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
 	$sql .= " WHERE ptt.fk_task = pt.rowid";
 	$sql .= " AND (ptt.task_date >= '".$db->idate($datestart)."' ";
-	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
+	$sql .= " AND ptt.task_date < '".$db->idate(dol_time_plus_duree($dateend, 1,'d'))."')";
 	if ($taskid) {
 		$sql .= " AND ptt.fk_task=".((int) $taskid);
 	}
