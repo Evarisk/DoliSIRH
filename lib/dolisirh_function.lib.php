@@ -81,6 +81,33 @@ function isTaskFavorite($task_id, $user_id)
 }
 
 /**
+ * Check if day is available
+ *
+ * @param $date datetime
+ * @param $userid user id
+ * @return int availability
+ */
+function isDayAvailable($date, $userid)
+{
+	global $db;
+
+	if (empty($date)) {
+		dol_print_error('', 'Error date parameter is empty');
+	}
+
+	$holiday      = new Holiday($db);
+
+	$statusofholidaytocheck = Holiday::STATUS_APPROVED;
+
+	$is_available_for_user = $holiday->verifDateHolidayForTimestamp($userid, $date, $statusofholidaytocheck);
+	$is_public_holiday = num_public_holiday($date, dol_time_plus_duree($date, 1,'d'));
+	$day_is_available = $is_available_for_user && !$is_public_holiday;
+
+	return $day_is_available;
+}
+
+
+/**
  * Prepare array with list of tabs
  *
  * @param	string	$mode		Mode
@@ -293,11 +320,7 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
 
-	$workinghours = new Workinghours($db);
-	$holiday      = new Holiday($db);
-
 	$daysInRange = num_between_day($datestart, $dateend, 1);
-	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
 
 	$sql = "SELECT ptt.rowid as taskid, ptt.task_duration, ptt.task_date, ptt.task_datehour, ptt.fk_task";
 	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
@@ -320,16 +343,11 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
 		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-		$day_end_date = dol_time_plus_duree($datestart, $idw + 1, 'd'); // $firstdaytoshow is a date with hours = 0
+		$day_is_available = isDayAvailable($day_start_date, $userid);
 
-		$statusofholidaytocheck = Holiday::STATUS_APPROVED;
-
-		$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($userid, $day_start_date, $statusofholidaytocheck);
-		$isavailable[dol_print_date($day_start_date,'dayrfc')] = $isavailablefordayanduser; // in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
-
-		$day_is_available = !num_public_holiday($day_start_date, $day_end_date);
-
-		if (!$day_is_available) {
+		if ($day_is_available) {
+			$isavailable[dol_print_date($day_start_date,'dayrfc')] = 1;
+		} else {
 			$isavailable[dol_print_date($day_start_date,'dayrfc')] = 0;
 		}
 	}
@@ -394,14 +412,9 @@ function loadTimeToSpendWithinRange($datestart, $dateend, $taskid = 0, $userid =
 
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
 		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-		$day_end_date = dol_time_plus_duree($datestart, $idw + 1, 'd'); // $firstdaytoshow is a date with hours = 0
 
-		$statusofholidaytocheck = Holiday::STATUS_APPROVED;
-
-		$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($userid, $day_start_date, $statusofholidaytocheck);
-		$isavailable[$day_start_date] = $isavailablefordayanduser; // in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
-
-		$day_is_available = !num_public_holiday($day_start_date, $day_end_date);
+		$day_is_available = isDayAvailable($day_start_date, $userid);
+		$isavailable[$day_start_date] = $day_is_available;
 
 		if ($day_is_available) {
 			$currentDay = date('l', $day_start_date);
@@ -445,14 +458,9 @@ function loadPassedTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 
 
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
 		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-		$day_end_date = dol_time_plus_duree($datestart, $idw + 1, 'd'); // $firstdaytoshow is a date with hours = 0
 
-		$statusofholidaytocheck = Holiday::STATUS_APPROVED;
-
-		$isavailablefordayanduser = $holiday->verifDateHolidayForTimestamp($userid, $day_start_date, $statusofholidaytocheck);
-		$isavailable[$day_start_date] = $isavailablefordayanduser; // in projectLinesPerWeek later, we are using $firstdaytoshow and dol_time_plus_duree to loop on each day
-
-		$day_is_available = !num_public_holiday($day_start_date, $day_end_date);
+		$day_is_available = isDayAvailable($day_start_date, $userid);
+		$isavailable[$day_start_date] = $day_is_available;
 
 		if ($day_is_available) {
 			$currentDay = date('l', $day_start_date);
