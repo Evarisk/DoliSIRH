@@ -312,7 +312,7 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
  * @return array                Array with minutes, hours and total time spent
  * @throws Exception
  */
-function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0, $exclude_project = 0)
 {
 	global $db;
 
@@ -332,6 +332,9 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 	}
 	if ($userid) {
 		$sql .= " AND ptt.fk_user=".((int) $userid);
+	}
+	if ($exclude_project) {
+		$sql .= " AND pt.fk_projet != ". $exclude_project;
 	}
 
 	$timeSpent = array(
