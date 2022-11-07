@@ -31,7 +31,6 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/doc.lib.php';
 
 require_once __DIR__ . '/modules_timesheetdocument.php';
 require_once __DIR__ . '/mod_timesheetdocument_standard.php';
-require_once DOL_DOCUMENT_ROOT.'/custom/dolisirh/class/workinghours.class.php';
 
 /**
  *	Class to build documents using ODF templates generator
@@ -83,20 +82,12 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 		$this->marge_basse = 0;
 
 		$this->option_logo = 1; // Display logo
-		$this->option_tva = 0; // Manage the vat option FACTURE_TVAOPTION
-		$this->option_modereg = 0; // Display payment mode
-		$this->option_condreg = 0; // Display payment terms
-		$this->option_codeproduitservice = 0; // Display product-service code
 		$this->option_multilang = 1; // Available in several languages
-		$this->option_escompte = 0; // Displays if there has been a discount
-		$this->option_credit_note = 0; // Support credit notes
-		$this->option_freetext = 1; // Support add of a personalised text
-		$this->option_draft_watermark = 0; // Support add of a watermark on drafts
 
 		// Get source company
 		$this->emetteur = $mysoc;
 		if (!$this->emetteur->country_code) {
-			$this->emetteur->country_code = substr($langs->defaultlang, -2); // By default if not defined
+			$this->emetteur->country_code = substr($langs->defaultlang, -2); // By default, if is not defined
 		}
 	}
 
@@ -162,6 +153,35 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 		return $texte;
 	}
 
+
+    /**
+     *    Set tmparray vars
+     *
+     * @param  array        $tmparray   temp array contains all document data
+     * @param  Segment      $listlines  Object to fill with data to convert in ODT Segment
+     * @throws Exception
+     */
+    public function setTmparrayVars($tmparray, $listlines) {
+        global $langs;
+
+        unset($tmparray['object_fields']);
+        unset($tmparray['object_lines']);
+
+        foreach ($tmparray as $key => $val) {
+            try {
+                if (empty($val)) {
+                    $listlines->setVars($key, $langs->trans('NoData'), true, 'UTF-8');
+                } else {
+                    $listlines->setVars($key, html_entity_decode($val, ENT_QUOTES | ENT_HTML5), true, 'UTF-8');
+                }
+            } catch (SegmentException $e) {
+                dol_syslog($e->getMessage());
+            }
+        }
+        $listlines->merge();
+    }
+
+
     /**
      *  Function to build a document on disk using the generic odt module.
      *
@@ -177,7 +197,6 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
      */
 	public function write_file($objectDocument, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $object)
 	{
-		// phpcs:enable
 		global $action, $conf, $hookmanager, $langs, $mysoc, $user;
 
 		if (empty($srctemplatepath)) {
@@ -208,7 +227,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
         $objectDocument->fetch($objectDocumentID);
 
 		$objectref = dol_sanitizeFileName($objectDocument->ref);
-		$dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1] . '/timesheetdocument/' . $object->ref;
+		$dir = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/timesheetdocument/' . $object->ref;
 
         if (!file_exists($dir)) {
             if (dol_mkdir($dir) < 0) {
@@ -219,7 +238,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 
         if (file_exists($dir)) {
             $newfile = basename($srctemplatepath);
-            $newfiletmp = preg_replace('/\.od(t|s)/i', '', $newfile);
+            $newfiletmp = preg_replace('/\.od([ts])/i', '', $newfile);
             $newfiletmp = preg_replace('/template_/i', '', $newfiletmp);
 
             $date       = dol_print_date(dol_now(), 'dayxcard');
@@ -278,26 +297,19 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
             $task         = new Task($this->db);
             $project      = new Project($this->db);
             $signatory    = new TimeSheetSignature($this->db);
-            $workinghours = new Workinghours($this->db);
 
             $usertmp->fetch($object->fk_user_assign);
 
-            $daystarttoshow = $object->date_start - 12 * 3600;
-            $lastdaytoshow  = $object->date_end - 12 * 3600;
-            $daysInRange    = num_between_day($object->date_start, $object->date_end, 1);
-
-            $workinghoursArray = $workinghours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
+            $daystarttoshow   = $object->date_start - 12 * 3600;
+            $lastdaytoshow    = $object->date_end - 12 * 3600;
+            $daysInRange      = num_between_day($object->date_start, $object->date_end, 1);
+            $daysInRange      = !empty($daysInRange) ? $daysInRange : 1;
+            $daysInRangeArray = array();
 
             for ($idw = 0; $idw < $daysInRange; $idw++) {
                 $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw, 'd');
-                $day_is_available = isDayAvailable($daystarttoshow, $object->fk_user_assign);
                 $day = dol_getdate($dayInLoop);
                 $daysInRangeArray[] = $day['mday'];
-                if ($day_is_available) {
-                    $isavailable[$dayInLoop] = array('morning' => 1, 'afternoon' => 1);
-                } else {
-                    $isavailable[$dayInLoop] = array('morning' => false, 'afternoon' => false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
-                }
             }
 
             $tmparray['employee_firstname'] = $usertmp->firstname;
@@ -317,7 +329,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
             $societey_attendant  = $signatory->fetchSignatory('TIMESHEET_SOCIETY_ATTENDANT', $object->id, 'timesheet');
             $societey_attendant  = is_array($societey_attendant) ? array_shift($societey_attendant) : $societey_attendant;
 
-            $tempdir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1] . '/temp/';
+            $tempdir = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
 
             //Signatures
             if (!empty($society_responsible) && $society_responsible > 0) {
@@ -386,6 +398,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 } catch (OdfException $e) {
                     // We may arrive here if tags for lines not present into template
                     $foundtagforlines = 0;
+                    $listlines = '';
                     dol_syslog($e->getMessage());
                 }
 
@@ -400,27 +413,19 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                         }
                     }
 
-                    unset($tmparray['object_fields']);
-                    unset($tmparray['object_lines']);
-
-                    foreach ($tmparray as $key => $val) {
-                        try {
-                            $listlines->setVars($key, $val, true, 'UTF-8');
-                        } catch (SegmentException $e) {
-                            dol_syslog($e->getMessage());
-                        }
-                    }
-                    $listlines->merge();
+                    $this->setTmparrayVars($tmparray, $listlines);
                     $odfHandler->mergeSegment($listlines);
                 }
 
                 // Get all tasks except HR project task
+                $totaltime = array();
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('times');
                 } catch (OdfException $e) {
                     // We may arrive here if tags for lines not present into template
                     $foundtagforlines = 0;
+                    $listlines = '';
                     dol_syslog($e->getMessage());
                 }
 
@@ -429,46 +434,23 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     $tasksArray = $task->getTasksArray(0, 0, 0, 0, 0, '', '', $filter,  $object->fk_user_assign);
                     if (is_array($tasksArray) && !empty($tasksArray)) {
                         foreach ($tasksArray as $tasksingle) {
-                            $filter = ' AND ptt.fk_task = ' . $tasksingle->id . ' AND ptt.task_date BETWEEN ' . "'" . dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc') . "'";
-                            $alltimespent = $task->fetchAllTimeSpent($usertmp, $filter);
-                            $totaltimespent = 0;
-                            if (is_array($alltimespent) && !empty($alltimespent)) {
-                                foreach ($alltimespent as $timespent) {
-                                    $totaltimespent += $timespent->timespent_duration;
+                            $project->fetch($tasksingle->fk_project);
+                            $workLoad = loadTimeSpentWithinRangeByProject($daystarttoshow, $lastdaytoshow, $project->id, 0, $object->fk_user_assign);
+                            for ($idw = 1; $idw <= 31; $idw++) {
+                                $tmparray['task_ref'] = $tasksingle->ref;
+                                $tmparray['task_label'] = dol_trunc($tasksingle->label, 16);
+                                if (in_array($idw, $daysInRangeArray)) {
+                                    $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
+                                    $tmparray['time' . $idw] = (($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id] != 0) ? convertSecondToTime($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id], (is_float($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                                    $totaltime[$dayInLoop] += $workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id];
+                                } else {
+                                    $tmparray['time' . $idw] = '-';
                                 }
                             }
-                            if ($totaltimespent > 0) {
-                                $project->fetch($tasksingle->fk_project);
-                                $workLoad = loadTimeSpentWithinRangeByProject($daystarttoshow, $lastdaytoshow, $project->id, $tasksingle->id, $object->fk_user_assign);
-                                for ($idw = 1; $idw <= 31; $idw++) {
-                                    $tmparray['task_ref'] = $tasksingle->ref;
-                                    $tmparray['task_label'] = dol_trunc($tasksingle->label, 16);
-                                    if (in_array($idw, $daysInRangeArray)) {
-                                        $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
-                                        $tmparray['time' . $idw] = (($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id] != 0) ? convertSecondToTime($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id], (is_float($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id]/3600) ? 'allhourmin' : 'allhour')) : '-');
-                                    } else {
-                                        $tmparray['time' . $idw] = '-';
-                                    }
-                                }
 
-                                unset($tmparray['object_fields']);
-                                unset($tmparray['object_lines']);
-
-                                foreach ($tmparray as $key => $val) {
-                                    try {
-                                        if (empty($val)) {
-                                            $listlines->setVars($key, $langs->trans('NoData'), true, 'UTF-8');
-                                        } else {
-                                            $listlines->setVars($key, html_entity_decode($val, ENT_QUOTES | ENT_HTML5), true, 'UTF-8');
-                                        }
-                                    } catch (SegmentException $e) {
-                                        dol_syslog($e->getMessage());
-                                    }
-                                }
-                                $listlines->merge();
-                                $odfHandler->mergeSegment($listlines);
-                            }
+                            $this->setTmparrayVars($tmparray, $listlines);
                         }
+                        $odfHandler->mergeSegment($listlines);
                     }
                 }
 
@@ -479,43 +461,33 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     array('css', 'cp', 'rtt', 'jf', 'cm',) // Cell name
                 );
 
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment($segment[0][$i]);
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    dol_syslog($e->getMessage());
-                }
+                $tasksArray = $task->getTasksArray(0, 0, $conf->global->DOLISIRH_HR_PROJECT, 0, 0, '', '', '',  $object->fk_user_assign);
+                $workLoadHRProject = loadTimeSpentWithinRangeByProject($daystarttoshow, $lastdaytoshow, $conf->global->DOLISIRH_HR_PROJECT, 0, $object->fk_user_assign);
+                if (is_array($tasksArray) && !empty($tasksArray)) {
+                    foreach ($tasksArray as $tasksingle) {
+                        $foundtagforlines = 1;
+                        try {
+                            $listlines = $odfHandler->setSegment($segment[0][$i]);
+                        } catch (OdfException $e) {
+                            // We may arrive here if tags for lines not present into template
+                            $foundtagforlines = 0;
+                            dol_syslog($e->getMessage());
+                        }
 
-                if ($foundtagforlines) {
-                    $tasksArray = $task->getTasksArray(0, 0, $conf->global->DOLISIRH_HR_PROJECT, 0, 0, '', '', '',  $object->fk_user_assign);
-                    if (is_array($tasksArray) && !empty($tasksArray)) {
-                        foreach ($tasksArray as $tasksingle) {
-                            $workLoad = loadTimeSpentWithinRangeByProject($daystarttoshow, $lastdaytoshow, $conf->global->DOLISIRH_HR_PROJECT, $tasksingle->id, $object->fk_user_assign);
+                        if ($foundtagforlines) {
                             for ($idw = 1; $idw <= 31; $idw++) {
                                 if (in_array($idw, $daysInRangeArray)) {
                                     $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
-                                    $tmparray[$segment[1][$i] . $idw] = (($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id] != 0) ? convertSecondToTime($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id], (is_float($workLoad['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id] / 3600) ? 'allhourmin' : 'allhour')) : '-');
+                                    $tmparray[$segment[1][$i] . $idw] = (($workLoadHRProject['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id] != 0) ? convertSecondToTime($workLoadHRProject['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id], (is_float($workLoadHRProject['monthWorkLoadPerTask'][$dayInLoop][$tasksingle->id] / 3600) ? 'allhourmin' : 'allhour')) : '-');
                                 } else {
                                     $tmparray[$segment[1][$i] . $idw] = '-';
                                 }
                             }
 
-                            unset($tmparray['object_fields']);
-                            unset($tmparray['object_lines']);
-
-                            foreach ($tmparray as $key => $val) {
-                                try {
-                                    $listlines->setVars($key, $val, true, 'UTF-8');
-                                } catch (SegmentException $e) {
-                                    dol_syslog($e->getMessage());
-                                }
-                            }
-                            $listlines->merge();
+                            $this->setTmparrayVars($tmparray, $listlines);
                             $odfHandler->mergeSegment($listlines);
-                            $i++;
                         }
+                        $i++;
                     }
                 }
 
@@ -532,28 +504,18 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 if ($foundtagforlines) {
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd'); // $daystarttoshow is a date with hours = 0
-                            $tmparray['totalrh' . $idw] = (($workLoad['monthWorkLoad'][$dayInLoop] != 0) ? convertSecondToTime($workLoad['monthWorkLoad'][$dayInLoop], (is_float($workLoad['monthWorkLoad'][$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
+                            $tmparray['totalrh' . $idw] = (($workLoadHRProject['monthWorkLoad'][$dayInLoop] != 0) ? convertSecondToTime($workLoadHRProject['monthWorkLoad'][$dayInLoop], (is_float($workLoadHRProject['monthWorkLoad'][$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['totalrh' . $idw] = '-';
                         }
                     }
 
-                    unset($tmparray['object_fields']);
-                    unset($tmparray['object_lines']);
-
-                    foreach ($tmparray as $key => $val) {
-                        try {
-                            $listlines->setVars($key, $val, true, 'UTF-8');
-                        } catch (SegmentException $e) {
-                            dol_syslog($e->getMessage());
-                        }
-                    }
-                    $listlines->merge();
+                    $this->setTmparrayVars($tmparray, $listlines);
                     $odfHandler->mergeSegment($listlines);
                 }
 
-                // Total time consumed whithout Project RH
+                // Total time spent whithout Project RH
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('totaltimes');
@@ -567,28 +529,18 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
                             $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
-                            $totaltime = loadTimeSpentWithinRange($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), 0, $object->fk_user_assign);
-                            $tmparray['totaltime' . $idw] = (($totaltime['total'] != 0) ? convertSecondToTime($totaltime['total'] * 60, (is_float($totaltime['total'] * 60) ? 'allhourmin' : 'allhour')) : '-');
+                            $tmparray['totaltime' . $idw] = (($totaltime[$dayInLoop] != 0) ? convertSecondToTime($totaltime[$dayInLoop], (is_float($totaltime[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['totaltime' . $idw] = '-';
                         }
                     }
 
-                    unset($tmparray['object_fields']);
-                    unset($tmparray['object_lines']);
-
-                    foreach ($tmparray as $key => $val) {
-                        try {
-                            $listlines->setVars($key, $val, true, 'UTF-8');
-                        } catch (SegmentException $e) {
-                            dol_syslog($e->getMessage());
-                        }
-                    }
-                    $listlines->merge();
+                    $this->setTmparrayVars($tmparray, $listlines);
                     $odfHandler->mergeSegment($listlines);
                 }
 
-                // Total time consumed
+                // Total time spent
+                $totaltimespent = array();
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('totaltpss');
@@ -602,29 +554,21 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
                             $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
-                            $totaltimespent = loadTimeSpentWithinRange($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), 0, $object->fk_user_assign);
-                            $tmparray['totaltps' . $idw] = (($totaltimespent['total'] != 0) ? convertSecondToTime($totaltimespent['total'] * 60, (is_float($totaltimespent['total'] * 60) ? 'allhourmin' : 'allhour')) : '-');
+                            $totaltimespent[$dayInLoop] = $totaltime[$dayInLoop] + $workLoadHRProject['monthWorkLoad'][$dayInLoop];
+                            $tmparray['totaltps' . $idw] = (($totaltime[$dayInLoop] != 0 && $workLoadHRProject['monthWorkLoad'][$dayInLoop] != 0) ? convertSecondToTime($totaltimespent[$dayInLoop], (is_float($totaltimespent[$dayInLoop]) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['totaltps' . $idw] = '-';
                         }
                     }
 
-                    unset($tmparray['object_fields']);
-                    unset($tmparray['object_lines']);
-
-                    foreach ($tmparray as $key => $val) {
-                        try {
-                            $listlines->setVars($key, $val, true, 'UTF-8');
-                        } catch (SegmentException $e) {
-                            dol_syslog($e->getMessage());
-                        }
-                    }
-                    $listlines->merge();
+                    $this->setTmparrayVars($tmparray, $listlines);
                     $odfHandler->mergeSegment($listlines);
                 }
 
-                // Total time spent
+                // Total time planned
+                $totaltimeplanned = array();
                 $foundtagforlines = 1;
+
                 try {
                     $listlines = $odfHandler->setSegment('tas');
                 } catch (OdfException $e) {
@@ -636,31 +580,15 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 if ($foundtagforlines) {
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');  // $daystarttoshow is a date with hours = 0
-                            if ($isavailable[$dayInLoop]['morning'] && $isavailable[$dayInLoop]['afternoon']) {
-                                $currentDay = date('l', $dayInLoop);
-                                $currentDay = 'workinghours_' . strtolower($currentDay);
-                                $workinghoursMonth = $workinghoursArray->{$currentDay} * 60;
-                            } else {
-                                $workinghoursMonth = 0;
-                            }
-                            $tmparray['ta' . $idw] = (($workinghoursMonth != 0) ? convertSecondToTime($workinghoursMonth, (is_float($workinghoursMonth / 60 / 60) ? 'allhourmin' : 'allhour')) : '-');
+                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
+                            $totaltimeplanned[$dayInLoop] = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), 0, $object->fk_user_assign);
+                            $tmparray['ta' . $idw] = (($totaltimeplanned[$dayInLoop]['minutes'] != 0) ? convertSecondToTime($totaltimeplanned[$dayInLoop]['minutes'] * 60, (is_float($totaltimeplanned[$dayInLoop]['minutes']/60) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['ta' . $idw] = '-';
                         }
                     }
 
-                    unset($tmparray['object_fields']);
-                    unset($tmparray['object_lines']);
-
-                    foreach ($tmparray as $key => $val) {
-                        try {
-                            $listlines->setVars($key, $val, true, 'UTF-8');
-                        } catch (SegmentException $e) {
-                            dol_syslog($e->getMessage());
-                        }
-                    }
-                    $listlines->merge();
+                    $this->setTmparrayVars($tmparray, $listlines);
                     $odfHandler->mergeSegment($listlines);
                 }
 
@@ -678,31 +606,14 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
                             $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
-                            if ($isavailable[$dayInLoop]['morning'] && $isavailable[$dayInLoop]['afternoon']) {
-                                $currentDay = date('l', $dayInLoop);
-                                $currentDay = 'workinghours_' . strtolower($currentDay);
-                                $workinghoursMonth = $workinghoursArray->{$currentDay} * 60;
-                            } else {
-                                $workinghoursMonth = 0;
-                            }
-                            $difftotaltime = $workinghoursMonth - $totalforvisibletasks[$dayInLoop];
-                            $tmparray['diff' . $idw] = (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), (is_float($difftotaltime / 60 / 60) ? 'allhourmin' : 'allhour')) : '-');
+                            $difftotaltime[$dayInLoop] = $totaltimeplanned[$dayInLoop]['minutes'] * 60 - $totaltimespent[$dayInLoop];
+                            $tmparray['diff' . $idw] = (($difftotaltime[$dayInLoop] != 0) ? convertSecondToTime(abs($difftotaltime[$dayInLoop]), (is_float($difftotaltime[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['diff' . $idw] = '-';
                         }
                     }
 
-                    unset($tmparray['object_fields']);
-                    unset($tmparray['object_lines']);
-
-                    foreach ($tmparray as $key => $val) {
-                        try {
-                            $listlines->setVars($key, $val, true, 'UTF-8');
-                        } catch (SegmentException $e) {
-                            dol_syslog($e->getMessage());
-                        }
-                    }
-                    $listlines->merge();
+                    $this->setTmparrayVars($tmparray, $listlines);
                     $odfHandler->mergeSegment($listlines);
                 }
 
@@ -730,17 +641,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                                 $tmparray['timesheetdet_qty']   = $line->qty;
                             }
 
-                            unset($tmparray['object_fields']);
-                            unset($tmparray['object_lines']);
-
-                            foreach ($tmparray as $key => $val) {
-                                try {
-                                    $listlines->setVars($key, $val, true, 'UTF-8');
-                                } catch (SegmentException $e) {
-                                    dol_syslog($e->getMessage());
-                                }
-                            }
-                            $listlines->merge();
+                            $this->setTmparrayVars($tmparray, $listlines);
                         }
                     }
                     $odfHandler->mergeSegment($listlines);
@@ -799,7 +700,5 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
             $this->error = $langs->transnoentities("ErrorCanNotCreateDir", $dir);
             return -1;
         }
-
-		return -1;
 	}
 }
