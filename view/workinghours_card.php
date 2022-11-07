@@ -129,7 +129,7 @@ if ($socid > 0 && empty($usertmp->id)) {
 
 $title = $langs->trans("User");
 if ( ! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/', $conf->global->MAIN_HTML_TITLE) && $usertmp->name) $title = $usertmp->name . " - " . $langs->trans('WorkingHours');
-$help_url = 'EN:Module_Third_Parties|FR:Module_DigiriskDolibarr#L.27onglet_Horaire_de_travail|ES:Empresas';
+$help_url = '';
 
 $morecss = array("/dolisirh/css/dolisirh.css");
 
