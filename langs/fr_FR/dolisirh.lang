@@ -360,24 +360,6 @@ NoSocietyAttendants = Pas de signataires liés à cet objet. Pour ajouter des si
 FileGenerated
 
 
-#
-# Tools - Outils
-#
-
-# Data - Donnée
-Tools = Outils
-DataUpdateManagement = Gestion des mises à jour de données
-DataUpdateUser = Mise à jour des utilisateurs externes salariés
-DataUpdateUserDescription = Les utilisateurs externes salariés passeront au statut de non salarié
-DataUpdateSaved = Mise à jour des données utilisateurs effectuées
-DataUpdateNotSaved = Aucune données utilisateurs à mettre à jour
-DataUpdateUserHaveTodoTitle = Informations sur les statuts des utilisateurs internes/externes - salariés/non salariés
-DataUpdateUserAll =  Il y a 3 utilisateur(s) au total
-DataUpdateUserInternalNotEmployees = Il y a %s utilisateur(s) interne(s) et non salarié(s)
-DataUpdateUserInternal = Il y a %s utilisateur(s) interne(s) et salarié(s)
-DataUpdateUserExternal = Il y a %s utilisateur(s) externe(s) et salarié(s)
-
-
 
 #
 # Other
