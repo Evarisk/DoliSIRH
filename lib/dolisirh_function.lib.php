@@ -300,6 +300,7 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
 		return array();
 	}
 }
+
 /**
  * Load time spent by tasks within a time range.
  *
@@ -320,7 +321,7 @@ function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $userid = 0)
 		$userobj->fetch($userid);
 	}
 
-	$timeSpentList = $task->fetchAllTimeSpent($userobj);
+	$timeSpentList = $task->fetchAllTimeSpent($userobj, 'AND (ptt.task_date >= "'.$db->idate($datestart) .'" AND ptt.task_date < "'.$db->idate($dateend) . '")');
 
 	$timeSpentOnTasks = [];
 
@@ -343,7 +344,7 @@ function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $userid = 0)
  * @return array                Array with minutes, hours and total time spent
  * @throws Exception
  */
-function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0, $exclude_project = 0)
+function loadTimeSpentWithinRange($datestart, $dateend, $userid = 0)
 {
 	global $db;
 
@@ -351,22 +352,16 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
 
+	$task = new Task($db);
+	$userobj = new User($db);
+
+	if ($userid > 0) {
+		$userobj->fetch($userid);
+	}
+
 	$daysInRange = num_between_day($datestart, $dateend, 1);
 
-	$sql = "SELECT ptt.rowid as taskid, ptt.task_duration, ptt.task_date, ptt.task_datehour, ptt.fk_task";
-    $sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt";
-    $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task as pt on pt.rowid = ptt.fk_task";
-    $sql .= " WHERE (ptt.task_date >= '".$db->idate($datestart)."' ";
-	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
-	if ($taskid) {
-		$sql .= " AND ptt.fk_task=".((int) $taskid);
-	}
-	if ($userid) {
-		$sql .= " AND ptt.fk_user=".((int) $userid);
-	}
-	if ($exclude_project) {
-		$sql .= " AND pt.fk_projet != ". $exclude_project;
-	}
+	$timeSpentList = $task->fetchAllTimeSpent($userobj, 'AND (ptt.task_date >= "'.$db->idate($datestart) .'" AND ptt.task_date < "'.$db->idate($dateend) . '")');
 
 	$timeSpent = array(
 		'days' => 0,
@@ -386,30 +381,22 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 		}
 	}
 
-	//print $sql;
-	$resql = $db->query($sql);
-	if ($resql) {
-		$num = $db->num_rows($resql);
-		$i = 0;
-		// Loop on each record found, so each couple (project id, task id)
-		while ($i < $num) {
-			$obj = $db->fetch_object($resql);
+	if (is_array($timeSpentList) && !empty($timeSpentList)) {
+		foreach ($timeSpentList as $timeSpentSingle) {
 
-			$hours = floor($obj->task_duration / 3600);
-			$minutes = floor($obj->task_duration / 60);
+			$hours = floor($timeSpentSingle->timespent_duration / 3600);
+			$minutes = floor($timeSpentSingle->timespent_duration / 60);
 
 			$timeSpent['hours'] += $hours;
 			$timeSpent['minutes'] += $minutes;
-			$timeSpent['total'] += $obj->task_duration;
+			$timeSpent['total'] += $timeSpentSingle->timespent_duration;
 
-			if ($isavailable[$obj->task_date]) {
-				$days_worked[$obj->task_date] = 1;
+			if ($isavailable[$timeSpentSingle->task_date]) {
+				$days_worked[$timeSpentSingle->task_date] = 1;
 			}
-
-			$i++;
 		}
-		$db->free($resql);
 	}
+
 	$timeSpent['days'] = is_array($days_worked) && !empty($days_worked) ? count($days_worked) : 0;
 
 	return $timeSpent;
@@ -424,7 +411,7 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadPlannedTimeWithinRange($datestart, $dateend, $userid = 0)
+function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $userid = 0)
 {
 	global $db;
 
@@ -432,11 +419,7 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $userid = 0)
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
 
-	$workinghours = new Workinghours($db);
-	$holiday      = new Holiday($db);
-
 	$daysInRange = num_between_day($datestart, $dateend);
-	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
 
 	$time_to_spend = array(
 		'days' => 0,
@@ -447,13 +430,12 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $userid = 0)
 		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
 
 		$day_is_available = isDayAvailable($day_start_date, $userid);
-		$isavailable[$day_start_date] = $day_is_available;
 
 		if ($day_is_available) {
 			$currentDay = date('l', $day_start_date);
 			$currentDay = 'workinghours_' . strtolower($currentDay);
-			$time_to_spend['minutes'] += $workinghoursArray->{$currentDay};
-			if ($workinghoursArray->{$currentDay} / 60 > 0) {
+			$time_to_spend['minutes'] += $workingHours->$currentDay;
+			if ($workingHours->$currentDay / 60 > 0) {
 				$time_to_spend['days']++;
 			}
 		}
@@ -470,7 +452,7 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $userid = 0)
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadPassedTimeWithinRange($datestart, $dateend, $userid = 0)
+function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $userid = 0)
 {
 	global $db;
 
@@ -478,10 +460,7 @@ function loadPassedTimeWithinRange($datestart, $dateend, $userid = 0)
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
 
-	$workinghours = new Workinghours($db);
-
 	$daysInRange = num_between_day($datestart, $dateend);
-	$workinghoursArray = $workinghours->fetchCurrentWorkingHours($userid, 'user');
 
 	$passed_working_time = array(
 		'minutes' => 0
@@ -496,7 +475,7 @@ function loadPassedTimeWithinRange($datestart, $dateend, $userid = 0)
 		if ($day_is_available) {
 			$currentDay = date('l', $day_start_date);
 			$currentDay = 'workinghours_' . strtolower($currentDay);
-			$passed_working_time['minutes'] += $workinghoursArray->{$currentDay};
+			$passed_working_time['minutes'] += $workingHours->$currentDay;
 		}
 	}
 	return $passed_working_time;
@@ -512,15 +491,15 @@ function loadPassedTimeWithinRange($datestart, $dateend, $userid = 0)
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $workingHours, $userid = 0)
 {
 	global $db;
 
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
-	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $taskid, $userid);
-	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $taskid, $userid);
+	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $userid);
+	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $userid);
 
 	return $passed_working_time['minutes'] - $spent_working_time['minutes'];
 }
@@ -535,17 +514,17 @@ function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadTimeSpendingInfosWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+function loadTimeSpendingInfosWithinRange($datestart, $dateend, $workingHours, $userid = 0)
 {
 	global $db;
 
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
-	$planned_working_time = loadPlannedTimeWithinRange($datestart, $dateend, $taskid, $userid);
-	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $taskid, $userid);
-	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $taskid, $userid);
-	$working_time_difference = loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $taskid, $userid);
+	$planned_working_time = loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $userid);
+	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $userid);
+	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $userid);
+	$working_time_difference = loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $workingHours, $userid);
 
 	$time_spending_infos = array(
 		'planned' => $planned_working_time,
@@ -1488,7 +1467,7 @@ function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &
  * @param	Extrafields	$extrafields		    Object extrafields
  * @return  array								Array with time spent for $fuser for each day of week on tasks in $lines and substasks
  */
-function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null, $dayInMonth)
+function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null, $dayInMonth, $timeSpentOnTasks)
 {
 	global $conf, $db, $user, $langs;
 
@@ -1523,8 +1502,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 	}
 
 	$restrictBefore = null;
-
-	$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $fuser);
 
 	if (! empty($conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS)) {
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
