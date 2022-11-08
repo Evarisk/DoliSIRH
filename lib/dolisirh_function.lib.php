@@ -101,6 +101,7 @@ function isDayAvailable($date, $userid)
 
 	$is_available_for_user = $holiday->verifDateHolidayForTimestamp($userid, $date, $statusofholidaytocheck);
 	$is_public_holiday = num_public_holiday($date, dol_time_plus_duree($date, 1,'d'));
+
 	$day_is_available = $is_available_for_user && !$is_public_holiday;
 
 	return $day_is_available;
@@ -1619,14 +1620,20 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 				for ($idw = 0; $idw < $dayInMonth; $idw++) {
 					$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
-					$cssonholiday = '';
+
+					$cellCSS = '';
+
 					if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-						$cssonholiday .= 'onholidayallday ';
-					} elseif (!$isavailable[$tmpday]['morning']) {
-						$cssonholiday .= 'onholidaymorning ';
-					} elseif (!$isavailable[$tmpday]['afternoon']) {
-						$cssonholiday .= 'onholidayafternoon ';
+
+						if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+							$cellCSS = 'onholidayallday';
+						} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+							$cellCSS = 'weekend';
+						}
+					} else {
+						$cellCSS = '';
 					}
+
 
 					$tmparray = dol_getdate($tmpday);
 
@@ -1645,7 +1652,7 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 						$disabledtaskday = 1;
 					}
 
-					$tableCell = '<td class="center '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'">';
+					$tableCell = '<td class="center '.$idw. ' ' .$cellCSS.'">';
 					//$tableCell .= 'idw='.$idw.' '.$conf->global->MAIN_START_WEEK.' '.$numstartworkingday.'-'.$numendworkingday;
 					$placeholder = '';
 					if ($alreadyspent) {

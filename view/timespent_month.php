@@ -496,6 +496,8 @@ for ($idw = 0; $idw < $dayInMonth; $idw++) {
 	$dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 	if (isDayAvailable($dayInLoop, $user->id)) {
 		$isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
+	} else if (date('N', $dayInLoop) >= 6) {
+		$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end');
 	} else {
 		$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
 	}
@@ -584,23 +586,25 @@ if (!empty($arrayfields['t.progress']['checked'])) {
 if (!empty($arrayfields['timeconsumed']['checked'])) {
 	print '<th class="right maxwidth75 maxwidth100">'.$langs->trans("TimeSpent").($usertoprocess->firstname ? '<br><span class="nowraponall">'.$usertoprocess->getNomUrl(-2).'<span class="opacitymedium paddingleft">'.dol_trunc($usertoprocess->firstname, 10).'</span></span>' : '').'</th>';
 }
+
 for ($idw = 0; $idw < $daysInRange; $idw++) {
 	$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
 
-	$cssweekend = '';
-
 	$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
-	$cssonholiday = '';
+	$cellCSS = '';
+
 	if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-		$cssonholiday .= 'onholidayallday ';
-	} elseif (!$isavailable[$tmpday]['morning']) {
-		$cssonholiday .= 'onholidaymorning ';
-	} elseif (!$isavailable[$tmpday]['afternoon']) {
-		$cssonholiday .= 'onholidayafternoon ';
+		if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+			$cellCSS = 'onholidayallday';
+		} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+			$cellCSS = 'weekend';
+		}
+	} else {
+		$cellCSS = '';
 	}
 
-	print '<th width="6%" class="center bold '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'" style="font-size : 12px">';
+	print '<th width="6%" class="center bold '.$idw. ' ' . $cellCSS.'" style="font-size : 12px">';
 	print dol_print_date($dayinloopfromfirstdaytoshow, '%a');
 	$splitted_date = preg_split('/\//', dol_print_date($dayinloopfromfirstdaytoshow, "day"));
 	$day = $splitted_date[0];
@@ -638,20 +642,22 @@ if ($conf->use_javascript_ajax) {
     //Fill days data
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $planned_hours_on_day = loadPlannedTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'),dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
-        $cssweekend = '';
 
         $tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
-        $cssonholiday = '';
-        if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-            $cssonholiday .= 'onholidayallday ';
-        } elseif (!$isavailable[$tmpday]['morning']) {
-            $cssonholiday .= 'onholidaymorning ';
-        } elseif (!$isavailable[$tmpday]['afternoon']) {
-            $cssonholiday .= 'onholidayafternoon ';
-        }
+		$cellCSS = '';
 
-        print '<td class="liste_total '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '');
+		if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
+			if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+				$cellCSS = 'onholidayallday';
+			} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+				$cellCSS = 'weekend';
+			}
+		} else {
+			$cellCSS = '';
+		}
+
+        print '<td class="liste_total '.$idw. ' ' . $cellCSS;
         print '" align="center"><div class="'.$idw.'">';
         print (($planned_hours_on_day['minutes'] != 0) ? convertSecondToTime($planned_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
     }
@@ -691,20 +697,21 @@ if (count($tasksarray) > 0) {
 		//Fill days data
 		for ($idw = 0; $idw < $daysInRange; $idw++) {
 			$passed_hours_on_day = loadPassedTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'),dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
-			$cssweekend = '';
 
 			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
-			$cssonholiday = '';
-			if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-				$cssonholiday .= 'onholidayallday ';
-			} elseif (!$isavailable[$tmpday]['morning']) {
-				$cssonholiday .= 'onholidaymorning ';
-			} elseif (!$isavailable[$tmpday]['afternoon']) {
-				$cssonholiday .= 'onholidayafternoon ';
-			}
+			$cellCSS = '';
 
-			print '<td class="liste_total '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '');
+			if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
+				if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+					$cellCSS = 'onholidayallday';
+				} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+					$cellCSS = 'weekend';
+				}
+			} else {
+				$cellCSS = '';
+			}
+			print '<td class="liste_total '.$idw. ' ' . $cellCSS;
 			print '" align="center"><div class="'.$idw.'">';
 			print (($passed_hours_on_day['minutes'] != 0) ? convertSecondToTime($passed_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
 		}
@@ -726,29 +733,28 @@ if (count($tasksarray) > 0) {
 		}
 
 		for ($idw = 0; $idw < $daysInRange; $idw++) {
-			$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-			if ($isavailable[$dayinloopfromfirstdaytoshow]['morning'] && $isavailable[$dayinloopfromfirstdaytoshow]['afternoon']) {
-				$currentDay = date('l', $dayinloopfromfirstdaytoshow);
+			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+			if ($isavailable[$tmpday]['morning'] && $isavailable[$tmpday]['afternoon']) {
+				$currentDay = date('l', $tmpday);
 				$currentDay = 'workinghours_' . strtolower($currentDay);
 				$workinghoursMonth = $workingHours->$currentDay * 60;
 			} else {
 				$workinghoursMonth = 0;
 			}
 
-			$cssweekend = '';
+			$cellCSS = '';
 
-			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-
-			$cssonholiday = '';
 			if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-				$cssonholiday .= 'onholidayallday ';
-			} elseif (!$isavailable[$tmpday]['morning']) {
-				$cssonholiday .= 'onholidaymorning ';
-			} elseif (!$isavailable[$tmpday]['afternoon']) {
-				$cssonholiday .= 'onholidayafternoon ';
+				if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+					$cellCSS = 'onholidayallday';
+				} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+					$cellCSS = 'weekend';
+				}
+			} else {
+				$cellCSS = '';
 			}
 
-			print '<td class="liste_total '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '');
+			print '<td class="liste_total '.$idw. ' ' . $cellCSS;
 			print '" align="center"><div class="totalDay'.$idw.'">'.dol_print_date($workinghoursMonth, 'hour').'</div></td>';
 		}
         print '<td></td>';
@@ -775,6 +781,8 @@ if (count($tasksarray) > 0) {
 		}
 
 		for ($idw = 0; $idw < $daysInRange; $idw++) {
+			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+
 			$timeSpentDiffThisDay = loadDifferenceBetweenPassedAndSpentTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'), dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
 
 			if ($timeSpentDiffThisDay < 0) {
@@ -784,20 +792,21 @@ if (count($tasksarray) > 0) {
 			} elseif ($timeSpentDiffThisDay == 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 			}
-			$cssweekend = '';
 
-			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+			$cellCSS = '';
 
-			$cssonholiday = '';
 			if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-				$cssonholiday .= 'onholidayallday ';
-			} elseif (!$isavailable[$tmpday]['morning']) {
-				$cssonholiday .= 'onholidaymorning ';
-			} elseif (!$isavailable[$tmpday]['afternoon']) {
-				$cssonholiday .= 'onholidayafternoon ';
+
+				if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+					$cellCSS = 'onholidayallday';
+				} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+					$cellCSS = 'weekend';
+				}
+			} else {
+				$cellCSS = '';
 			}
 
-			print '<td class="liste_total bold '.$idw.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '');
+			print '<td class="liste_total bold '.$idw. ' ' . $cellCSS;
 			print '" align="center" style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'"><div class="'.$idw.'">';
 			print (($timeSpentDiffThisDay != 0) ? convertSecondToTime(abs($timeSpentDiffThisDay*60), 'allhourmin') : '00:00').'</div></td>';
 		}
