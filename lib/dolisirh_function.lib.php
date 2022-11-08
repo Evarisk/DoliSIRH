@@ -106,7 +106,6 @@ function isDayAvailable($date, $userid)
 	return $day_is_available;
 }
 
-
 /**
  * Prepare array with list of tabs
  *
@@ -344,7 +343,7 @@ function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $userid = 0)
  * @return array                Array with minutes, hours and total time spent
  * @throws Exception
  */
-function loadTimeSpentWithinRange($datestart, $dateend, $userid = 0)
+function loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid = 0)
 {
 	global $db;
 
@@ -359,8 +358,6 @@ function loadTimeSpentWithinRange($datestart, $dateend, $userid = 0)
 		$userobj->fetch($userid);
 	}
 
-	$daysInRange = num_between_day($datestart, $dateend, 1);
-
 	$timeSpentList = $task->fetchAllTimeSpent($userobj, 'AND (ptt.task_date >= "'.$db->idate($datestart) .'" AND ptt.task_date < "'.$db->idate($dateend) . '")');
 
 	$timeSpent = array(
@@ -370,16 +367,6 @@ function loadTimeSpentWithinRange($datestart, $dateend, $userid = 0)
 		'total' => 0
 	);
 
-	for ($idw = 0; $idw < $daysInRange; $idw++) {
-		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-		$day_is_available = isDayAvailable($day_start_date, $userid);
-
-		if ($day_is_available) {
-			$isavailable[dol_print_date($day_start_date,'dayrfc')] = 1;
-		} else {
-			$isavailable[dol_print_date($day_start_date,'dayrfc')] = 0;
-		}
-	}
 
 	if (is_array($timeSpentList) && !empty($timeSpentList)) {
 		foreach ($timeSpentList as $timeSpentSingle) {
@@ -391,8 +378,8 @@ function loadTimeSpentWithinRange($datestart, $dateend, $userid = 0)
 			$timeSpent['minutes'] += $minutes;
 			$timeSpent['total'] += $timeSpentSingle->timespent_duration;
 
-			if ($isavailable[$timeSpentSingle->task_date]) {
-				$days_worked[$timeSpentSingle->task_date] = 1;
+			if ($isavailable[$timeSpentSingle->timespent_date]) {
+				$days_worked[$timeSpentSingle->timespent_date] = 1;
 			}
 		}
 	}
@@ -411,7 +398,7 @@ function loadTimeSpentWithinRange($datestart, $dateend, $userid = 0)
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $userid = 0)
+function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable)
 {
 	global $db;
 
@@ -429,9 +416,7 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $userid
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
 		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
 
-		$day_is_available = isDayAvailable($day_start_date, $userid);
-
-		if ($day_is_available) {
+		if ($isavailable[$day_start_date]['morning'] && $isavailable[$day_start_date]['afternoon']) {
 			$currentDay = date('l', $day_start_date);
 			$currentDay = 'workinghours_' . strtolower($currentDay);
 			$time_to_spend['minutes'] += $workingHours->$currentDay;
@@ -452,7 +437,7 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $userid
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $userid = 0)
+function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid = 0)
 {
 	global $db;
 
@@ -469,10 +454,7 @@ function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $userid 
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
 		$day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
 
-		$day_is_available = isDayAvailable($day_start_date, $userid);
-		$isavailable[$day_start_date] = $day_is_available;
-
-		if ($day_is_available) {
+		if ($isavailable[$day_start_date]['morning'] && $isavailable[$day_start_date]['afternoon']) {
 			$currentDay = date('l', $day_start_date);
 			$currentDay = 'workinghours_' . strtolower($currentDay);
 			$passed_working_time['minutes'] += $workingHours->$currentDay;
@@ -491,15 +473,15 @@ function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $userid 
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $workingHours, $userid = 0)
+function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid = 0)
 {
 	global $db;
 
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
-	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $userid);
-	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $userid);
+	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid);
+	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid);
 
 	return $passed_working_time['minutes'] - $spent_working_time['minutes'];
 }
@@ -514,17 +496,17 @@ function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadTimeSpendingInfosWithinRange($datestart, $dateend, $workingHours, $userid = 0)
+function loadTimeSpendingInfosWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid = 0)
 {
 	global $db;
 
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
-	$planned_working_time = loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $userid);
-	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $userid);
-	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $userid);
-	$working_time_difference = loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $workingHours, $userid);
+	$planned_working_time = loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid);
+	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid);
+	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid);
+	$working_time_difference = loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid);
 
 	$time_spending_infos = array(
 		'planned' => $planned_working_time,
