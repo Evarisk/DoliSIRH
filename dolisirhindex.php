@@ -37,7 +37,7 @@ if (!$res && file_exists("../../../main.inc.php")) $res = @include "../../../mai
 if (!$res) die("Include of main fails");
 
 // Libraries
-require_once './core/modules/modDoliSIRH.class.php';
+require_once __DIR__ . '/core/modules/modDoliSIRH.class.php';
 
 // Global variables definitions
 global $conf, $db, $langs, $user;
