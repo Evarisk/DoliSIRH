@@ -300,6 +300,38 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
 		return array();
 	}
 }
+/**
+ * Load time spent by tasks within a time range.
+ *
+ * @param  int       $datestart First day
+ * @param  int       $dateend   Last day
+ * @param  int       $userid    Time spent by a particular user
+ * @return array                Array with minutes, hours and total time spent
+ * @throws Exception
+ */
+function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $userid = 0)
+{
+	global $db;
+
+	$task = new Task($db);
+	$userobj = new User($db);
+
+	if ($userid > 0) {
+		$userobj->fetch($userid);
+	}
+
+	$timeSpentList = $task->fetchAllTimeSpent($userobj);
+
+	$timeSpentOnTasks = [];
+
+	if (is_array($timeSpentList) && !empty($timeSpentList)) {
+		foreach ($timeSpentList as $timeSpent) {
+			$timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
+		}
+	}
+
+	return $timeSpentOnTasks;
+}
 
 /**
  * Load time spent within a time range.
@@ -388,12 +420,11 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
  *
  * @param  int       $datestart First day
  * @param  int       $dateend   Last day
- * @param  int       $taskid    Filter on a task id
  * @param  int       $userid    Time spent by a particular user
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadPlannedTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+function loadTimeToSpendWithinRange($datestart, $dateend, $userid = 0)
 {
 	global $db;
 
@@ -435,12 +466,11 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $taskid = 0, $userid =
  *
  * @param  int       $datestart First day
  * @param  int       $dateend   Last day
- * @param  int       $taskid    Filter on a task id
  * @param  int       $userid    Time spent by a particular user
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadPassedTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+function loadPassedTimeWithinRange($datestart, $dateend, $userid = 0)
 {
 	global $db;
 
@@ -1494,6 +1524,8 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 
 	$restrictBefore = null;
 
+	$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $fuser);
+
 	if (! empty($conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS)) {
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 		$restrictBefore = dol_time_plus_duree(dol_now(), - $conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS, 'm');
@@ -1638,13 +1670,12 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					}
 
 					$tmparray = dol_getdate($tmpday);
-					$dayWorkLoad = loadTimeSpentWithinRange($tmpday, dol_time_plus_duree($tmpday, 1, 'd'), $lines[$i]->id, $user->id);
 
-					$totalforeachday[$tmpday] += $dayWorkLoad['total'];
+					$totalforeachday[$tmpday] = $timeSpentOnTasks[$lines[$i]->id][dol_print_date($tmpday, 'day')];
 
 					$alreadyspent = '';
-					if ($dayWorkLoad['total'] > 0) {
-						$alreadyspent = convertSecondToTime($dayWorkLoad['total'], 'allhourmin');
+					if ($totalforeachday[$tmpday] > 0) {
+						$alreadyspent = convertSecondToTime($totalforeachday[$tmpday], 'allhourmin');
 					}
 					$alttitle = $langs->trans("AddHereTimeSpentForDay", $tmparray['day'], $tmparray['mon']);
 
