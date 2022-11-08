@@ -424,7 +424,7 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadTimeToSpendWithinRange($datestart, $dateend, $userid = 0)
+function loadPlannedTimeWithinRange($datestart, $dateend, $userid = 0)
 {
 	global $db;
 
