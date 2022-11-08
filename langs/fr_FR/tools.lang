@@ -1,0 +1,31 @@
+# Copyright (C) 2023 EVARISK <dev@evarisk.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+# Tools - Outils
+#
+
+# Data - Donnée
+Tools = Outils
+UserStatusTitle = Informations sur les statuts des utilisateurs internes/externes - salariés/non salariés
+AllUsers =  Il y a 3 utilisateur(s) au total
+InternalUsersNotEmployee = Il y a %s utilisateur(s) interne(s) et non salarié(s)
+EmployeeInternalUsers = Il y a %s utilisateur(s) interne(s) et salarié(s)
+EmployeeExternalUsers = Il y a %s utilisateur(s) externe(s) et salarié(s)
+DataUpdateManagement = Gestion des mises à jour de données
+UpdateEmployeeExternalUsers = Mise à jour des utilisateurs externes salariés
+UpdateEmployeeExternalUsersDescription = Les utilisateurs externes salariés passeront au statut de non salarié
+UpdateEmployeeExternalUsersSaved = Mise à jour des données utilisateurs effectuées
+UpdateEmployeeExternalUsersNotSaved = Aucune données utilisateurs à mettre à jour

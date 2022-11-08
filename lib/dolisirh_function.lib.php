@@ -260,11 +260,11 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
 	}
 
 	$sql = "SELECT ptt.rowid as taskid, ptt.task_duration, ptt.task_date, ptt.task_datehour, ptt.fk_task";
-	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
-	$sql .= " WHERE ptt.fk_task = pt.rowid";
-	$sql .= " AND pt.fk_projet = ".((int) $project_id);
-	$sql .= " AND (ptt.task_date >= '".$db->idate($datestart)."' ";
-	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
+	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt";
+    $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task as pt on pt.rowid = ptt.fk_task";
+	$sql .= " WHERE pt.fk_projet = ".((int) $project_id);
+	$sql .= " AND (ptt.task_datehour >= '".$db->idate($datestart)."' ";
+	$sql .= " AND ptt.task_datehour < '".$db->idate(dol_time_plus_duree($dateend, 1, 'd'))."')";
 	if ($taskid) {
 		$sql .= " AND ptt.fk_task=".((int) $taskid);
 	}
@@ -272,7 +272,6 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
 		$sql .= " AND ptt.fk_user=".((int) $userid);
 	}
 
-	//print $sql;
 	$resql = $db->query($sql);
 	if ($resql) {
 		$daylareadyfound = array();
@@ -296,8 +295,8 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
 		$db->free($resql);
 		return $workLoad;
 	} else {
-		$project->error = "Error ".$db->lasterror();
-		dol_syslog(get_class($project)."::fetch ".$project->error, LOG_ERR);
+		$error = "Error ".$db->lasterror();
+		dol_syslog('loadTimeSpentWithinRangeByProject' . $error, LOG_ERR);
 		return array();
 	}
 }
@@ -323,9 +322,9 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
 	$daysInRange = num_between_day($datestart, $dateend, 1);
 
 	$sql = "SELECT ptt.rowid as taskid, ptt.task_duration, ptt.task_date, ptt.task_datehour, ptt.fk_task";
-	$sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt, ".MAIN_DB_PREFIX."projet_task as pt";
-	$sql .= " WHERE ptt.fk_task = pt.rowid";
-	$sql .= " AND (ptt.task_date >= '".$db->idate($datestart)."' ";
+    $sql .= " FROM ".MAIN_DB_PREFIX."projet_task_time AS ptt";
+    $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task as pt on pt.rowid = ptt.fk_task";
+    $sql .= " WHERE (ptt.task_date >= '".$db->idate($datestart)."' ";
 	$sql .= " AND ptt.task_date < '".$db->idate($dateend)."')";
 	if ($taskid) {
 		$sql .= " AND ptt.fk_task=".((int) $taskid);

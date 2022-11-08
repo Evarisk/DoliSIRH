@@ -40,7 +40,7 @@ class modDoliSIRH extends DolibarrModules
 		global $langs, $conf;
 		$this->db = $db;
 
-        $langs->load("digiriskdolibarr@digiriskdolibarr");
+        $langs->load("dolisirh@dolisirh");
 
 		$this->numero          = 436310;
 		$this->rights_class    = 'dolisirh';
