@@ -1670,7 +1670,7 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 				}
 
                 $currentMonth = date('m', dol_now());
-                if ($currentMonth != GETPOST("month", 'int')) {
+                if ($currentMonth != GETPOST("month", 'int') && !empty(GETPOST("month", 'int'))) {
                     print '<td></td>';
                 }
 
