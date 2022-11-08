@@ -393,7 +393,7 @@ function loadTimeSpentWithinRange($datestart, $dateend, $taskid = 0, $userid = 0
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadTimeToSpendWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
+function loadPlannedTimeWithinRange($datestart, $dateend, $taskid = 0, $userid = 0)
 {
 	global $db;
 
@@ -512,7 +512,7 @@ function loadTimeSpendingInfosWithinRange($datestart, $dateend, $taskid = 0, $us
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
-	$planned_working_time = loadTimeToSpendWithinRange($datestart, $dateend, $taskid, $userid);
+	$planned_working_time = loadPlannedTimeWithinRange($datestart, $dateend, $taskid, $userid);
 	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $taskid, $userid);
 	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $taskid, $userid);
 	$working_time_difference = loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $taskid, $userid);
@@ -1668,13 +1668,8 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					$tableCell .= '</td>';
 					print $tableCell;
 				}
-
-                $currentMonth = date('m', dol_now());
-                if ($currentMonth != GETPOST("month", 'int') && !empty(GETPOST("month", 'int'))) {
-                    print '<td></td>';
-                }
-
-				print "</tr>\n";
+                print '<td></td>';
+                print '</tr>';
 			}
 
 			// Call to show task with a lower level (task under the current task)
