@@ -401,8 +401,6 @@ function loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid = 
  */
 function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable)
 {
-	global $db;
-
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
@@ -434,14 +432,11 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $isavai
  *
  * @param  int       $datestart First day
  * @param  int       $dateend   Last day
- * @param  int       $userid    Time spent by a particular user
  * @return int                  0 < if OK, >0 if KO
  * @throws Exception
  */
-function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid = 0)
+function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable)
 {
-	global $db;
-
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
@@ -481,7 +476,7 @@ function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend
 	if (empty($datestart)) {
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
-	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid);
+	$passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable);
 	$spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid);
 
 	return $passed_working_time['minutes'] - $spent_working_time['minutes'];
@@ -1130,307 +1125,6 @@ function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projects
 }
 
 /**
- * Output a task line into a per week intput mode
- *
- * @param	string	   	$inc					Line output identificator (start to 0, then increased by recursive call)
- * @param	int			$firstdaytoshow			First day to show
- * @param	User|null	$fuser					Restrict list to user if defined
- * @param   string		$parent					Id of parent task to show (0 to show all)
- * @param   Task[]		$lines					Array of lines (list of tasks but we will show only if we have a specific role on task)
- * @param   int			$level					Level (start to 0, then increased/decrease by recursive call)
- * @param   string		$projectsrole			Array of roles user has on project
- * @param   string		$tasksrole				Array of roles user has on task
- * @param	string		$mine					Show only task lines I am assigned to
- * @param   int			$restricteditformytask	0=No restriction, 1=Enable add time only if task is assigned to me, 2=Enable add time only if tasks is assigned to me and hide others
- * @param   array       $isavailable			Array with data that say if user is available for several days for morning and afternoon
- * @param	int			$oldprojectforbreak		Old project id of last project break
- * @param	array		$arrayfields		    Array of additional column
- * @param	Extrafields	$extrafields		    Object extrafields
- * @return  array								Array with time spent for $fuser for each day of week on tasks in $lines and substasks
- */
-function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null)
-{
-	global $conf, $db, $user, $langs;
-	global $form, $formother, $projectstatic, $taskstatic, $thirdpartystatic;
-
-	$numlines = count($lines);
-
-	$lastprojectid = 0;
-	$workloadforid = array();
-	$totalforeachday = array();
-	$lineswithoutlevel0 = array();
-
-	// Create a smaller array with sublevels only to be used later. This increase dramatically performances.
-	if ($parent == 0) { // Always and only if at first level
-		for ($i = 0; $i < $numlines; $i++) {
-			if ($lines[$i]->fk_task_parent) {
-				$lineswithoutlevel0[] = $lines[$i];
-			}
-		}
-	}
-
-	//dol_syslog('projectLinesPerWeek inc='.$inc.' firstdaytoshow='.$firstdaytoshow.' task parent id='.$parent.' level='.$level." count(lines)=".$numlines." count(lineswithoutlevel0)=".count($lineswithoutlevel0));
-
-	if (empty($oldprojectforbreak)) {
-		$oldprojectforbreak = (empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT) ? 0 : -1); // 0 = start break, -1 = never break
-	}
-
-	$restrictBefore = null;
-
-	if (! empty($conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS)) {
-		require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
-		$restrictBefore = dol_time_plus_duree(dol_now(), - $conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS, 'm');
-	}
-
-	for ($i = 0; $i < $numlines; $i++) {
-		if ($parent == 0) {
-			$level = 0;
-		}
-
-		if ($lines[$i]->fk_task_parent == $parent) {
-			$obj = &$lines[$i]; // To display extrafields
-
-			// If we want all or we have a role on task, we show it
-			if (empty($mine) || !empty($tasksrole[$lines[$i]->id])) {
-				//dol_syslog("projectLinesPerWeek Found line ".$i.", a qualified task (i have role or want to show all tasks) with id=".$lines[$i]->id." project id=".$lines[$i]->fk_project);
-
-				if ($restricteditformytask == 2 && empty($tasksrole[$lines[$i]->id])) {	// we have no role on task and we request to hide such cases
-					continue;
-				}
-
-				// Break on a new project
-				if ($parent == 0 && $lines[$i]->fk_project != $lastprojectid) {
-					$lastprojectid = $lines[$i]->fk_project;
-					$projectstatic->id = $lines[$i]->fk_project;
-				}
-
-				//var_dump('--- '.$level.' '.$firstdaytoshow.' '.$fuser->id.' '.$projectstatic->id.' '.$workloadforid[$projectstatic->id]);
-				//var_dump($projectstatic->weekWorkLoadPerTask);
-				if (empty($workloadforid[$projectstatic->id])) {
-                    $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($firstdaytoshow, 7, 'd'));
-                    $workloadforid[$projectstatic->id] = 1;
-				}
-
-				//var_dump($projectstatic->weekWorkLoadPerTask);
-				//var_dump('--- '.$projectstatic->id.' '.$workloadforid[$projectstatic->id]);
-
-				$projectstatic->id = $lines[$i]->fk_project;
-				$projectstatic->ref = $lines[$i]->projectref;
-				$projectstatic->title = $lines[$i]->projectlabel;
-				$projectstatic->public = $lines[$i]->public;
-				$projectstatic->thirdparty_name = $lines[$i]->thirdparty_name;
-				$projectstatic->status = $lines[$i]->projectstatus;
-
-				$taskstatic->id = $lines[$i]->id;
-				$taskstatic->ref = ($lines[$i]->ref ? $lines[$i]->ref : $lines[$i]->id);
-				$taskstatic->label = $lines[$i]->label;
-				$taskstatic->date_start = $lines[$i]->date_start;
-				$taskstatic->date_end = $lines[$i]->date_end;
-
-				$thirdpartystatic->id = $lines[$i]->thirdparty_id;
-				$thirdpartystatic->name = $lines[$i]->thirdparty_name;
-				$thirdpartystatic->email = $lines[$i]->thirdparty_email;
-
-				if (empty($oldprojectforbreak) || ($oldprojectforbreak != -1 && $oldprojectforbreak != $projectstatic->id)) {
-					$addcolspan = 0;
-					print '<tr class="oddeven trforbreak nobold">'."\n";
-					print '<td colspan="'.(11 + $addcolspan).'">';
-					print $projectstatic->getNomUrl(1, '', 0, '<strong>'.$langs->transnoentitiesnoconv("YourRole").':</strong> '.$projectsrole[$lines[$i]->fk_project]);
-					if ($thirdpartystatic->id > 0) {
-						print ' - '.$thirdpartystatic->getNomUrl(1);
-					}
-					if ($projectstatic->title) {
-						print ' - ';
-						print '<span class="secondary" title="'.$projectstatic->title.'">'.dol_trunc($projectstatic->title, '64').'</span>';
-					}
-
-					print '</td>';
-					print '</tr>';
-				}
-
-				if ($oldprojectforbreak != -1) {
-					$oldprojectforbreak = $projectstatic->id;
-				}
-
-				print '<tr class="oddeven" data-taskid="'.$lines[$i]->id.'">'."\n";
-
-				// Project
-				if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-					print '<td class="nowrap">';
-					if ($oldprojectforbreak == -1) {
-						print $projectstatic->getNomUrl(1, '', 0, $langs->transnoentitiesnoconv("YourRole").': '.$projectsrole[$lines[$i]->fk_project]);
-					}
-					print "</td>";
-				}
-
-				// Thirdparty
-				if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-					print '<td class="tdoverflowmax100">';
-					if ($thirdpartystatic->id > 0) {
-						print $thirdpartystatic->getNomUrl(1, 'project');
-					}
-					print '</td>';
-				}
-
-				// Ref
-				print '<td class="nowrap">';
-				print '<!-- Task id = '.$lines[$i]->id.' -->';
-				for ($k = 0; $k < $level; $k++) {
-					print '<div class="marginleftonly">';
-				}
-				print $taskstatic->getNomUrl(1, 'withproject', 'time');
-				// Label task
-				print '<br>';
-				print '<span class="opacitymedium" title="'.$taskstatic->label.'">'.dol_trunc($taskstatic->label, '64').'</span>';
-				for ($k = 0; $k < $level; $k++) {
-					print "</div>";
-				}
-				print "</td>\n";
-
-				if (!empty($arrayfields['timeconsumed']['checked'])) {
-					// Time spent by everybody
-					print '<td class="right">';
-					// $lines[$i]->duration is a denormalised field = summ of time spent by everybody for task. What we need is time consummed by user
-					if ($timeSpent['total'] > 0 && $lines[$i]->duration) {
-						print '<a href="'.DOL_URL_ROOT.'/projet/tasks/time.php?id='.$lines[$i]->id.'">';
-						print convertSecondToTime($timeSpent['total'], 'allhourmin');
-						print '</a>';
-					} else {
-						print '--:--';
-					}
-					print "</td>\n";
-
-					// Time spent by user
-					print '<td class="right">';
-					$firstday = dol_print_date($firstdaytoshow, 'dayrfc');
-					$CurrentDate = dol_getdate(dol_now());
-					$currentWeek = getWeekNumber($CurrentDate['mday'], $CurrentDate['mon'], $CurrentDate['year']);
-					$Date = dol_getdate($firstdaytoshow);
-					$Week = getWeekNumber($Date['mday'], $Date['mon'], $Date['year']);
-
-					if ($currentWeek == $Week) {
-						$firstDay = date('d', $firstdaytoshow);
-						$currentDay = date('d', dol_now());
-						$nbday = $currentDay - $firstDay;
-					} else {
-						$nbday = 6;
-					}
-					$lastdaytoshow = dol_time_plus_duree($firstdaytoshow, $nbday, 'd');
-
-					$lastday = dol_print_date($lastdaytoshow, 'dayrfc');
-					$filter = ' AND t.task_datehour BETWEEN ' . "'" . $firstday . "'" . ' AND ' . "'" . $lastday . "'";
-					$tmptimespent = $taskstatic->getSummaryOfTimeSpent($fuser->id, $filter);
-					if ($tmptimespent['total_duration']) {
-						print convertSecondToTime($tmptimespent['total_duration'], 'allhourmin');
-					} else {
-						print '--:--';
-					}
-					print "</td>\n";
-				}
-
-				$disabledproject = 1;
-				$disabledtask = 1;
-				//print "x".$lines[$i]->fk_project;
-				//var_dump($lines[$i]);
-				//var_dump($projectsrole[$lines[$i]->fk_project]);
-				// If at least one role for project
-				if ($lines[$i]->public || !empty($projectsrole[$lines[$i]->fk_project]) || $user->rights->projet->all->creer) {
-					$disabledproject = 0;
-					$disabledtask = 0;
-				}
-				// If $restricteditformytask is on and I have no role on task, i disable edit
-				if ($restricteditformytask && empty($tasksrole[$lines[$i]->id])) {
-					$disabledtask = 1;
-				}
-
-				//var_dump($projectstatic->weekWorkLoadPerTask);
-
-				// Fields to show current time
-				$tableCell = '';
-				$modeinput = 'hours';
-				for ($idw = 0; $idw < 7; $idw++) {
-					$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-                    if ($tmpday <= dol_now()) {
-                        $cssonholiday = '';
-                        if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-                            $cssonholiday .= 'onholidayallday ';
-                        } elseif (!$isavailable[$tmpday]['morning']) {
-                            $cssonholiday .= 'onholidaymorning ';
-                        } elseif (!$isavailable[$tmpday]['afternoon']) {
-                            $cssonholiday .= 'onholidayafternoon ';
-                        }
-
-                        $tmparray = dol_getdate($tmpday);
-                        $dayWorkLoad = $projectstatic->weekWorkLoadPerTask[$tmpday][$lines[$i]->id];
-                        $totalforeachday[$tmpday] += $dayWorkLoad;
-
-                        $alreadyspent = '';
-                        if ($dayWorkLoad > 0) {
-                            $alreadyspent = convertSecondToTime($dayWorkLoad, 'allhourmin');
-                        }
-                        $alttitle = $langs->trans("AddHereTimeSpentForDay", $tmparray['day'], $tmparray['mon']);
-
-                        global $numstartworkingday, $numendworkingday;
-                        $cssweekend = '';
-                        if (($idw + 1 < $numstartworkingday) || ($idw + 1 > $numendworkingday)) {    // This is a day is not inside the setup of working days, so we use a week-end css.
-                            $cssweekend = 'weekend';
-                        }
-
-                        $disabledtaskday = $disabledtask;
-
-                        if (!$disabledtask && $restrictBefore && $tmpday < $restrictBefore) {
-                            $disabledtaskday = 1;
-                        }
-
-                        $tableCell = '<td class="center hide' . $idw . ($cssonholiday ? ' ' . $cssonholiday : '') . ($cssweekend ? ' ' . $cssweekend : '') . '">';
-                        //$tableCell .= 'idw='.$idw.' '.$conf->global->MAIN_START_WEEK.' '.$numstartworkingday.'-'.$numendworkingday;
-                        $placeholder = '';
-                        if ($alreadyspent) {
-                            $tableCell .= '<span class="timesheetalreadyrecorded" title="texttoreplace"><input type="text" class="center smallpadd" size="2" disabled id="timespent[' . $inc . '][' . $idw . ']" name="task[' . $lines[$i]->id . '][' . $idw . ']" value="' . $alreadyspent . '"></span>';
-                            //$placeholder=' placeholder="00:00"';
-                            //$tableCell.='+';
-                        }
-                        $tableCell .= '<input type="text" alt="' . ($disabledtaskday ? '' : $alttitle) . '" title="' . ($disabledtaskday ? '' : $alttitle) . '" ' . ($disabledtaskday ? 'disabled' : $placeholder) . ' class="center smallpadd" size="2" id="timeadded[' . $inc . '][' . $idw . ']" name="task[' . $lines[$i]->id . '][' . $idw . ']" value="" cols="2"  maxlength="5"';
-                        $tableCell .= ' onkeypress="return regexEvent(this,event,\'timeChar\')"';
-                        $tableCell .= ' onkeyup="updateTotal(' . $idw . ',\'' . $modeinput . '\')"';
-                        $tableCell .= ' onblur="regexEvent(this,event,\'' . $modeinput . '\'); updateTotal(' . $idw . ',\'' . $modeinput . '\')" />';
-                        $tableCell .= '</td>';
-                        print $tableCell;
-                    }
-				}
-
-                if ($currentWeek != $Week) {
-                    print '<td></td>';
-                }
-
-				print "</tr>\n";
-			}
-
-			// Call to show task with a lower level (task under the current task)
-			$inc++;
-			$level++;
-			if ($lines[$i]->id > 0) {
-				//var_dump('totalforeachday after taskid='.$lines[$i]->id.' and previous one on level '.$level);
-				//var_dump($totalforeachday);
-				$ret = doliSirhLinesPerWeek($inc, $firstdaytoshow, $fuser, $lines[$i]->id, ($parent == 0 ? $lineswithoutlevel0 : $lines), $level, $projectsrole, $tasksrole, $mine, $restricteditformytask, $isavailable, $oldprojectforbreak, $arrayfields, $extrafields);
-				//var_dump('ret with parent='.$lines[$i]->id.' level='.$level);
-				//var_dump($ret);
-				foreach ($ret as $key => $val) {
-					$totalforeachday[$key] += $val;
-				}
-				//var_dump('totalforeachday after taskid='.$lines[$i]->id.' and previous one on level '.$level.' + subtasks');
-				//var_dump($totalforeachday);
-			}
-			$level--;
-		} else {
-			//$level--;
-		}
-	}
-
-	return $totalforeachday;
-}
-
-/**
  * Output a task line into a per month intput mode
  *
  * @param	string	   	$inc					Line output identificator (start to 0, then increased by recursive call)
@@ -1450,17 +1144,10 @@ function doliSirhLinesPerWeek(&$inc, $firstdaytoshow, $fuser, $parent, $lines, &
  * @param	Extrafields	$extrafields		    Object extrafields
  * @return  array								Array with time spent for $fuser for each day of week on tasks in $lines and substasks
  */
-function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null, $dayInMonth, $timeSpentOnTasks)
+function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null, $timeSpentOnTasks)
 {
 	global $conf, $db, $user, $langs;
-
-	require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
-
-	$form             = new Form($db);
-	$formother        = new FormOther($db);
-	$projectstatic    = new Project($db);
-	$taskstatic       = new Task($db);
-	$thirdpartystatic = new Societe($db);
+    global $form, $formother, $projectstatic, $taskstatic, $thirdpartystatic;
 
 	$numlines = count($lines);
 
@@ -1469,7 +1156,9 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 	$totalforeachday = array();
 	$lineswithoutlevel0 = array();
 
-	// Create a smaller array with sublevels only to be used later. This increase dramatically performances.
+    $daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+
+    // Create a smaller array with sublevels only to be used later. This increase dramatically performances.
 	if ($parent == 0) { // Always and only if at first level
 		for ($i = 0; $i < $numlines; $i++) {
 			if ($lines[$i]->fk_task_parent) {
@@ -1477,8 +1166,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 			}
 		}
 	}
-
-	//dol_syslog('projectLinesPerWeek inc='.$inc.' firstdaytoshow='.$firstdaytoshow.' task parent id='.$parent.' level='.$level." count(lines)=".$numlines." count(lineswithoutlevel0)=".count($lineswithoutlevel0));
 
 	if (empty($oldprojectforbreak)) {
 		$oldprojectforbreak = (empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT) ? 0 : -1); // 0 = start break, -1 = never break
@@ -1500,7 +1187,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 			$obj = &$lines[$i]; // To display extrafields
 			// If we want all or we have a role on task, we show it
 			if (empty($mine) || !empty($tasksrole[$lines[$i]->id])) {
-
 				if ($restricteditformytask == 2 && empty($tasksrole[$lines[$i]->id])) {    // we have no role on task and we request to hide such cases
 					continue;
 				}
@@ -1519,7 +1205,7 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 				$projectstatic->status = $lines[$i]->projectstatus;
 
 				$taskstatic->id = $lines[$i]->id;
-				$taskstatic->ref = ($lines[$i]->ref ? $lines[$i]->ref : $lines[$i]->id);
+				$taskstatic->ref = ($lines[$i]->ref ?: $lines[$i]->id);
 				$taskstatic->label = $lines[$i]->label;
 				$taskstatic->date_start = $lines[$i]->date_start;
 				$taskstatic->date_end = $lines[$i]->date_end;
@@ -1535,7 +1221,7 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					}
 
 					print '<tr class="oddeven trforbreak nobold">' . "\n";
-					print '<td colspan="' . (2 + $addcolspan + $dayInMonth) . '">';
+					print '<td colspan="' . (2 + $addcolspan + $daysInRange) . '">';
 					print $projectstatic->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv("YourRole") . ':</strong> ' . $projectsrole[$lines[$i]->fk_project]);
 					if ($thirdpartystatic->id > 0) {
 						print ' - ' . $thirdpartystatic->getNomUrl(1);
@@ -1554,24 +1240,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 				}
 
 				print '<tr class="oddeven" data-taskid="' . $lines[$i]->id . '" >' . "\n";
-
-				// Project
-				if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-					print '<td class="nowrap">';
-					if ($oldprojectforbreak == -1) {
-						print $projectstatic->getNomUrl(1, '', 0, $langs->transnoentitiesnoconv("YourRole") . ': ' . $projectsrole[$lines[$i]->fk_project]);
-					}
-					print "</td>";
-				}
-
-				// Thirdparty
-				if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-					print '<td class="tdoverflowmax100">';
-					if ($thirdpartystatic->id > 0) {
-						print $thirdpartystatic->getNomUrl(1, 'project');
-					}
-					print '</td>';
-				}
 
 				// Ref
 				print '<td class="nowrap">';
@@ -1614,10 +1282,8 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 				}
 
 				// Fields to show current time
-				$tableCell = '';
-				$modeinput = 'hours';
-				$dayInMonth = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
-				for ($idw = 0; $idw < $dayInMonth; $idw++) {
+                $modeinput = 'hours';
+				for ($idw = 0; $idw < $daysInRange; $idw++) {
 					$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
 
@@ -1645,7 +1311,12 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					}
 					$alttitle = $langs->trans("AddHereTimeSpentForDay", $tmparray['day'], $tmparray['mon']);
 
-					$cssweekend = '';
+//                    global $numstartworkingday, $numendworkingday;
+//                    $cssweekend = '';
+//                    if (($idw + 1 < $numstartworkingday) || ($idw + 1 > $numendworkingday)) {    // This is a day is not inside the setup of working days, so we use a week-end css.
+//                        $cssweekend = 'weekend';
+//                    }
+
 					$disabledtaskday = $disabledtask;
 
 					if (! $disabledtask && $restrictBefore && $tmpday < $restrictBefore) {
@@ -1653,7 +1324,6 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 					}
 
 					$tableCell = '<td class="center '.$idw. ' ' .$cellCSS.'">';
-					//$tableCell .= 'idw='.$idw.' '.$conf->global->MAIN_START_WEEK.' '.$numstartworkingday.'-'.$numendworkingday;
 					$placeholder = '';
 					if ($alreadyspent) {
 						$tableCell .= '<span class="timesheetalreadyrecorded" title="texttoreplace"><input type="text" class="center smallpadd" size="2" disabled id="timespent['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" value="'.$alreadyspent.'"></span>';
@@ -1673,20 +1343,12 @@ function doliSirhLinesPerMonth(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $
 			$inc++;
 			$level++;
 			if ($lines[$i]->id > 0) {
-				//var_dump('totalforeachday after taskid='.$lines[$i]->id.' and previous one on level '.$level);
-				//var_dump($totalforeachday);
-				$ret = doliSirhLinesPerMonth($inc, $firstdaytoshow, $lastdaytoshow, $fuser, $lines[$i]->id, ($parent == 0 ? $lineswithoutlevel0 : $lines), $level, $projectsrole, $tasksrole, $mine, $restricteditformytask, $isavailable, $oldprojectforbreak, $arrayfields, $extrafields, $dayInMonth, $noprint);
-				//var_dump('ret with parent='.$lines[$i]->id.' level='.$level);
-				//var_dump($ret);
+				$ret = doliSirhTaskLinesWithinRange($inc, $firstdaytoshow, $lastdaytoshow, $fuser, $lines[$i]->id, ($parent == 0 ? $lineswithoutlevel0 : $lines), $level, $projectsrole, $tasksrole, $mine, $restricteditformytask, $isavailable, $oldprojectforbreak, $arrayfields, $extrafields, $timeSpentOnTasks);
 				foreach ($ret as $key => $val) {
 					$totalforeachday[$key] += $val;
 				}
-				//var_dump('totalforeachday after taskid='.$lines[$i]->id.' and previous one on level '.$level.' + subtasks');
-				//var_dump($totalforeachday);
 			}
 			$level--;
-		} else {
-			//$level--;
 		}
 	}
 
