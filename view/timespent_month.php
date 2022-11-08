@@ -17,7 +17,7 @@
 
 /**
  *	\file       view/timespent_month.php
- *	\ingroup    doliprojet
+ *	\ingroup    dolisirh
  *	\brief      List timespent of tasks per day on each month
  */
 
@@ -74,12 +74,10 @@ if ($mode == 'mine') {
 
 $projectid = GETPOSTISSET("id") ? GETPOST("id", "int", 1) : GETPOST("projectid", "int");
 
-$hookmanager->initHooks(array('timesheetpermonthcard'));
+$hookmanager->initHooks(array('timespentpermonthlist'));
 
 // Security check
 $socid = 0;
-// For external user, no check is done on company because readability is managed by public status of project and assignement.
-// if ($user->socid > 0) $socid=$user->socid;
 $result = restrictedArea($user, 'projet', $projectid);
 
 $now   = dol_now();
@@ -89,7 +87,6 @@ $day   = GETPOST('reday', 'int') ?GETPOST('reday', 'int') : (GETPOST("day", 'int
 $week  = GETPOST("week", "int") ?GETPOST("week", "int") : date("W");
 
 $day        = (int) $day;
-$dayInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
 //$search_categ = GETPOST("search_categ", 'alpha');
 $search_usertoprocessid   = GETPOST('search_usertoprocessid', 'int');
@@ -97,7 +94,6 @@ $search_task_ref          = GETPOST('search_task_ref', 'alpha');
 $search_task_label        = GETPOST('search_task_label', 'alpha');
 $search_project_ref       = GETPOST('search_project_ref', 'alpha');
 $search_thirdparty        = GETPOST('search_thirdparty', 'alpha');
-$search_declared_progress = GETPOST('search_declared_progress', 'alpha');
 
 if (!empty($conf->categorie->enabled)) {
 	$search_category_array = GETPOST("search_category_".Categorie::TYPE_PROJECT."_list", "array");
@@ -324,7 +320,6 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilterac
 			$param .= ($search_project_ref ? '&search_project_ref='.urlencode($search_project_ref) : '');
 			$param .= ($search_usertoprocessid > 0 ? '&search_usertoprocessid='.urlencode($search_usertoprocessid) : '');
 			$param .= ($search_thirdparty ? '&search_thirdparty='.urlencode($search_thirdparty) : '');
-			$param .= ($search_declared_progress ? '&search_declared_progress='.urlencode($search_declared_progress) : '');
 			$param .= ($search_task_ref ? '&search_task_ref='.urlencode($search_task_ref) : '');
 			$param .= ($search_task_label ? '&search_task_label='.urlencode($search_task_label) : '');
 
@@ -370,10 +365,10 @@ $taskstatic = new Task($db);
 $thirdpartystatic = new Societe($db);
 $holiday = new Holiday($db);
 
-$title    = $langs->trans("TimeSpent");
+$title    = $langs->trans('TimeSpent');
 $help_url = '';
-$morejs   = array("/dolisirh/js/dolisirh.js.php", "/core/js/timesheet.js");
-$morecss  = array("/dolisirh/css/dolisirh.css");
+$morejs   = ['/dolisirh/js/dolisirh.js.php', '/core/js/timesheet.js'];
+$morecss  = ['/dolisirh/css/dolisirh.css'];
 
 $projectsListId = $projectstatic->getProjectsAuthorizedForUser($usertoprocess, (empty($usertoprocess->id) ? 2 : 0), 1); // Return all project i have permission on (assigned to me+public). I want my tasks and some of my task may be on a public projet that is not my project
 //var_dump($projectsListId);
@@ -381,6 +376,28 @@ if ($id) {
 	$project->fetch($id);
 	$project->fetch_thirdparty();
 }
+
+ $onlyopenedproject = 1; // or -1
+ $morewherefilter = '';
+
+ if ($search_project_ref) {
+     $morewherefilter .= natural_search(array("p.ref", "p.title"), $search_project_ref);
+ }
+ if ($search_task_ref) {
+     $morewherefilter .= natural_search("t.ref", $search_task_ref);
+ }
+ if ($search_task_label) {
+     $morewherefilter .= natural_search(array("t.ref", "t.label"), $search_task_label);
+ }
+ if ($search_thirdparty) {
+     $morewherefilter .= natural_search("s.nom", $search_thirdparty);
+ }
+ if ($search_declared_progress) {
+     $morewherefilter .= natural_search("t.progress", $search_declared_progress, 1);
+ }
+ if (!empty($conf->categorie->enabled)) {
+     $morewherefilter .= Categorie::getFilterSelectQuery(Categorie::TYPE_PROJECT, "p.rowid", $search_category_array);
+ }
 
 $timeArray = array('year' => $year, 'month' => $month, 'week' => $week, 'day' => $day);
 $tasksarray = doliSirhGetTasksArray(0, 0, ($project->id ?: 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields,0,array(), 0,$timeArray, 'month');
@@ -475,24 +492,9 @@ print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
 print $langs->trans('ShowOnlyTasksWithTimeSpent');
 print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '').' >';
 
-$numendworkingday = 0;
-$numstartworkingday = 0;
 // Get if user is available or not for each day
 $isavailable = array();
-
-// Assume from Monday to Friday if conf empty or badly formed
-$numstartworkingday = 1;
-$numendworkingday = 5;
-
-if (!empty($conf->global->MAIN_DEFAULT_WORKING_DAYS)) {
-	$tmparray = explode('-', $conf->global->MAIN_DEFAULT_WORKING_DAYS);
-	if (count($tmparray) >= 2) {
-		$numstartworkingday = $tmparray[0];
-		$numendworkingday = $tmparray[1];
-	}
-}
-
-for ($idw = 0; $idw < $dayInMonth; $idw++) {
+for ($idw = 0; $idw < $daysInRange; $idw++) {
 	$dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 	if (isDayAvailable($dayInLoop, $user->id)) {
 		$isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
@@ -502,7 +504,6 @@ for ($idw = 0; $idw < $dayInMonth; $idw++) {
 		$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
 	}
 }
-
 
 $moreforfilter = '';
 
@@ -547,12 +548,6 @@ print '<div class="div-table-responsive">';
 print '<table class="tagtable liste'.($moreforfilter ? " listwithfilterbefore" : "").'" id="tablelines3">'."\n";
 
 print '<tr class="liste_titre_filter">';
-if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-	print '<td class="liste_titre"><input type="text" size="4" name="search_project_ref" value="'.dol_escape_htmltag($search_project_ref).'"></td>';
-}
-if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-	print '<td class="liste_titre"><input type="text" size="4" name="search_thirdparty" value="'.dol_escape_htmltag($search_thirdparty).'"></td>';
-}
 print '<td class="liste_titre"><input type="text" size="4" name="search_task_label" value="'.dol_escape_htmltag($search_task_label).'"></td>';
 // TASK fields
 if (!empty($arrayfields['timeconsumed']['checked'])) {
@@ -569,35 +564,21 @@ print '</td>';
 print "</tr>\n";
 
 print '<tr class="liste_titre">';
-if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-	print '<th>'.$langs->trans("Project").'</th>';
-}
-if (!empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
-	print '<th>'.$langs->trans("ThirdParty").'</th>';
-}
 print '<th>'.$langs->trans("Task").'</th>';
 // TASK fields
-if (!empty($arrayfields['t.planned_workload']['checked'])) {
-	print '<th class="leftborder plannedworkload minwidth75 maxwidth100 right" title="'.dol_escape_htmltag($langs->trans("PlannedWorkload")).'">'.$langs->trans("PlannedWorkload").'</th>';
-}
-if (!empty($arrayfields['t.progress']['checked'])) {
-	print '<th class="right minwidth75 maxwidth100" title="'.dol_escape_htmltag($langs->trans("ProgressDeclared")).'">'.$langs->trans("ProgressDeclared").'</th>';
-}
 if (!empty($arrayfields['timeconsumed']['checked'])) {
 	print '<th class="right maxwidth75 maxwidth100">'.$langs->trans("TimeSpent").($usertoprocess->firstname ? '<br><span class="nowraponall">'.$usertoprocess->getNomUrl(-2).'<span class="opacitymedium paddingleft">'.dol_trunc($usertoprocess->firstname, 10).'</span></span>' : '').'</th>';
 }
 
 for ($idw = 0; $idw < $daysInRange; $idw++) {
-	$dayinloopfromfirstdaytoshow = dol_time_plus_duree($firstdaytoshow, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-
-	$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+    $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
 
 	$cellCSS = '';
 
-	if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-		if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+	if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
+		if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
 			$cellCSS = 'onholidayallday';
-		} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+		} else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
 			$cellCSS = 'weekend';
 		}
 	} else {
@@ -605,13 +586,13 @@ for ($idw = 0; $idw < $daysInRange; $idw++) {
 	}
 
 	print '<th width="6%" class="center bold '.$idw. ' ' . $cellCSS.'" style="font-size : 12px">';
-	print dol_print_date($dayinloopfromfirstdaytoshow, '%a');
-	$splitted_date = preg_split('/\//', dol_print_date($dayinloopfromfirstdaytoshow, "day"));
+	print dol_print_date($dayInLoop, '%a');
+	$splitted_date = preg_split('/\//', dol_print_date($dayInLoop, "day"));
 	$day = $splitted_date[0];
 	$month = $splitted_date[1];
 	$year = $splitted_date[2];
 	print ' <a href="timespent_day.php?year='. $year .'&month='. $month .'&day='. $day .'&search_usertoprocessid=' . $usertoprocess->id .'"><i class="fas fa-external-link-alt"></i></a>';
-	print '<br>'.dol_print_date($dayinloopfromfirstdaytoshow, '%d/%m').'</th>';
+	print '<br>'.dol_print_date($dayInLoop, '%d/%m').'</th>';
 }
 print_liste_field_titre('', $_SERVER["PHP_SELF"], "", '', '', '', $sortfield, $sortorder, 'center maxwidthsearch ');
 
@@ -622,7 +603,7 @@ $colspan = 1 + (empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT) 
 $workinghours = new Workinghours($db);
 $workingHours = $workinghours->fetchCurrentWorkingHours($usertoprocess->id, 'user');
 
-$planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($firstdaytoshow, $dayInMonth, 'd'), $workingHours, $isavailable, $usertoprocess->id);
+$planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($firstdaytoshow, $daysInRange, 'd'), $workingHours, $isavailable);
 
 $workinghoursMonth = 0;
 
@@ -641,25 +622,23 @@ if ($conf->use_javascript_ajax) {
 
     //Fill days data
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $planned_hours_on_day = loadPlannedTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'),dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
-
-        $tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+        $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+        $planned_hours_on_day = loadPlannedTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable);
 
 		$cellCSS = '';
 
-		if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-			if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+		if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
+			if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
 				$cellCSS = 'onholidayallday';
-			} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+			} else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
 				$cellCSS = 'weekend';
 			}
 		} else {
 			$cellCSS = '';
 		}
 
-        print '<td class="liste_total '.$idw. ' ' . $cellCSS;
-        print '" align="center"><div class="'.$idw.'">';
-        print (($planned_hours_on_day['minutes'] != 0) ? convertSecondToTime($planned_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
+        print '<td class="liste_total '.$idw.' ' . $cellCSS. '" align="center">';
+        print '<div class="'.$idw.'">'.(($planned_hours_on_day['minutes'] != 0) ? convertSecondToTime($planned_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
     }
     print '<td></td>';
     print '</tr>';
@@ -674,13 +653,13 @@ if (count($tasksarray) > 0) {
 
 	//Show tasks lines
 	$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $usertoprocess->id);
-
-	doliSirhLinesPerMonth($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $dayInMonth, $timeSpentOnTasks);
+    
+	doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $timeSpentOnTasks);
 
 	if ($conf->use_javascript_ajax) {
 
 		//Passed working hours
-		$passed_working_time = loadPassedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
+		$passed_working_time = loadPassedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable);
 
 		print '<tr class="liste_total planned-working-hours">';
 		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
@@ -696,23 +675,21 @@ if (count($tasksarray) > 0) {
 
 		//Fill days data
 		for ($idw = 0; $idw < $daysInRange; $idw++) {
-			$passed_hours_on_day = loadPassedTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'),dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
-
-			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+            $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+			$passed_hours_on_day = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable);
 
 			$cellCSS = '';
 
-			if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-				if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+			if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
+				if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
 					$cellCSS = 'onholidayallday';
-				} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+				} else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
 					$cellCSS = 'weekend';
 				}
 			} else {
 				$cellCSS = '';
 			}
-			print '<td class="liste_total '.$idw. ' ' . $cellCSS;
-			print '" align="center"><div class="'.$idw.'">';
+			print '<td class="liste_total '.$idw.' ' . $cellCSS. '" align="center">';
 			print (($passed_hours_on_day['minutes'] != 0) ? convertSecondToTime($passed_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
 		}
         print '<td></td>';
@@ -726,36 +703,30 @@ if (count($tasksarray) > 0) {
 		$timeSpent = loadTimeSpentWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
 
 		$totalconsumedtime = $timeSpent['total'];
-		print '<span class="opacitymediumbycolor">  - '.$langs->trans("ConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></span>';
+		print '<span class="opacitymediumbycolor">  - '.$langs->trans("ConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), dol_print_date($lastdaytoshow, "dayreduceformat")).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></span>';
 		print '</td>';
 		if (!empty($arrayfields['timeconsumed']['checked'])) {
 			print '<td class="liste_total right"><strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></td>';
 		}
 
 		for ($idw = 0; $idw < $daysInRange; $idw++) {
-			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-			if ($isavailable[$tmpday]['morning'] && $isavailable[$tmpday]['afternoon']) {
-				$currentDay = date('l', $tmpday);
-				$currentDay = 'workinghours_' . strtolower($currentDay);
-				$workinghoursMonth = $workingHours->$currentDay * 60;
-			} else {
-				$workinghoursMonth = 0;
-			}
+            $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+            $timespent_hours_on_day = loadTimeSpentWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $isavailable, $usertoprocess->id);
 
 			$cellCSS = '';
 
-			if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
-				if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+			if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
+				if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
 					$cellCSS = 'onholidayallday';
-				} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+				} else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
 					$cellCSS = 'weekend';
 				}
 			} else {
 				$cellCSS = '';
 			}
 
-			print '<td class="liste_total '.$idw. ' ' . $cellCSS;
-			print '" align="center"><div class="totalDay'.$idw.'">'.dol_print_date($workinghoursMonth, 'hour').'</div></td>';
+			print '<td class="liste_total '.$idw.' ' . $cellCSS. '" align="center">';
+			print '<div class="totalDay'.$idw.'">'.(($timespent_hours_on_day['minutes'] != 0) ? convertSecondToTime($timespent_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
 		}
         print '<td></td>';
         print '</tr>';
@@ -774,16 +745,15 @@ if (count($tasksarray) > 0) {
 		} elseif ($difftotaltime == 0) {
 			$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 		}
-		print '<span class="opacitymediumbycolor">  - '.$langs->trans("DiffSpentAndConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat"))).' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></span>';
+		print '<span class="opacitymediumbycolor">  - '.$langs->trans("DiffSpentAndConsumedWorkedHoursMonth", dol_print_date($firstdaytoshow, "dayreduceformat"), dol_print_date($lastdaytoshow, "dayreduceformat")).' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></span>';
 		print '</td>';
 		if (!empty($arrayfields['timeconsumed']['checked'])) {
 			print '<td class="liste_total right" style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'"><strong>'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></td>';
 		}
 
 		for ($idw = 0; $idw < $daysInRange; $idw++) {
-			$tmpday = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-
-			$timeSpentDiffThisDay = loadDifferenceBetweenPassedAndSpentTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'), dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
+            $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+			$timeSpentDiffThisDay = loadDifferenceBetweenPassedAndSpentTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
 
 			if ($timeSpentDiffThisDay < 0) {
 				$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
@@ -795,11 +765,11 @@ if (count($tasksarray) > 0) {
 
 			$cellCSS = '';
 
-			if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
+			if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
 
-				if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+				if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
 					$cellCSS = 'onholidayallday';
-				} else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+				} else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
 					$cellCSS = 'weekend';
 				}
 			} else {
@@ -841,7 +811,7 @@ if ($conf->use_javascript_ajax) {
 				});'."\n";
 
 	$idw = 0;
-	while ($idw < $dayInMonth) {
+	while ($idw < $daysInRange) {
 		print '    updateTotal('.$idw.',\''.$modeinput.'\');';
 		$idw++;
 	}
