@@ -476,7 +476,10 @@ class modDoliSIRH extends DolibarrModules
 		$param['options']['Facture:compta/facture/class/facture.class.php'] = null;
 		$extra_fields->addExtraField('fk_facture_name', 'Facture', 'link', 100, null, 'projet_task', 1, 0, null, $param, 1, 1, 1); //extrafields task
 		unset($param);
-		$extra_fields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, 'a:1:{s:7:"options";a:1:{s:112:"projet_task:label:rowid::entity = $ENTITY$ AND fk_projet = ($SEL$ fk_project FROM '. MAIN_DB_PREFIX .'ticket WHERE rowid = $ID$)";N;}}', 1, 1, '1'); //extrafields ticket
+		$param['options']['projet_task:label:rowid::entity = $ENTITY$ AND fk_projet = ($SEL$ fk_project FROM '. MAIN_DB_PREFIX .'ticket WHERE rowid = $ID$)'] = null;
+		$extra_fields->update('fk_task', 'Tâche', 'sellist', '', 'ticket', 0, 0, 100, $param, 1, 1, '1', '','','',0);
+		$extra_fields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, $param, 1, 1, '1', '','',0); //extrafields ticket
+		unset($param);
 
 		// Document models
 		delDocumentModel('timesheetdocument_odt', 'timesheetdocument');
