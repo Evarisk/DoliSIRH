@@ -86,7 +86,7 @@ class mod_certificate_standard extends ModeleNumRefDoliSIRH
 
 		$posindice = strlen($this->prefix) + 6;
 		$sql = "SELECT MAX(CAST(SUBSTRING(ref FROM ".$posindice.") AS SIGNED)) as max";
-		$sql .= " FROM ".MAIN_DB_PREFIX."dolisirh_certificate";
+		$sql .= " FROM ".MAIN_DB_PREFIX."saturne_certificate";
 		$sql .= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		if ($object->ismultientitymanaged == 1) {
 			$sql .= " AND entity = ".$conf->entity;
@@ -122,7 +122,7 @@ class mod_certificate_standard extends ModeleNumRefDoliSIRH
 		// first we get the max value
 		$posindice = strlen($this->prefix) + 6;
 		$sql = "SELECT MAX(CAST(SUBSTRING(ref FROM ".$posindice.") AS SIGNED)) as max";
-		$sql .= " FROM ".MAIN_DB_PREFIX."dolisirh_certificate";
+		$sql .= " FROM ".MAIN_DB_PREFIX."saturne_certificate";
 		$sql .= " WHERE ref LIKE '".$db->escape($this->prefix)."____-%'";
 		if ($object->ismultientitymanaged == 1) {
 			$sql .= " AND entity = ".$conf->entity;

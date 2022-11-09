@@ -44,7 +44,7 @@ class Certificate extends CommonObject
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'dolisirh_certificate';
+	public $table_element = 'saturne_certificate';
 
 	/**
 	 * @var int  Does this object support multicompany module ?
