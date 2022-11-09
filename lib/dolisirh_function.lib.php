@@ -375,11 +375,10 @@ function loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid = 
 			$hours = floor($timeSpentSingle->timespent_duration / 3600);
 			$minutes = floor($timeSpentSingle->timespent_duration / 60);
 
-			$timeSpent['hours'] += $hours;
-			$timeSpent['minutes'] += $minutes;
-			$timeSpent['total'] += $timeSpentSingle->timespent_duration;
-
-			if ($isavailable[$timeSpentSingle->timespent_date]) {
+			if ($isavailable[$timeSpentSingle->timespent_date]['morning'] && $isavailable[$timeSpentSingle->timespent_date]['afternoon']) {
+				$timeSpent['hours'] += $hours;
+				$timeSpent['minutes'] += $minutes;
+				$timeSpent['total'] += $timeSpentSingle->timespent_duration;
 				$days_worked[$timeSpentSingle->timespent_date] = 1;
 			}
 		}
