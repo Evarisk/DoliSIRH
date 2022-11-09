@@ -685,6 +685,22 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$start_date = dol_print_date($firstdaytoshow, "dayreduceformat");
 	$end_date = dol_print_date($lastdaytoshow, "dayreduceformat");
 
+	$daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+
+	$isavailable = array();
+	for ($idw = 0; $idw < $daysInRange; $idw++) {
+		$dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+		if (isDayAvailable($dayInLoop, $user->id)) {
+			$isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
+		} else if (date('N', $dayInLoop) >= 6) {
+			$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end');
+		} else {
+			$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
+		}
+	}
+
+	$workingHours = $workinghours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
+
 	$timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $object->fk_user_assign);
 
 	// Planned working time
@@ -714,27 +730,36 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$difftotaltime = $timeSpendingInfos['difference'];
 
 	if ($difftotaltime < 0) {
-		$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+		$morecssHours = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
 		$morecssnotice = 'error';
-		$noticetitle = $langs->trans('TimeSpentDiff', dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat")), dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y"));
+		$noticetitle = $langs->trans('TimeSpentDiff', dol_print_date($firstdaytoshow, "dayreduceformat"), dol_print_date($lastdaytoshow, "dayreduceformat"), dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y"));
 	} elseif ($difftotaltime > 0) {
-		$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+		$morecssHours = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
 		$morecssnotice = 'warning';
-		$noticetitle = $langs->trans('TimeSpentMustBeCompleted', dol_print_date($firstdaytoshow, "dayreduceformat"), (($dayInMonth == $dayInMonthCurrent) ? dol_print_date($lastdaytoshow, "dayreduceformat") : dol_print_date($now, "dayreduceformat")), dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y"));
+		$noticetitle = $langs->trans('TimeSpentMustBeCompleted', dol_print_date($firstdaytoshow, "dayreduceformat"), dol_print_date($lastdaytoshow, "dayreduceformat"), dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y"));
 	} elseif ($difftotaltime == 0) {
-		$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+		$morecssHours = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
 		$morecssnotice = 'success';
 		$noticetitle = $langs->trans('TimeSpentPerfect');
 	}
 
 	//Worked hours
 	$worked_time = $timeSpendingInfos['spent'];
+
+	if ($planned_working_time['days'] > $worked_time['days']) {
+		$morecssDays = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+	} else if ($planned_working_time['days'] < $worked_time['days']){
+		$morecssDays = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+	} else {
+		$morecssDays = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+	}
+
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
 	print $langs->trans("ConsumedWorkedHoursMonth", $start_date, $end_date);
 	print ' : <strong>'.convertSecondToTime($worked_time['total'], 'allhourmin').'</strong>';
-	print '<span>' . ' - ' . $langs->trans("ConsumedWorkedDayMonth") . ' <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">';
+	print '<span>' . ' - ' . $langs->trans("ConsumedWorkedDayMonth") . ' <strong style="color:'.'rgb('.$morecssDays[0].','.$morecssDays[1].','.$morecssDays[2].')'.'">';
 	print $worked_time['days'] . '</strong></span>';
 	print '</span>';
 	print '</td></tr>';
@@ -744,7 +769,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
 	print $langs->trans("DiffSpentAndConsumedWorkedHoursMonth", $start_date, $end_date);
-	print ' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">';
+	print ' : <strong style="color:'.'rgb('.$morecssHours[0].','.$morecssHours[1].','.$morecssHours[2].')'.'">';
 	print (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime * 60), 'allhourmin') : '00:00').'</strong>';
 	print '</span>';
 	print '</td></tr>';
