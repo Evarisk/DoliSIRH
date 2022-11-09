@@ -615,6 +615,7 @@ class ActionsDoliSIRH
 				}
 			}
 		}
+
 		if ($parameters['currentcontext'] == 'invoicereccard') {
 			if (GETPOST('action') == 'create') {
 				require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
@@ -634,6 +635,15 @@ class ActionsDoliSIRH
 				<?php }
 			}
 		}
+
+		if (in_array($parameters['currentcontext'], array('timesheetcard')) && GETPOST('action') == 'create') {
+			?>
+			<script>
+				$('.field_fk_soc').find($('.butActionNew')).attr('href', $('.field_fk_soc').find($('.butActionNew')).attr('href').replace('fk_societe', 'fk_soc'))
+			</script>
+			<?php
+		}
+
 		if (preg_match('/categoryindex/', $parameters['context'])) {
 			print '<script src="../custom/dolisirh/js/dolisirh.js.php"></script>';
 		}
