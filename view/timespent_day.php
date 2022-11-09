@@ -777,27 +777,6 @@ print "</tr>\n";
 
 $colspan = 2 + (empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT) ? 0 : 2);
 
-if ($conf->use_javascript_ajax) {
-	print '<tr class="liste_total">';
-	print '<td class="liste_total" colspan="'.($colspan - 2 + $addcolspan).'">';
-	print $langs->trans("Total");
-	print '</td>';
-	if (!empty($arrayfields['timeconsumed']['checked'])) {
-		print '<td class="liste_total"></td>';
-		print '<td class="liste_total"></td>';
-	}
-	print '<td class="liste_total leftborder">';
-	//print '  - '.$langs->trans("ExpectedWorkedHours").': <strong>'.price($usertoprocess->weeklyhours, 1, $langs, 0, 0).'</strong>';
-	print '</td>';
-
-	print '<td class="liste_total center'.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'"><div class="totalDay0">&nbsp;</div></td>';
-
-	//  print '<td class="liste_total"></td>';
-	//  print '<td class="liste_total"></td>';
-	print '</tr>';
-}
-
-
 if (count($tasksarray) > 0) {
 	//var_dump($tasksarray);				// contains only selected tasks
 	//var_dump($tasksarraywithoutfilter);	// contains all tasks (if there is a filter, not defined if no filter)
@@ -865,24 +844,6 @@ if (count($tasksarray) > 0) {
 		print '</tr>';
 	}
 
-	if ($conf->use_javascript_ajax) {
-		print '<tr class="liste_total">';
-		print '<td class="liste_total" colspan="'.($colspan - 2 + $addcolspan).'">';
-		print $langs->trans("Total");
-		print '</td>';
-		if (!empty($arrayfields['timeconsumed']['checked'])) {
-			print '<td class="liste_total"></td>';
-			print '<td class="liste_total"></td>';
-		}
-		print '<td class="liste_total leftborder">';
-		//print '  - '.$langs->trans("ExpectedWorkedHours").': <strong>'.price($usertoprocess->weeklyhours, 1, $langs, 0, 0).'</strong>';
-		print '</td>';
-
-		print '<td class="liste_total center'.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'"><div class="totalDay0">&nbsp;</div></td>';
-
-		//      print '<td class="liste_total"></td><td class="liste_total"></td>';
-		print '</tr>';
-	}
 } else {
 	print '<tr><td colspan="14"><span class="opacitymedium">'.$langs->trans("NoAssignedTasks").'</span></td></tr>';
 }
