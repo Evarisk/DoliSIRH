@@ -967,9 +967,9 @@ function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projects
 				}
 				print $taskstatic->getNomUrl(1, 'withproject', 'time');
 				if (isTaskFavorite($taskstatic->id, $fuser->id)) {
-					print '<span class="fas fa-star"></span>';
+					print ' <span class="fas fa-star"></span>';
 				} else {
-					print '<span class="far fa-star"></span>';
+					print ' <span class="far fa-star"></span>';
 				}
 				// Label task
 				print '<br>';
@@ -1242,9 +1242,9 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 				}
 				print $taskstatic->getNomUrl(1, 'withproject', 'time');
 				if (isTaskFavorite($taskstatic->id, $fuser->id)) {
-					print '<span class="fas fa-star"></span>';
+					print ' <span class="fas fa-star"></span>';
 				} else {
-					print '<span class="far fa-star"></span>';
+					print ' <span class="far fa-star"></span>';
 				}
 				// Label task
 				print '<br>';
