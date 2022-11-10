@@ -49,7 +49,7 @@ if (!$user->rights->dolisirh->lire) accessforbidden();
 
 $help_url = 'FR:Module_DoliSIRH';
 $title    = $langs->trans('DoliSIRHArea');
-$morejs   = ['/dolisirh/js/dolisirh.js.php'];
+$morejs   = ['/dolisirh/js/dolisirh.js'];
 $morecss  = ['/dolisirh/css/dolisirh.css'];
 
 llxHeader('', $title . ' ' . $dolisirh->version, $help_url, '', 0, 0, $morejs, $morecss);

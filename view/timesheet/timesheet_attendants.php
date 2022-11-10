@@ -302,7 +302,7 @@ if ($action == 'deleteAttendant') {
 
 $title    = $langs->trans("TimeSheetAttendants");
 $help_url = '';
-$morejs   = array("/dolisirh/js/signature-pad.min.js", "/dolisirh/js/dolisirh.js.php");
+$morejs   = array("/dolisirh/js/signature-pad.min.js", "/dolisirh/js/dolisirh.js");
 $morecss  = array("/dolisirh/css/dolisirh.css");
 
 llxHeader('', $title, $help_url, '', '', '', $morejs, $morecss);

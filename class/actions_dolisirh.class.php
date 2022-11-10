@@ -645,7 +645,7 @@ class ActionsDoliSIRH
 		}
 
 		if (preg_match('/categoryindex/', $parameters['context'])) {
-			print '<script src="../custom/dolisirh/js/dolisirh.js.php"></script>';
+			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
 		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
 			toggleTaskFavorite(GETPOST('taskId'), $user->id);

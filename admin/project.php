@@ -105,7 +105,7 @@ $formproject = new FormProjets($db);
 
 $help_url = 'FR:Module_DoliSIRH';
 $title    = $langs->trans("ProjectsAndTasks");
-$morejs   = array("/dolisirh/js/dolisirh.js.php");
+$morejs   = array("/dolisirh/js/dolisirh.js");
 $morecss  = array("/dolisirh/css/dolisirh.css");
 
 llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);

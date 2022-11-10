@@ -271,7 +271,7 @@ $now = dol_now();
 //$help_url="EN:Module_TimeSheet|FR:Module_TimeSheet_FR|ES:Módulo_TimeSheet";
 $help_url = '';
 $title = $langs->trans('TimeSheetList');
-$morejs = array("/dolisirh/js/dolisirh.js.php");
+$morejs = array("/dolisirh/js/dolisirh.js");
 $morecss = array("/dolisirh/css/dolisirh.css");
 
 

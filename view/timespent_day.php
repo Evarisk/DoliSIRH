@@ -408,7 +408,7 @@ $next_day   = $next['mday'];
 
 $title    = $langs->trans("TimeSpent");
 $help_url = '';
-$morejs   = array("/dolisirh/js/dolisirh.js.php", "/core/js/timesheet.js");
+$morejs   = array("/dolisirh/js/dolisirh.js", "/core/js/timesheet.js");
 $morecss  = array("/dolisirh/css/dolisirh.css");
 
 $projectsListId = $projectstatic->getProjectsAuthorizedForUser($usertoprocess, (empty($usertoprocess->id) ? 2 : 0), 1); // Return all project i have permission on (assigned to me+public). I want my tasks and some of my task may be on a public projet that is not my project
