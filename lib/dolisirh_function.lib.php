@@ -966,6 +966,11 @@ function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projects
 					print '<div class="marginleftonly">';
 				}
 				print $taskstatic->getNomUrl(1, 'withproject', 'time');
+				if (isTaskFavorite($taskstatic->id, $fuser->id)) {
+					print '<span class="fas fa-star"></span>';
+				} else {
+					print '<span class="far fa-star"></span>';
+				}
 				// Label task
 				print '<br>';
 				print '<span class="opacitymedium">'.$taskstatic->label.'</a>';
