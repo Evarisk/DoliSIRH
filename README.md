@@ -14,7 +14,7 @@ Thème : Eldy Menu
 
 Editeur/Licence : [Evarisk](https://www.evarisk.com) / GPLv3
 
-Assitance : [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à technique@evarisk.com
+Assistance: [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à contact@evarisk.com
 
 à venir :
 Documentation : [Wiki DoliSIRH](https://wiki.dolibarr.org/index.php/Module_DoliSIRH)

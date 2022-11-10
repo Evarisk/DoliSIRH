@@ -342,21 +342,37 @@ class modDoliSIRH extends DolibarrModules
 			'user'     => 0,
 		);
 
-		$this->menu[$r++] = array(
-			'fk_menu'  => 'fk_mainmenu=dolisirh',
-			'type'     => 'left',
-			'titre'    => $langs->trans('Certificate'),
-			'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i>',
-			'mainmenu' => 'dolisirh',
-			'leftmenu' => 'certificate',
-			'url'      => '/dolisirh/view/certificate/certificate_list.php',
-			'langs'    => 'dolisirh@dolisirh',
-			'position' => 1000 + $r,
-			'enabled'  => '$conf->dolisirh->enabled',
-			'perms'    => '$user->rights->dolisirh->certificate->read',
-			'target'   => '',
-			'user'     => 0,
-		);
+        $this->menu[$r++] = array(
+            'fk_menu'  => 'fk_mainmenu=dolisirh,fk_leftmenu=timesheet',
+            'type'     => 'left',
+            'titre'    => $langs->transnoentities('Categories'),
+            'prefix'   => '<i class="fas fa-tags pictofixedwidth"></i>',
+            'mainmenu' => 'dolisirh',
+            'leftmenu' => 'timesheettags',
+            'url'      => '/categories/index.php?type=timesheet',
+            'langs'    => 'dolisirh@dolisirh',
+            'position' => 1000 + $r,
+            'enabled'  => '$conf->dolisirh->enabled && $conf->categorie->enabled',
+            'perms'    => '$user->rights->dolisirh->lire && $user->rights->categorie->lire',
+            'target'   => '',
+            'user'     => 0,
+        );
+
+//		$this->menu[$r++] = array(
+//			'fk_menu'  => 'fk_mainmenu=dolisirh',
+//			'type'     => 'left',
+//			'titre'    => $langs->trans('Certificate'),
+//			'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i>',
+//			'mainmenu' => 'dolisirh',
+//			'leftmenu' => 'certificate',
+//			'url'      => '/dolisirh/view/certificate/certificate_list.php',
+//			'langs'    => 'dolisirh@dolisirh',
+//			'position' => 1000 + $r,
+//			'enabled'  => '$conf->dolisirh->enabled',
+//			'perms'    => '$user->rights->dolisirh->certificate->read',
+//			'target'   => '',
+//			'user'     => 0,
+//		);
 
 		$this->menu[$r++] = array(
 			'fk_menu'  => 'fk_mainmenu=dolisirh',                                           // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
@@ -372,22 +388,6 @@ class modDoliSIRH extends DolibarrModules
 			'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',   // Use 'perms'=>'$user->rights->dolisirh->level1->level2' if you want your menu with a permission rules
 			'target'   => '',
 			'user'     => 0,                                                                // 0=Menu for internal users, 1=external users, 2=both
-		);
-
-		$this->menu[$r++] = array(
-			'fk_menu'  => 'fk_mainmenu=dolisirh',
-			'type'     => 'left',
-			'titre'    => $langs->transnoentities('Categories'),
-			'prefix'   => '<i class="fas fa-tags pictofixedwidth"></i>',
-			'mainmenu' => 'dolisirh',
-			'leftmenu' => 'timesheettags',
-			'url'      => '/categories/index.php?type=timesheet',
-			'langs'    => 'dolisirh@dolisirh',
-			'position' => 1000 + $r,
-			'enabled'  => '$conf->dolisirh->enabled && $conf->categorie->enabled',
-			'perms'    => '$user->rights->dolisirh->lire && $user->rights->categorie->lire',
-			'target'   => '',
-			'user'     => 0,
 		);
 
         $this->menu[$r++] = array(
