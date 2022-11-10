@@ -1,4 +1,4 @@
- <?php
+<?php
 /* Copyright (C) 2023 EVARISK <dev@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify

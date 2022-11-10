@@ -345,7 +345,7 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = array(
             'fk_menu'  => 'fk_mainmenu=dolisirh,fk_leftmenu=timesheet',
             'type'     => 'left',
-            'titre'    => '<i class="fas fa-tags pictofixedwidth"></i>' . $langs->transnoentities('Categories'),
+            'titre'    => '<i class="fas fa-tags pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('Categories'),
             'mainmenu' => 'dolisirh',
             'leftmenu' => 'timesheettags',
             'url'      => '/categories/index.php?type=timesheet',
