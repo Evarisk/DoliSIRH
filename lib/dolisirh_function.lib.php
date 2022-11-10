@@ -310,7 +310,7 @@ function loadTimeSpentWithinRangeByProject($datestart, $dateend, $project_id, $t
  * @return array                Array with minutes, hours and total time spent
  * @throws Exception
  */
-function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $userid = 0)
+function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $isavailable, $userid = 0)
 {
 	global $db;
 
@@ -327,7 +327,9 @@ function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $userid = 0)
 
 	if (is_array($timeSpentList) && !empty($timeSpentList)) {
 		foreach ($timeSpentList as $timeSpent) {
-			$timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
+            if ($isavailable[$timeSpent->timespent_date]['morning'] && $isavailable[$timeSpent->timespent_date]['afternoon']) {
+                $timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
+            }
 		}
 	}
 
