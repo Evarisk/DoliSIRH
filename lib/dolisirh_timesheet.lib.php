@@ -37,7 +37,7 @@ function timesheetPrepareHead(TimeSheet $object): array
 	$head = array();
 
 	$head[$h][0] = dol_buildpath("/dolisirh/view/timesheet/timesheet_card.php", 1).'?id='.$object->id;
-	$head[$h][1] = '<i class="fas fa-info-circle"></i> ' . $langs->trans("Card");
+	$head[$h][1] = '<i class="fas fa-info-circle pictofixedwidth"></i>' . $langs->trans("Card");
 	$head[$h][2] = 'card';
 	$h++;
 
@@ -50,7 +50,7 @@ function timesheetPrepareHead(TimeSheet $object): array
 			$nbNote++;
 		}
 		$head[$h][0] = dol_buildpath('/dolisirh/view/timesheet/timesheet_note.php', 1).'?id='.$object->id;
-		$head[$h][1] = '<i class="fas fa-comment"></i> ' .$langs->trans('Notes');
+		$head[$h][1] = '<i class="fas fa-comment pictofixedwidth"></i>' . $langs->trans('Notes');
 		if ($nbNote > 0) {
 			$head[$h][1] .= (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER) ? '<span class="badge marginleftonlyshort">'.$nbNote.'</span>' : '');
 		}
@@ -58,26 +58,13 @@ function timesheetPrepareHead(TimeSheet $object): array
 		$h++;
 	}
 
-	//  require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
-	//  require_once DOL_DOCUMENT_ROOT.'/core/class/link.class.php';
-	//  $upload_dir = $conf->dolisirh->dir_output."/timesheet/".dol_sanitizeFileName($object->ref);
-	//  $nbFiles = count(dol_dir_list($upload_dir, 'files', 0, '', '(\.meta|_preview.*\.png)$'));
-	//  $nbLinks = Link::count($db, $object->element, $object->id);
-	//  $head[$h][0] = dol_buildpath("/dolisirh/view/timesheet/timesheet_document.php", 1).'?id='.$object->id;
-	//  $head[$h][1] = $langs->trans('Documents');
-	//  if (($nbFiles + $nbLinks) > 0) {
-	//      $head[$h][1] .= '<span class="badge marginleftonlyshort">'.($nbFiles + $nbLinks).'</span>';
-	//  }
-	//  $head[$h][2] = 'document';
-	//  $h++;
-
 	$head[$h][0] = dol_buildpath("/dolisirh/view/timesheet/timesheet_agenda.php", 1).'?id='.$object->id;
-	$head[$h][1] = '<i class="fas fa-calendar-alt"></i> ' . $langs->trans("Events");
+	$head[$h][1] = '<i class="fas fa-calendar-alt pictofixedwidth"></i>' . $langs->trans("Events");
 	$head[$h][2] = 'agenda';
 	$h++;
 
 	$head[$h][0] = dol_buildpath("/dolisirh/view/timesheet/timesheet_attendants.php", 1) . '?id=' . $object->id;
-	$head[$h][1] = '<i class="fas fa-file-signature"></i> ' . $langs->trans("Attendants");
+	$head[$h][1] = '<i class="fas fa-file-signature pictofixedwidth"></i>' . $langs->trans("Attendants");
 	$head[$h][2] = 'attendants';
 	$h++;
 

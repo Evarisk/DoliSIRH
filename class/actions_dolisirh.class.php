@@ -22,9 +22,9 @@
  */
 
 /**
- * Class ActionsDolisirh
+ * Class ActionsDoliSIRH
  */
-class ActionsDolisirh
+class ActionsDoliSIRH
 {
 	/**
 	 * @var DoliDB Database handler.
@@ -69,7 +69,7 @@ class ActionsDolisirh
 	 * @param  string $action     Current action (if set). Generally create or edit or null
 	 * @return int                0 < on error, 0 on success, 1 to replace standard code
 	 */
-	public function doActions(array $parameters, object $object, string $action): int
+	public function doActions(array $parameters, $object, string $action): int
 	{
 		require_once DOL_DOCUMENT_ROOT.'/core/modules/project/task/mod_task_simple.php';
 
@@ -615,6 +615,7 @@ class ActionsDolisirh
 				}
 			}
 		}
+
 		if ($parameters['currentcontext'] == 'invoicereccard') {
 			if (GETPOST('action') == 'create') {
 				require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
@@ -634,6 +635,15 @@ class ActionsDolisirh
 				<?php }
 			}
 		}
+
+		if (in_array($parameters['currentcontext'], array('timesheetcard')) && GETPOST('action') == 'create') {
+			?>
+			<script>
+				$('.field_fk_soc').find($('.butActionNew')).attr('href', $('.field_fk_soc').find($('.butActionNew')).attr('href').replace('fk_societe', 'fk_soc'))
+			</script>
+			<?php
+		}
+
 		if (preg_match('/categoryindex/', $parameters['context'])) {
 			print '<script src="../custom/dolisirh/js/dolisirh.js.php"></script>';
 		}

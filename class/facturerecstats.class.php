@@ -201,7 +201,7 @@ class FactureRecStats extends DoliSIRHStats
 		$sql .= " GROUP BY dm";
 		$sql .= $this->db->order('dm', 'DESC');
 
-		return $this->getNbByYear($sql);
+		return $this->_getNbByYear($sql);
 	}
 
 
@@ -254,7 +254,7 @@ class FactureRecStats extends DoliSIRHStats
 		$sql .= " GROUP BY dm";
 		$sql .= $this->db->order('dm', 'DESC');
 
-		return $this->getAverageByMonth($sql, $format);
+		return $this->_getAverageByMonth($sql, $format);
 	}
 
 	/**
@@ -277,7 +277,7 @@ class FactureRecStats extends DoliSIRHStats
 		$sql .= " GROUP BY year";
 		$sql .= $this->db->order('year', 'DESC');
 
-		return $this->getAllByYear($sql);
+		return $this->_getAllByYear($sql);
 	}
 
 	/**
@@ -303,6 +303,6 @@ class FactureRecStats extends DoliSIRHStats
 		$sql .= " GROUP BY dm";
 		$sql .= $this->db->order('dm', 'ASC');
 
-		return $this->getAmountByYear($sql);
+		return $this->_getAmountByYear($sql);
 	}
 }

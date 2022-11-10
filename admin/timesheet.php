@@ -52,19 +52,20 @@ $langs->loadLangs(array("admin", "dolisirh@dolisirh"));
 $action     = GETPOST('action', 'alpha');
 $backtopage = GETPOST('backtopage', 'alpha');
 
-// Initialize objects
-// Technical objets
-$timesheet = new TimeSheet($db);
-
-// View objects
-$form = new Form($db);
+// Initialize technical objects
+$object = new TimeSheet($db);
 
 // Access control
-if (!$user->admin) accessforbidden();
+$permissiontoread = $user->rights->dolisirh->adminpage->read;
+if (empty($conf->dolisirh->enabled)) accessforbidden();
+if (!$permissiontoread) accessforbidden();
 
 /*
  * View
  */
+
+// Initialize view objects
+$form = new Form($db);
 
 $help_url = 'FR:Module_DoliSIRH';
 $title    = $langs->trans("TimeSheet");
@@ -74,19 +75,108 @@ $morecss  = array("/dolisirh/css/dolisirh.css");
 llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 
 // Subheader
-$linkback = '<a href="'.($backtopage ?: DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1').'">'.$langs->trans("BackToModuleList").'</a>';
-
-print load_fiche_titre($title, $linkback, 'dolisirh@dolisirh');
+print load_fiche_titre($title, '', 'object_'.$object->picto);
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();
-print dol_get_fiche_head($head, 'timesheet', '', -1, "timesheet@dolisirh");
+print dol_get_fiche_head($head, 'timesheet', $title, -1, 'dolisirh_red@dolisirh');
 
-//Time spent
-print load_fiche_titre($langs->transnoentities("TimeSheetData"), '', 'object_timesheet@dolisirh');
+print load_fiche_titre($langs->trans("TimeSheetManagement"), '', 'object_'.$object->picto);
+print '<hr>';
+
+/*
+ *  Numbering module TimeSheet
+ */
+
+print load_fiche_titre($langs->trans("DoliSIRHTimeSheetNumberingModule"), '', '');
 
 print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<td>'.$langs->trans("Name").'</td>';
+print '<td>'.$langs->trans("Description").'</td>';
+print '<td class="nowrap">'.$langs->trans("Example").'</td>';
+print '<td class="center">'.$langs->trans("Status").'</td>';
+print '<td class="center">'.$langs->trans("ShortInfo").'</td>';
+print '</tr>';
 
+clearstatcache();
+
+$dir = dol_buildpath("/custom/dolisirh/core/modules/dolisirh/timesheet/");
+if (is_dir($dir)) {
+    $handle = opendir($dir);
+    if (is_resource($handle)) {
+        while (($file = readdir($handle)) !== false ) {
+            if (!is_dir($dir.$file) || (substr($file, 0, 1) <> '.' && substr($file, 0, 3) <> 'CVS')) {
+                $filebis = $file;
+
+                $classname = preg_replace('/\.php$/', '', $file);
+                $classname = preg_replace('/-.*$/', '', $classname);
+
+                if (!class_exists($classname) && is_readable($dir.$filebis) && (preg_match('/mod_/', $filebis) || preg_match('/mod_/', $classname)) && substr($filebis, dol_strlen($filebis) - 3, 3) == 'php') {
+                    // Charging the numbering class
+                    require_once $dir.$filebis;
+
+                    $module = new $classname($db);
+
+                    if ($module->isEnabled()) {
+                        print '<tr class="oddeven"><td>';
+                        print $langs->trans($module->name);
+                        print "</td><td>";
+                        print $module->info();
+                        print '</td>';
+
+                        // Show example of numbering module
+                        print '<td class="nowrap">';
+                        $tmp = $module->getExample();
+                        if (preg_match('/^Error/', $tmp)) print '<div class="error">'.$langs->trans($tmp).'</div>';
+                        elseif ($tmp == 'NotConfigured') print $langs->trans($tmp);
+                        else print $tmp;
+                        print '</td>';
+
+                        print '<td class="center">';
+                        $confType = 'DOLISIRH_TIMESHEET_ADDON';
+                        if ($conf->global->$confType == $file || $conf->global->$confType.'.php' == $file) {
+                            print img_picto($langs->trans("Activated"), 'switch_on');
+                        }
+                        else {
+                            print '<a class="reposition" href="'.$_SERVER["PHP_SELF"].'?action=setmod&value='.preg_replace('/\.php$/', '', $file).'&const='.$module->scandir.'&label='.urlencode($module->name).'&token='.newToken().'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>';
+                        }
+                        print '</td>';
+
+                        // Example for timesheet
+                        $htmltooltip = '' . $langs->trans("Version") . ': <b>' . $module->getVersion() . '</b><br>';
+                        $nextval = $module->getNextValue($object);
+                        if ("$nextval" != $langs->trans("NotAvailable")) {  // Keep " on nextval
+                            $htmltooltip .= $langs->trans("NextValue").': ';
+                            if ($nextval) {
+                                if (preg_match('/^Error/', $nextval) || $nextval == 'NotConfigured')
+                                    $nextval = $langs->trans($nextval);
+                                $htmltooltip .= $nextval.'<br>';
+                            } else {
+                                $htmltooltip .= $langs->trans($module->error).'<br>';
+                            }
+                        }
+
+                        print '<td class="center">';
+                        print $form->textwithpicto('', $htmltooltip, 1, 0);
+                        if ($conf->global->$confType.'.php' == $file) { // If module is the one used, we show existing errors
+                            if (!empty($module->error)) dol_htmloutput_mesg($module->error, '', 'error', 1);
+                        }
+                        print '</td>';
+                        print "</tr>";
+                    }
+                }
+            }
+        }
+        closedir($handle);
+    }
+}
+print '</table>';
+
+//Time spent
+print load_fiche_titre($langs->transnoentities("TimeSheetData"), '', '');
+
+print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
 print '<td>' . $langs->transnoentities("Parameters") . '</td>';
 print '<td>' . $langs->transnoentities("Description") . '</td>';

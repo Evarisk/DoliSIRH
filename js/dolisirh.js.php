@@ -570,6 +570,7 @@ window.eoxiaJS.task.event = function() {
 	$( document ).on( 'click', '.auto-fill-timespent', window.eoxiaJS.task.addTimeSpent );
 	$( document ).on( 'click', '.auto-fill-timespent-project', window.eoxiaJS.task.divideTimeSpent );
 	$( document ).on( 'click', '.show-only-favorite-tasks', window.eoxiaJS.task.showOnlyFavoriteTasks );
+	$( document ).on( 'click', '.show-only-tasks-with-timespent', window.eoxiaJS.task.showOnlyTasksWithTimeSpent );
 };
 
 /**
@@ -641,6 +642,34 @@ window.eoxiaJS.task.showOnlyFavoriteTasks = function( event ) {
 
 	$.ajax({
 		url: document.URL + querySeparator + "action=showOnlyFavoriteTasks&token=" + token,
+		type: "POST",
+		processData: false,
+		contentType: false,
+		success: function ( resp ) {
+			window.location.reload()
+		},
+		error: function ( ) {
+		}
+	});
+};
+
+/**
+ * Active/désactive la configuration pour n'afficher que les tâches avec du temps pointé
+ *
+ * @since   1.1.0
+ * @version 1.1.0
+ *
+ * @param  {MouseEvent} event [description]
+ * @return {void}
+ */
+window.eoxiaJS.task.showOnlyTasksWithTimeSpent = function( event ) {
+	let token = $('.id-container').find('input[name="token"]').val();
+	let querySeparator = '?';
+
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	$.ajax({
+		url: document.URL + querySeparator + "action=showOnlyTasksWithTimeSpent&token=" + token,
 		type: "POST",
 		processData: false,
 		contentType: false,

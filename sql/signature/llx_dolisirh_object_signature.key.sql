@@ -14,3 +14,6 @@
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
 ALTER TABLE llx_dolisirh_object_signature ADD INDEX idx_dolisirh_object_signature_rowid (rowid);
+ALTER TABLE llx_dolisirh_object_signature ADD INDEX idx_dolisirh_object_signature_status (status);
+ALTER TABLE llx_dolisirh_object_signature ADD INDEX idx_dolisirh_object_signature_element_id (element_id);
+ALTER TABLE llx_dolisirh_object_signature ADD INDEX idx_dolisirh_object_signature_fk_object (fk_object);

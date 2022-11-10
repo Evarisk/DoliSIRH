@@ -65,6 +65,19 @@ ActionAC_TEL_OUT = Appel téléphonique sortant
 DoliSIRHConfig = Configuration
 DoliSIRHArea  = Bienvenue sur DoliSIRH
 DoliSIRHNumberOfModelFilesFound = Nombre de modèles par défaut
+SetupDefaultData = Gestion des données par défaut de DoliSIRH
+HRProjectSet = Création du Projet Ressources Humaines
+HRProjectSetHelp = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
+ProductServiceSet = Création des produits et services pour la navette
+ProductServiceSetHelp = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
+BookmarkSet = Création d'un marque-page pour le temps consommé
+BookmarkSetHelp = Cette option permet d'accéder rapidement à la gestion du pointage de temps
+Create = Créer
+NotCreated = Pas encore créé(e)s
+AlreadyCreated = Déjà créé(e)s
+SetupDefaultDataNotCreated = Vous n'avez pas créé les données par défaut de DOLISIRH
+HowToSetupDefaultData = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
+ConfigDefaultData = Configuration des données par défaut de DOLISIRH
 
 
 
@@ -102,7 +115,7 @@ SickLeave = Congés maladie
 PublicHoliday = Jour férié
 AdditionalHour = Heure supplémentaire
 TooMuchTimeSpent = Vous avez pointé plus de temps que le temps non pointé disponible
-AddTimeSpent = Pointage de temps
+TimeSpending = Pointage de temps
 HumanResources = Ressources humaines
 ProjectsAndTasks = Projets et tâches
 HRProject = Projet Ressources Humaines
@@ -117,11 +130,11 @@ ExpectedWorkedHoursMonth = Heures de travail prévues au mois de %s
 SpentWorkedHoursMonth = Heures de travail passées du %s au %s
 ConsumedWorkedHoursMonth = Heures de travail consommées du %s au %s
 DiffSpentAndConsumedWorkedHoursMonth = Différence d'heures de travail passées/consommées du %s au %s
-WarningShowOnlyFavoriteTasks = Attention quand l'option 'Afficher uniquement les tâches favorites' est activée, les valeurs totales récupèrent l'ensembles des tâches.
+WarningShowOnlyFavoriteTasks = Attention, quand l'option 'Afficher uniquement les tâches favorites' est activée, les valeurs totales récupèrent l'ensembles des tâches.
 ExpectedWorkedHoursWeek = Heures de travail prévues du %s au %s
 ThemeDashboardTimeSpent = Thème du Rapport de pointage de temps
 TimeSpentList = Liste des temps consommés
-
+ShowOnlyTasksWithTimeSpent = Afficher uniquement les tâches avec du temps consommé sur cette période
 
 
 #
@@ -138,30 +151,6 @@ ExceededTimeSpentColor = Couleur temps consommés dépassés
 NotExceededTimeSpentColor = Couleur temps consommés pas dépassés ou non pointés
 PerfectTimeSpentColor = Couleur temps consommés parfait
 InvoicesCategoriesArea = Espace des tags/catégories des factures
-
-
-
-#
-# TimeSheetDocument - Fiche de navette
-#
-
-# Right - Droit
-
-# Trigger - Déclencheur
-TimeSheetDocumentGeneratedWithDolibarr = Fiche de navette générée avec Dolibarr
-
-# Mod Numbering - Modèle de numérotation
-DoliSIRHTimeSheetDocumentDocumentNumberingModule = Modèle de numérotation des fiches de navette de DoliSIRH
-DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TSDn où n est un compteur séquentiel sans rupture et sans remise à 0.
-
-# ODT Template - Template ODT
-DoliSIRHTemplateDocumentTimeSheetDocument = Modèle de documents des fiches de navette de DoliSIRH
-TimeSheetDocumentCustomDoliSIRHTemplate = ODT custom des fiches de navette
-TimeSheetDocumentDoliSIRHTemplate = ODT par défaut des fiches de navette
-
-# Data - Donnée
-TimeSheetDocument = Fiche de Navette
-timesheetdocument.odt = Navette ODT
 
 
 
@@ -190,13 +179,8 @@ TimeSheetLineModifyTrigger = Ligne de navette modifiée
 TimeSheetLineDeleteTrigger = Ligne de navette supprimée
 
 # Mod Numbering - Modèle de numérotation
-DoliSIRHTimeSheetDocumentDocumentNumberingModule = Modèle de numérotation des fiches de navette de DoliSIRH
-DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TSDn où n est un compteur séquentiel sans rupture et sans remise à 0.
-
-# ODT Template - Template ODT
-DoliSIRHTemplateDocumentTimeSheetDocument = Modèle de documents des fiches de navette de DoliSIRH
-TimeSheetDocumentCustomDoliSIRHTemplate = ODT custom des fiches de navette
-TimeSheetDocumentDoliSIRHTemplate = ODT par défaut des fiches de navette
+DoliSIRHTimeSheetNumberingModule = Modèle de numérotation des navettes de DoliSIRH
+DoliSIRHTimeSheetStandardModel = Renvoie le numéro sous la forme TRyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
 
 # SetEventMessage - Notice info
 TimeSheetMustBeDraft = La navette doit être en brouillon pour accéder à cette fonctionnalité
@@ -219,7 +203,7 @@ TimeSpentDiff = Attention, tu as consommé trop d'heures de travail du %s au %s 
 GoToTimeSpent = Aller sur le pointage de  temps du mois de %s
 ErrorLinkedElementTimeSheetTimeSpent = Erreur liens entre navette et temps consommé <br> il existe déjà une navette lié au temps consommé affecté à l'utilisateur %s sur la période de %s au %s
 RemoveFileTimeSheet = Supprimer la fiche navette
-ConfirmRemoveFileTimeSheet = Êtes-vous sûr de vouloir supprimer la fiche navette ? La fiche navette sera supprimer ainsi que les liens entre la navette et le temps consommé. <br> De plus la navette retournera au status brouillon.
+ConfirmRemoveFileTimeSheet = Êtes-vous sûr de vouloir supprimer la fiche navette ? La fiche navette sera supprimer ainsi que les liens entre la navette et le temps consommé. <br> De plus la navette retournera au statut brouillon.
 ErrorDateEndTimeSheet = Erreur date fin de navette %s supérieure à la date du jour %s
 ErrorDateTimeSheet = Erreur date début de navette %s supérieure à la date fin de navette %s
 ErrorConfigWorkingHours = Erreur : configuration des heures de travail manquantes
@@ -235,7 +219,7 @@ TimeSheetData = Données configurables de la navette
 PrefillDate = Préremplir la date de début et de fin de la navette
 PrefillDateDescription = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
 TimeSheetAttendants = Navette - Signataires
-StatusDraft = Brouillon ( à valider)
+StatusDraft = Brouillon (à valider)
 Lock = Verrouiller
 Locked = Verrouillée
 Archive = Archiver
@@ -254,6 +238,75 @@ ExpectedWorkedDayMonth = Nombre de jours ouvrés :
 ExpectedWorkedHoursMonthTimeSheet = Heures de travail prévues du %s au %s
 CheckDateEnd = Vérifier la date fin de navette
 CheckDateEndDescription = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
+TimeSheetManagement = Gestion des navettes
+
+
+#
+# TimeSheetDocument - Document Navette
+#
+
+# Trigger - Déclencheur
+TimeSheetDocumentGeneratedWithDolibarr = Document navette générée avec Dolibarr
+
+# Mod Numbering - Modèle de numérotation
+DoliSIRHTimeSheetDocumentNumberingModule = Modèle de numérotation des documents navette de DoliSIRH
+DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TRDyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
+
+# ODT Template - Template ODT
+DoliSIRHTimeSheetDocumentTemplateDocument = Modèle de documents des documents navette de DoliSIRH
+DoliSIRHTimeSheetDocumentCustomTemplate = ODT custom des documents navette
+DoliSIRHTimeSheetDocumentTemplate = ODT par défaut des documents navette
+
+# Data - Donnée
+TimeSheetDocument = Document Navette
+timesheetdocument.odt = Navette ODT
+
+
+
+#
+# Certificate - Certificat et Diplôme
+#
+
+# Right - Droit
+ReadCertificate = Consulter le certificat
+CreateCertificate = Créer/Modifier le certificat
+DeleteCertificate = Supprimer le certificat
+
+# Trigger - Déclencheur
+CertificateCreateTrigger = Certificat %s créé
+CertificateModifyTrigger = Certificat %s modifié
+CertificateDeleteTrigger = Certificat %s supprimé
+
+# Mod Numbering - Modèle de numérotation
+DoliSIRHCertificateNumberingModule = Modèle de numérotation des certificats de DoliSIRH
+DoliSIRHCertificateStandardModel = Renvoie le numéro sous la forme CERTyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
+
+# Data - Donnée
+Certificate = Certificat
+NewCertificate = Nouveau certificat
+ModifyCertificate = Modifer le certificat
+CertificateList = Liste des certificats
+CertificateManagement = Gestion des certificats
+
+#
+# CertificateDocument - Document certificat
+#
+
+# Trigger - Déclencheur
+CertificateDocumentGeneratedWithDolibarr = Document certificat générée avec Dolibarr
+
+# Mod Numbering - Modèle de numérotation
+DoliSIRHCertificateDocumentNumberingModule = Modèle de numérotation des documents certificat de DoliSIRH
+DoliSIRHCertificateDocumentStandardModel = Renvoie le numéro sous la forme CERTDyymm-nnnn où yy est l'année, mm le mois et nnnnn est un compteur séquentiel sans rupture et sans remise à 0.
+
+# ODT Template - Template ODT
+DoliSIRHCertificateDocumentTemplateDocument = Modèle de documents des documents certificat de DoliSIRH
+DoliSIRHCertificateDocumentCustomTemplate = ODT custom des documents certificat
+DoliSIRHCertificateDocumentTemplate = ODT par défaut des documents certificat
+
+# Data - Donnée
+CertificateDocument = Document Certificat
+certificatedocument.odt = Certificat ODT
 
 
 
@@ -322,3 +375,5 @@ SpecialBonus = Prime spéciale
 MinimizeMenu = Réduire le menu
 ErrorFileNotFound = Fichier non trouvé
 NoData = N/A
+YourDocuments = Documents
+WorkingHours = Horaires de travail

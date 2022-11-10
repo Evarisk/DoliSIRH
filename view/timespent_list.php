@@ -492,7 +492,6 @@ print '</tr>' . "\n";
 $i = 0;
 $totalarray = array();
 $totalarray['nbfield'] = 0;
-$totalarray['type'][8]='duration';
 while ($i < ($limit ? min($num, $limit) : $num)) {
 	$obj = $db->fetch_object($resql);
 	if (empty($obj)) {
@@ -559,6 +558,9 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 				if (!empty($val['isameasure']) && $val['isameasure'] == 1) {
 					if (!$i) {
 						$totalarray['pos'][$totalarray['nbfield']] = $key;
+						if ($key == 'task_duration') {
+							$totalarray['type'][$totalarray['nbfield']]='duration';
+						}
 					}
 					if (!isset($totalarray['val'])) {
 						$totalarray['val'] = array();
@@ -566,10 +568,14 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 					if (!isset($totalarray['val'][$key])) {
 						$totalarray['val'][$key] = 0;
 					}
-					$totalarray['val'][$key] += convertSecondToTime($obj->{$key}, 'allhourmin');
 					if ($key == 'thm') {
 						$totalarray['val'][$key] += $value;
-					}
+					} else {
+                        $totalarray['val'][$key] += $obj->{$key};
+                    }
+                    if (!$i) {
+                        $totalarray['total'.$key] = $totalarray['nbfield'];
+                    }
 				}
 			}
 		}
@@ -598,7 +604,25 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 }
 
 // Show total line
-include DOL_DOCUMENT_ROOT . '/core/tpl/list_print_total.tpl.php';
+print '<tr class="liste_total">';
+$i = 0;
+while ($i < $totalarray['nbfield']) {
+    $i++;
+    if ($i == 1) {
+        if ($num < $limit && empty($offset)) {
+            print '<td class="left">'.$langs->trans("Total").'</td>';
+        } else {
+            print '<td class="left">'.$langs->trans("Totalforthispage").'</td>';
+        }
+    } elseif ($totalarray['totaltask_duration'] == $i) {
+        print '<td class="left">'.convertSecondToTime($totalarray['val']['task_duration'], 'allhourmin').'</td>';
+    } elseif ($totalarray['totalthm'] == $i) {
+        print '<td class="right">'.price($totalarray['val']['thm']).'</td>';
+    } else {
+        print '<td></td>';
+    }
+}
+print '</tr>';
 
 // If no record found
 if ($num == 0) {

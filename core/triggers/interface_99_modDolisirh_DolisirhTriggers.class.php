@@ -16,7 +16,7 @@
  */
 
 /**
- * \file    core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+ * \file    core/triggers/interface_99_modDoliSIRH_DoliSIRHTriggers.class.php
  * \ingroup dolisirh
  * \brief   DoliSIRH trigger.
  */
@@ -26,7 +26,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
 /**
  *  Class of triggers for DoliSIRH module
  */
-class InterfaceDolisirhTriggers extends DolibarrTriggers
+class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 {
 	/**
 	 * @var DoliDB Database handler
@@ -44,9 +44,9 @@ class InterfaceDolisirhTriggers extends DolibarrTriggers
 
 		$this->name = preg_replace('/^Interface/i', '', get_class($this));
 		$this->family = "demo";
-		$this->description = "Dolisirh triggers.";
+		$this->description = "DoliSIRH triggers.";
 		// 'development', 'experimental', 'dolibarr' or version
-		$this->version = '1.0.0';
+		$this->version = '1.1.0';
 		$this->picto = 'dolisirh@dolisirh';
 	}
 
@@ -98,7 +98,7 @@ class InterfaceDolisirhTriggers extends DolibarrTriggers
 					$result = $ticket->fetch($object->fk_element);
 					dol_syslog(var_export($ticket, true), LOG_DEBUG);
 					if ($result > 0 && ($ticket->id) > 0) {
-						if (is_array($ticket->array_options) && array_key_exists('options_fk_task', $ticket->array_options) && $ticket->array_options['options_fk_task']>0) {
+						if (is_array($ticket->array_options) && array_key_exists('options_fk_task', $ticket->array_options) && $ticket->array_options['options_fk_task']>0 && !empty(GETPOST('timespent', 'int'))) {
 							require_once DOL_DOCUMENT_ROOT .'/projet/class/task.class.php';
 							$task = new Task($this->db);
 							$result = $task->fetch($ticket->array_options['options_fk_task']);
@@ -327,6 +327,74 @@ class InterfaceDolisirhTriggers extends DolibarrTriggers
 				$actioncomm->code        = 'AC_TIMESHEET_ARCHIVED';
 				$actioncomm->type_code   = 'AC_OTH_AUTO';
 				$actioncomm->label       = $langs->trans('TimeSheetArchivedTrigger');
+				$actioncomm->datep       = $now;
+				$actioncomm->fk_element  = $object->id;
+				$actioncomm->userownerid = $user->id;
+				$actioncomm->percentage  = -1;
+
+				$actioncomm->create($user);
+				break;
+
+			// Certificate
+			case 'CERTIFICATE_CREATE' :
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
+
+				require_once __DIR__ . '/../../class/certificate.class.php';
+
+				$signatory  = new CertificateSignature($this->db);
+				$usertmp    = new User($this->db);
+				$actioncomm = new ActionComm($this->db);
+
+				if (!empty($object->fk_user_assign)) {
+					$usertmp->fetch($object->fk_user_assign);
+					$signatory->setSignatory($object->id, 'timesheet', 'user', array($object->fk_user_assign), 'CERTIFICATE_SOCIETY_ATTENDANT');
+					$signatory->setSignatory($object->id, 'timesheet', 'user', array($usertmp->fk_user), 'CERTIFICATE_SOCIETY_RESPONSIBLE');
+				}
+
+				$now = dol_now();
+
+				$actioncomm->elementtype = 'certificate@dolisirh';
+				$actioncomm->code        = 'AC_CERTIFICATE_CREATE';
+				$actioncomm->type_code   = 'AC_OTH_AUTO';
+				$actioncomm->label       = $langs->trans('CertificateCreateTrigger');
+				$actioncomm->datep       = $now;
+				$actioncomm->fk_element  = $object->id;
+				$actioncomm->userownerid = $user->id;
+				$actioncomm->percentage  = -1;
+
+				$actioncomm->create($user);
+				break;
+
+			case 'CERTIFICATE_MODIFY' :
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
+				$now = dol_now();
+				$actioncomm = new ActionComm($this->db);
+
+				$actioncomm->elementtype = 'certificate@dolisirh';
+				$actioncomm->code        = 'AC_CERTIFICATE_MODIFY';
+				$actioncomm->type_code   = 'AC_OTH_AUTO';
+				$actioncomm->label       = $langs->trans('CertificateModifyTrigger');
+				$actioncomm->datep       = $now;
+				$actioncomm->fk_element  = $object->id;
+				$actioncomm->userownerid = $user->id;
+				$actioncomm->percentage  = -1;
+
+				$actioncomm->create($user);
+				break;
+
+			case 'CERTIFICATE_DELETE' :
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
+				$now = dol_now();
+				$actioncomm = new ActionComm($this->db);
+
+				$actioncomm->elementtype = 'certificate@dolisirh';
+				$actioncomm->code        = 'AC_CERTIFICATE_DELETE';
+				$actioncomm->type_code   = 'AC_OTH_AUTO';
+				$actioncomm->label       = $langs->trans('CertificateDeleteTrigger');
 				$actioncomm->datep       = $now;
 				$actioncomm->fk_element  = $object->id;
 				$actioncomm->userownerid = $user->id;
