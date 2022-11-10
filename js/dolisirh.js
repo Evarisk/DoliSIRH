@@ -676,7 +676,7 @@ window.eoxiaJS.menu.event = function() {
  */
 window.eoxiaJS.menu.toggleMenu = function() {
 
-	var menu = $(this).closest('#id-left').find('a.vmenu, font.vmenudisabled, span.vmenu');
+	var menu = $(this).closest('#id-left').find('a.vmenu, font.vmenudisabled, span.vmenu, a.vsmenu');
 	var elementParent = $(this).closest('#id-left').find('div.vmenu')
 	var text = '';
 
@@ -736,7 +736,7 @@ window.eoxiaJS.menu.setMenu = function() {
 
 		if (localStorage.maximized == 'false') {
 			var text = '';
-			var menu = $('#id-left').find('a.vmenu, font.vmenudisabled, span.vmenu');
+			var menu = $('#id-left').find('a.vmenu, font.vmenudisabled, span.vmenu, a.vsmenu');
 			var elementParent = $(document).find('div.vmenu')
 
 			menu.each(function () {
