@@ -213,6 +213,16 @@ print ajax_constantonoff('DOLISIRH_TIMESHEET_CHECK_DATE_END');
 print '</td>';
 print '</tr>';
 
+print '<tr class="oddeven"><td>';
+print $langs->trans('ShowOnlyTasksWithTimespentOnTimeSheet');
+print "</td><td>";
+print $langs->trans('ShowOnlyTasksWithTimespentOnTimeSheetDescription');
+print '</td>';
+print '<td class="center">';
+print ajax_constantonoff('DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET');
+print '</td>';
+print '</tr>';
+
 print '</table>';
 
 // Page end

@@ -125,12 +125,13 @@ class modDoliSIRH extends DolibarrModules
             $i++ => array('DOLISIRH_TIMESHEET_PREFILL_DATE', 'integer', 1, '', 0, 'current'),
             $i++ => array('DOLISIRH_TIMESHEET_ADD_ATTENDANTS', 'integer', 0, '', 0, 'current'),
             $i++ => array('DOLISIRH_TIMESHEET_CHECK_DATE_END', 'integer', 1, '', 0, 'current'),
+			$i++ => array('DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 0, '', 0, 'current'),
 
 			// CONST TIMESHEET DOCUMENT
             $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON', 'chaine', 'mod_timesheetdocument_standard', '', 0, 'current'),
             $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/timesheetdocument/', '', 0, 'current'),
             $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/timesheetdocument/', '', 0, 'current'),
-            $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument_odt', '', 0, 'current'),
+			$i++ => array('DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument_odt', '', 0, 'current'),
 
 			// CONST CERTIFICATE
             $i++ => array('DOLISIRH_CERTIFICATE_ADDON', 'chaine', 'mod_certificate_standard', '', 0, 'current'),

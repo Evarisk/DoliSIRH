@@ -304,6 +304,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 
             $daystarttoshow   = $object->date_start - 12 * 3600;
             $lastdaytoshow    = $object->date_end - 12 * 3600;
+
             $daysInRange      = num_between_day($object->date_start, $object->date_end, 1);
             $daysInRange      = !empty($daysInRange) ? $daysInRange : 1;
             $daysInRangeArray = array();
@@ -327,7 +328,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 }
             }
 
-            $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($daystarttoshow, $lastdaytoshow, $isavailable, $object->fk_user_assign);
+            $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($daystarttoshow, $lastdaytoshow + 1, $isavailable, $object->fk_user_assign);
 
             $tmparray['employee_firstname'] = $usertmp->firstname;
             $tmparray['employee_lastname']  = $usertmp->lastname;
@@ -435,7 +436,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 }
 
                 // Get all tasks except HR project task
-                $totaltime = array();
+                $totaltimewithoutHRproject = array();
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('times');
@@ -452,24 +453,25 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     if (is_array($tasksArray) && !empty($tasksArray)) {
                         foreach ($tasksArray as $tasksingle) {
                             for ($idw = 1; $idw <= 31; $idw++) {
-                                $tmparray['task_ref'] = $tasksingle->ref;
-                                $tmparray['task_label'] = dol_trunc($tasksingle->label, 16);
+								$tmparray['task_ref'] = $tasksingle->ref;
+								$tmparray['task_label'] = dol_trunc($tasksingle->label, 16);
                                 if (in_array($idw, $daysInRangeArray)) {
-                                    $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
+                                    $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
                                     $tmparray['time' . $idw] = (($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
-                                    $totaltime[$dayInLoop] += $timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')];
+                                    $totaltimewithoutHRproject[$dayInLoop] += $timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')];
                                 } else {
                                     $tmparray['time' . $idw] = '-';
                                 }
                             }
-
-                            $this->setTmparrayVars($tmparray, $listlines);
+							if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET && $timeSpentOnTasks[$tasksingle->id] > 0) {
+								$this->setTmparrayVars($tmparray, $listlines);
+							}
                         }
                         $odfHandler->mergeSegment($listlines);
                     }
                 }
 
-                // Get HR project task
+				// Get HR project task
                 $i = 0;
                 $segment = array(
                     array('csss', 'cps', 'rtts', 'jfs', 'cms',), // Row name
@@ -491,7 +493,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                         if ($foundtagforlines) {
                             for ($idw = 1; $idw <= 31; $idw++) {
                                 if (in_array($idw, $daysInRangeArray)) {
-                                    $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
+                                    $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
                                     $tmparray[$segment[1][$i] . $idw] = (($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
                                     $totaltimehrproject[$dayInLoop] += $timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')];
                                 } else {
@@ -519,7 +521,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 if ($foundtagforlines) {
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
+                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
                             $tmparray['totalrh' . $idw] = (($totaltimehrproject[$dayInLoop] != 0) ? convertSecondToTime($totaltimehrproject[$dayInLoop], (is_float($totaltimehrproject[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['totalrh' . $idw] = '-';
@@ -530,7 +532,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     $odfHandler->mergeSegment($listlines);
                 }
 
-                // Total time spent whithout Project RH
+                // Total time spent without Project RH
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('totaltimes');
@@ -543,8 +545,8 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 if ($foundtagforlines) {
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
-                            $tmparray['totaltime' . $idw] = (($totaltime[$dayInLoop] != 0) ? convertSecondToTime($totaltime[$dayInLoop], (is_float($totaltime[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
+                            $tmparray['totaltime' . $idw] = (($totaltimewithoutHRproject[$dayInLoop] != 0) ? convertSecondToTime($totaltimewithoutHRproject[$dayInLoop], (is_float($totaltimewithoutHRproject[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['totaltime' . $idw] = '-';
                         }
@@ -565,12 +567,13 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     dol_syslog($e->getMessage());
                 }
 
+
                 if ($foundtagforlines) {
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
-                            $totaltimespent[$dayInLoop] = $totaltime[$dayInLoop] + $totaltimehrproject[$dayInLoop];
-                            $tmparray['totaltps' . $idw] = (($totaltime[$dayInLoop] != 0 && $totaltimehrproject[$dayInLoop] != 0) ? convertSecondToTime($totaltimespent[$dayInLoop], (is_float($totaltimespent[$dayInLoop]) ? 'allhourmin' : 'allhour')) : '-');
+                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
+                            $totaltimespent[$dayInLoop] = $totaltimewithoutHRproject[$dayInLoop] + $totaltimehrproject[$dayInLoop];
+                            $tmparray['totaltps' . $idw] = (($totaltimewithoutHRproject[$dayInLoop] != 0 && $totaltimehrproject[$dayInLoop] != 0) ? convertSecondToTime($totaltimespent[$dayInLoop], (is_float($totaltimespent[$dayInLoop]) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['totaltps' . $idw] = '-';
                         }
@@ -595,7 +598,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 if ($foundtagforlines) {
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
+                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
                             $totaltimeplanned[$dayInLoop] = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), $workingHours, $isavailable);
                             $tmparray['ta' . $idw] = (($totaltimeplanned[$dayInLoop]['minutes'] != 0) ? convertSecondToTime($totaltimeplanned[$dayInLoop]['minutes'] * 60, (is_float($totaltimeplanned[$dayInLoop]['minutes']/60) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
@@ -607,7 +610,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     $odfHandler->mergeSegment($listlines);
                 }
 
-                // Diff between time consumed and time spent
+                // Diff between time planned and time spent
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('diffs');
@@ -620,7 +623,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 if ($foundtagforlines) {
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
+                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
                             $difftotaltime[$dayInLoop] = $totaltimeplanned[$dayInLoop]['minutes'] * 60 - $totaltimespent[$dayInLoop];
                             $tmparray['diff' . $idw] = (($difftotaltime[$dayInLoop] != 0) ? convertSecondToTime(abs($difftotaltime[$dayInLoop]), (is_float($difftotaltime[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
