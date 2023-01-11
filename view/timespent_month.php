@@ -77,6 +77,8 @@ $projectid = GETPOSTISSET('id') ? GETPOST('id', 'int', 1) : GETPOST('projectid',
 $hookmanager->initHooks(array('timespentpermonthlist'));
 
 // Security check
+$permissiontoadd = $user->rights->projet->time;
+
 $socid = 0;
 $result = restrictedArea($user, 'projet', $projectid);
 
@@ -349,6 +351,26 @@ if ($action == 'showOnlyTasksWithTimeSpent') {
 	}
 }
 
+if ($action == 'addTimeSpent' && $permissiontoadd) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $taskID    = $data['taskID'];
+    $timestamp = $data['timestamp'];
+    $comment   = $data['comment'];
+    $hour      = (int) $data['hour'];
+    $min       = (int) $data['min'];
+
+    $object->fetch($taskID);
+
+    $object->timespent_date     = $timestamp;
+    $object->timespent_note     = $comment;
+    $object->timespent_duration = ($hour * 3600) + ($min * 60);
+    $object->timespent_fk_user  = $user->id;
+
+    if ($object->timespent_duration > 0) {
+        $object->addTimeSpent($user, false);
+    }
+}
 
 /*
  * View
@@ -653,10 +675,45 @@ if (count($tasksarray) > 0) {
 	//Show tasks lines
 	$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
 
-	doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $timeSpentOnTasks);
+	doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $timeSpentOnTasks); ?>
 
-	if ($conf->use_javascript_ajax) {
+    <!-- TIMESPENT ADD MODAL -->
+	<div class="timespent-add-modal">
+		<div class="wpeo-modal modal-timespent" id="timespent">
+			<div class="modal-container wpeo-modal-event" style="max-width: 300px; max-height: 200px;">
+                <!-- Modal-Content -->
+                <div class="modal-content">
+                    <div class="timespent-container">
+                        <input type="hidden" class="timespent-taskid" value="">
+                        <input type="hidden" class="timespent-timestamp" value="">
+                        <input type="hidden" class="timespent-cell" value="">
+                        <span class="title"><?php echo $langs->trans('Comment'); ?></span>
+                        <textarea class="timespent-comment maxwidth100onsmartphone" name="timespent-comment" rows="4"></textarea>
+                        <div class="title"><?php echo $langs->trans('Duration'); ?></div>
+                        <span><input class="flat maxwidth50 timespent-hour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-min" type="number" placeholder="mn" min="0" max="59"></span>
+                    </div>
+                </div>
+                <!-- Modal-Footer -->
+                <div class="modal-footer">
+                    <?php if ($permissiontoadd > 0) : ?>
+                        <div class="wpeo-button timespent-create button-green" value="">
+                            <i class="fas fa-save"></i>
+                        </div>
+                        <div class="wpeo-button button-grey modal-close">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    <?php else : ?>
+                        <div class="wpeo-button button-grey wpeo-tooltip-event" aria-label="<?php echo $langs->trans('PermissionDenied') ?>">
+                            <i class="fas fa-save"></i>
+                        </div>
+                    <?php endif;?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- TIMESPENT ADD MODAL END -->
 
+    <?php if ($conf->use_javascript_ajax) {
 		//Passed working hours
 		$passed_working_time = loadPassedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable);
 
