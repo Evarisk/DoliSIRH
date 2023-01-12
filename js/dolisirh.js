@@ -742,6 +742,8 @@ window.eoxiaJS.task.createTimeSpent = function ( event ) {
 	let cell    = $('#tablelines3').find('tr[data-taskid=' + taskID + ']').find('td[data-cell=' + element.find('.timespent-cell').val() + ']')
 
 	let timestamp = element.find('.timespent-timestamp').val();
+	let datehour  = element.find('.timespent-datehour').val();
+	let datemin   = element.find('.timespent-datemin').val();
 	let comment   = element.find('.timespent-comment').val();
 	let hour      = element.find('.timespent-hour').val();
 	let min       = element.find('.timespent-min').val();
@@ -759,6 +761,8 @@ window.eoxiaJS.task.createTimeSpent = function ( event ) {
 		data: JSON.stringify({
 			taskID: taskID,
 			timestamp: timestamp,
+			datehour: datehour,
+			datemin: datemin,
 			comment: comment,
 			hour: hour,
 			min: min

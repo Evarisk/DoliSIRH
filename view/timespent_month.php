@@ -356,6 +356,8 @@ if ($action == 'addTimeSpent' && $permissiontoadd) {
 
     $taskID    = $data['taskID'];
     $timestamp = $data['timestamp'];
+    $datehour  = $data['datehour'];
+    $datemin   = $data['datemin'];
     $comment   = $data['comment'];
     $hour      = (int) $data['hour'];
     $min       = (int) $data['min'];
@@ -363,6 +365,10 @@ if ($action == 'addTimeSpent' && $permissiontoadd) {
     $object->fetch($taskID);
 
     $object->timespent_date     = $timestamp;
+    $object->timespent_datehour = $timestamp + ($datehour * 3600) + ($datemin * 60);
+    if ($datehour > 0 || $datemin > 0) {
+        $object->timespent_withhour = 1;
+    }
     $object->timespent_note     = $comment;
     $object->timespent_duration = ($hour * 3600) + ($min * 60);
     $object->timespent_fk_user  = $user->id;
@@ -680,14 +686,16 @@ if (count($tasksarray) > 0) {
     <!-- TIMESPENT ADD MODAL -->
 	<div class="timespent-add-modal">
 		<div class="wpeo-modal modal-timespent" id="timespent">
-			<div class="modal-container wpeo-modal-event" style="max-width: 300px; max-height: 200px;">
+			<div class="modal-container wpeo-modal-event" style="max-width: 300px; max-height: 250px;">
                 <!-- Modal-Content -->
                 <div class="modal-content">
                     <div class="timespent-container">
                         <input type="hidden" class="timespent-taskid" value="">
                         <input type="hidden" class="timespent-timestamp" value="">
                         <input type="hidden" class="timespent-cell" value="">
-                        <span class="title"><?php echo $langs->trans('Comment'); ?></span>
+                        <div class="title"><?php echo $langs->trans('Date'); ?></div>
+                        <span><input class="flat maxwidth50 timespent-datehour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-datemin" type="number" placeholder="mn" min="0" max="59"></span>
+                        <div class="title"><?php echo $langs->trans('Comment'); ?></div>
                         <textarea class="timespent-comment maxwidth100onsmartphone" name="timespent-comment" rows="4"></textarea>
                         <div class="title"><?php echo $langs->trans('Duration'); ?></div>
                         <span><input class="flat maxwidth50 timespent-hour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-min" type="number" placeholder="mn" min="0" max="59"></span>
