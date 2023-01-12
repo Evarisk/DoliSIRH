@@ -265,10 +265,12 @@ window.eoxiaJS.modal.openModal = function ( event ) {
 		let taskID = $(this).attr('data-task-id');
 		let timestamp = $(this).attr('data-timestamp');
 		let cell = $(this).attr('data-cell');
+		let date = $(this).attr('data-date');
 		$('.timespent-taskid').val(taskID);
 		$('.timespent-timestamp').val(timestamp);
 		$('.timespent-cell').val(cell);
 		$('.timespent-create').attr('value', taskID);
+		$('.timespent-date').html(date);
 		$('#timespent').addClass('modal-active');
 	}
 

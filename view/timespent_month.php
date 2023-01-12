@@ -693,7 +693,7 @@ if (count($tasksarray) > 0) {
                         <input type="hidden" class="timespent-taskid" value="">
                         <input type="hidden" class="timespent-timestamp" value="">
                         <input type="hidden" class="timespent-cell" value="">
-                        <div class="title"><?php echo $langs->trans('Date'); ?></div>
+                        <div class="title"><?php echo $langs->trans('Date') . ' : '; ?><span class="timespent-date"></span></div>
                         <span><input class="flat maxwidth50 timespent-datehour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-datemin" type="number" placeholder="mn" min="0" max="59"></span>
                         <div class="title"><?php echo $langs->trans('Comment'); ?></div>
                         <textarea class="timespent-comment maxwidth100onsmartphone" name="timespent-comment" rows="4"></textarea>
