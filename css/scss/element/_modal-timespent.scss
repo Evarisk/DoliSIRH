@@ -1,0 +1,20 @@
+.modal-timespent {
+  box-sizing: border-box;
+  * {
+    box-sizing: border-box;
+  }
+
+  .timespent-comment {
+    width: 100%;
+    border: 1px solid rgba(0,0,0,0.4);
+  }
+  .timespent-date {
+    margin-right: 4px;
+  }
+  .timespent-datehour, .timespent-datemin, .timespent-hour, .timespent-min {
+    max-width: 35px !important;
+  }
+  .modal-footer {
+    padding-top: 0 !important;
+  }
+}

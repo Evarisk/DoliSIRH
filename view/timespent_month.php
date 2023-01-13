@@ -686,7 +686,7 @@ if (count($tasksarray) > 0) {
     <!-- TIMESPENT ADD MODAL -->
 	<div class="timespent-add-modal">
 		<div class="wpeo-modal modal-timespent" id="timespent">
-			<div class="modal-container wpeo-modal-event" style="max-width: 300px; max-height: 250px;">
+			<div class="modal-container wpeo-modal-event" style="max-width: 400px; max-height: 300px;">
                 <!-- Modal-Header -->
                 <div class="modal-header">
                     <div class="modal-close"><i class="fas fa-times"></i></div>
@@ -697,12 +697,20 @@ if (count($tasksarray) > 0) {
                         <input type="hidden" class="timespent-taskid" value="">
                         <input type="hidden" class="timespent-timestamp" value="">
                         <input type="hidden" class="timespent-cell" value="">
-                        <div class="title"><?php echo $langs->trans('Date') . ' : '; ?><span class="timespent-date"></span></div>
-                        <span><input class="flat maxwidth50 timespent-datehour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-datemin" type="number" placeholder="mn" min="0" max="59"></span>
-                        <div class="title"><?php echo $langs->trans('Comment'); ?></div>
-                        <textarea class="timespent-comment maxwidth100onsmartphone" name="timespent-comment" rows="4"></textarea>
-                        <div class="title"><?php echo $langs->trans('Duration'); ?></div>
-                        <span><input class="flat maxwidth50 timespent-hour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-min" type="number" placeholder="mn" min="0" max="59"></span>
+                        <div class="wpeo-gridlayout grid-3">
+                            <div class="gridw-2">
+                                <div class="title"><strong><i class="far fa-calendar-alt"></i> <?php echo $langs->trans('Date'); ?></strong></div>
+                                <span><span class="timespent-date"></span> <input class="flat maxwidth50 timespent-datehour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-datemin" type="number" placeholder="mn" min="0" max="59"></span>
+                            </div>
+                            <div>
+                                <div class="title"><strong><i class="far fa-clock"></i> <?php echo $langs->trans('Duration'); ?></strong></div>
+                                <span><input class="flat maxwidth50 timespent-hour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-min" type="number" placeholder="mn" min="0" max="59"></span>
+                            </div>
+                        </div>
+                        <br/>
+                        <div class="title"><strong><i class="far fa-comment-alt"></i> <?php echo $langs->trans('Comment'); ?></strong></div>
+                        <textarea class="timespent-comment maxwidth100onsmartphone" name="timespent-comment" rows="6"></textarea>
+
                     </div>
                 </div>
                 <!-- Modal-Footer -->
