@@ -710,7 +710,6 @@ if (count($tasksarray) > 0) {
                         <br/>
                         <div class="title"><strong><i class="far fa-comment-alt"></i> <?php echo $langs->trans('Comment'); ?></strong></div>
                         <textarea class="timespent-comment maxwidth100onsmartphone" name="timespent-comment" rows="6"></textarea>
-
                     </div>
                 </div>
                 <!-- Modal-Footer -->
@@ -718,9 +717,6 @@ if (count($tasksarray) > 0) {
                     <?php if ($permissiontoadd > 0) : ?>
                         <div class="wpeo-button timespent-create button-green" value="">
                             <i class="fas fa-save"></i>
-                        </div>
-                        <div class="wpeo-button button-grey modal-close">
-                            <i class="fas fa-times"></i>
                         </div>
                     <?php else : ?>
                         <div class="wpeo-button button-grey wpeo-tooltip-event" aria-label="<?php echo $langs->trans('PermissionDenied') ?>">
