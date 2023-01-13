@@ -29,7 +29,10 @@ if (file_exists('../../main.inc.php')) {
 }
 
 // Libraries
+require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
+
 require_once __DIR__ . '/core/modules/modDoliSIRH.class.php';
+require_once __DIR__ . '/class/dashboarddolisirhstats.class.php';
 
 // Global variables definitions
 global $conf, $db, $langs, $user;
@@ -39,6 +42,10 @@ $langs->load('dolisirh@dolisirh');
 
 // Initialize technical objects
 $dolisirh = new modDoliSIRH($db);
+$stats    = new DashboardDolisirhStats($db);
+
+// Get parameters
+$action = GETPOST('action', 'alpha');
 
 // Security check
 if (!$user->rights->dolisirh->lire) accessforbidden();
@@ -64,6 +71,9 @@ if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) : ?>
         </div>
     </div>
 <?php endif;
+
+require_once __DIR__ . '/core/tpl/dolisirh_dashboard.tpl.php';
+
 // End of page
 llxFooter();
 $db->close();

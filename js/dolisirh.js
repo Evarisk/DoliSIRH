@@ -773,10 +773,11 @@ window.eoxiaJS.task.createTimeSpent = function ( event ) {
 		processData: false,
 		contentType: false,
 		success: function ( resp ) {
-			$('.loader-spin').remove();
-			$('.wpeo-loader').removeClass('wpeo-loader')
-			$('#timespent').removeClass('modal-active')
-			$('#tablelines3').html($(resp).find('#tablelines3'))
+			//$('.loader-spin').remove();
+			//$('.wpeo-loader').removeClass('wpeo-loader')
+			//$('#timespent').removeClass('modal-active')
+			//$('#tablelines3').html($(resp).find('#tablelines3'))
+			location.reload();
 		},
 		error: function ( resp ) {
 		}
@@ -1167,4 +1168,100 @@ window.eoxiaJS.keyEvent.keyup = function( event ) {
 	}
 };
 
+/**
+ * Initialise l'objet "dashboard" ainsi que la méthode "init" obligatoire pour la bibliothèque EoxiaJS.
+ *
+ * @since   1.1.1
+ * @version 1.1.1
+ */
+window.eoxiaJS.dashboard = {};
 
+/**
+ * La méthode appelée automatiquement par la bibliothèque EoxiaJS.
+ *
+ * @since   1.1.1
+ * @version 1.1.1
+ *
+ * @return {void}
+ */
+window.eoxiaJS.dashboard.init = function() {
+	window.eoxiaJS.dashboard.event();
+};
+
+/**
+ * La méthode contenant tous les événements pour les dashboards.
+ *
+ * @since   1.1.1
+ * @version 1.1.1
+ *
+ * @return {void}
+ */
+window.eoxiaJS.dashboard.event = function() {
+	$( document ).on( 'change', '.add-dashboard-widget', window.eoxiaJS.dashboard.addDashBoardInfo );
+	$( document ).on( 'click', '.close-dashboard-widget', window.eoxiaJS.dashboard.closeDashBoardInfo );
+};
+
+/**
+ * Add widget dashboard info
+ *
+ * @since   9.5.0
+ * @version 9.5.0
+ *
+ * @return {void}
+ */
+window.eoxiaJS.dashboard.addDashBoardInfo = function() {
+	var dashboardWidgetForm = document.getElementById('dashBoardForm');
+	var formData = new FormData(dashboardWidgetForm);
+	let dashboardWidgetName = formData.get('boxcombo')
+	let querySeparator = '?';
+	let token = $('.dashboard').find('input[name="token"]').val();
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	$.ajax({
+		url: document.URL + querySeparator + 'action=adddashboardinfo&token='+token,
+		type: "POST",
+		processData: false,
+		data: JSON.stringify({
+			dashboardWidgetName: dashboardWidgetName
+		}),
+		contentType: false,
+		success: function ( resp ) {
+			window.location.reload();
+		},
+		error: function ( ) {
+		}
+	});
+};
+
+/**
+ * Close widget dashboard info
+ *
+ * @since   9.5.0
+ * @version 9.5.0
+ *
+ * @return {void}
+ */
+window.eoxiaJS.dashboard.closeDashBoardInfo = function() {
+	let box = $(this);
+	let dashboardWidgetName = $(this).attr('data-widgetname');
+	let querySeparator = '?';
+	let token = $('.dashboard').find('input[name="token"]').val();
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	$.ajax({
+		url: document.URL + querySeparator + 'action=closedashboardinfo&token='+token,
+		type: "POST",
+		processData: false,
+		data: JSON.stringify({
+			dashboardWidgetName: dashboardWidgetName
+		}),
+		contentType: false,
+		success: function ( resp ) {
+			box.closest('.box-flex-item').fadeOut(400)
+			$('.add-widget-box').attr('style', '')
+			$('.add-widget-box').html($(resp).find('.add-widget-box').children())
+		},
+		error: function ( ) {
+		}
+	});
+};

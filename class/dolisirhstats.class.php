@@ -588,4 +588,92 @@ abstract class DoliSIRHStats
 		}
 		return $result;
 	}
+
+    /**
+     * Load dashboard info dolisirh
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function load_dashboard()
+    {
+        global $langs;
+
+        $timeSpendingInfos = $this->getTimeSpendingInfos();
+
+        $array['widgets'] = array(
+            0 => array(
+                'label'      => array($timeSpendingInfos['planned']['label'], $timeSpendingInfos['passed']['label'], $timeSpendingInfos['spent']['label'], $timeSpendingInfos['difference']['label']),
+                'content'    => array($timeSpendingInfos['planned']['content'], $timeSpendingInfos['passed']['content'], $timeSpendingInfos['spent']['content'], $timeSpendingInfos['difference']['content']),
+                'picto'      => 'fas fa-clock',
+                'widgetName' => $langs->transnoentities('TimeSpent')
+            ),
+        );
+
+        return $array;
+    }
+
+    /**
+     * Get all timespent infos.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getTimeSpendingInfos()
+    {
+        require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
+
+        global $db, $langs, $user;
+
+        $firstdaytoshow = dol_get_first_day(date('Y'), date('m'));
+        $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
+
+        $currentMonth = date('m', dol_now());
+        if ($currentMonth == date('m')) {
+            $lastdaytoshow = dol_now();
+        } else {
+            $lastdaytoshow = $lastdayofmonth;
+        }
+
+        $daysInMonth = num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+
+        $isavailable = array();
+        for ($idw = 0; $idw < $daysInMonth; $idw++) {
+            $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+            if (isDayAvailable($dayInLoop, $user->id)) {
+                $isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
+            } else if (date('N', $dayInLoop) >= 6) {
+                $isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end');
+            } else {
+                $isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
+            }
+        }
+
+        $workinghours = new Workinghours($db);
+        $workingHours = $workinghours->fetchCurrentWorkingHours($user->id, 'user');
+
+        $timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $user->id);
+
+        // Planned working time
+        $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
+        $array['planned']['label']   = $langs->trans("Total") . ' - ' . $langs->trans('ExpectedWorkedHoursMonth', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['planned']['content'] = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00');
+
+        // Hours passed
+        $passed_working_time        = $timeSpendingInfos['passed'];
+        $array['passed']['label']   = $langs->trans("Total") . ' - ' . $langs->trans('SpentWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+        $array['passed']['content'] = (($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00');
+
+        //Worked hours
+        $worked_time               = $timeSpendingInfos['spent'];
+        $array['spent']['label']   = $langs->trans("Total") . ' - ' . $langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+        $array['spent']['content'] = convertSecondToTime($worked_time['total'], 'allhourmin');
+
+        //Difference between passed and worked hours
+        $difftotaltime                  = $timeSpendingInfos['difference'] * 60;
+        $array['difference']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('DiffSpentAndConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+        $array['difference']['content'] = (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00');
+
+        return $array;
+    }
 }
