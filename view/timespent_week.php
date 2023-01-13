@@ -677,6 +677,10 @@ if (count($tasksarray) > 0) {
     <div class="timespent-add-modal">
         <div class="wpeo-modal modal-timespent" id="timespent">
             <div class="modal-container wpeo-modal-event" style="max-width: 300px; max-height: 250px;">
+                <!-- Modal-Header -->
+                <div class="modal-header">
+                    <div class="modal-close"><i class="fas fa-times"></i></div>
+                </div>
                 <!-- Modal-Content -->
                 <div class="modal-content">
                     <div class="timespent-container">
