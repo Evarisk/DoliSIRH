@@ -81,13 +81,13 @@ abstract class DoliSIRHStats
 
 				$this->lastfetchdate[get_class($this).'_'.__FUNCTION__] = $filedate;
 			} else {
-				dol_syslog(get_class($this).'::'.__FUNCTION__." cache file ".$newpathofdestfile." is not found or older than now - cachedelay (".$nowgmt." - ".$cachedelay.") so we can't use it.");
+				dol_syslog(get_class($this).'::'.__FUNCTION__. ' cache file ' .$newpathofdestfile. ' is not found or older than now - cachedelay (' .$nowgmt. ' - ' .$cachedelay.") so we can't use it.");
 			}
 		}
 		// Load file into $data
 		if ($foundintocache) {    // Cache file found and is not too old
 			if (!empty($filedate)) {
-				dol_syslog(get_class($this).'::'.__FUNCTION__." read data from cache file ".$newpathofdestfile." ".$filedate.".");
+				dol_syslog(get_class($this).'::'.__FUNCTION__. ' read data from cache file ' .$newpathofdestfile. ' ' .$filedate. '.');
 			}
 			$data = json_decode(file_get_contents($newpathofdestfile), true);
 		} else {
@@ -115,7 +115,7 @@ abstract class DoliSIRHStats
 
 		// Save cache file
 		if (empty($foundintocache) && ($cachedelay > 0 || $cachedelay == -1)) {
-			dol_syslog(get_class($this).'::'.__FUNCTION__." save cache file ".$newpathofdestfile." onto disk.");
+			dol_syslog(get_class($this).'::'.__FUNCTION__. ' save cache file ' .$newpathofdestfile. ' onto disk.');
 			if (!dol_is_dir($conf->user->dir_temp)) {
 				dol_mkdir($conf->user->dir_temp);
 			}
@@ -174,14 +174,14 @@ abstract class DoliSIRHStats
 
 				$this->lastfetchdate[get_class($this).'_'.__FUNCTION__] = $filedate;
 			} else {
-				dol_syslog(get_class($this).'::'.__FUNCTION__." cache file ".$newpathofdestfile." is not found or older than now - cachedelay (".$nowgmt." - ".$cachedelay.") so we can't use it.");
+				dol_syslog(get_class($this).'::'.__FUNCTION__. ' cache file ' .$newpathofdestfile. ' is not found or older than now - cachedelay (' .$nowgmt. ' - ' .$cachedelay.") so we can't use it.");
 			}
 		}
 
 		// Load file into $data
 		if ($foundintocache) {    // Cache file found and is not too old
 			if (!empty($filedate)) {
-				dol_syslog(get_class($this).'::'.__FUNCTION__." read data from cache file ".$newpathofdestfile." ".$filedate.".");
+				dol_syslog(get_class($this).'::'.__FUNCTION__. ' read data from cache file ' .$newpathofdestfile. ' ' .$filedate. '.');
 			}
 			$data = json_decode(file_get_contents($newpathofdestfile), true);
 		} else {
@@ -209,7 +209,7 @@ abstract class DoliSIRHStats
 
 		// Save cache file
 		if (empty($foundintocache) && ($cachedelay > 0 || $cachedelay == -1)) {
-			dol_syslog(get_class($this).'::'.__FUNCTION__." save cache file ".$newpathofdestfile." onto disk.");
+			dol_syslog(get_class($this).'::'.__FUNCTION__. ' save cache file ' .$newpathofdestfile. ' onto disk.');
 			if (!dol_is_dir($conf->user->dir_temp)) {
 				dol_mkdir($conf->user->dir_temp);
 			}
@@ -222,7 +222,7 @@ abstract class DoliSIRHStats
 				}
 				@chmod($newpathofdestfile, octdec($newmask));
 			} else {
-				dol_syslog("Failed to write cache file", LOG_ERR);
+				dol_syslog('Failed to write cache file', LOG_ERR);
 			}
 			$this->lastfetchdate[get_class($this).'_'.__FUNCTION__] = $nowgmt;
 		}
@@ -270,14 +270,14 @@ abstract class DoliSIRHStats
 
 				$this->lastfetchdate[get_class($this).'_'.__FUNCTION__] = $filedate;
 			} else {
-				dol_syslog(get_class($this).'::'.__FUNCTION__." cache file ".$newpathofdestfile." is not found or older than now - cachedelay (".$nowgmt." - ".$cachedelay.") so we can't use it.");
+				dol_syslog(get_class($this).'::'.__FUNCTION__. ' cache file ' .$newpathofdestfile. ' is not found or older than now - cachedelay (' .$nowgmt. ' - ' .$cachedelay.") so we can't use it.");
 			}
 		}
 
 		// Load file into $data
 		if ($foundintocache) {    // Cache file found and is not too old
 			if (!empty($filedate)) {
-				dol_syslog(get_class($this).'::'.__FUNCTION__." read data from cache file ".$newpathofdestfile." ".$filedate.".");
+				dol_syslog(get_class($this).'::'.__FUNCTION__. ' read data from cache file ' .$newpathofdestfile. ' ' .$filedate. '.');
 			}
 			$data = json_decode(file_get_contents($newpathofdestfile), true);
 		} else {
@@ -305,7 +305,7 @@ abstract class DoliSIRHStats
 
 		// Save cache file
 		if (empty($foundintocache) && ($cachedelay > 0 || $cachedelay == -1)) {
-			dol_syslog(get_class($this).'::'.__FUNCTION__." save cache file ".$newpathofdestfile." onto disk.");
+			dol_syslog(get_class($this).'::'.__FUNCTION__. ' save cache file ' .$newpathofdestfile. ' onto disk.');
 			if (!dol_is_dir($conf->user->dir_temp)) {
 				dol_mkdir($conf->user->dir_temp);
 			}
@@ -318,7 +318,7 @@ abstract class DoliSIRHStats
 				}
 				@chmod($newpathofdestfile, octdec($newmask));
 			} else {
-				dol_syslog("Failed to write cache file", LOG_ERR);
+				dol_syslog('Failed to write cache file', LOG_ERR);
 			}
 			$this->lastfetchdate[get_class($this).'_'.__FUNCTION__] = $nowgmt;
 		}
@@ -444,11 +444,11 @@ abstract class DoliSIRHStats
 		for ($i = 1; $i < 13; $i++) {
 			$month = 'unknown';
 			if ($format == 0) {
-				$month = $langs->transnoentitiesnoconv('MonthShort'.sprintf("%02d", $i));
+				$month = $langs->transnoentitiesnoconv('MonthShort'.sprintf('%02d', $i));
 			} elseif ($format == 1) {
 				$month = $i;
 			} elseif ($format == 2) {
-				$month = $langs->transnoentitiesnoconv('MonthVeryShort'.sprintf("%02d", $i));
+				$month = $langs->transnoentitiesnoconv('MonthVeryShort'.sprintf('%02d', $i));
 			}
 			$data[$i - 1] = array($month, $res[$i]);
 		}
@@ -498,11 +498,11 @@ abstract class DoliSIRHStats
 		for ($i = 1; $i < 13; $i++) {
 			$month = 'unknown';
 			if ($format == 0) {
-				$month = $langs->transnoentitiesnoconv('MonthShort'.sprintf("%02d", $i));
+				$month = $langs->transnoentitiesnoconv('MonthShort'.sprintf('%02d', $i));
 			} elseif ($format == 1) {
 				$month = $i;
 			} elseif ($format == 2) {
-				$month = $langs->transnoentitiesnoconv('MonthVeryShort'.sprintf("%02d", $i));
+				$month = $langs->transnoentitiesnoconv('MonthVeryShort'.sprintf('%02d', $i));
 			}
 			$data[$i - 1] = array($month, $res[$i]);
 		}
@@ -551,11 +551,11 @@ abstract class DoliSIRHStats
 		for ($i = 1; $i < 13; $i++) {
 			$month = 'unknown';
 			if ($format == 0) {
-				$month = $langs->transnoentitiesnoconv('MonthShort'.sprintf("%02d", $i));
+				$month = $langs->transnoentitiesnoconv('MonthShort'.sprintf('%02d', $i));
 			} elseif ($format == 1) {
 				$month = $i;
 			} elseif ($format == 2) {
-				$month = $langs->transnoentitiesnoconv('MonthVeryShort'.sprintf("%02d", $i));
+				$month = $langs->transnoentitiesnoconv('MonthVeryShort'.sprintf('%02d', $i));
 			}
 			$data[$i - 1] = array($month, $res[$i]);
 		}
@@ -600,15 +600,18 @@ abstract class DoliSIRHStats
         global $langs;
 
         $timeSpendingInfos = $this->getTimeSpendingInfos();
+        $TimeSpentReport   = $this->getTimeSpentReport();
 
-        $array['widgets'] = array(
-            0 => array(
-                'label'      => array($timeSpendingInfos['planned']['label'], $timeSpendingInfos['passed']['label'], $timeSpendingInfos['spent']['label'], $timeSpendingInfos['difference']['label']),
-                'content'    => array($timeSpendingInfos['planned']['content'], $timeSpendingInfos['passed']['content'], $timeSpendingInfos['spent']['content'], $timeSpendingInfos['difference']['content']),
+        $array['widgets'] = [
+            0 => [
+                'label'      => [$timeSpendingInfos['planned']['label'], $timeSpendingInfos['passed']['label'], $timeSpendingInfos['spent']['label'], $timeSpendingInfos['difference']['label']],
+                'content'    => [$timeSpendingInfos['planned']['content'], $timeSpendingInfos['passed']['content'], $timeSpendingInfos['spent']['content'], $timeSpendingInfos['difference']['content']],
                 'picto'      => 'fas fa-clock',
                 'widgetName' => $langs->transnoentities('TimeSpent')
-            ),
-        );
+            ],
+        ];
+
+        $array['graphs'] = $TimeSpentReport;
 
         return $array;
     }
@@ -637,15 +640,15 @@ abstract class DoliSIRHStats
 
         $daysInMonth = num_between_day($firstdaytoshow, $lastdayofmonth, 1);
 
-        $isavailable = array();
+        $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
             $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
             if (isDayAvailable($dayInLoop, $user->id)) {
-                $isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
+                $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
             } else if (date('N', $dayInLoop) >= 6) {
-                $isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end');
+                $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
             } else {
-                $isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
+                $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday'];
             }
         }
 
@@ -656,23 +659,95 @@ abstract class DoliSIRHStats
 
         // Planned working time
         $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-        $array['planned']['label']   = $langs->trans("Total") . ' - ' . $langs->trans('ExpectedWorkedHoursMonth', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['planned']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ExpectedWorkedHoursMonth', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
         $array['planned']['content'] = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00');
 
         // Hours passed
         $passed_working_time        = $timeSpendingInfos['passed'];
-        $array['passed']['label']   = $langs->trans("Total") . ' - ' . $langs->trans('SpentWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+        $array['passed']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('SpentWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
         $array['passed']['content'] = (($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00');
 
         //Worked hours
         $worked_time               = $timeSpendingInfos['spent'];
-        $array['spent']['label']   = $langs->trans("Total") . ' - ' . $langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+        $array['spent']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
         $array['spent']['content'] = convertSecondToTime($worked_time['total'], 'allhourmin');
 
         //Difference between passed and worked hours
         $difftotaltime                  = $timeSpendingInfos['difference'] * 60;
         $array['difference']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('DiffSpentAndConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
         $array['difference']['content'] = (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00');
+
+        return $array;
+    }
+
+    /**
+     * Get timespent report on current year.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getTimeSpentReport()
+    {
+        require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
+
+        global $conf, $db, $langs, $user;
+
+        $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START - 2;
+
+        $array['title']  = $langs->transnoentities('TimeSpentReportByYear', date('Y'));
+        $array['picto']  = '<i class="fas fa-clock"></i>';
+        $array['width']  = 800;
+        $array['height'] = 400;
+        $array['type']   = 'bars';
+        $array['labels'] = [
+            0 => [
+                'label' => $langs->transnoentities('ExpectedWorkedHours'),
+                'color' => '#008ECC'
+            ],
+            1 => [
+                'label' => $langs->transnoentities('ConsumedWorkedHours'),
+                'color' => '#49AF4A'
+            ]
+        ];
+
+        $workinghours = new Workinghours($db);
+        $workingHours = $workinghours->fetchCurrentWorkingHours($user->id, 'user');
+
+        for ($i = 1; $i < 13; $i++) {
+            $firstdaytoshow = dol_get_first_day(date('Y'), $i);
+            $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
+
+            $currentMonth = date('m', dol_now());
+            if ($currentMonth == date('m')) {
+                $lastdaytoshow = dol_now();
+            } else {
+                $lastdaytoshow = $lastdayofmonth;
+            }
+
+            $daysInMonth = num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+
+            $isavailable = [];
+            for ($idw = 0; $idw < $daysInMonth; $idw++) {
+                $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+                if (isDayAvailable($dayInLoop, $user->id)) {
+                    $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
+                } else if (date('N', $dayInLoop) >= 6) {
+                    $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
+                } else {
+                    $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday'];
+                }
+            }
+
+            $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
+            $worked_time          = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $user->id);
+
+            $planned_working_time_data = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'fullhour') : 0);
+            $worked_time_data = convertSecondToTime($worked_time['total'], 'fullhour');
+
+            $month = $langs->transnoentitiesnoconv('MonthShort'.sprintf('%02d', $i));
+            $array['data'][($i + $startmonth) % 12] = [$month, $planned_working_time_data, $worked_time_data];
+            ksort($array['data']);
+        }
 
         return $array;
     }

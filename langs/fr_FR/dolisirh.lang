@@ -82,7 +82,7 @@ ConfigDefaultData = Configuration des données par défaut de DOLISIRH
 
 
 #
-# Temps consommé
+# TimeSpent - Temps consommé
 #
 
 # Data - Donnée
@@ -128,17 +128,21 @@ SpendMoreTimeThanPlannedDescription = Cette option permet de pointer plus de tem
 ConsumedTime = Temps pointé
 ExpectedWorkedHoursMonth = Heures de travail prévues au mois de %s
 SpentWorkedHoursMonth = Heures de travail passées du %s au %s
-ConsumedWorkedHoursMonth = Heures de travail consommées du %s au %s
-DiffSpentAndConsumedWorkedHoursMonth = Différence d'heures de travail passées/consommées du %s au %s
+ConsumedWorkedHoursMonth = Heures de travail consommés du %s au %s
+DiffSpentAndConsumedWorkedHoursMonth = Différence d'heures de travail passées/consommés du %s au %s
 WarningShowOnlyFavoriteTasks = Attention, quand l'option 'Afficher uniquement les tâches favorites' est activée, les valeurs totales récupèrent l'ensembles des tâches.
 ExpectedWorkedHoursWeek = Heures de travail prévues du %s au %s
 ThemeDashboardTimeSpent = Thème du Rapport de pointage de temps
 TimeSpentList = Liste des temps consommés
 ShowOnlyTasksWithTimeSpent = Afficher uniquement les tâches avec du temps consommé sur cette période
+ExpectedWorkedHours = Heures de travail prévues
+ConsumedWorkedHours = Heures de travail consommés
+TimeSpentReportByYear = Rapport du temps consommés sur l'année %s
+
 
 
 #
-# Facture récurrente
+# Recurring invoice - Facture récurrente
 #
 
 # Data - Donnée
@@ -197,8 +201,8 @@ ReOpenTimeSheet = Ouvrir à nouveau la navette
 ConfirmReOpenTimeSheet = Êtes-vous sûr de vouloir rouvrir la navette ? La réouverture permet la modification de la navette et l'ajout de nouveaux signataires mais <b>toutes les signatures du document seront perdues</b>.
 LockTimeSheet = Verrouiller la navette
 ConfirmLockTimeSheet = Êtes-vous sûr de vouloir verrouiller la navette ?<br>Ce verrouillage permet de figer les données et la génération du document.
-TimeSpentPerfect = Parfait, toutes tes heures de travail ont été consommées
-TimeSpentMustBeCompleted = Attention, toutes tes heures de travail n'ont pas été consommées du %s au %s <br> Va sur ton pointage de temps du mois de %s pour arranger cela
+TimeSpentPerfect = Parfait, toutes tes heures de travail ont été consommés
+TimeSpentMustBeCompleted = Attention, toutes tes heures de travail n'ont pas été consommés du %s au %s <br> Va sur ton pointage de temps du mois de %s pour arranger cela
 TimeSpentDiff = Attention, tu as consommé trop d'heures de travail du %s au %s <br> Va sur ton pointage de temps du mois de %s pour arranger cela
 GoToTimeSpent = Aller sur le pointage de  temps du mois de %s
 ErrorLinkedElementTimeSheetTimeSpent = Erreur liens entre navette et temps consommé <br> il existe déjà une navette lié au temps consommé affecté à l'utilisateur %s sur la période de %s au %s
