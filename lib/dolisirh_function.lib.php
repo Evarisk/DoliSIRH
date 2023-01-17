@@ -601,10 +601,11 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 		$sql .= " AND t.fk_projet = p.rowid";
 		if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
 			$sql .= " AND elel.fk_target = t.rowid";
-			$sql .= " AND elel.fk_source = " . $user->id;
+			$sql .= " AND elel.fk_source = " . $filteronprojuser;
 		}
+
 		if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
-			$sql .= " AND ptt.fk_task = t.rowid AND ptt.fk_user = " . $user->id;
+			$sql .= " AND ptt.fk_task = t.rowid AND ptt.fk_user = " . $filteronprojuser;
 			if ($timeMode == 'month') {
 				$sql .= " AND MONTH(ptt.task_date) = " . $timeArray['month'];
 			} else if ($timeMode == 'week') {
