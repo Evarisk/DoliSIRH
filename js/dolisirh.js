@@ -773,11 +773,10 @@ window.eoxiaJS.task.createTimeSpent = function ( event ) {
 		processData: false,
 		contentType: false,
 		success: function ( resp ) {
-			//$('.loader-spin').remove();
-			//$('.wpeo-loader').removeClass('wpeo-loader')
-			//$('#timespent').removeClass('modal-active')
-			//$('#tablelines3').html($(resp).find('#tablelines3'))
-			location.reload();
+			$('.loader-spin').remove();
+			$('.wpeo-loader').removeClass('wpeo-loader')
+			$('#timespent').removeClass('modal-active')
+			$('#tablelines3').html($(resp).find('#tablelines3'))
 		},
 		error: function ( resp ) {
 		}

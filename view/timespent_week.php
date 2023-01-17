@@ -788,7 +788,7 @@ if (count($tasksarray) > 0) {
                 $cellCSS = '';
             }
 
-            print '<td class="liste_total '.$idw.' ' . $cellCSS. '" align="center">';
+            print '<td class="liste_total bold '.$idw.' ' . $cellCSS. '" align="center">';
             print '<div class="totalDay'.$idw.'">'.(($timespent_hours_on_day['minutes'] != 0) ? convertSecondToTime($timespent_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
         }
         print '<td></td>';
@@ -856,31 +856,7 @@ print '<input type="hidden" id="numberOfLines" name="numberOfLines" value="'.cou
 
 print $form->buttonsSaveCancel('Save', '');
 
-print '</form>'."\n\n";
-
-$modeinput = 'hours';
-
-if ($conf->use_javascript_ajax) {
-	print "\n<!-- JS CODE TO ENABLE Tooltips on all object with class classfortooltip -->\n";
-	print '<script type="text/javascript">'."\n";
-	print "jQuery(document).ready(function () {\n";
-	print '		jQuery(".timesheetalreadyrecorded").tooltip({
-					show: { collision: "flipfit", effect:\'toggle\', delay:50 },
-					hide: { effect:\'toggle\', delay: 50 },
-					tooltipClass: "mytooltip",
-					content: function () {
-						return \''.dol_escape_js($langs->trans('TimeAlreadyRecorded', $usertoprocess->getFullName($langs))).'\';
-					}
-				});'."\n";
-
-	$idw = 0;
-	while ($idw < 7) {
-		print '    updateTotal('.$idw.',\''.$modeinput.'\');';
-		$idw++;
-	}
-	print "\n});\n";
-	print '</script>';
-}
+print '</form>';
 
 // End of page
 llxFooter();
