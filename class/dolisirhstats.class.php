@@ -692,7 +692,7 @@ abstract class DoliSIRHStats
 
         global $conf, $db, $langs, $user;
 
-        $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START - 2;
+        $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START;
 
         $array['title']  = $langs->transnoentities('TimeSpentReportByFiscalYear');
         $array['picto']  = '<i class="fas fa-clock"></i>';
@@ -745,10 +745,12 @@ abstract class DoliSIRHStats
             $worked_time_data = convertSecondToTime($worked_time['total'], 'fullhour');
 
             $month = $langs->transnoentitiesnoconv('MonthShort'.sprintf('%02d', $i));
-            $array['data'][($i + $startmonth) % 12] = [$month, $planned_working_time_data, $worked_time_data];
-            ksort($array['data']);
+			$array_key = $i - $startmonth;
+			$array_key = $array_key >= 0 ? $array_key : $array_key + 12;
+            $array['data'][$array_key] = [$month, $planned_working_time_data, $worked_time_data];
         }
+		ksort($array['data']);
 
-        return $array;
+		return $array;
     }
 }
