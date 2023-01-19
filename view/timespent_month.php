@@ -673,191 +673,192 @@ if ($conf->use_javascript_ajax) {
 
 // By default, we can edit only tasks we are assigned to
 $restrictviewformytask = ((!isset($conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED)) ? 2 : $conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED);
-if (count($tasksarray) > 0) {
 
-	$j = 0;
-	$level = 0;
+$j = 0;
+$level = 0;
 
-	//Show tasks lines
-	$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
+//Show tasks lines
+$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
 
-	doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $timeSpentOnTasks); ?>
+doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $timeSpentOnTasks); ?>
 
-    <!-- TIMESPENT ADD MODAL -->
-	<div class="timespent-add-modal">
-		<div class="wpeo-modal modal-timespent" id="timespent">
-			<div class="modal-container wpeo-modal-event" style="max-width: 400px; max-height: 300px;">
-                <!-- Modal-Header -->
-                <div class="modal-header">
-                    <div class="modal-close"><i class="fas fa-times"></i></div>
-                </div>
-                <!-- Modal-Content -->
-                <div class="modal-content">
-                    <div class="timespent-container">
-                        <input type="hidden" class="timespent-taskid" value="">
-                        <input type="hidden" class="timespent-timestamp" value="">
-                        <input type="hidden" class="timespent-cell" value="">
-                        <div class="wpeo-gridlayout grid-3">
-                            <div class="gridw-2">
-                                <div class="title"><strong><i class="far fa-calendar-alt"></i> <?php echo $langs->trans('Date'); ?></strong></div>
-                                <span><span class="timespent-date"></span> <input class="flat maxwidth50 timespent-datehour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-datemin" type="number" placeholder="mn" min="0" max="59"></span>
-                            </div>
-                            <div>
-                                <div class="title"><strong><i class="far fa-clock"></i> <?php echo $langs->trans('Duration'); ?></strong></div>
-                                <span><input class="flat maxwidth50 timespent-hour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-min" type="number" placeholder="mn" min="0" max="59"></span>
-                            </div>
+<!-- TIMESPENT ADD MODAL -->
+<div class="timespent-add-modal">
+    <div class="wpeo-modal modal-timespent" id="timespent">
+        <div class="modal-container wpeo-modal-event" style="max-width: 400px; max-height: 300px;">
+            <!-- Modal-Header -->
+            <div class="modal-header">
+                <div class="modal-close"><i class="fas fa-times"></i></div>
+            </div>
+            <!-- Modal-Content -->
+            <div class="modal-content">
+                <div class="timespent-container">
+                    <input type="hidden" class="timespent-taskid" value="">
+                    <input type="hidden" class="timespent-timestamp" value="">
+                    <input type="hidden" class="timespent-cell" value="">
+                    <div class="wpeo-gridlayout grid-3">
+                        <div class="gridw-2">
+                            <div class="title"><strong><i class="far fa-calendar-alt"></i> <?php echo $langs->trans('Date'); ?></strong></div>
+                            <span><span class="timespent-date"></span> <input class="flat maxwidth50 timespent-datehour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-datemin" type="number" placeholder="mn" min="0" max="59"></span>
                         </div>
-                        <br/>
-                        <div class="title"><strong><i class="far fa-comment-alt"></i> <?php echo $langs->trans('Comment'); ?></strong></div>
-                        <textarea class="timespent-comment maxwidth100onsmartphone" name="timespent-comment" rows="6"></textarea>
+                        <div>
+                            <div class="title"><strong><i class="far fa-clock"></i> <?php echo $langs->trans('Duration'); ?></strong></div>
+                            <span><input class="flat maxwidth50 timespent-hour" type="number" placeholder="H" min="0" max="23"> : <input class="flat maxwidth50 timespent-min" type="number" placeholder="mn" min="0" max="59"></span>
+                        </div>
                     </div>
+                    <br/>
+                    <div class="title"><strong><i class="far fa-comment-alt"></i> <?php echo $langs->trans('Comment'); ?></strong></div>
+                    <textarea class="timespent-comment maxwidth100onsmartphone" name="timespent-comment" rows="6"></textarea>
                 </div>
-                <!-- Modal-Footer -->
-                <div class="modal-footer">
-                    <?php if ($permissiontoadd > 0) : ?>
-                        <div class="wpeo-button timespent-create button-green" value="">
-                            <i class="fas fa-save"></i>
-                        </div>
-                    <?php else : ?>
-                        <div class="wpeo-button button-grey wpeo-tooltip-event" aria-label="<?php echo $langs->trans('PermissionDenied') ?>">
-                            <i class="fas fa-save"></i>
-                        </div>
-                    <?php endif;?>
-                </div>
+            </div>
+            <!-- Modal-Footer -->
+            <div class="modal-footer">
+                <?php if ($permissiontoadd > 0) : ?>
+                    <div class="wpeo-button timespent-create button-green" value="">
+                        <i class="fas fa-save"></i>
+                    </div>
+                <?php else : ?>
+                    <div class="wpeo-button button-grey wpeo-tooltip-event" aria-label="<?php echo $langs->trans('PermissionDenied') ?>">
+                        <i class="fas fa-save"></i>
+                    </div>
+                <?php endif;?>
             </div>
         </div>
     </div>
-    <!-- TIMESPENT ADD MODAL END -->
+</div>
+<!-- TIMESPENT ADD MODAL END -->
 
-    <?php if ($conf->use_javascript_ajax) {
-		//Passed working hours
-		$passed_working_time = loadPassedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable);
+<?php if ($conf->use_javascript_ajax) {
+    //Passed working hours
+    $passed_working_time = loadPassedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable);
 
-		print '<tr class="liste_total planned-working-hours">';
-		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
-		print $langs->trans('Total');
+    print '<tr class="liste_total planned-working-hours">';
+    print '<td class="liste_total" colspan="' . ($colspan + $addcolspan) . '">';
+    print $langs->trans('Total');
 
-		print '<span class="opacitymediumbycolor">  - ';
-		print $langs->trans('SpentWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
-		print ' : <strong>'.(($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00').'</strong></span>';
-		print '</td>';
-		if (!empty($arrayfields['timeconsumed']['checked'])) {
-			print '<td class="liste_total right"></td>';
-		}
+    print '<span class="opacitymediumbycolor">  - ';
+    print $langs->trans('SpentWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+    print ' : <strong>' . (($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</strong></span>';
+    print '</td>';
+    if (!empty($arrayfields['timeconsumed']['checked'])) {
+        print '<td class="liste_total right"></td>';
+    }
 
-		//Fill days data
-		for ($idw = 0; $idw < $daysInRange; $idw++) {
-            $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-			$passed_hours_on_day = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable);
+    //Fill days data
+    for ($idw = 0; $idw < $daysInRange; $idw++) {
+        $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+        $passed_hours_on_day = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable);
 
-			$cellCSS = '';
+        $cellCSS = '';
 
-			if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
-				if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
-					$cellCSS = 'onholidayallday';
-				} else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
-					$cellCSS = 'weekend';
-				}
-			} else {
-				$cellCSS = '';
-			}
-			print '<td class="liste_total '.$idw.' ' . $cellCSS. '" align="center">';
-			print (($passed_hours_on_day['minutes'] != 0) ? convertSecondToTime($passed_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
-		}
-        print '<td></td>';
-        print '</tr>';
+        if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
+            if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
+                $cellCSS = 'onholidayallday';
+            } else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
+                $cellCSS = 'weekend';
+            }
+        } else {
+            $cellCSS = '';
+        }
+        print '<td class="liste_total ' . $idw . ' ' . $cellCSS . '" align="center">';
+        print (($passed_hours_on_day['minutes'] != 0) ? convertSecondToTime($passed_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00') . '</div></td>';
+    }
+    print '<td></td>';
+    print '</tr>';
 
-		// Spent hours within dates range
-		print '<tr class="liste_total spent-hours-in-range">';
-		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
-		print $langs->trans('Total');
+    // Spent hours within dates range
+    print '<tr class="liste_total spent-hours-in-range">';
+    print '<td class="liste_total" colspan="' . ($colspan + $addcolspan) . '">';
+    print $langs->trans('Total');
 
-		$timeSpent = loadTimeSpentWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
+    $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
 
-		$totalconsumedtime = $timeSpent['total'];
-		print '<span class="opacitymediumbycolor">  - '.$langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></span>';
-		print '</td>';
-		if (!empty($arrayfields['timeconsumed']['checked'])) {
-			print '<td class="liste_total right"><strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></td>';
-		}
+    $totalconsumedtime = $timeSpent['total'];
+    print '<span class="opacitymediumbycolor">  - ' . $langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')) . ' : <strong>' . convertSecondToTime($totalconsumedtime, 'allhourmin') . '</strong></span>';
+    print '</td>';
+    if (!empty($arrayfields['timeconsumed']['checked'])) {
+        print '<td class="liste_total right"><strong>' . convertSecondToTime($totalconsumedtime, 'allhourmin') . '</strong></td>';
+    }
 
-		for ($idw = 0; $idw < $daysInRange; $idw++) {
-            $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-            $timespent_hours_on_day = loadTimeSpentWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $isavailable, $usertoprocess->id);
+    for ($idw = 0; $idw < $daysInRange; $idw++) {
+        $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+        $timespent_hours_on_day = loadTimeSpentWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $isavailable, $usertoprocess->id);
 
-			$cellCSS = '';
+        $cellCSS = '';
 
-			if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
-				if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
-					$cellCSS = 'onholidayallday';
-				} else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
-					$cellCSS = 'weekend';
-				}
-			} else {
-				$cellCSS = '';
-			}
+        if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
+            if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
+                $cellCSS = 'onholidayallday';
+            } else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
+                $cellCSS = 'weekend';
+            }
+        } else {
+            $cellCSS = '';
+        }
 
-			print '<td class="liste_total bold '.$idw.' ' . $cellCSS. '" align="center">';
-			print '<div class="totalDay'.$idw.'">'.(($timespent_hours_on_day['minutes'] != 0) ? convertSecondToTime($timespent_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00').'</div></td>';
-		}
-        print '<td></td>';
-        print '</tr>';
+        print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS . '" align="center">';
+        print '<div class="totalDay' . $idw . '">' . (($timespent_hours_on_day['minutes'] != 0) ? convertSecondToTime($timespent_hours_on_day['minutes'] * 60, 'allhourmin') : '00:00') . '</div></td>';
+    }
+    print '<td></td>';
+    print '</tr>';
 
-		//Difference between planned & worked hours
-		$timeSpentDiff = loadDifferenceBetweenPassedAndSpentTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
+    //Difference between planned & worked hours
+    $timeSpentDiff = loadDifferenceBetweenPassedAndSpentTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
 
-		print '<tr class="liste_total planned-worked-difference">';
-		print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
-		print $langs->trans('Total');
-		$difftotaltime = $timeSpentDiff * 60;
-		if ($difftotaltime < 0) {
-			$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-		} elseif ($difftotaltime > 0) {
-			$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-		} elseif ($difftotaltime == 0) {
-			$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
-		}
-		print '<span class="opacitymediumbycolor">  - '.$langs->trans('DiffSpentAndConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')).' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></span>';
-		print '</td>';
-		if (!empty($arrayfields['timeconsumed']['checked'])) {
-			print '<td class="liste_total right" style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'"><strong>'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></td>';
-		}
+    print '<tr class="liste_total planned-worked-difference">';
+    print '<td class="liste_total" colspan="' . ($colspan + $addcolspan) . '">';
+    print $langs->trans('Total');
+    $difftotaltime = $timeSpentDiff * 60;
+    if ($difftotaltime < 0) {
+        $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+    } elseif ($difftotaltime > 0) {
+        $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+    } elseif ($difftotaltime == 0) {
+        $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+    }
+    print '<span class="opacitymediumbycolor">  - ' . $langs->trans('DiffSpentAndConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')) . ' : <strong style="color:' . 'rgb(' . $morecss[0] . ',' . $morecss[1] . ',' . $morecss[2] . ')' . '">' . (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00') . '</strong></span>';
+    print '</td>';
+    if (!empty($arrayfields['timeconsumed']['checked'])) {
+        print '<td class="liste_total right" style="color:' . 'rgb(' . $morecss[0] . ',' . $morecss[1] . ',' . $morecss[2] . ')' . '"><strong>' . (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00') . '</strong></td>';
+    }
 
-		for ($idw = 0; $idw < $daysInRange; $idw++) {
-            $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-			$timeSpentDiffThisDay = loadDifferenceBetweenPassedAndSpentTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
+    for ($idw = 0; $idw < $daysInRange; $idw++) {
+        $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+        $timeSpentDiffThisDay = loadDifferenceBetweenPassedAndSpentTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
 
-			if ($timeSpentDiffThisDay < 0) {
-				$morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-			} elseif ($timeSpentDiffThisDay > 0) {
-				$morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-			} elseif ($timeSpentDiffThisDay == 0) {
-				$morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
-			}
+        if ($timeSpentDiffThisDay < 0) {
+            $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+        } elseif ($timeSpentDiffThisDay > 0) {
+            $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+        } elseif ($timeSpentDiffThisDay == 0) {
+            $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+        }
 
-			$cellCSS = '';
+        $cellCSS = '';
 
-			if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
+        if (!$isavailable[$dayInLoop]['morning'] && !$isavailable[$dayInLoop]['afternoon']) {
 
-				if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
-					$cellCSS = 'onholidayallday';
-				} else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
-					$cellCSS = 'weekend';
-				}
-			} else {
-				$cellCSS = '';
-			}
+            if ($isavailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
+                $cellCSS = 'onholidayallday';
+            } else if ($isavailable[$dayInLoop]['morning_reason'] == 'week_end') {
+                $cellCSS = 'weekend';
+            }
+        } else {
+            $cellCSS = '';
+        }
 
-			print '<td class="liste_total bold '.$idw. ' ' . $cellCSS;
-			print '" align="center" style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'"><div class="'.$idw.'">';
-			print (($timeSpentDiffThisDay != 0) ? convertSecondToTime(abs($timeSpentDiffThisDay*60), 'allhourmin') : '00:00').'</div></td>';
-		}
-        print '<td></td>';
-        print '</tr>';
-	}
-} else {
-	print '<tr><td colspan="15"><span class="opacitymedium">'.$langs->trans('NoAssignedTasks').'</span></td></tr>';
+        print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS;
+        print '" align="center" style="color:' . 'rgb(' . $morecss[0] . ',' . $morecss[1] . ',' . $morecss[2] . ')' . '"><div class="' . $idw . '">';
+        print (($timeSpentDiffThisDay != 0) ? convertSecondToTime(abs($timeSpentDiffThisDay * 60), 'allhourmin') : '00:00') . '</div></td>';
+    }
+    print '<td></td>';
+    print '</tr>';
 }
+
+if (count($tasksarray) == 0) {
+    print '<tr><td colspan="' . ($colspan + 2 + $daysInRange) . '"><span class="opacitymedium">'.$langs->trans('NoAssignedTasks').'</span></td></tr>';
+}
+
 print '</table>';
 print '</div>';
 

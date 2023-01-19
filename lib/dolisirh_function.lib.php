@@ -612,7 +612,7 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 			if ($timeMode == 'month') {
 				$sql .= " AND MONTH(ptt.task_date) = " . $timeArray['month'];
 			} else if ($timeMode == 'week') {
-				$sql .= " AND WEEK(ptt.task_date) = " . $timeArray['week'];
+				$sql .= " AND WEEK(ptt.task_date, 7) = " . $timeArray['week'];
 			} else if ($timeMode == 'day') {
 				$sql .= " AND DAY(ptt.task_date) = " . $timeArray['day'];
 			}
