@@ -694,7 +694,7 @@ abstract class DoliSIRHStats
 
         $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START - 2;
 
-        $array['title']  = $langs->transnoentities('TimeSpentReportByYear', date('Y'));
+        $array['title']  = $langs->transnoentities('TimeSpentReportByFiscalYear');
         $array['picto']  = '<i class="fas fa-clock"></i>';
         $array['width']  = 800;
         $array['height'] = 400;

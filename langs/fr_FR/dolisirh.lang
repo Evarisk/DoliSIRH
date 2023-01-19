@@ -128,16 +128,16 @@ SpendMoreTimeThanPlannedDescription = Cette option permet de pointer plus de tem
 ConsumedTime = Temps pointé
 ExpectedWorkedHoursMonth = Heures de travail prévues au mois de %s
 SpentWorkedHoursMonth = Heures de travail passées du %s au %s
-ConsumedWorkedHoursMonth = Heures de travail consommés du %s au %s
-DiffSpentAndConsumedWorkedHoursMonth = Différence d'heures de travail passées/consommés du %s au %s
+ConsumedWorkedHoursMonth = Heures de travail consommées du %s au %s
+DiffSpentAndConsumedWorkedHoursMonth = Différence d'heures de travail passées/consommées du %s au %s
 WarningShowOnlyFavoriteTasks = Attention, quand l'option 'Afficher uniquement les tâches favorites' est activée, les valeurs totales récupèrent l'ensembles des tâches.
 ExpectedWorkedHoursWeek = Heures de travail prévues du %s au %s
 ThemeDashboardTimeSpent = Thème du Rapport de pointage de temps
 TimeSpentList = Liste des temps consommés
 ShowOnlyTasksWithTimeSpent = Afficher uniquement les tâches avec du temps consommé sur cette période
 ExpectedWorkedHours = Heures de travail prévues
-ConsumedWorkedHours = Heures de travail consommés
-TimeSpentReportByYear = Rapport du temps consommés sur l'année %s
+ConsumedWorkedHours = Heures de travail consommées
+TimeSpentReportByFiscalYear = Rapport du temps consommé sur l'exercice fiscal
 
 
 
