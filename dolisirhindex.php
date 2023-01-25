@@ -41,14 +41,17 @@ global $conf, $db, $langs, $user;
 $langs->load('dolisirh@dolisirh');
 
 // Initialize technical objects
-$dolisirh = new modDoliSIRH($db);
-$stats    = new DashboardDolisirhStats($db);
+$modDoliSIRH = new modDoliSIRH($db);
+$stats       = new DashboardDolisirhStats($db);
 
 // Get parameters
 $action = GETPOST('action', 'alpha');
 
 // Security check
-if (!$user->rights->dolisirh->lire) accessforbidden();
+$permissiontoread = $user->rights->dolisirh->read;
+if (empty($conf->dolisirh->enabled) || !$permissiontoread) {
+    accessforbidden();
+}
 
 /*
  * View
@@ -59,9 +62,9 @@ $title    = $langs->trans('DoliSIRHArea');
 $morejs   = ['/dolisirh/js/dolisirh.js'];
 $morecss  = ['/dolisirh/css/dolisirh.css'];
 
-llxHeader('', $title . ' ' . $dolisirh->version, $help_url, '', 0, 0, $morejs, $morecss);
+llxHeader('', $title . ' ' . $modDoliSIRH->version, $help_url, '', 0, 0, $morejs, $morecss);
 
-print load_fiche_titre($title . ' ' . $dolisirh->version, '', 'dolisirh_red.png@dolisirh');
+print load_fiche_titre($title . ' ' . $modDoliSIRH->version, '', 'dolisirh_red.png@dolisirh');
 
 if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) : ?>
     <div class="wpeo-notice notice-info">

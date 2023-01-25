@@ -323,7 +323,7 @@ class ActionsDoliSIRH
 	 * @param  object $object     The object to process
 	 * @return int                0 < on error, 0 on success, 1 to replace standard code
 	 */
-	public function addMoreActionsButtons(array $parameters, object $object): int
+	public function addMoreActionsButtons(array $parameters, $object): int
 	{
 		global $langs;
 
@@ -725,7 +725,7 @@ class ActionsDoliSIRH
 	 * @param string $action     Current action (if set). Generally create or edit or null
 	 * @return void
 	 */
-	public function formObjectOptions(array $parameters, object $object, string $action)
+	public function formObjectOptions(array $parameters, $object, string $action)
 	{
 		global $conf, $langs;
 
@@ -790,7 +790,7 @@ class ActionsDoliSIRH
 	 * @param object $object     Object
 	 * @return void
 	 */
-	public function afterCreationOfRecurringInvoice(array $parameters, object $object)
+	public function afterCreationOfRecurringInvoice(array $parameters, $object)
 	{
 		if (in_array($parameters['currentcontext'], array('cron', 'cronjoblist'))) {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
