@@ -517,7 +517,7 @@ class ActionsDoliSIRH
 
 				if (!empty($task_id) && $task_id > 0) { ?>
 					<script>
-						jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($task->getNomUrl(1, 'blank', 'task', 1)) ?>);
+						  jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($task->getNomUrl(1, 'blank', 'task', 1)) ?>);
 					</script>
 				<?php }
 			}
@@ -580,7 +580,7 @@ class ActionsDoliSIRH
 					}
 					?>
 					<script>
-						jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').html(jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').html()  + ' ' + <?php echo json_encode($favoriteStar) ?>  )
+						jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').first().html(jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').first().html()  + ' ' + <?php echo json_encode($favoriteStar) ?>  )
 					</script>
 					<?php
 				}
