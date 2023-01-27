@@ -52,7 +52,7 @@ class modDoliSIRH extends DolibarrModules
 		$this->descriptionlong = 'DoliSIRHDescriptionLong';
 		$this->editor_name     = 'Evarisk';
 		$this->editor_url      = 'https://evarisk.com';
-		$this->version         = '1.1.0';
+		$this->version         = '1.2.0';
 		$this->const_name      = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto           = 'dolisirh_red@dolisirh';
 
@@ -111,7 +111,6 @@ class modDoliSIRH extends DolibarrModules
 		$this->const = array(
 			// CONST CONFIGURATION
 			$i++ => array('DOLISIRH_DEFAUT_TICKET_TIME', 'chaine', '15', 'Default Time', 0, 'current'),
-            $i++ => array('DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 'integer', 1, '', 0, 'current'),
             $i++ => array('DOLISIRH_HR_PROJECT', 'integer', 0, '', 0, 'current'),
             $i++ => array('DOLISIRH_TIMESPENT_BOOKMARK_SET', 'integer', 0, '', 0, 'current'),
             $i++ => array('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR', 'chaine', '#FF0000', '', 0, 'current'),
@@ -120,12 +119,15 @@ class modDoliSIRH extends DolibarrModules
             $i++ => array('DOLISIRH_PRODUCT_SERVICE_SET', 'integer', 0, '', 0, 'current'),
             $i++ => array('DOLISIRH_HR_PROJECT_SET', 'integer', 0, '', 0, 'current'),
 
-			// CONST TIME SHEET
+            // CONST TIME SPENT
+            $i++ => array('DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 'integer', 0, '', 0, 'current'),
+            $i++ => array('DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 0, '', 0, 'current'),
+
+            // CONST TIME SHEET
             $i++ => array('DOLISIRH_TIMESHEET_ADDON', 'chaine', 'mod_timesheet_standard', '', 0, 'current'),
             $i++ => array('DOLISIRH_TIMESHEET_PREFILL_DATE', 'integer', 1, '', 0, 'current'),
             $i++ => array('DOLISIRH_TIMESHEET_ADD_ATTENDANTS', 'integer', 0, '', 0, 'current'),
             $i++ => array('DOLISIRH_TIMESHEET_CHECK_DATE_END', 'integer', 1, '', 0, 'current'),
-			$i++ => array('DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 0, '', 0, 'current'),
 
 			// CONST TIMESHEET DOCUMENT
             $i++ => array('DOLISIRH_TIMESHEETDOCUMENT_ADDON', 'chaine', 'mod_timesheetdocument_standard', '', 0, 'current'),

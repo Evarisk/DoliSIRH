@@ -328,6 +328,9 @@ function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $isavailable, $us
 	if (is_array($timeSpentList) && !empty($timeSpentList)) {
 		foreach ($timeSpentList as $timeSpent) {
             if ($isavailable[$timeSpent->timespent_date]['morning'] && $isavailable[$timeSpent->timespent_date]['afternoon']) {
+                if (!empty($timeSpent->timespent_note)) {
+                    $timeSpentOnTasks[$timeSpent->fk_task]['comments'][dol_print_date($timeSpent->timespent_date, 'day')][$timeSpent->timespent_id] = $timeSpent->timespent_note;
+                }
                 $timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
             }
 		}
@@ -601,14 +604,15 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 		$sql .= " AND t.fk_projet = p.rowid";
 		if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
 			$sql .= " AND elel.fk_target = t.rowid";
-			$sql .= " AND elel.fk_source = " . $user->id;
+			$sql .= " AND elel.fk_source = " . $filteronprojuser;
 		}
+
 		if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
-			$sql .= " AND ptt.fk_task = t.rowid AND ptt.fk_user = " . $user->id;
+			$sql .= " AND ptt.fk_task = t.rowid AND ptt.fk_user = " . $filteronprojuser;
 			if ($timeMode == 'month') {
 				$sql .= " AND MONTH(ptt.task_date) = " . $timeArray['month'];
 			} else if ($timeMode == 'week') {
-				$sql .= " AND WEEK(ptt.task_date) = " . $timeArray['week'];
+				$sql .= " AND WEEK(ptt.task_date, 7) = " . $timeArray['week'];
 			} else if ($timeMode == 'day') {
 				$sql .= " AND DAY(ptt.task_date) = " . $timeArray['day'];
 			}
@@ -1305,9 +1309,18 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 
 					$alreadyspent = '';
 					if ($totalforeachday[$tmpday] > 0) {
-						$alreadyspent = convertSecondToTime($totalforeachday[$tmpday], 'allhourmin');
-					}
-					$alttitle = $langs->trans("AddHereTimeSpentForDay", $tmparray['day'], $tmparray['mon']);
+                        $timeSpentComments = $timeSpentOnTasks[$lines[$i]->id]['comments'][dol_print_date($tmpday, 'day')];
+                        if (is_array($timeSpentComments) && !empty($timeSpentComments)) {
+                            $text_tooltip = '';
+                            foreach ($timeSpentComments as $timeSpentComment) {
+                                $text_tooltip .= $langs->trans('Comment') . ' : ' . $timeSpentComment . ' - ';
+                            }
+                        } else {
+                            $text_tooltip = $langs->trans('TimeSpentAddWithNoComment');
+                        }
+                        $alreadyspent = convertSecondToTime($totalforeachday[$tmpday], 'allhourmin');
+                    }
+                    $alttitle = $langs->trans("AddHereTimeSpentForDay", $tmparray['day'], $tmparray['mon']);
 
 //                    global $numstartworkingday, $numendworkingday;
 //                    $cssweekend = '';
@@ -1321,15 +1334,12 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 						$disabledtaskday = 1;
 					}
 
-					$tableCell = '<td class="center '.$idw. ' ' .$cellCSS.'">';
+					$tableCell = '<td class="center '.$idw. ' ' .$cellCSS.'" data-cell="' . $idw . '">';
 					$placeholder = '';
 					if ($alreadyspent) {
-						$tableCell .= '<span class="timesheetalreadyrecorded" title="texttoreplace"><input type="text" class="center smallpadd" size="2" disabled id="timespent['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" value="'.$alreadyspent.'"></span>';
+						$tableCell .= '<span class="timesheetalreadyrecorded wpeo-tooltip-event" aria-label="' . $text_tooltip . '"><input type="text" class="center smallpadd" size="2" disabled id="timespent['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" value="'.$alreadyspent.'"></span>';
 					}
-					$tableCell .= '<input type="text" alt="'.($disabledtaskday ? '' : $alttitle).'" title="'.($disabledtaskday ? '' : $alttitle).'" '.($disabledtaskday ? 'disabled' : $placeholder).' class="center smallpadd" size="2" id="timeadded['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" value="" cols="2"  maxlength="5"';
-					$tableCell .= ' onkeypress="return regexEvent(this,event,\'timeChar\')"';
-					$tableCell .= ' onkeyup="updateTotal('.$idw.',\''.$modeinput.'\')"';
-					$tableCell .= ' onblur="regexEvent(this,event,\''.$modeinput.'\'); updateTotal('.$idw.',\''.$modeinput.'\')" />';
+					$tableCell .= '<input type="text" alt="'.($disabledtaskday ? '' : $alttitle).'" title="'.($disabledtaskday ? '' : $alttitle).'" '.($disabledtaskday ? 'disabled' : $placeholder).' class="center smallpadd timespent modal-open" size="2" id="timeadded['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $tmpday . ' data-date=' . dol_print_date($tmpday, 'day') . ' data-cell=' . $idw . ' value="" cols="2"  maxlength="5"';
 					$tableCell .= '</td>';
 					print $tableCell;
 				}

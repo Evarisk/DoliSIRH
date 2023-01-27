@@ -1,4 +1,73 @@
 @charset "UTF-8";
+.modal-timespent {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.modal-timespent * {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.modal-timespent .timespent-comment {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+.modal-timespent .timespent-date {
+  margin-right: 4px;
+}
+.modal-timespent .timespent-datehour, .modal-timespent .timespent-datemin, .modal-timespent .timespent-hour, .modal-timespent .timespent-min {
+  max-width: 35px !important;
+}
+.modal-timespent .modal-footer {
+  padding-top: 0 !important;
+}
+
+.box-flex-item .info-box {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+}
+.box-flex-item .info-box .info-box-icon {
+  height: auto !important;
+  border-radius: 0 0 0 15px;
+}
+.box-flex-item .info-box .info-box-content {
+  margin-left: 0 !important;
+}
+.box-flex-item .info-box-icon {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.box-flex-item .info-box-icon img, .box-flex-item .info-box-icon i {
+  margin: auto;
+}
+.box-flex-item .close-dashboard-info, .box-flex-item .close-dashboard-widget {
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 50%;
+  background: #e3e3e3;
+  -webkit-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+}
+.box-flex-item .close-dashboard-info:hover, .box-flex-item .close-dashboard-widget:hover {
+  cursor: pointer;
+  background: #e05353;
+  color: #fff;
+  -webkit-transform: scale(1.2);
+  transform: scale(1.2);
+}
+.box-flex-item .close-dashboard-info > [class*=fa], .box-flex-item .close-dashboard-widget > [class*=fa] {
+  display: inline-block;
+  line-height: 20px;
+}
+
 /*--------------------------------------------------------------
 	Module : Dropdown
 	Version : 1.0.0

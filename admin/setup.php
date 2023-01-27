@@ -156,6 +156,36 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             $task->date_c     = dol_now();
             $task->create($user);
 
+            $task->fk_project = $result;
+            $task->ref        = $modTask->getNextValue('InternalMeeting', null);;
+            $task->label      = $langs->transnoentities('InternalMeeting');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
+            $task->fk_project = $result;
+            $task->ref        = $modTask->getNextValue('', null);;
+            $task->label      = $langs->trans('InternalTraining');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
+            $task->fk_project = $result;
+            $task->ref        = $modTask->getNextValue('', null);;
+            $task->label      = $langs->trans('ExternalTraining');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
+            $task->fk_project = $result;
+            $task->ref        = $modTask->getNextValue('', null);;
+            $task->label      = $langs->transnoentities('OvertimeHours');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
+            $task->fk_project = $result;
+            $task->ref        = $modTask->getNextValue('', null);;
+            $task->label      = $langs->trans('Miscellaneous');
+            $task->date_c     = dol_now();
+            $task->create($user);
+
             $taskarray = $task->getTasksArray(0, 0, $result);
 
             if (!empty($allusers) && is_array($allusers)) {

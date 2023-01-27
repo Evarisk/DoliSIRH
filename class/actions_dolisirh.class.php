@@ -323,7 +323,7 @@ class ActionsDoliSIRH
 	 * @param  object $object     The object to process
 	 * @return int                0 < on error, 0 on success, 1 to replace standard code
 	 */
-	public function addMoreActionsButtons(array $parameters, object $object): int
+	public function addMoreActionsButtons(array $parameters, $object): int
 	{
 		global $langs;
 
@@ -517,7 +517,7 @@ class ActionsDoliSIRH
 
 				if (!empty($task_id) && $task_id > 0) { ?>
 					<script>
-						jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($task->getNomUrl(1, 'blank', 'task', 1)) ?>);
+						  jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($task->getNomUrl(1, 'blank', 'task', 1)) ?>);
 					</script>
 				<?php }
 			}
@@ -580,7 +580,7 @@ class ActionsDoliSIRH
 					}
 					?>
 					<script>
-						jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').html(jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').html()  + ' ' + <?php echo json_encode($favoriteStar) ?>  )
+						jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').first().html(jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').first().html()  + ' ' + <?php echo json_encode($favoriteStar) ?>  )
 					</script>
 					<?php
 				}
@@ -725,7 +725,7 @@ class ActionsDoliSIRH
 	 * @param string $action     Current action (if set). Generally create or edit or null
 	 * @return void
 	 */
-	public function formObjectOptions(array $parameters, object $object, string $action)
+	public function formObjectOptions(array $parameters, $object, string $action)
 	{
 		global $conf, $langs;
 
@@ -790,7 +790,7 @@ class ActionsDoliSIRH
 	 * @param object $object     Object
 	 * @return void
 	 */
-	public function afterCreationOfRecurringInvoice(array $parameters, object $object)
+	public function afterCreationOfRecurringInvoice(array $parameters, $object)
 	{
 		if (in_array($parameters['currentcontext'], array('cron', 'cronjoblist'))) {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
