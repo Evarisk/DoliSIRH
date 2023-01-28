@@ -1204,6 +1204,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 				$taskstatic->id = $lines[$i]->id;
 				$taskstatic->ref = ($lines[$i]->ref ?: $lines[$i]->id);
 				$taskstatic->label = $lines[$i]->label;
+                $taskstatic->planned_workload = $lines[$i]->planned_workload;
 				$taskstatic->date_start = $lines[$i]->date_start;
 				$taskstatic->date_end = $lines[$i]->date_end;
 
@@ -1250,6 +1251,14 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 				} else {
 					print ' <span class="far fa-star"></span>';
 				}
+                if ($taskstatic->planned_workload != '') {
+                    $tmparray = $taskstatic->getSummaryOfTimeSpent();
+                    if ($tmparray['total_duration'] > 0 && !empty($taskstatic->planned_workload)) {
+                        print ' ' . round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2).' %';
+                    } else {
+                        print ' 0 %';
+                    }
+                }
 				// Label task
 				print '<br>';
 				print '<span class="opacitymedium" title="' . $taskstatic->label . '">' . dol_trunc($taskstatic->label, '64') . '</span>';
