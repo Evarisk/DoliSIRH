@@ -620,6 +620,7 @@ window.eoxiaJS.task.event = function() {
 	$( document ).on( 'click', '.show-only-favorite-tasks', window.eoxiaJS.task.showOnlyFavoriteTasks );
 	$( document ).on( 'click', '.show-only-tasks-with-timespent', window.eoxiaJS.task.showOnlyTasksWithTimeSpent );
 	$( document ).on( 'click', '.timespent-create', window.eoxiaJS.task.createTimeSpent );
+	$( document ).on( 'click', '.toggleTaskFavorite', window.eoxiaJS.task.toggleTaskFavorite );
 };
 
 /**
@@ -782,6 +783,35 @@ window.eoxiaJS.task.createTimeSpent = function ( event ) {
 		}
 	});
 };
+
+window.eoxiaJS.task.toggleTaskFavorite = function () {
+	let taskID = $(this).attr('value');
+	let token = $('form[name="addtime"]').find('input[name="token"]').val();
+	let querySeparator = '?';
+
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	$.ajax({
+		url: document.URL + querySeparator + 'action=toggleTaskFavorite&taskId=' + taskID + '&token=' + token,
+		type: "POST",
+		processData: false,
+		contentType: false,
+		success: function () {
+			let taskContainer = $('#' + taskID)
+
+			if (taskContainer.hasClass('fas')) {
+				taskContainer.removeClass('fas')
+				taskContainer.addClass('far')
+			} else if (taskContainer.hasClass('far')) {
+				taskContainer.removeClass('far')
+				taskContainer.addClass('fas')
+			}
+		},
+		error: function (resp) {
+
+		}
+	});
+}
 
 
 /**

@@ -1246,10 +1246,13 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 					print '<div class="marginleftonly">';
 				}
 				print $taskstatic->getNomUrl(1, 'withproject', 'time');
+                if (GETPOST('action') == 'toggleTaskFavorite') {
+                    toggleTaskFavorite(GETPOST('id'), $fuser->id);
+                }
 				if (isTaskFavorite($taskstatic->id, $fuser->id)) {
-					print ' <span class="fas fa-star"></span>';
+					print ' <span class="fas fa-star toggleTaskFavorite" id="'. $taskstatic->id .'" value="'. $taskstatic->id .'"></span>';
 				} else {
-					print ' <span class="far fa-star"></span>';
+					print ' <span class="far fa-star toggleTaskFavorite" id="'. $taskstatic->id .'" value="'. $taskstatic->id .'"></span>';
 				}
                 if ($taskstatic->planned_workload != '') {
                     $tmparray = $taskstatic->getSummaryOfTimeSpent();
