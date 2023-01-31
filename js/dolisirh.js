@@ -1202,14 +1202,20 @@ window.eoxiaJS.keyEvent.event = function() {
 /**
  * Action modal close & validation with key events
  *
- * @since   1.4.0
- * @version 1.4.0
+ * @since   1.2.0
+ * @version 1.2.1
  *
  * @return {void}
  */
-window.eoxiaJS.keyEvent.keyup = function( event ) {
-	if ( 'Escape' === event.key  ) {
+window.eoxiaJS.keyEvent.keyup = function(event) {
+	if ('Escape' === event.key) {
 		$(this).find('.modal-active .modal-close .fas.fa-times').first().click();
+	}
+	if ('Enter' === event.key)  {
+		$(this).find('.button_search').click();
+	}
+	if (event.shiftKey && 'Enter' === event.key)  {
+		$(this).find('.button_removefilter').click();
 	}
 };
 
