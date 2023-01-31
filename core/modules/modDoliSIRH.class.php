@@ -482,6 +482,7 @@ class modDoliSIRH extends DolibarrModules
 		$extra_fields->update('fk_task', 'Tâche', 'sellist', '', 'ticket', 0, 0, 100, $param, 1, 1, '1', '','','',0);
 		$extra_fields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, $param, 1, 1, '1', '','',0); //extrafields ticket
 		unset($param);
+        $extra_fields->addExtraField('timespent', $langs->trans('MarkYourTime'), 'boolean', 100, null, 'actioncomm', 0, 0, null, 'a:1:{s:7:"options";a:1:{s:0:"";N;}}', 1, '$user->rights->projet->time', '3', '','',0, 'dolisirh@dolisirh', '$conf->dolisirh->enabled'); //extrafields ticket
 
 		// Document models
 		delDocumentModel('timesheetdocument_odt', 'timesheetdocument');

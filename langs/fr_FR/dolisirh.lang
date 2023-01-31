@@ -142,6 +142,10 @@ ShowOnlyTasksWithTimeSpent = Afficher uniquement les tâches avec du temps conso
 ExpectedWorkedHours = Heures de travail prévues
 ConsumedWorkedHours = Heures de travail consommées
 TimeSpentReportByFiscalYear = Rapport du temps consommé sur l'exercice fiscal
+MarkYourTime = Pointer son temps
+MissingTaskWithTimeSpentOption = Erreur : il faut choisir une tâche pour pointer son temps
+MissingEndDateWithTimeSpentOption = Erreur : il faut choisir une date de fin d'événement pour pointer son temps
+ErrorTimeSpentDurationCantBeNegative = Erreur : la date de fin d'événement ne peut pas être une valeur négative
 
 
 
