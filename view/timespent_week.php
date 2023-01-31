@@ -338,19 +338,23 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilterac
 }
 
 if ($action == 'showOnlyFavoriteTasks') {
-	if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS == 1) {
-		dolibarr_set_const($db, 'DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 0, 'integer', 0, '', $conf->entity);
-	} else {
-		dolibarr_set_const($db, 'DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 1, 'integer', 0, '', $conf->entity);
-	}
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $showOnlyFavoriteTasks = $data['showOnlyFavoriteTasks'];
+
+    $tabparam['DOLISIRH_SHOW_ONLY_FAVORITE_TASKS'] = $showOnlyFavoriteTasks;
+
+    dol_set_user_param($db, $conf, $user, $tabparam);
 }
 
 if ($action == 'showOnlyTasksWithTimeSpent') {
-	if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT == 1) {
-		dolibarr_set_const($db, 'DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT', 0, 'integer', 0, '', $conf->entity);
-	} else {
-		dolibarr_set_const($db, 'DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT', 1, 'integer', 0, '', $conf->entity);
-	}
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $showOnlyTasksWithTimeSpent = $data['showOnlyTasksWithTimeSpent'];
+
+    $tabparam['DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT'] = $showOnlyTasksWithTimeSpent;
+
+    dol_set_user_param($db, $conf, $user, $tabparam);
 }
 
 if ($action == 'addTimeSpent' && $permissiontoadd) {
@@ -370,7 +374,7 @@ if ($action == 'addTimeSpent' && $permissiontoadd) {
     $object->timespent_fk_user  = $user->id;
 
     if ($object->timespent_duration > 0) {
-        $object->addTimeSpent($user, false);
+        $object->addTimeSpent($user);
     }
 }
 
@@ -499,15 +503,15 @@ print '</div>';
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
 print $langs->trans('ShowOnlyFavoriteTasks');
-print '<input type="checkbox"  class="show-only-favorite-tasks"'. ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '').' >';
-if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
-	print '<br>';
-	print '<div class="opacitymedium"><i class="fas fa-exclamation-triangle"></i>'.' '.$langs->trans('WarningShowOnlyFavoriteTasks').'</div>';
+print '<input type="checkbox"  class="show-only-favorite-tasks"'. ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '').' >';
+if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
+    print '<br>';
+    print '<div class="opacitymedium"><i class="fas fa-exclamation-triangle"></i>'.' '.$langs->trans('WarningShowOnlyFavoriteTasks').'</div>';
 }
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
 print $langs->trans('ShowOnlyTasksWithTimeSpent');
-print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '').' >';
+print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '').' >';
 
 // Get if user is available or not for each day
 $isavailable = array();

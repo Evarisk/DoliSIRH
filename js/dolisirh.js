@@ -679,27 +679,35 @@ window.eoxiaJS.task.divideTimeSpent = function( event ) {
  * Active/désactive la configuration pour n'afficher que les tâches favorites
  *
  * @since   1.0.0
- * @version 1.0.0
+ * @version 1.2.1
  *
- * @param  {MouseEvent} event [description]
  * @return {void}
  */
-window.eoxiaJS.task.showOnlyFavoriteTasks = function( event ) {
+window.eoxiaJS.task.showOnlyFavoriteTasks = function() {
 	let token = $('.id-container').find('input[name="token"]').val();
 	let querySeparator = '?';
 
 	document.URL.match(/\?/) ? querySeparator = '&' : 1
 
+	let showOnlyFavoriteTasks;
+	if ($(this).is(':checked')) {
+		showOnlyFavoriteTasks = 1;
+	} else {
+		showOnlyFavoriteTasks = 0;
+	}
+
 	$.ajax({
 		url: document.URL + querySeparator + "action=showOnlyFavoriteTasks&token=" + token,
 		type: "POST",
 		processData: false,
+		data: JSON.stringify({
+			showOnlyFavoriteTasks: showOnlyFavoriteTasks
+		}),
 		contentType: false,
-		success: function ( resp ) {
-			window.location.reload()
+		success: function() {
+			window.location.reload();
 		},
-		error: function ( ) {
-		}
+		error: function() {}
 	});
 };
 
@@ -707,27 +715,35 @@ window.eoxiaJS.task.showOnlyFavoriteTasks = function( event ) {
  * Active/désactive la configuration pour n'afficher que les tâches avec du temps pointé
  *
  * @since   1.1.0
- * @version 1.1.0
+ * @version 1.2.1
  *
- * @param  {MouseEvent} event [description]
  * @return {void}
  */
-window.eoxiaJS.task.showOnlyTasksWithTimeSpent = function( event ) {
+window.eoxiaJS.task.showOnlyTasksWithTimeSpent = function() {
 	let token = $('.id-container').find('input[name="token"]').val();
 	let querySeparator = '?';
 
 	document.URL.match(/\?/) ? querySeparator = '&' : 1
 
+	let showOnlyTasksWithTimeSpent;
+	if ($(this).is(':checked')) {
+		showOnlyTasksWithTimeSpent = 1;
+	} else {
+		showOnlyTasksWithTimeSpent = 0;
+	}
+
 	$.ajax({
 		url: document.URL + querySeparator + "action=showOnlyTasksWithTimeSpent&token=" + token,
 		type: "POST",
 		processData: false,
+		data: JSON.stringify({
+			showOnlyTasksWithTimeSpent: showOnlyTasksWithTimeSpent
+		}),
 		contentType: false,
-		success: function ( resp ) {
-			window.location.reload()
+		success: function() {
+			window.location.reload();
 		},
-		error: function ( ) {
-		}
+		error: function() {}
 	});
 };
 
