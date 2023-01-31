@@ -140,7 +140,7 @@ class DashboardDoliSIRHStats extends DoliSIRHStats
 			print '<div class="opened-dash-board-wrap"><div class="box-flex-container">' . $openedDashBoard . '</div></div>';
 		}
 
-		print '<div class="box-flex-container">';
+		print '<div class="box-flex-container graph-dashboard">';
 
 		if (is_array($dashboard_data['graphs']) && !empty($dashboard_data['graphs'])) {
 			foreach ($dashboard_data['graphs'] as $keyelement => $datagraph) {
@@ -189,9 +189,7 @@ class DashboardDoliSIRHStats extends DoliSIRHStats
 						$graph->setShowLegend(2);
 						$graph->draw($filename[$keyelement], $fileurl[$keyelement]);
 						print '<div class="box-flex-item">';
-						print '<div class="titre inline-block">';
-						print $datagraph['picto'] . ' ' . $datagraph['title'];
-						print '</div>';
+                        print load_fiche_titre($datagraph['title'], $datagraph['morehtmlright'], $datagraph['picto']);
 						print $graph->show();
 						print '</div>';
 					}

@@ -1250,6 +1250,7 @@ window.eoxiaJS.dashboard.init = function() {
 window.eoxiaJS.dashboard.event = function() {
 	$( document ).on( 'change', '.add-dashboard-widget', window.eoxiaJS.dashboard.addDashBoardInfo );
 	$( document ).on( 'click', '.close-dashboard-widget', window.eoxiaJS.dashboard.closeDashBoardInfo );
+	$( document ).on( 'change', '.select-user-dashboard', window.eoxiaJS.dashboard.selectUserDashboard );
 };
 
 /**
@@ -1314,5 +1315,32 @@ window.eoxiaJS.dashboard.closeDashBoardInfo = function() {
 		},
 		error: function ( ) {
 		}
+	});
+};
+
+/**
+ * Select user for dashboard info.
+ *
+ * @since   1.2.1
+ * @version 1.2.1
+ *
+ * @return {void}
+ */
+window.eoxiaJS.dashboard.selectUserDashboard = function() {
+	let userID = this.value;
+
+	let querySeparator = '?';
+	let token = $('.dashboard').find('input[name="token"]').val();
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	$.ajax({
+		url: document.URL + querySeparator + 'action=selectuserdashboar&token='  + token + '&search_userid=' + userID,
+		type: "POST",
+		processData: false,
+		contentType: false,
+		success: function(resp) {
+			$('.fichecenter').replaceWith($(resp).find('.fichecenter'));
+		},
+		error: function() {}
 	});
 };

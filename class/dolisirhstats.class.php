@@ -628,6 +628,8 @@ abstract class DoliSIRHStats
 
         global $db, $langs, $user;
 
+        $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+
         $firstdaytoshow = dol_get_first_day(date('Y'), date('m'));
         $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
@@ -643,7 +645,7 @@ abstract class DoliSIRHStats
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
             $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-            if (isDayAvailable($dayInLoop, $user->id)) {
+            if (isDayAvailable($dayInLoop, $userID)) {
                 $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
             } else if (date('N', $dayInLoop) >= 6) {
                 $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
@@ -653,9 +655,9 @@ abstract class DoliSIRHStats
         }
 
         $workinghours = new Workinghours($db);
-        $workingHours = $workinghours->fetchCurrentWorkingHours($user->id, 'user');
+        $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
-        $timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $user->id);
+        $timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $userID);
 
         // Planned working time
         $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
@@ -694,11 +696,17 @@ abstract class DoliSIRHStats
 
         $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START;
 
-        $array['title']  = $langs->transnoentities('TimeSpentReportByFiscalYear');
-        $array['picto']  = '<i class="fas fa-clock"></i>';
+        $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+
+        // Graph Title parameters
+        $array['title'] = $langs->transnoentities('TimeSpentReportByFiscalYear');
+        $array['picto'] = 'clock';
+
+        // Graph parameters
         $array['width']  = 800;
         $array['height'] = 400;
         $array['type']   = 'bars';
+
         $array['labels'] = [
             0 => [
                 'label' => $langs->transnoentities('ExpectedWorkedHours'),
@@ -711,7 +719,7 @@ abstract class DoliSIRHStats
         ];
 
         $workinghours = new Workinghours($db);
-        $workingHours = $workinghours->fetchCurrentWorkingHours($user->id, 'user');
+        $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
         for ($i = 1; $i < 13; $i++) {
             $firstdaytoshow = dol_get_first_day(date('Y'), $i);
@@ -729,7 +737,7 @@ abstract class DoliSIRHStats
             $isavailable = [];
             for ($idw = 0; $idw < $daysInMonth; $idw++) {
                 $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-                if (isDayAvailable($dayInLoop, $user->id)) {
+                if (isDayAvailable($dayInLoop, $userID)) {
                     $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
                 } else if (date('N', $dayInLoop) >= 6) {
                     $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
@@ -739,7 +747,7 @@ abstract class DoliSIRHStats
             }
 
             $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-            $worked_time          = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $user->id);
+            $worked_time          = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
 
             $planned_working_time_data = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'fullhour') : 0);
             $worked_time_data = convertSecondToTime($worked_time['total'], 'fullhour');

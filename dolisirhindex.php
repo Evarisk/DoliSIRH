@@ -44,8 +44,12 @@ $langs->load('dolisirh@dolisirh');
 $modDoliSIRH = new modDoliSIRH($db);
 $stats       = new DashboardDolisirhStats($db);
 
+// Initialize view objects
+$form = new Form($db);
+
 // Get parameters
 $action = GETPOST('action', 'alpha');
+$userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
 
 // Security check
 $permissiontoread = $user->rights->dolisirh->read;
@@ -64,7 +68,9 @@ $morecss  = ['/dolisirh/css/dolisirh.css'];
 
 llxHeader('', $title . ' ' . $modDoliSIRH->version, $help_url, '', 0, 0, $morejs, $morecss);
 
-print load_fiche_titre($title . ' ' . $modDoliSIRH->version, '', 'dolisirh_red.png@dolisirh');
+$morehtmlright = img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($userID, 'search_userid', '', null, 0, '', null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth300 select-user-dashboard', 1);
+
+print load_fiche_titre($title . ' ' . $modDoliSIRH->version, $morehtmlright, 'dolisirh_red.png@dolisirh');
 
 if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) : ?>
     <div class="wpeo-notice notice-info">
