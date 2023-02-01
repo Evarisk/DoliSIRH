@@ -593,21 +593,21 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 			$sql .= ", ".MAIN_DB_PREFIX."element_contact as ec2";
 			$sql .= ", ".MAIN_DB_PREFIX."c_type_contact as ctc2";
 		}
-		if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
+		if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
 			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as elel ON (t.rowid = elel.fk_target AND elel.targettype='project_task')";
 		}
-		if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+		if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
 			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task_time as ptt ON (t.rowid = ptt.fk_task)";
 		}
 		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task_extrafields as efpt ON (t.rowid = efpt.fk_object)";
 		$sql .= " WHERE p.entity IN (".getEntity('project').")";
 		$sql .= " AND t.fk_projet = p.rowid";
-		if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
+		if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
 			$sql .= " AND elel.fk_target = t.rowid";
 			$sql .= " AND elel.fk_source = " . $filteronprojuser;
 		}
 
-		if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+		if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
 			$sql .= " AND ptt.fk_task = t.rowid AND ptt.fk_user = " . $filteronprojuser;
 			if ($timeMode == 'month') {
 				$sql .= " AND MONTH(ptt.task_date) = " . $timeArray['month'];
