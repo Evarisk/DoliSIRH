@@ -502,6 +502,7 @@ print '<input type="submit" class="button valignmiddle smallonsmartphone" name="
 print '</div>';
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
+print img_picto('', 'info', 'class="pictofixedwidth"') .  ' ' . $langs->trans('KeyEventTips') . '<br><br>';
 print $langs->trans('ShowOnlyFavoriteTasks');
 print '<input type="checkbox"  class="show-only-favorite-tasks"'. ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '').' >';
 if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
