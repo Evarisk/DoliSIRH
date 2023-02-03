@@ -331,6 +331,10 @@ function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $isavailable, $us
                 if (!empty($timeSpent->timespent_note)) {
                     $timeSpentOnTasks[$timeSpent->fk_task]['comments'][dol_print_date($timeSpent->timespent_date, 'day')][$timeSpent->timespent_id] = $timeSpent->timespent_note;
                 }
+                $timeSpentOnTasks[$timeSpent->fk_task]['project_ref']   = $timeSpent->project_ref;
+                $timeSpentOnTasks[$timeSpent->fk_task]['project_label'] = $timeSpent->project_label;
+                $timeSpentOnTasks[$timeSpent->fk_task]['task_ref']      = $timeSpent->task_ref;
+                $timeSpentOnTasks[$timeSpent->fk_task]['task_label']    = $timeSpent->task_label;
                 $timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
             }
 		}

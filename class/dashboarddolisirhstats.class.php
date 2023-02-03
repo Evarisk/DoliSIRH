@@ -144,56 +144,60 @@ class DashboardDoliSIRHStats extends DoliSIRHStats
 
 		if (is_array($dashboard_data['graphs']) && !empty($dashboard_data['graphs'])) {
 			foreach ($dashboard_data['graphs'] as $keyelement => $datagraph) {
-				$nbdata = 0;
-				if (is_array($datagraph['data']) && !empty($datagraph['data'])) {
-                    if ($datagraph['type'] == 'bars') {
-                        foreach ($datagraph['data'] as $datagrapharray) {
-                            unset($datagrapharray[0]);
-                            foreach ($datagrapharray as $datagraphsingle) {
-                                $nbdata += $datagraphsingle;
+                if (is_array($datagraph) && !empty($datagraph)) {
+                    foreach ($datagraph as $keyelement2 => $datagraph2) {
+                        $nbdata = 0;
+                        if (is_array($datagraph2['data']) && !empty($datagraph2['data'])) {
+                            if ($datagraph2['type'] == 'bars') {
+                                foreach ($datagraph2['data'] as $datagrapharray) {
+                                    unset($datagrapharray[0]);
+                                    foreach ($datagrapharray as $datagraphsingle) {
+                                        $nbdata += $datagraphsingle;
+                                    }
+                                }
+                            } else {
+                                foreach ($datagraph2['data'] as $datagraphsingle) {
+                                    $nbdata += $datagraphsingle;
+                                }
                             }
-                        }
-                    } else {
-                        foreach ($datagraph['data'] as $datagraphsingle) {
-                            $nbdata += $datagraphsingle;
+                            if ($nbdata > 0) {
+                                $arraykeys = array_keys($datagraph2['data']);
+                                foreach ($arraykeys as $key) {
+                                    if ($datagraph2['type'] == 'bars') {
+                                        $datalegend[$keyelement2][] = $langs->trans($datagraph2['labels'][$key]['label']);
+                                        $data[$keyelement2][] = $datagraph2['data'][$key];
+                                    } else {
+                                        $data[$keyelement2][] = [
+                                            0 => $langs->trans($datagraph2['labels'][$key]['label']),
+                                            1 => $datagraph2['data'][$key]
+                                        ];
+                                    }
+
+                                    $datacolor[$keyelement2][] = $langs->trans($datagraph2['labels'][$key]['color']);
+                                }
+
+                                $filename[$keyelement2] = $keyelement2 . '.png';
+                                $fileurl[$keyelement2] = DOL_URL_ROOT . '/viewimage.php?modulepart=dolisirh&file=' . $keyelement2 . '.png';
+
+                                $graph = new DolGraph();
+                                $graph->SetData($data[$keyelement2]);
+                                if ($datagraph2['type'] == 'bars') {
+                                    $graph->SetLegend($datalegend[$keyelement2]);
+                                }
+                                $graph->SetDataColor($datacolor[$keyelement2]);
+                                $graph->SetType([$datagraph2['type'] ?? 'pie']);
+                                $graph->SetWidth($datagraph2['width'] ?? $WIDTH);
+                                $graph->SetHeight($datagraph2['height'] ?? $HEIGHT);
+                                $graph->setShowLegend(2);
+                                $graph->draw($filename[$keyelement2], $fileurl[$keyelement2]);
+                                print '<div class="box-flex-item">';
+                                print load_fiche_titre($datagraph2['title'], $datagraph2['morehtmlright'], $datagraph2['picto']);
+                                print $graph->show();
+                                print '</div>';
+                            }
                         }
                     }
-					if ($nbdata > 0) {
-						$arraykeys = array_keys($datagraph['data']);
-						foreach ($arraykeys as $key) {
-                            if ($datagraph['type'] == 'bars') {
-                                $datalegend[$keyelement][] = $langs->trans($datagraph['labels'][$key]['label']);
-                                $data[$keyelement][] = $datagraph['data'][$key];
-                            } else {
-                                $data[$keyelement][] = [
-                                    0 => $langs->trans($datagraph['labels'][$key]['label']),
-                                    1 => $datagraph['data'][$key]
-                                ];
-                            }
-
-							$datacolor[$keyelement][] = $langs->trans($datagraph['labels'][$key]['color']);
-						}
-
-						$filename[$keyelement] = $keyelement . '.png';
-						$fileurl[$keyelement]  = DOL_URL_ROOT . '/viewimage.php?modulepart=dolisirh&file=' . $keyelement . '.png';
-
-						$graph = new DolGraph();
-						$graph->SetData($data[$keyelement]);
-                        if ($datagraph['type'] == 'bars') {
-                            $graph->SetLegend($datalegend[$keyelement]);
-                        }
-						$graph->SetDataColor($datacolor[$keyelement]);
-						$graph->SetType([$datagraph['type'] ?? 'pie']);
-						$graph->SetWidth($datagraph['width'] ?? $WIDTH);
-						$graph->SetHeight($datagraph['height'] ?? $HEIGHT);
-						$graph->setShowLegend(2);
-						$graph->draw($filename[$keyelement], $fileurl[$keyelement]);
-						print '<div class="box-flex-item">';
-                        print load_fiche_titre($datagraph['title'], $datagraph['morehtmlright'], $datagraph['picto']);
-						print $graph->show();
-						print '</div>';
-					}
-				}
+                }
 			}
 		}
 

@@ -599,8 +599,9 @@ abstract class DoliSIRHStats
     {
         global $langs;
 
-        $timeSpendingInfos = $this->getTimeSpendingInfos();
-        $TimeSpentReport   = $this->getTimeSpentReport();
+        $timeSpendingInfos           = $this->getTimeSpendingInfos();
+        $TimeSpentReport             = $this->getTimeSpentReport();
+        $TimeSpentCurrentMonthByTask = $this->getTimeSpentCurrentMonthByTask();
 
         $array['widgets'] = [
             0 => [
@@ -611,7 +612,7 @@ abstract class DoliSIRHStats
             ],
         ];
 
-        $array['graphs'] = $TimeSpentReport;
+        $array['graphs'] = [$TimeSpentReport, $TimeSpentCurrentMonthByTask];
 
         return $array;
     }
@@ -760,5 +761,86 @@ abstract class DoliSIRHStats
 		ksort($array['data']);
 
 		return $array;
+    }
+
+    /**
+     * Get timespent on current month by task.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getTimeSpentCurrentMonthByTask()
+    {
+        require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
+
+        global $conf, $db, $langs, $user;
+
+        $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START;
+
+        $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+
+        // Graph Title parameters
+        $array['title'] = $langs->transnoentities('TimeSpentCurrentMonthByTask', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['picto'] = 'projecttask';
+
+        // Graph parameters
+        $array['width']  = 600;
+        $array['height'] = 300;
+        $array['type']   = 'pie';
+
+        $workinghours = new Workinghours($db);
+        $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
+
+        $firstdaytoshow = dol_get_first_day(date('Y'), date('m'));
+        $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
+
+        $currentMonth = date('m', dol_now());
+        if ($currentMonth == date('m')) {
+            $lastdaytoshow = dol_now();
+        } else {
+            $lastdaytoshow = $lastdayofmonth;
+        }
+
+        $daysInMonth = num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+
+        $isavailable = [];
+        for ($idw = 0; $idw < $daysInMonth; $idw++) {
+            $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+            if (isDayAvailable($dayInLoop, $userID)) {
+                $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
+            } else if (date('N', $dayInLoop) >= 6) {
+                $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
+            } else {
+                $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday'];
+            }
+
+        }
+
+        $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $userID);
+
+        if (is_array($timeSpentOnTasks) && !empty($timeSpentOnTasks)) {
+            foreach ($timeSpentOnTasks as $timeSpent) {
+                $array['labels'][] = [
+                    'label' => $timeSpent['task_ref'] . ' - ' . $timeSpent['task_label'],
+                    'color' => '#49AF4A'
+                ];
+                for ($idw = 0; $idw < $daysInMonth; $idw++) {
+                    $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
+                    $timeSpentDuration += $timeSpent[dol_print_date($dayInLoop, 'day')] / 3600;
+                }
+                $array['data'][] = $timeSpentDuration;
+            }
+        }
+
+        $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
+        $planned_working_time_data = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'fullhour') : 0);
+
+        $array['labels'][] = [
+            'label' => $langs->transnoentities('ExpectedWorkedHours'),
+            'color' => '#008ECC'
+        ];
+        $array['data'][] = $planned_working_time_data - $timeSpentDuration;
+
+        return $array;
     }
 }
