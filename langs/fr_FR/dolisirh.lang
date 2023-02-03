@@ -147,6 +147,7 @@ MissingTaskWithTimeSpentOption = Erreur : il faut choisir une tâche pour pointe
 MissingEndDateWithTimeSpentOption = Erreur : il faut choisir une date de fin d'événement pour pointer son temps
 ErrorTimeSpentDurationCantBeNegative = Erreur : la date de fin d'événement ne peut pas être une valeur négative
 KeyEventTips = La touche 'Enter' permet de lancer la recherche. <br> Les touches 'shift + Enter' permettent de supprimer les paramètres de recherche.
+TimeSpentAutoCreate = Temps consommé ajouté depuis l'événement : %s
 
 
 

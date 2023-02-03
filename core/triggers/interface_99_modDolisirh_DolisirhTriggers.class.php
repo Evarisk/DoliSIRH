@@ -134,7 +134,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                         if (in_array($user->id, $contactsOfTask)) {
                             $task->timespent_date = $object->datep;
                             $task->timespent_withhour = 1;
-                            $task->timespent_note = $object->label;
+                            $task->timespent_note = $langs->trans('TimeSpentAutoCreate', $object->id) . '<br>' . $object->label;
                             $task->timespent_duration = $object->datef - $object->datep;
                             $task->timespent_fk_user = $user->id;
 
