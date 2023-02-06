@@ -99,6 +99,7 @@ function isDayAvailable($date, $userid)
 
 	$statusofholidaytocheck = Holiday::STATUS_APPROVED;
 
+    $date = dol_stringtotime(dol_print_date($date, 'standard'));
 	$is_available_for_user = $holiday->verifDateHolidayForTimestamp($userid, $date, $statusofholidaytocheck);
 	$is_public_holiday = num_public_holiday($date, dol_time_plus_duree($date, 1,'d'));
 
