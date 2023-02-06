@@ -149,6 +149,7 @@ ErrorTimeSpentDurationCantBeNegative = Erreur : la date de fin d'événement ne 
 KeyEventTips = La touche 'Enter' permet de lancer la recherche. <br> Les touches 'shift + Enter' permettent de supprimer les paramètres de recherche.
 TimeSpentAutoCreate = Temps consommé ajouté depuis l'événement : %s
 TimeSpentCurrentMonthByTask = Répartition du temps comsommé au mois de %s par tâche
+NotConsumedWorkedHours = Heures de travail non consommées
 
 
 

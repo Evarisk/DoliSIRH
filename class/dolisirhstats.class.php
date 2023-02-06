@@ -590,6 +590,20 @@ abstract class DoliSIRHStats
 	}
 
     /**
+     * get color range for key
+     *
+     * @param  int    $key Key to find in color array
+     * @return string
+     */
+    public function getColorRange($key)
+    {
+        $colorArray = ['#f44336', '#e81e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722', '#795548', '#9e9e9e', '#607d8b'];
+        return $colorArray[$key % count($colorArray)];
+    }
+
+
+
+    /**
      * Load dashboard info dolisirh
      *
      * @return array
@@ -773,9 +787,7 @@ abstract class DoliSIRHStats
     {
         require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
-        global $conf, $db, $langs, $user;
-
-        $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START;
+        global $db, $langs, $user;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
 
@@ -819,10 +831,11 @@ abstract class DoliSIRHStats
         $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $userID);
 
         if (is_array($timeSpentOnTasks) && !empty($timeSpentOnTasks)) {
-            foreach ($timeSpentOnTasks as $timeSpent) {
+            $timeSpentOnTasks = array_values($timeSpentOnTasks);
+            foreach ($timeSpentOnTasks as $key => $timeSpent) {
                 $array['labels'][] = [
                     'label' => $timeSpent['task_ref'] . ' - ' . $timeSpent['task_label'],
-                    'color' => '#49AF4A'
+                    'color' => $this->getColorRange($key)
                 ];
                 for ($idw = 0; $idw < $daysInMonth; $idw++) {
                     $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
@@ -832,14 +845,14 @@ abstract class DoliSIRHStats
             }
         }
 
-        $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-        $planned_working_time_data = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'fullhour') : 0);
+        $plannedWorkingTime = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
+        $plannedWorkingTimeData = (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'fullhour') : 0);
 
         $array['labels'][] = [
-            'label' => $langs->transnoentities('ExpectedWorkedHours'),
+            'label' => $langs->transnoentities('NotConsumedWorkedHours'),
             'color' => '#008ECC'
         ];
-        $array['data'][] = $planned_working_time_data - $timeSpentDuration;
+        $array['data'][] = $plannedWorkingTimeData - $timeSpentDuration;
 
         return $array;
     }
