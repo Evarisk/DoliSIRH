@@ -132,7 +132,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     if ($result > 0 && $task->id > 0) {
                         $contactsOfTask = $task->getListContactId();
                         if (in_array($user->id, $contactsOfTask)) {
-                            $task->timespent_date = $object->datep;
+                            $task->timespent_date = dol_print_date($object->datep,'standard', 'tzuser');
                             $task->timespent_withhour = 1;
                             $task->timespent_note = $langs->trans('TimeSpentAutoCreate', $object->id) . '<br>' . $object->label;
                             $task->timespent_duration = $object->datef - $object->datep;
