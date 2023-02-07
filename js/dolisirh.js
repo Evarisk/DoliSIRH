@@ -1333,6 +1333,8 @@ window.eoxiaJS.dashboard.selectUserDashboard = function() {
 	let token = $('.dashboard').find('input[name="token"]').val();
 	document.URL.match(/\?/) ? querySeparator = '&' : 1
 
+	window.eoxiaJS.loader.display($('.fichecenter'));
+
 	$.ajax({
 		url: document.URL + querySeparator + 'action=selectuserdashboar&token='  + token + '&search_userid=' + userID,
 		type: "POST",
