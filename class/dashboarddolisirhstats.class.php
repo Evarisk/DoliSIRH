@@ -148,11 +148,13 @@ class DashboardDoliSIRHStats extends DoliSIRHStats
                     foreach ($datagraph as $keyelement2 => $datagraph2) {
                         $nbdata = 0;
                         if (is_array($datagraph2['data']) && !empty($datagraph2['data'])) {
-                            if ($datagraph2['type'] == 'bars') {
+                            if ($datagraph2['dataset'] == 2) {
                                 foreach ($datagraph2['data'] as $datagrapharray) {
                                     unset($datagrapharray[0]);
                                     foreach ($datagrapharray as $datagraphsingle) {
-                                        $nbdata += $datagraphsingle;
+                                        if (!empty($datagraphsingle)) {
+                                            $nbdata = 1;
+                                        }
                                     }
                                 }
                             } else {
@@ -163,7 +165,7 @@ class DashboardDoliSIRHStats extends DoliSIRHStats
                             if ($nbdata > 0) {
                                 $arraykeys = array_keys($datagraph2['data']);
                                 foreach ($arraykeys as $key) {
-                                    if ($datagraph2['type'] == 'bars') {
+                                    if ($datagraph2['dataset'] == 2) {
                                         $datalegend[$keyelement2][] = $langs->trans($datagraph2['labels'][$key]['label']);
                                         $data[$keyelement2][] = $datagraph2['data'][$key];
                                     } else {
@@ -181,7 +183,7 @@ class DashboardDoliSIRHStats extends DoliSIRHStats
 
                                 $graph = new DolGraph();
                                 $graph->SetData($data[$keyelement2]);
-                                if ($datagraph2['type'] == 'bars') {
+                                if ($datagraph2['dataset'] == 2) {
                                     $graph->SetLegend($datalegend[$keyelement2]);
                                 }
                                 $graph->SetDataColor($datacolor[$keyelement2]);

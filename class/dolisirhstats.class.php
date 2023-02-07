@@ -613,9 +613,9 @@ abstract class DoliSIRHStats
     {
         global $langs;
 
-        $timeSpendingInfos           = $this->getTimeSpendingInfos();
-        $TimeSpentReport             = $this->getTimeSpentReport();
-        $TimeSpentCurrentMonthByTask = $this->getTimeSpentCurrentMonthByTask();
+        $timeSpendingInfos                    = $this->getTimeSpendingInfos();
+        $TimeSpentReport                      = $this->getTimeSpentReport();
+        $TimeSpentCurrentMonthByTaskOnProject = $this->getTimeSpentCurrentMonthByTaskOnProject();
 
         $array['widgets'] = [
             0 => [
@@ -626,7 +626,7 @@ abstract class DoliSIRHStats
             ],
         ];
 
-        $array['graphs'] = [$TimeSpentReport, $TimeSpentCurrentMonthByTask];
+        $array['graphs'] = [$TimeSpentReport, $TimeSpentCurrentMonthByTaskOnProject];
 
         return $array;
     }
@@ -718,9 +718,10 @@ abstract class DoliSIRHStats
         $array['picto'] = 'clock';
 
         // Graph parameters
-        $array['width']  = 800;
-        $array['height'] = 400;
-        $array['type']   = 'bars';
+        $array['width']   = 800;
+        $array['height']  = 400;
+        $array['type']    = 'bars';
+        $array['dataset'] = 2;
 
         $array['labels'] = [
             0 => [
@@ -778,12 +779,12 @@ abstract class DoliSIRHStats
     }
 
     /**
-     * Get timespent on current month by task.
+     * Get timespent on current month by task on project.
      *
      * @return array
      * @throws Exception
      */
-    public function getTimeSpentCurrentMonthByTask()
+    public function getTimeSpentCurrentMonthByTaskOnProject()
     {
         require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
@@ -792,13 +793,14 @@ abstract class DoliSIRHStats
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
 
         // Graph Title parameters
-        $array['title'] = $langs->transnoentities('TimeSpentCurrentMonthByTask', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['title'] = $langs->transnoentities('TimeSpentCurrentMonthByTaskOnProject', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
         $array['picto'] = 'projecttask';
 
         // Graph parameters
-        $array['width']  = 600;
-        $array['height'] = 300;
-        $array['type']   = 'pie';
+        $array['width']   = 800;
+        $array['height']  = 400;
+        $array['type']    = 'pie';
+        $array['dataset'] = 2;
 
         $workinghours = new Workinghours($db);
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
@@ -829,30 +831,41 @@ abstract class DoliSIRHStats
         }
 
         $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $userID);
+        $datas = [];
+        $totalTimeSpent = 0;
 
         if (is_array($timeSpentOnTasks) && !empty($timeSpentOnTasks)) {
             $timeSpentOnTasks = array_values($timeSpentOnTasks);
             foreach ($timeSpentOnTasks as $key => $timeSpent) {
-                $array['labels'][] = [
-                    'label' => $timeSpent['task_ref'] . ' - ' . $timeSpent['task_label'],
-                    'color' => $this->getColorRange($key)
-                ];
+                $timeSpentDuration = 0;
+                $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['labels'][] = ['color' => $this->getColorRange($key)];
                 for ($idw = 0; $idw < $daysInMonth; $idw++) {
                     $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
                     $timeSpentDuration += $timeSpent[dol_print_date($dayInLoop, 'day')] / 3600;
                 }
-                $array['data'][] = $timeSpentDuration;
+                $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['data'][] = [$timeSpent['task_ref'] . ' - ' . $timeSpent['task_label'], $timeSpentDuration];
+                $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['timespent_duration_task'][] = $timeSpentDuration;
             }
         }
 
         $plannedWorkingTime = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
         $plannedWorkingTimeData = (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'fullhour') : 0);
 
-        $array['labels'][] = [
-            'label' => $langs->transnoentities('NotConsumedWorkedHours'),
-            'color' => '#008ECC'
-        ];
-        $array['data'][] = $plannedWorkingTimeData - $timeSpentDuration;
+        if (is_array($datas) && !empty($datas)) {
+            $array['data'] = [];
+            $array['labels'] = [];
+            $key2 = 0;
+            foreach ($datas as $key => $data) {
+                $array['labels'] = array_merge($array['labels'], $data['labels']);
+                $array['data'] = array_merge($array['data'], $data['data']);
+                $array['labels'][] = ['color' => $this->getColorRange($key2++)];
+                $array['data'][] = [$key, 0, '', array_sum($data['timespent_duration_task'])];
+                $totalTimeSpent += array_sum($data['timespent_duration_task']);
+            }
+        }
+
+        $array['labels'][] = ['color' => '#008ECC'];
+        $array['data'][] = [$langs->transnoentities('NotConsumedWorkedHours'), $plannedWorkingTimeData - $totalTimeSpent, '', $plannedWorkingTimeData - $totalTimeSpent];
 
         return $array;
     }
