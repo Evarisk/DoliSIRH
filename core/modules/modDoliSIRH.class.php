@@ -80,7 +80,8 @@ class modDoliSIRH extends DolibarrModules
 					  'cron',
 					  'cronjoblist',
 					  'projecttasktime',
-					  'timesheetcard'
+					  'timesheetcard',
+                      'actioncard'
 				  ),
 			),
 			'moduleforexternal' => 0,

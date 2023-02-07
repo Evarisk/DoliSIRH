@@ -636,6 +636,49 @@ class ActionsDoliSIRH
 			}
 		}
 
+        if ($parameters['currentcontext'] == 'actioncard') { ?>
+            <script>
+                function getDiffTimestampEvent() {
+                    let dayap   = $('#apday').val();
+                    let monthap = $('#apmonth').val();
+                    let yearap  = $('#apyear').val();
+                    let hourap  = $('#aphour').val() > 0 ? $('#aphour').val() : 0;
+                    let minap   = $('#apmin').val() > 0 ? $('#apmin').val() : 0;
+
+                    let dayp2   = $('#p2day').val();
+                    let monthp2 = $('#p2month').val();
+                    let yearp2  = $('#p2year').val();
+                    let hourp2  = $('#p2hour').val() > 0 ? $('#p2hour').val() : 0;
+                    let minp2   = $('#p2min').val() > 0 ? $('#p2min').val() : 0;
+
+                    if (yearap != '' && monthap != '' && dayap != '' && yearp2 != '' && monthp2 != '' && dayp2 != '') {
+                        let dateap = new Date(yearap, monthap - 1, dayap, hourap, minap);
+                        let datep2 = new Date(yearp2, monthp2 - 1, dayp2, hourp2, minp2);
+
+                        let difftimestamp = (datep2.getTime() - dateap.getTime()) / 3600000;
+                        let difftimestampInMin = ((datep2.getTime() - dateap.getTime()) / 60000)
+                        let displaydifftimestamp = '';
+                        if ((difftimestampInMin % 60) == 0) {
+                            displaydifftimestamp = difftimestamp + ' H';
+                        } else {
+                            displaydifftimestamp = (difftimestampInMin - (difftimestampInMin % 60)) / 60 + ' H ' + Math.abs((difftimestampInMin % 60)) + ' min';
+                        }
+                        let color = difftimestamp > 0 ? 'rgb(0,128,0)' : 'rgb(255,0,0)';
+                        let element = '<span class="difftimestamp" style="color:' + color + '; font-weight: bold" >' + displaydifftimestamp + '</span>';
+                        if ($('.difftimestamp').length > 0) {
+                            $('.difftimestamp').remove();
+                        }
+                        return $('.fulldayendhour').parent().after(element);
+                    }
+                }
+                $('#ap, #aphour, #apmin, #p2, #p2hour, #p2min').change(function () {
+                    setTimeout(function () {
+                        getDiffTimestampEvent();
+                    }, 100);
+                });
+            </script>
+		<?php }
+
 		if (in_array($parameters['currentcontext'], array('timesheetcard')) && GETPOST('action') == 'create') {
 			?>
 			<script>
