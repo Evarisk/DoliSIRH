@@ -1327,10 +1327,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 					if ($totalforeachday[$tmpday] > 0) {
                         $timeSpentComments = $timeSpentOnTasks[$lines[$i]->id]['comments'][dol_print_date($tmpday, 'day')];
                         if (is_array($timeSpentComments) && !empty($timeSpentComments)) {
-                            $text_tooltip = '';
-                            foreach ($timeSpentComments as $timeSpentComment) {
-                                $text_tooltip .= $langs->trans('Comment') . ' : ' . $timeSpentComment . ' - ';
-                            }
+                            $text_tooltip = implode('', $timeSpentComments);
                         } else {
                             $text_tooltip = $langs->trans('TimeSpentAddWithNoComment');
                         }

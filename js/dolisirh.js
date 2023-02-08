@@ -1219,6 +1219,13 @@ window.eoxiaJS.keyEvent.keyup = function(event) {
 			$(this).find('.button_removefilter').click();
 		}
 	}
+	if ($(event.target).is('body')) {
+		let height = '';
+		if (event.shiftKey) {
+			height = 200 + 'px';
+			$('body').find('.wpeo-tooltip').css('height', height);
+		}
+	}
 };
 
 /**
