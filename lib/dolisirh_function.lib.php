@@ -1263,7 +1263,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
                 if ($taskstatic->planned_workload != '') {
                     $tmparray = $taskstatic->getSummaryOfTimeSpent();
                     if ($tmparray['total_duration'] > 0 && !empty($taskstatic->planned_workload)) {
-                        print ' ' . round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2).' %';
+                        print '<span class="task-progress ' . getTaskProgressColorClass(round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2)) . '">' . ' ' . round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2) . ' %' . '</span>';
                     } else {
                         print ' 0 %';
                     }
@@ -1792,4 +1792,23 @@ function doliSirhGetListOfModels($db, $type, $maxfilenamelength = 0)
 	} else {
 		return 0;
 	}
+}
+
+/**
+ * Get task progress css class.
+ *
+ * @param  float  $progress Progress of the task
+ *
+ * @return string           CSS class
+ */
+function getTaskProgressColorClass($progress)
+{
+    switch (true) {
+        case $progress < 50 :
+            return 'progress-green';
+        case $progress < 99 :
+            return 'progress-yellow';
+        case $progress :
+            return 'progress-red';
+    }
 }

@@ -1,0 +1,23 @@
+.task-progress {
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+  border-radius: 4px;
+  padding: 0.2em 0.4em;
+  font-weight: 700;
+  color: rgba(0,0,0,0.6);
+
+  &.progress-red {
+    background: $color__red;
+    color: #fff;
+  }
+
+  &.progress-yellow {
+    background: $color__yellow;
+    color: #fff;
+  }
+
+  &.progress-green {
+    background: $color__green;
+    color: #fff;
+  }
+}

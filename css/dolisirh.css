@@ -68,6 +68,27 @@
   line-height: 20px;
 }
 
+.task-progress {
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+  border-radius: 4px;
+  padding: 0.2em 0.4em;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+}
+.task-progress.progress-red {
+  background: #e05353;
+  color: #fff;
+}
+.task-progress.progress-yellow {
+  background: #e9ad4f;
+  color: #fff;
+}
+.task-progress.progress-green {
+  background: #47e58e;
+  color: #fff;
+}
+
 /*--------------------------------------------------------------
 	Module : Dropdown
 	Version : 1.0.0
