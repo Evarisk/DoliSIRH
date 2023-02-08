@@ -33,6 +33,17 @@ if ($action == 'closedashboardinfo') {
 	$action = '';
 }
 
+if ($action == 'set_timespent_dataset_order') {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $setTimeSpentDatasetOrder = $data['setTimeSpentDatasetOrder'];
+
+    $tabparam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = $setTimeSpentDatasetOrder;
+
+    dol_set_user_param($db, $conf, $user, $tabparam);
+    $action = '';
+}
+
 /*
  * View
  */

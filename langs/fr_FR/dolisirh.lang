@@ -152,6 +152,7 @@ TimeSpentCurrentMonthByTaskAndProject = Répartition du temps consommé au mois 
 NotConsumedWorkedHours = Heures de travail non consommées
 GlobalTimeSpentCurrentMonthByTaskAndProject = Répartition du temps consommé global au mois de %s par tâche sur chaque projet
 KeyEvent = Raccourci clavier
+TimeSpentDatasetOrder = Changer l'ordre d'affichage des données des tableaux de bord sur la répartition.
 
 
 

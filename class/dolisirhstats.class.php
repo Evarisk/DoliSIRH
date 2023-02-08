@@ -796,6 +796,8 @@ abstract class DoliSIRHStats
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
 
+        $datasetOrder = $user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER;
+
         // Graph Title parameters
         $array['title'] = $langs->transnoentities(($showNotConsumedWorkedHours > 0 ? 'GlobalTimeSpentCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
         $array['picto'] = 'projecttask';
@@ -848,7 +850,7 @@ abstract class DoliSIRHStats
                     $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
                     $timeSpentDuration += $timeSpent[dol_print_date($dayInLoop, 'day')] / 3600;
                 }
-                $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['data'][] = [$timeSpent['task_ref'] . ' - ' . $timeSpent['task_label'], $timeSpentDuration];
+                $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['data'][] = [$timeSpent['task_ref'] . ' - ' . $timeSpent['task_label'], ($datasetOrder == 0 ? 0 : $timeSpentDuration), ($datasetOrder == 0 ? $timeSpentDuration : 0)];
                 $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['timespent_duration_task'][] = $timeSpentDuration;
             }
         }
@@ -861,7 +863,7 @@ abstract class DoliSIRHStats
                 $array['labels'] = array_merge($array['labels'], $data['labels']);
                 $array['data'] = array_merge($array['data'], $data['data']);
                 $array['labels'][] = ['color' => $this->getColorRange($key2++)];
-                $array['data'][] = [$key, 0, '', array_sum($data['timespent_duration_task'])];
+                $array['data'][] = [$key, ($datasetOrder == 0 ? array_sum($data['timespent_duration_task']) : 0), ($datasetOrder == 0 ? 0 : array_sum($data['timespent_duration_task']))];
                 $totalTimeSpent += array_sum($data['timespent_duration_task']);
             }
         }
@@ -870,7 +872,7 @@ abstract class DoliSIRHStats
             $plannedWorkingTime = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
             $plannedWorkingTimeData = (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'fullhour') : 0);
             $array['labels'][] = ['color' => '#008ECC'];
-            $array['data'][] = [$langs->transnoentities('NotConsumedWorkedHours'), $plannedWorkingTimeData - $totalTimeSpent, '', $plannedWorkingTimeData - $totalTimeSpent];
+            $array['data'][] = [$langs->transnoentities('NotConsumedWorkedHours'), $plannedWorkingTimeData - $totalTimeSpent, $plannedWorkingTimeData - $totalTimeSpent];
         }
 
         return $array;

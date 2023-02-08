@@ -1260,6 +1260,7 @@ window.eoxiaJS.dashboard.event = function() {
 	$( document ).on( 'change', '.add-dashboard-widget', window.eoxiaJS.dashboard.addDashBoardInfo );
 	$( document ).on( 'click', '.close-dashboard-widget', window.eoxiaJS.dashboard.closeDashBoardInfo );
 	$( document ).on( 'change', '.select-user-dashboard', window.eoxiaJS.dashboard.selectUserDashboard );
+	$( document ).on( 'click', '.timespent-dataset-order', window.eoxiaJS.dashboard.setTimeSpentDatasetOrder );
 };
 
 /**
@@ -1348,6 +1349,43 @@ window.eoxiaJS.dashboard.selectUserDashboard = function() {
 		url: document.URL + querySeparator + 'action=selectuserdashboar&token='  + token + '&search_userid=' + userID,
 		type: "POST",
 		processData: false,
+		contentType: false,
+		success: function(resp) {
+			$('.fichecenter').replaceWith($(resp).find('.fichecenter'));
+		},
+		error: function() {}
+	});
+};
+
+/**
+ * Set timespent dataset order (default: project -> task = 0 / task -> project = 1)
+ *
+ * @since   1.2.1
+ * @version 1.2.1
+ *
+ * @return {void}
+ */
+window.eoxiaJS.dashboard.setTimeSpentDatasetOrder = function() {
+	let querySeparator = '?';
+	let token = $('.dashboard').find('input[name="token"]').val();
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	let setTimeSpentDatasetOrder;
+	if ($(this).is(':checked')) {
+		setTimeSpentDatasetOrder = 1;
+	} else {
+		setTimeSpentDatasetOrder = 0;
+	}
+
+	window.eoxiaJS.loader.display($('.fichecenter'));
+
+	$.ajax({
+		url: document.URL + querySeparator + "action=set_timespent_dataset_order&token=" + token,
+		type: "POST",
+		processData: false,
+		data: JSON.stringify({
+			setTimeSpentDatasetOrder: setTimeSpentDatasetOrder
+		}),
 		contentType: false,
 		success: function(resp) {
 			$('.fichecenter').replaceWith($(resp).find('.fichecenter'));
