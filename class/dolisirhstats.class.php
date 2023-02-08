@@ -613,9 +613,9 @@ abstract class DoliSIRHStats
     {
         global $langs;
 
-        $timeSpendingInfos                    = $this->getTimeSpendingInfos();
-        $TimeSpentReport                      = $this->getTimeSpentReport();
-        $TimeSpentCurrentMonthByTaskOnProject = $this->getTimeSpentCurrentMonthByTaskOnProject();
+        $timeSpendingInfos                     = $this->getTimeSpendingInfos();
+        $timeSpentReport                       = $this->getTimeSpentReport();
+        $timeSpentCurrentMonthByTaskAndProject = $this->getTimeSpentCurrentMonthByTaskAndProject();
 
         $array['widgets'] = [
             0 => [
@@ -626,7 +626,7 @@ abstract class DoliSIRHStats
             ],
         ];
 
-        $array['graphs'] = [$TimeSpentReport, $TimeSpentCurrentMonthByTaskOnProject];
+        $array['graphs'] = [$timeSpentReport, $timeSpentCurrentMonthByTaskAndProject];
 
         return $array;
     }
@@ -781,12 +781,12 @@ abstract class DoliSIRHStats
     }
 
     /**
-     * Get timespent on current month by task on project.
+     * Get timespent on current month by task and project.
      *
      * @return array
      * @throws Exception
      */
-    public function getTimeSpentCurrentMonthByTaskOnProject()
+    public function getTimeSpentCurrentMonthByTaskAndProject()
     {
         require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
@@ -795,7 +795,7 @@ abstract class DoliSIRHStats
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
 
         // Graph Title parameters
-        $array['title'] = $langs->transnoentities('TimeSpentCurrentMonthByTaskOnProject', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['title'] = $langs->transnoentities('TimeSpentCurrentMonthByTaskAndProject', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
         $array['picto'] = 'projecttask';
 
         // Graph parameters
