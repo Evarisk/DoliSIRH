@@ -621,6 +621,7 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 			} else if ($timeMode == 'day') {
 				$sql .= " AND DAY(ptt.task_date) = " . $timeArray['day'];
 			}
+            $sql .=  ' AND (ptt.task_date >= "' . $db->idate($timeArray['firstdaytoshow']) . '" AND ptt.task_date < "' . $db->idate(dol_time_plus_duree($timeArray['lastdaytoshow'], 1, 'd')) . '")';
 		}
 
 	} elseif ($mode == 1) {
