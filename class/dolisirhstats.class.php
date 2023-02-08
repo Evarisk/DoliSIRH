@@ -650,7 +650,8 @@ abstract class DoliSIRHStats
 
         $currentMonth = date('m', dol_now());
         if ($currentMonth == date('m')) {
-            $lastdaytoshow = dol_now();
+            $currentDate   = dol_getdate(dol_now());
+            $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
         } else {
             $lastdaytoshow = $lastdayofmonth;
         }
@@ -743,7 +744,8 @@ abstract class DoliSIRHStats
 
             $currentMonth = date('m', dol_now());
             if ($currentMonth == date('m')) {
-                $lastdaytoshow = dol_now();
+                $currentDate   = dol_getdate(dol_now());
+                $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
             } else {
                 $lastdaytoshow = $lastdayofmonth;
             }
@@ -810,7 +812,8 @@ abstract class DoliSIRHStats
 
         $currentMonth = date('m', dol_now());
         if ($currentMonth == date('m')) {
-            $lastdaytoshow = dol_now();
+            $currentDate   = dol_getdate(dol_now());
+            $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
         } else {
             $lastdaytoshow = $lastdayofmonth;
         }
@@ -830,7 +833,7 @@ abstract class DoliSIRHStats
 
         }
 
-        $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $userID);
+        $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
         $datas = [];
         $totalTimeSpent = 0;
 

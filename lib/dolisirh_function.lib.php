@@ -558,7 +558,7 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 	// List of tasks (does not care about permissions. Filtering will be done later)
 	$sql = "SELECT ";
 	if ($filteronprojuser > 0 || $filterontaskuser > 0) {
-		$sql .= " DISTINCT"; // We may get several time the same record if user has several roles on same project/task
+		$sql .= "DISTINCT"; // We may get several time the same record if user has several roles on same project/task
 	}
 	$sql .= " p.rowid as projectid, p.ref, p.title as plabel, p.public, p.fk_statut as projectstatus, p.usage_bill_time,";
 	$sql .= " t.rowid as taskid, t.ref as taskref, t.label, t.description, t.fk_task_parent, t.duration_effective, t.progress, t.fk_statut as status,";
@@ -1278,9 +1278,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 				if (!empty($arrayfields['timeconsumed']['checked'])) {
 					// Time spent by user
 					print '<td class="right">';
-					$firstday = dol_print_date($firstdaytoshow, 'dayrfc');
-					$lastday = dol_print_date($lastdaytoshow, 'dayrfc');
-					$filter = ' AND t.task_datehour BETWEEN ' . "'" . $firstday . "'" . ' AND ' . "'" . $lastday . "'";
+                    $filter = ' AND (t.task_date >= "' . $db->idate($firstdaytoshow) . '" AND t.task_date < "' . $db->idate(dol_time_plus_duree($lastdaytoshow, 1, 'd')) . '")';
 					$tmptimespent = $taskstatic->getSummaryOfTimeSpent($fuser->id, $filter);
 					if ($tmptimespent['total_duration']) {
 						print convertSecondToTime($tmptimespent['total_duration'], 'allhourmin');

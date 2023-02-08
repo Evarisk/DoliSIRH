@@ -122,9 +122,10 @@ $firstdaytoshow = dol_mktime(0, 0, 0, $first_month, $first_day, $first_year);
 $lastdayofweek  = dol_time_plus_duree($firstdaytoshow, 6, 'd');
 
 
-$currentWeek = date('W', dol_now());
+$currentWeek = date('W', $now);
 if ($currentWeek == $week) {
-    $lastdaytoshow = dol_now();
+    $currentDate   = dol_getdate($now);
+    $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
 } else {
     $lastdaytoshow = $lastdayofweek;
 }
@@ -674,7 +675,7 @@ $j = 0;
 $level = 0;
 
 //Show tasks lines
-$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
+$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
 
 doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $timeSpentOnTasks); ?>
 
@@ -767,7 +768,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
     print $langs->trans('Total');
 
-    $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
+    $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
 
     $totalconsumedtime = $timeSpent['total'];
     print '<span class="opacitymediumbycolor">  - '.$langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></span>';
