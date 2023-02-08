@@ -427,7 +427,7 @@ if (!empty($conf->categorie->enabled)) {
 	$morewherefilter .= Categorie::getFilterSelectQuery(Categorie::TYPE_PROJECT, 'p.rowid', $search_category_array);
 }
 
-$timeArray  = ['year' => $year, 'month' => $month, 'week' => $week, 'day' => $day, 'firstdaytoshow' => $firstdaytoshow, 'lastdaytoshow' => $lastdaytoshow];
+$timeArray  = array('year' => $year, 'month' => $month, 'week' => $week, 'day' => $day);
 $tasksarray = [];
 $tasksarray = doliSirhGetTasksArray(0, 0, ($project->id ?: 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields,0,array(), 0, $timeArray, 'week');
 
