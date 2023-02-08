@@ -613,9 +613,10 @@ abstract class DoliSIRHStats
     {
         global $langs;
 
-        $timeSpendingInfos                     = $this->getTimeSpendingInfos();
-        $timeSpentReport                       = $this->getTimeSpentReport();
-        $timeSpentCurrentMonthByTaskAndProject = $this->getTimeSpentCurrentMonthByTaskAndProject();
+        $timeSpendingInfos                           = $this->getTimeSpendingInfos();
+        $timeSpentReport                             = $this->getTimeSpentReport();
+        $timeSpentCurrentMonthByTaskAndProject       = $this->getTimeSpentCurrentMonthByTaskAndProject();
+        $globalTimeSpentCurrentMonthByTaskAndProject = $this->getTimeSpentCurrentMonthByTaskAndProject(1);
 
         $array['widgets'] = [
             0 => [
@@ -626,7 +627,7 @@ abstract class DoliSIRHStats
             ],
         ];
 
-        $array['graphs'] = [$timeSpentReport, $timeSpentCurrentMonthByTaskAndProject];
+        $array['graphs'] = [$timeSpentReport, $timeSpentCurrentMonthByTaskAndProject, $globalTimeSpentCurrentMonthByTaskAndProject];
 
         return $array;
     }
@@ -634,10 +635,10 @@ abstract class DoliSIRHStats
     /**
      * Get all timespent infos.
      *
-     * @return array
+     * @return array     Widget datas label/content
      * @throws Exception
      */
-    public function getTimeSpendingInfos()
+    public function getTimeSpendingInfos(): array
     {
         require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
@@ -701,10 +702,10 @@ abstract class DoliSIRHStats
     /**
      * Get timespent report on current year.
      *
-     * @return array
+     * @return array      Graph datas (label/color/type/title/data etc..)
      * @throws Exception
      */
-    public function getTimeSpentReport()
+    public function getTimeSpentReport(): array
     {
         require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
@@ -783,10 +784,11 @@ abstract class DoliSIRHStats
     /**
      * Get timespent on current month by task and project.
      *
-     * @return array
+     * @param  int       $showNotConsumedWorkedHours  Display not consumed worked hours
+     * @return array                                  Graph datas (label/color/type/title/data etc..)
      * @throws Exception
      */
-    public function getTimeSpentCurrentMonthByTaskAndProject()
+    public function getTimeSpentCurrentMonthByTaskAndProject(int $showNotConsumedWorkedHours = 0): array
     {
         require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
@@ -795,7 +797,7 @@ abstract class DoliSIRHStats
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
 
         // Graph Title parameters
-        $array['title'] = $langs->transnoentities('TimeSpentCurrentMonthByTaskAndProject', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['title'] = $langs->transnoentities(($showNotConsumedWorkedHours > 0 ? 'GlobalTimeSpentCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
         $array['picto'] = 'projecttask';
 
         // Graph parameters
@@ -851,9 +853,6 @@ abstract class DoliSIRHStats
             }
         }
 
-        $plannedWorkingTime = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-        $plannedWorkingTimeData = (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'fullhour') : 0);
-
         if (is_array($datas) && !empty($datas)) {
             $array['data'] = [];
             $array['labels'] = [];
@@ -867,8 +866,12 @@ abstract class DoliSIRHStats
             }
         }
 
-        $array['labels'][] = ['color' => '#008ECC'];
-        $array['data'][] = [$langs->transnoentities('NotConsumedWorkedHours'), $plannedWorkingTimeData - $totalTimeSpent, '', $plannedWorkingTimeData - $totalTimeSpent];
+        if ($showNotConsumedWorkedHours > 0) {
+            $plannedWorkingTime = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
+            $plannedWorkingTimeData = (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'fullhour') : 0);
+            $array['labels'][] = ['color' => '#008ECC'];
+            $array['data'][] = [$langs->transnoentities('NotConsumedWorkedHours'), $plannedWorkingTimeData - $totalTimeSpent, '', $plannedWorkingTimeData - $totalTimeSpent];
+        }
 
         return $array;
     }

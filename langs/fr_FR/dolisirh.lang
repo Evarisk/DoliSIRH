@@ -150,6 +150,7 @@ KeyEventTips = La touche 'Enter' permet de lancer la recherche. <br> Les touches
 TimeSpentAutoCreate = Temps consommé ajouté depuis l'événement : %s
 TimeSpentCurrentMonthByTaskAndProject = Répartition du temps consommé au mois de %s par tâche sur chaque projet
 NotConsumedWorkedHours = Heures de travail non consommées
+GlobalTimeSpentCurrentMonthByTaskAndProject = Répartition du temps consommé global au mois de %s par tâche sur chaque projet
 
 
 
