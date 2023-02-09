@@ -176,7 +176,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
 
             $task->fk_project = $result;
             $task->ref        = $modTask->getNextValue('', null);;
-            $task->label      = $langs->transnoentities('OvertimeHours');
+            $task->label      = $langs->transnoentities('AutomaticTimeSpending');
             $task->date_c     = dol_now();
             $task->create($user);
 
