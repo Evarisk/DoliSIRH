@@ -613,10 +613,10 @@ abstract class DoliSIRHStats
     {
         global $langs;
 
-        $timeSpendingInfos                           = $this->getTimeSpendingInfos();
-        $timeSpentReport                             = $this->getTimeSpentReport();
-        $timeSpentCurrentMonthByTaskAndProject       = $this->getTimeSpentCurrentMonthByTaskAndProject();
-        $globalTimeSpentCurrentMonthByTaskAndProject = $this->getTimeSpentCurrentMonthByTaskAndProject(1);
+        $timeSpendingInfos                      = $this->getTimeSpendingInfos();
+        $timeSpentReport                        = $this->getTimeSpentReport();
+        $timeSpentCurrentMonthByTaskAndProject  = $this->getTimeSpentCurrentMonthByTaskAndProject();
+        $globalTimeCurrentMonthByTaskAndProject = $this->getTimeSpentCurrentMonthByTaskAndProject(1);
 
         $array['widgets'] = [
             0 => [
@@ -627,7 +627,7 @@ abstract class DoliSIRHStats
             ],
         ];
 
-        $array['graphs'] = [$timeSpentReport, $timeSpentCurrentMonthByTaskAndProject, $globalTimeSpentCurrentMonthByTaskAndProject];
+        $array['graphs'] = [$timeSpentReport, $timeSpentCurrentMonthByTaskAndProject, $globalTimeCurrentMonthByTaskAndProject];
 
         return $array;
     }
@@ -799,7 +799,7 @@ abstract class DoliSIRHStats
         $datasetOrder = $user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER;
 
         // Graph Title parameters
-        $array['title'] = $langs->transnoentities(($showNotConsumedWorkedHours > 0 ? 'GlobalTimeSpentCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['title'] = $langs->transnoentities(($showNotConsumedWorkedHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
         $array['picto'] = 'projecttask';
 
         // Graph parameters
