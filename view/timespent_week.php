@@ -253,91 +253,6 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('assigntask')
 	$action = '';
 }
 
-if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilteraction') != 'listafterchangingselectedfields') {
-	$timetoadd = $_POST['task'];
-	if (empty($timetoadd)) {
-		setEventMessages($langs->trans('ErrorTimeSpentIsEmpty'), null, 'errors');
-	} else {
-		foreach ($timetoadd as $taskid => $value) {     // Loop on each task
-			$updateoftaskdone = 0;
-			foreach ($value as $key => $val) {          // Loop on each day
-				$amountoadd = $timetoadd[$taskid][$key];
-				if (!empty($amountoadd)) {
-					$tmpduration = explode(':', $amountoadd);
-					$newduration = 0;
-					if (!empty($tmpduration[0])) {
-						$newduration += ($tmpduration[0] * 3600);
-					}
-					if (!empty($tmpduration[1])) {
-						$newduration += ($tmpduration[1] * 60);
-					}
-					if (!empty($tmpduration[2])) {
-						$newduration += ($tmpduration[2]);
-					}
-
-					if ($newduration > 0) {
-						$object->fetch($taskid);
-
-						if (GETPOSTISSET($taskid.'progress')) {
-							$object->progress = GETPOST($taskid.'progress', 'int');
-						} else {
-							unset($object->progress);
-						}
-
-						$object->timespent_duration = $newduration;
-						$object->timespent_fk_user = $usertoprocess->id;
-						$object->timespent_date = dol_time_plus_duree($firstdaytoshow, $key, 'd');
-						$object->timespent_datehour = $object->timespent_date;
-						$object->timespent_note = $object->description;
-
-						$result = $object->addTimeSpent($user);
-						if ($result < 0) {
-							setEventMessages($object->error, $object->errors, 'errors');
-							$error++;
-							break;
-						}
-
-						$updateoftaskdone++;
-					}
-				}
-			}
-
-			if (!$updateoftaskdone) {  // Check to update progress if no update were done on task.
-				$object->fetch($taskid);
-				//var_dump($object->progress);var_dump(GETPOST($taskid . 'progress', 'int')); exit;
-				if ($object->progress != GETPOST($taskid.'progress', 'int')) {
-					$object->progress = GETPOST($taskid.'progress', 'int');
-					$result = $object->update($user);
-					if ($result < 0) {
-						setEventMessages($object->error, $object->errors, 'errors');
-						$error++;
-						break;
-					}
-				}
-			}
-		}
-
-		if (!$error) {
-			setEventMessages($langs->trans('RecordSaved'), null, 'mesgs');
-
-			$param = '';
-			$param .= ($mode ? '&mode='.urlencode($mode) : '');
-			$param .= ($projectid ? 'id='.urlencode($projectid) : '');
-			$param .= ($search_usertoprocessid ? '&search_usertoprocessid='.urlencode($search_usertoprocessid) : '');
-			$param .= ($day ? '&day='.urlencode($day) : '').($month ? '&month='.urlencode($month) : '').($year ? '&year='.urlencode($year) : '');
-			$param .= ($search_project_ref ? '&search_project_ref='.urlencode($search_project_ref) : '');
-			$param .= ($search_usertoprocessid > 0 ? '&search_usertoprocessid='.urlencode($search_usertoprocessid) : '');
-			$param .= ($search_thirdparty ? '&search_thirdparty='.urlencode($search_thirdparty) : '');
-			$param .= ($search_task_ref ? '&search_task_ref='.urlencode($search_task_ref) : '');
-			$param .= ($search_task_label ? '&search_task_label='.urlencode($search_task_label) : '');
-
-			// Redirect to avoid submit twice on back
-			header('Location: '.$_SERVER['PHP_SELF'].'?'.$param);
-			exit;
-		}
-	}
-}
-
 if ($action == 'showOnlyFavoriteTasks') {
     $data = json_decode(file_get_contents('php://input'), true);
 
@@ -863,8 +778,6 @@ print '</table>';
 print '</div>';
 
 print '<input type="hidden" id="numberOfLines" name="numberOfLines" value="'.count($tasksarray).'"/>'."\n";
-
-print $form->buttonsSaveCancel('Save', '');
 
 print '</form>';
 
