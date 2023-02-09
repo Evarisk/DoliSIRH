@@ -469,18 +469,18 @@ print dol_get_fiche_head($head, 'inputperweek', $langs->trans('TimeSpent'), -1, 
 // Show description of content
 print '<div class="hideonsmartphone opacitymedium">';
 if ($mine || ($usertoprocess->id == $user->id)) {
-	print $langs->trans('MyTasksDesc').'.'.($onlyopenedproject ? ' '. '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
+    $tooltipTaskInfo .= $langs->trans('MyTasksDesc').'.'.($onlyopenedproject ? ' '. '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
 } elseif (empty($usertoprocess->id) || $usertoprocess->id < 0) {
     if ($user->rights->projet->all->lire && !$socid) {
-        print $langs->trans('ProjectsDesc') . '.' . ($onlyopenedproject ? ' ' . '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
+        $tooltipTaskInfo .= $langs->trans('ProjectsDesc') . '.' . ($onlyopenedproject ? ' ' . '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
     } else {
-        print $langs->trans('ProjectsPublicTaskDesc') . '.' . ($onlyopenedproject ? ' ' . '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
+        $tooltipTaskInfo .= $langs->trans('ProjectsPublicTaskDesc') . '.' . ($onlyopenedproject ? ' ' . '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
     }
 }
 if ($mine || ($usertoprocess->id == $user->id)) {
-	print $langs->trans('OnlyYourTaskAreVisible').'<br>';
+    $tooltipTaskInfo .= $langs->trans('OnlyYourTaskAreVisible').'<br>';
 } else {
-	print $langs->trans('AllTaskVisibleButEditIfYouAreAssigned').'<br>';
+    $tooltipTaskInfo .= $langs->trans('AllTaskVisibleButEditIfYouAreAssigned').'<br>';
 }
 print '</div>';
 
@@ -503,17 +503,13 @@ print '<input type="submit" class="button valignmiddle smallonsmartphone" name="
 print '</div>';
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
-print img_help(1, $langs->trans('KeyEvent')) .  ' ' . $langs->trans('KeyEventTips') . '<br><br>';
-print $langs->trans('ShowOnlyFavoriteTasks');
-print '<input type="checkbox"  class="show-only-favorite-tasks"'. ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '').' >';
+$tooltipTaskInfo .= img_help(1, $langs->trans('KeyEvent')) .  ' ' . $langs->trans('KeyEventTips') . '<br><br>';
 if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
     print '<br>';
     print '<div class="opacitymedium"><i class="fas fa-exclamation-triangle"></i>'.' '.$langs->trans('WarningShowOnlyFavoriteTasks').'</div>';
 }
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
-print $langs->trans('ShowOnlyTasksWithTimeSpent');
-print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '').' >';
 
 // Get if user is available or not for each day
 $isavailable = array();
@@ -588,7 +584,14 @@ print '</td>';
 print "</tr>\n";
 
 print '<tr class="liste_titre">';
-print '<th>'.$langs->trans('Task').'</th>';
+print '<th>' . $form->textwithpicto($langs->trans('Task'), $tooltipTaskInfo);
+print ' <i class="fas fa-star"></i>';
+print '<input type="checkbox"  class="show-only-favorite-tasks"'. ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '').' >';
+print $form->textwithpicto('', $langs->trans('ShowOnlyFavoriteTasks'));
+print ' <i class="fas fa-clock"></i>';
+print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '').' >';
+print  $form->textwithpicto('', $langs->trans('ShowOnlyTasksWithTimeSpent'));
+print '</th>';
 // TASK fields
 if (!empty($arrayfields['timeconsumed']['checked'])) {
 	print '<th class="right maxwidth75 maxwidth100">'.$langs->trans('TimeSpent').($usertoprocess->firstname ? '<br><span class="nowraponall">'.$usertoprocess->getNomUrl(-2).'<span class="opacitymedium paddingleft">'.dol_trunc($usertoprocess->firstname, 10).'</span></span>' : '').'</th>';
