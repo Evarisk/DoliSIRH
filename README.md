@@ -14,7 +14,7 @@
 ## Liens
 
 - Support & Assistance : [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à contact@evarisk.com
-- Demo : [Demo Digirisk](https://www.demodoli.digirisk.com) - ID: demo - Password: demo
+- Demo : [Demo DoliSIRH](https://www.demodoli.digirisk.com) - ID: demo - Password: demo
 - Documentation : [Wiki DoliSIRH](https://wiki.dolibarr.org/index.php/Module_DoliSIRH)
 - Projet Github : [Projet DoliSIRH](https://github.com/Evarisk/DoliSIRH/projects?query=is%3Aopen)
 - D'autres modules développés par Evarisk disponible sur [Dolistore.com](https://www.dolistore.com)
