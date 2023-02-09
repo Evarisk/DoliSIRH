@@ -394,7 +394,7 @@ $thirdpartystatic = new Societe($db);
 $holiday = new Holiday($db);
 
 $title    = $langs->trans('TimeSpent');
-$help_url = '';
+$help_url = 'FR:Module_DoliSIRH';
 $morejs   = ['dolisirh/js/dolisirh.js', '/core/js/timesheet.js'];
 $morecss  = ['/dolisirh/css/dolisirh.css'];
 

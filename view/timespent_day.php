@@ -407,7 +407,7 @@ $next_month = $next['mon'];
 $next_day   = $next['mday'];
 
 $title    = $langs->trans("TimeSpent");
-$help_url = '';
+$help_url = 'FR:Module_DoliSIRH';
 $morejs   = array("/dolisirh/js/dolisirh.js", "/core/js/timesheet.js");
 $morecss  = array("/dolisirh/css/dolisirh.css");
 

@@ -260,7 +260,7 @@ $form = new Form($db);
 $now = dol_now();
 
 //$help_url="EN:Module_Certificate|FR:Module_Certificate_FR|ES:Módulo_Certificate";
-$help_url = '';
+$help_url = 'FR:Module_DoliSIRH';
 $title = $langs->trans('CertificateList');
 $morejs = array("/dolisirh/js/dolisirh.js");
 $morecss = array("/dolisirh/css/dolisirh.css");

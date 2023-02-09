@@ -397,10 +397,10 @@ $taskstatic = new Task($db);
 $thirdpartystatic = new Societe($db);
 $holiday = new Holiday($db);
 
-$title    = $langs->trans('TimeSpent');
-$help_url = '';
-$morejs   = ['/dolisirh/js/dolisirh.js', '/core/js/timesheet.js'];
-$morecss  = ['/dolisirh/css/dolisirh.css'];
+$title     = $langs->trans('TimeSpent');
+ $help_url = 'FR:Module_DoliSIRH';
+$morejs    = ['/dolisirh/js/dolisirh.js', '/core/js/timesheet.js'];
+$morecss   = ['/dolisirh/css/dolisirh.css'];
 
 $projectsListId = $projectstatic->getProjectsAuthorizedForUser($usertoprocess, (empty($usertoprocess->id) ? 2 : 0), 1); // Return all project i have permission on (assigned to me+public). I want my tasks and some of my task may be on a public projet that is not my project
 //var_dump($projectsListId);

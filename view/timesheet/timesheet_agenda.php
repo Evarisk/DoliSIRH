@@ -160,7 +160,7 @@ $form = new Form($db);
 
 if ($object->id > 0) {
 	$title    = $langs->trans('TimeSheet') . ' - ' .$langs->trans("Agenda");
-	$help_url = '';
+    $help_url = 'FR:Module_DoliSIRH';
 	$morejs   = array("/dolisirh/js/dolisirh.js");
 	$morecss  = array("/dolisirh/css/dolisirh.css");
 

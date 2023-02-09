@@ -301,7 +301,7 @@ if ($action == 'deleteAttendant') {
  */
 
 $title    = $langs->trans("CertificateAttendants");
-$help_url = '';
+$help_url = 'FR:Module_DoliSIRH';
 $morejs   = array("/dolisirh/js/signature-pad.min.js", "/dolisirh/js/dolisirh.js");
 $morecss  = array("/dolisirh/css/dolisirh.css");
 

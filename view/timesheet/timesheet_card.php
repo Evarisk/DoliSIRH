@@ -438,7 +438,7 @@ if (empty($reshook)) {
 $form = new Form($db);
 
 $title    = $langs->trans("TimeSheet");
-$help_url = '';
+$help_url = 'FR:Module_DoliSIRH';
 $morejs   = array("/dolisirh/js/dolisirh.js");
 $morecss  = array("/dolisirh/css/dolisirh.css");
 

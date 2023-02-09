@@ -269,7 +269,7 @@ $form = new Form($db);
 $now = dol_now();
 
 //$help_url="EN:Module_TimeSheet|FR:Module_TimeSheet_FR|ES:Módulo_TimeSheet";
-$help_url = '';
+$help_url = 'FR:Module_DoliSIRH';
 $title = $langs->trans('TimeSheetList');
 $morejs = array("/dolisirh/js/dolisirh.js");
 $morecss = array("/dolisirh/css/dolisirh.css");
