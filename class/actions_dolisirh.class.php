@@ -997,4 +997,34 @@ class ActionsDoliSIRH
 			}
 		}
 	}
+
+    /**
+     * Overloading the getNomUrl function : replacing the parent's function with the one below
+     *
+     * @param  array        $parameters Hook metadata (context, etc...)
+     * @param  CommonObject $object     The object to process
+     * @param  string       $action     Current action (if set). Generally create or edit or null
+     * @return int                      0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function getNomUrl(array $parameters, CommonObject $object, string $action): int
+    {
+        if (in_array('timespentpermonthlist', explode(':', $parameters['context'])) || in_array('timespentperweeklist', explode(':', $parameters['context']))) {
+            $doc = new DOMDocument();
+            $doc->loadHTML($parameters['getnomurl']);
+            $links = $doc->getElementsByTagName('a');
+            foreach ($links as $item) {
+                if (!$item->hasAttribute('target')) {
+                    $item->setAttribute('target','_blank');
+                }
+            }
+            $content = $doc->saveHTML();
+            $this->resprints = $content;
+        }
+
+        if (!empty($this->resprints)) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }
