@@ -68,10 +68,7 @@ $morecss  = ['/dolisirh/css/dolisirh.css'];
 
 llxHeader('', $title . ' ' . $modDoliSIRH->version, $help_url, '', 0, 0, $morejs, $morecss);
 
-$morehtmlright = '<label for="timespent-dataset_order">' . $langs->trans('TimeSpentDatasetOrder');
-$morehtmlright .= '<input type="checkbox" class="timespent-dataset-order" id="timespent-dataset-order" name="timespent-dataset-order" '.($user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER ? ' checked=""' : '') . '>';
-$morehtmlright .= '</label>';
-$morehtmlright .= ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($userID, 'search_userid', '', null, 0, '', null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth300 select-user-dashboard', 1);
+$morehtmlright = img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($userID, 'search_userid', '', null, 0, '', null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth300 select-user-dashboard', 1);
 
 print load_fiche_titre($title . ' ' . $modDoliSIRH->version, $morehtmlright, 'dolisirh_red.png@dolisirh');
 

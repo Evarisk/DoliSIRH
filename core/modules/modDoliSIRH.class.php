@@ -81,7 +81,8 @@ class modDoliSIRH extends DolibarrModules
 					  'cronjoblist',
 					  'projecttasktime',
 					  'timesheetcard',
-                      'actioncard'
+                      'actioncard',
+                      'userihm'
 				  ),
 			),
 			'moduleforexternal' => 0,
