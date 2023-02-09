@@ -425,8 +425,7 @@ print '</div>';
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
 $tooltipTaskInfo .= img_help(1, $langs->trans('KeyEvent')) .  ' ' . $langs->trans('KeyEventTips') . '<br><br>';
 if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
-	print '<br>';
-	print '<div class="opacitymedium"><i class="fas fa-exclamation-triangle"></i>'.' '.$langs->trans('WarningShowOnlyFavoriteTasks').'</div>';
+    $tooltipTaskInfo .= '<div class="opacitymedium"><i class="fas fa-exclamation-triangle"></i>'.' '.$langs->trans('WarningShowOnlyFavoriteTasks').'</div>';
 }
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
