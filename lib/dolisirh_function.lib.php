@@ -1263,7 +1263,8 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
                 if ($taskstatic->planned_workload != '') {
                     $tmparray = $taskstatic->getSummaryOfTimeSpent();
                     if ($tmparray['total_duration'] > 0 && !empty($taskstatic->planned_workload)) {
-                        print '<span class="task-progress ' . getTaskProgressColorClass(round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2)) . '">' . ' ' . round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2) . ' %' . '</span>';
+                        print ' <span class="task-progress ' . getTaskProgressColorClass(round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2)) . '">' . ' ' . round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2) . ' %' . '</span>';
+                        print ' <span>' . ' ' . convertSecondToTime($taskstatic->planned_workload, 'allhourmin') . '</span>';
                     } else {
                         print ' 0 %';
                     }
