@@ -20,7 +20,11 @@
 # Module label 'ModuleDoliSIRHName'
 ModuleDoliSIRHName = DoliSIRH
 # Module description 'ModuleDoliSIRHDesc'
-ModuleDoliSIRHDesc = Description de DoliSIRH
+ModuleDoliSIRHDesc = Simplification de la gestion du temps. <br> Génération des navettes.
+DoliSIRHDescription = Simplification de la gestion du temps. <br> Génération des navettes.
+DoliSIRHDescription = Simplification de la gestion du temps. <br> Génération des navettes.
+
+
 
 #
 # Page d'administration

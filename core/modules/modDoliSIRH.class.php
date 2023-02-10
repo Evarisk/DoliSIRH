@@ -49,7 +49,7 @@ class modDoliSIRH extends DolibarrModules
 		$this->familyinfo      = array('Evarisk' => array('position' => '01', 'label' => $langs->trans("Evarisk")));
 		$this->name            = preg_replace('/^mod/i', '', get_class($this));
 		$this->description 	   = $langs->trans('DoliSIRHDescription');
-		$this->descriptionlong = 'DoliSIRHDescriptionLong';
+		$this->descriptionlong = $langs->trans('DoliSIRHDescriptionLong');
 		$this->editor_name     = 'Evarisk';
 		$this->editor_url      = 'https://evarisk.com';
 		$this->version         = '1.2.0';
