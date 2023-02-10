@@ -691,7 +691,7 @@ class ActionsDoliSIRH
 		<?php }
 
         if ($parameters['currentcontext'] == 'userihm') {
-            $pictopath = dol_buildpath('/custom/dolimeet/img/dolimeet_color.png', 1);
+            $pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_red.png', 1);
 			$picto = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoModule');
 
             $out = '<tr class="oddeven"><td>' . $picto . $langs->trans('TimeSpentDatasetOrder') . '</td>';
