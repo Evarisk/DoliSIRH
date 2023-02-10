@@ -15,7 +15,7 @@
   margin-right: 4px;
 }
 .modal-timespent .timespent-datehour, .modal-timespent .timespent-datemin, .modal-timespent .timespent-hour, .modal-timespent .timespent-min {
-  max-width: 35px !important;
+  max-width: 40px !important;
 }
 .modal-timespent .modal-footer {
   padding-top: 0 !important;
