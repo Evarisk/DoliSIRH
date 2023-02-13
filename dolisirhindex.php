@@ -68,7 +68,11 @@ $morecss  = ['/dolisirh/css/dolisirh.css'];
 
 llxHeader('', $title . ' ' . $modDoliSIRH->version, $help_url, '', 0, 0, $morejs, $morecss);
 
-$morehtmlright = img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($userID, 'search_userid', '', null, 0, '', null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth300 select-user-dashboard', 1);
+$currentMonth = date('m', dol_now());
+
+$months = [1 => $langs->trans('January'), 2 => $langs->trans('February'), 3 => $langs->trans('March'), 4 => $langs->trans('April'), 5 => $langs->trans('May'), 6 => $langs->trans('June'), 7 => $langs->trans('July'), 8 => $langs->trans('August'), 9 => $langs->trans('September'), 10 => $langs->trans('October'), 11 => $langs->trans('November'), 12 => $langs->trans('December')];
+$morehtmlright = img_picto($langs->trans('Filter') . ' ' . $langs->trans('Month'), 'title_agenda', 'class="paddingright pictofixedwidth"') . $form->selectarray('search_month', $months, $currentMonth, 0,0, 0, '', 1, 0, 0, '', 'maxwidth100 select-timespent-dataset-month');
+$morehtmlright .= ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($userID, 'search_userid', '', null, 0, '', null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth300 select-user-dashboard', 1);
 
 print load_fiche_titre($title . ' ' . $modDoliSIRH->version, $morehtmlright, 'dolisirh_red.png@dolisirh');
 

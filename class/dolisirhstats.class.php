@@ -645,12 +645,13 @@ abstract class DoliSIRHStats
         global $db, $langs, $user;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $month  = GETPOSTISSET('search_month') ? GETPOST('search_month', 'int') : date('m');
 
-        $firstdaytoshow = dol_get_first_day(date('Y'), date('m'));
+        $firstdaytoshow = dol_get_first_day(date('Y'), $month);
         $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
         $currentMonth = date('m', dol_now());
-        if ($currentMonth == date('m')) {
+        if ($currentMonth == $month) {
             $currentDate   = dol_getdate(dol_now());
             $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
         } else {
@@ -678,7 +679,7 @@ abstract class DoliSIRHStats
 
         // Planned working time
         $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-        $array['planned']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ExpectedWorkedHoursMonth', dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['planned']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ExpectedWorkedHoursMonth', dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), date('Y')), '%B %Y'));
         $array['planned']['content'] = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00');
 
         // Hours passed
@@ -795,11 +796,12 @@ abstract class DoliSIRHStats
         global $db, $langs, $user;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $month  = GETPOSTISSET('search_month') ? GETPOST('search_month', 'int') : date('m');
 
         $datasetOrder = $user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER;
 
         // Graph Title parameters
-        $array['title'] = $langs->transnoentities(($showNotConsumedWorkedHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, date('m'), date('d'), date('Y')), '%B %Y'));
+        $array['title'] = $langs->transnoentities(($showNotConsumedWorkedHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), date('Y')), '%B %Y'));
         $array['picto'] = 'projecttask';
 
         // Graph parameters
@@ -811,11 +813,11 @@ abstract class DoliSIRHStats
         $workinghours = new Workinghours($db);
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
-        $firstdaytoshow = dol_get_first_day(date('Y'), date('m'));
+        $firstdaytoshow = dol_get_first_day(date('Y'), $month);
         $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
         $currentMonth = date('m', dol_now());
-        if ($currentMonth == date('m')) {
+        if ($currentMonth == $month) {
             $currentDate   = dol_getdate(dol_now());
             $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
         } else {
@@ -828,11 +830,11 @@ abstract class DoliSIRHStats
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
             $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
             if (isDayAvailable($dayInLoop, $userID)) {
-                $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
+                $isavailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
             } else if (date('N', $dayInLoop) >= 6) {
-                $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
+                $isavailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
             } else {
-                $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday'];
+                $isavailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
             }
 
         }

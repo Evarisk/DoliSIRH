@@ -1260,6 +1260,7 @@ window.eoxiaJS.dashboard.event = function() {
 	$( document ).on( 'change', '.add-dashboard-widget', window.eoxiaJS.dashboard.addDashBoardInfo );
 	$( document ).on( 'click', '.close-dashboard-widget', window.eoxiaJS.dashboard.closeDashBoardInfo );
 	$( document ).on( 'change', '.select-user-dashboard', window.eoxiaJS.dashboard.selectUserDashboard );
+	$( document ).on( 'change', '.select-timespent-dataset-month', window.eoxiaJS.dashboard.selectTimeSpentDatasetMonth );
 };
 
 /**
@@ -1345,7 +1346,36 @@ window.eoxiaJS.dashboard.selectUserDashboard = function() {
 	window.eoxiaJS.loader.display($('.fichecenter'));
 
 	$.ajax({
-		url: document.URL + querySeparator + 'action=selectuserdashboar&token='  + token + '&search_userid=' + userID,
+		url: document.URL + querySeparator + 'action=selectuserdashboard&token='  + token + '&search_userid=' + userID,
+		type: "POST",
+		processData: false,
+		contentType: false,
+		success: function(resp) {
+			$('.fichecenter').replaceWith($(resp).find('.fichecenter'));
+		},
+		error: function() {}
+	});
+};
+
+/**
+ * Select timespent dataset month.
+ *
+ * @since   1.2.1
+ * @version 1.2.1
+ *
+ * @return {void}
+ */
+window.eoxiaJS.dashboard.selectTimeSpentDatasetMonth = function() {
+	let month = this.value;
+
+	let querySeparator = '?';
+	let token = $('.dashboard').find('input[name="token"]').val();
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	window.eoxiaJS.loader.display($('.fichecenter'));
+
+	$.ajax({
+		url: document.URL + querySeparator + 'action=selecttimespentdatasetmonth&token='  + token + '&search_month=' + month,
 		type: "POST",
 		processData: false,
 		contentType: false,
