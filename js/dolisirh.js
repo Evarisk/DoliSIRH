@@ -620,6 +620,7 @@ window.eoxiaJS.task.event = function() {
 	$( document ).on( 'click', '.show-only-favorite-tasks', window.eoxiaJS.task.showOnlyFavoriteTasks );
 	$( document ).on( 'click', '.show-only-tasks-with-timespent', window.eoxiaJS.task.showOnlyTasksWithTimeSpent );
 	$( document ).on( 'click', '.timespent-create', window.eoxiaJS.task.createTimeSpent );
+	$( document ).on( 'click', '.toggleTaskFavorite', window.eoxiaJS.task.toggleTaskFavorite );
 };
 
 /**
@@ -678,27 +679,35 @@ window.eoxiaJS.task.divideTimeSpent = function( event ) {
  * Active/désactive la configuration pour n'afficher que les tâches favorites
  *
  * @since   1.0.0
- * @version 1.0.0
+ * @version 1.2.1
  *
- * @param  {MouseEvent} event [description]
  * @return {void}
  */
-window.eoxiaJS.task.showOnlyFavoriteTasks = function( event ) {
+window.eoxiaJS.task.showOnlyFavoriteTasks = function() {
 	let token = $('.id-container').find('input[name="token"]').val();
 	let querySeparator = '?';
 
 	document.URL.match(/\?/) ? querySeparator = '&' : 1
 
+	let showOnlyFavoriteTasks;
+	if ($(this).is(':checked')) {
+		showOnlyFavoriteTasks = 1;
+	} else {
+		showOnlyFavoriteTasks = 0;
+	}
+
 	$.ajax({
 		url: document.URL + querySeparator + "action=showOnlyFavoriteTasks&token=" + token,
 		type: "POST",
 		processData: false,
+		data: JSON.stringify({
+			showOnlyFavoriteTasks: showOnlyFavoriteTasks
+		}),
 		contentType: false,
-		success: function ( resp ) {
-			window.location.reload()
+		success: function() {
+			window.location.reload();
 		},
-		error: function ( ) {
-		}
+		error: function() {}
 	});
 };
 
@@ -706,27 +715,35 @@ window.eoxiaJS.task.showOnlyFavoriteTasks = function( event ) {
  * Active/désactive la configuration pour n'afficher que les tâches avec du temps pointé
  *
  * @since   1.1.0
- * @version 1.1.0
+ * @version 1.2.1
  *
- * @param  {MouseEvent} event [description]
  * @return {void}
  */
-window.eoxiaJS.task.showOnlyTasksWithTimeSpent = function( event ) {
+window.eoxiaJS.task.showOnlyTasksWithTimeSpent = function() {
 	let token = $('.id-container').find('input[name="token"]').val();
 	let querySeparator = '?';
 
 	document.URL.match(/\?/) ? querySeparator = '&' : 1
 
+	let showOnlyTasksWithTimeSpent;
+	if ($(this).is(':checked')) {
+		showOnlyTasksWithTimeSpent = 1;
+	} else {
+		showOnlyTasksWithTimeSpent = 0;
+	}
+
 	$.ajax({
 		url: document.URL + querySeparator + "action=showOnlyTasksWithTimeSpent&token=" + token,
 		type: "POST",
 		processData: false,
+		data: JSON.stringify({
+			showOnlyTasksWithTimeSpent: showOnlyTasksWithTimeSpent
+		}),
 		contentType: false,
-		success: function ( resp ) {
-			window.location.reload()
+		success: function() {
+			window.location.reload();
 		},
-		error: function ( ) {
-		}
+		error: function() {}
 	});
 };
 
@@ -782,6 +799,35 @@ window.eoxiaJS.task.createTimeSpent = function ( event ) {
 		}
 	});
 };
+
+window.eoxiaJS.task.toggleTaskFavorite = function () {
+	let taskID = $(this).attr('value');
+	let token = $('form[name="addtime"]').find('input[name="token"]').val();
+	let querySeparator = '?';
+
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	$.ajax({
+		url: document.URL + querySeparator + 'action=toggleTaskFavorite&taskId=' + taskID + '&token=' + token,
+		type: "POST",
+		processData: false,
+		contentType: false,
+		success: function () {
+			let taskContainer = $('#' + taskID)
+
+			if (taskContainer.hasClass('fas')) {
+				taskContainer.removeClass('fas')
+				taskContainer.addClass('far')
+			} else if (taskContainer.hasClass('far')) {
+				taskContainer.removeClass('far')
+				taskContainer.addClass('fas')
+			}
+		},
+		error: function (resp) {
+
+		}
+	});
+}
 
 
 /**
@@ -1156,14 +1202,29 @@ window.eoxiaJS.keyEvent.event = function() {
 /**
  * Action modal close & validation with key events
  *
- * @since   1.4.0
- * @version 1.4.0
+ * @since   1.2.0
+ * @version 1.2.1
  *
  * @return {void}
  */
-window.eoxiaJS.keyEvent.keyup = function( event ) {
-	if ( 'Escape' === event.key  ) {
+window.eoxiaJS.keyEvent.keyup = function(event) {
+	if ('Escape' === event.key) {
 		$(this).find('.modal-active .modal-close .fas.fa-times').first().click();
+	}
+	if (!$(event.target).is('input, textarea')) {
+		if ('Enter' === event.key)  {
+			$(this).find('.button_search').click();
+		}
+		if (event.shiftKey && 'Enter' === event.key)  {
+			$(this).find('.button_removefilter').click();
+		}
+	}
+	if ($(event.target).is('body')) {
+		let height = '';
+		if (event.shiftKey) {
+			height = 200 + 'px';
+			$('body').find('.wpeo-tooltip').css('height', height);
+		}
 	}
 };
 
@@ -1198,6 +1259,7 @@ window.eoxiaJS.dashboard.init = function() {
 window.eoxiaJS.dashboard.event = function() {
 	$( document ).on( 'change', '.add-dashboard-widget', window.eoxiaJS.dashboard.addDashBoardInfo );
 	$( document ).on( 'click', '.close-dashboard-widget', window.eoxiaJS.dashboard.closeDashBoardInfo );
+	$( document ).on( 'click', '.select-dataset-dashboard-info', window.eoxiaJS.dashboard.selectDatasetDashboardInfo );
 };
 
 /**
@@ -1262,5 +1324,35 @@ window.eoxiaJS.dashboard.closeDashBoardInfo = function() {
 		},
 		error: function ( ) {
 		}
+	});
+};
+
+/**
+ * Select dataset dashboard info.
+ *
+ * @since   1.2.1
+ * @version 1.2.1
+ *
+ * @return {void}
+ */
+window.eoxiaJS.dashboard.selectDatasetDashboardInfo = function() {
+	let userID = $('#search_userid').val();
+	let month  = $('#search_month').val();
+
+	let querySeparator = '?';
+	let token = $('.dashboard').find('input[name="token"]').val();
+	document.URL.match(/\?/) ? querySeparator = '&' : 1
+
+	window.eoxiaJS.loader.display($('.fichecenter'));
+
+	$.ajax({
+		url: document.URL + querySeparator + 'action=selectdatasetdashboardinfo&token='  + token + '&search_userid=' + userID + '&search_month=' + month,
+		type: "POST",
+		processData: false,
+		contentType: false,
+		success: function(resp) {
+			$('.fichecenter').replaceWith($(resp).find('.fichecenter'));
+		},
+		error: function() {}
 	});
 };

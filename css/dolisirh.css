@@ -15,7 +15,7 @@
   margin-right: 4px;
 }
 .modal-timespent .timespent-datehour, .modal-timespent .timespent-datemin, .modal-timespent .timespent-hour, .modal-timespent .timespent-min {
-  max-width: 35px !important;
+  max-width: 40px !important;
 }
 .modal-timespent .modal-footer {
   padding-top: 0 !important;
@@ -66,6 +66,27 @@
 .box-flex-item .close-dashboard-info > [class*=fa], .box-flex-item .close-dashboard-widget > [class*=fa] {
   display: inline-block;
   line-height: 20px;
+}
+
+.task-progress {
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+  border-radius: 4px;
+  padding: 0.2em 0.4em;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+}
+.task-progress.progress-red {
+  background: #e05353;
+  color: #fff;
+}
+.task-progress.progress-yellow {
+  background: #e9ad4f;
+  color: #fff;
+}
+.task-progress.progress-green {
+  background: #47e58e;
+  color: #fff;
 }
 
 /*--------------------------------------------------------------

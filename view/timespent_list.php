@@ -213,11 +213,10 @@ $form = new Form($db);
 
 $now = dol_now();
 
-$help_url = '';
-$title = $langs->trans($langs->transnoentitiesnoconv("TimeSpentList"));
-$morejs = array();
-$morecss = array();
-
+$help_url = 'FR:Module_DoliSIRH';
+$title    = $langs->trans($langs->transnoentitiesnoconv("TimeSpentList"));
+$morejs   = array();
+$morecss  = array();
 
 // Build and execute select
 // --------------------------------------------------------------------

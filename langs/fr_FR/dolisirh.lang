@@ -20,7 +20,11 @@
 # Module label 'ModuleDoliSIRHName'
 ModuleDoliSIRHName = DoliSIRH
 # Module description 'ModuleDoliSIRHDesc'
-ModuleDoliSIRHDesc = Description de DoliSIRH
+ModuleDoliSIRHDesc = Simplification de la gestion du temps. <br> Génération des navettes.
+DoliSIRHDescription = Simplification de la gestion du temps. <br> Génération des navettes.
+DoliSIRHDescription = Simplification de la gestion du temps. <br> Génération des navettes.
+
+
 
 #
 # Page d'administration
@@ -113,7 +117,7 @@ Holidays = Congés
 PaidHolidays = Congés payés
 SickLeave = Congés maladie
 PublicHoliday = Jour férié
-OvertimeHours = Heure supplémentaire
+AutomaticTimeSpending = Auto-pointage
 InternalMeeting = Réunion interne
 InternalTraining = Formation interne
 ExternalTraining = Formation externe
@@ -131,17 +135,28 @@ SpendMoreTimeThanPlanned = Pointer plus de temps que planifié
 SpendMoreTimeThanPlannedDescription = Cette option permet de pointer plus de temps que le temps renseigné dans l'onglet "Horaires" de l'utilisateur
 ConsumedTime = Temps pointé
 ExpectedWorkedHoursMonth = Heures de travail prévues au mois de %s
-SpentWorkedHoursMonth = Heures de travail passées du %s au %s
-ConsumedWorkedHoursMonth = Heures de travail consommées du %s au %s
-DiffSpentAndConsumedWorkedHoursMonth = Différence d'heures de travail passées/consommées du %s au %s
+SpentWorkedHoursMonth = Heures de travail dues (%s - %s)
+ConsumedWorkedHoursMonth = Heures de travail consommées (%s - %s)
+DiffSpentAndConsumedWorkedHoursMonth = Différence d'heures de travail dues/consommées (%s - %s)
 WarningShowOnlyFavoriteTasks = Attention, quand l'option 'Afficher uniquement les tâches favorites' est activée, les valeurs totales récupèrent l'ensembles des tâches.
-ExpectedWorkedHoursWeek = Heures de travail prévues du %s au %s
+ExpectedWorkedHoursWeek = Heures de travail prévues (%s - %s)
 ThemeDashboardTimeSpent = Thème du Rapport de pointage de temps
 TimeSpentList = Liste des temps consommés
 ShowOnlyTasksWithTimeSpent = Afficher uniquement les tâches avec du temps consommé sur cette période
 ExpectedWorkedHours = Heures de travail prévues
 ConsumedWorkedHours = Heures de travail consommées
 TimeSpentReportByFiscalYear = Rapport du temps consommé sur l'exercice fiscal
+MarkYourTime = Pointer son temps
+MissingTaskWithTimeSpentOption = Erreur : il faut choisir une tâche pour pointer son temps
+MissingEndDateWithTimeSpentOption = Erreur : il faut choisir une date de fin d'événement pour pointer son temps
+ErrorTimeSpentDurationCantBeNegative = Erreur : la date de fin d'événement ne peut pas être une valeur négative
+KeyEventTips = La touche 'Enter' permet de lancer la recherche. <br> Les touches 'shift + Enter' permettent de supprimer les paramètres de recherche. <br> La touche 'shift' sur une tooltip affiche plus d'informations sur les commentaires.
+TimeSpentAutoCreate = Temps consommé ajouté depuis l'événement : %s
+TimeSpentCurrentMonthByTaskAndProject = Répartition du temps consommé au mois de %s par tâche sur chaque projet
+NotConsumedWorkedHours = Heures de travail non consommées
+GlobalTimeCurrentMonthByTaskAndProject = Répartition du temps global au mois de %s par tâche sur chaque projet
+KeyEvent = Raccourci clavier
+TimeSpentDatasetOrder = Changer l'ordre d'affichage des données des tableaux de bord sur la répartition.
 
 
 
@@ -206,8 +221,8 @@ ConfirmReOpenTimeSheet = Êtes-vous sûr de vouloir rouvrir la navette ? La réo
 LockTimeSheet = Verrouiller la navette
 ConfirmLockTimeSheet = Êtes-vous sûr de vouloir verrouiller la navette ?<br>Ce verrouillage permet de figer les données et la génération du document.
 TimeSpentPerfect = Parfait, toutes tes heures de travail ont été consommés
-TimeSpentMustBeCompleted = Attention, toutes tes heures de travail n'ont pas été consommés du %s au %s <br> Va sur ton pointage de temps du mois de %s pour arranger cela
-TimeSpentDiff = Attention, tu as consommé trop d'heures de travail du %s au %s <br> Va sur ton pointage de temps du mois de %s pour arranger cela
+TimeSpentMustBeCompleted = Attention, toutes tes heures de travail n'ont pas été consommés (%s - %s) <br> Va sur ton pointage de temps du mois de %s pour arranger cela
+TimeSpentDiff = Attention, tu as consommé trop d'heures de travail (%s - %s) <br> Va sur ton pointage de temps du mois de %s pour arranger cela
 GoToTimeSpent = Aller sur le pointage de  temps du mois de %s
 ErrorLinkedElementTimeSheetTimeSpent = Erreur liens entre navette et temps consommé <br> il existe déjà une navette lié au temps consommé affecté à l'utilisateur %s sur la période de %s au %s
 RemoveFileTimeSheet = Supprimer la fiche navette
@@ -239,11 +254,11 @@ GoToValidate = Valider la navette
 TIMESHEET_SOCIETY_ATTENDANT = Signataire interne
 TIMESHEET_SOCIETY_RESPONSIBLE = Responsable
 AddAttendantsConf = Ajouter des signataires
-AddAttendantsDescription = Pouvoir ajouter des signataires pendant la réalisation de la navette <br> (par défaut il y a deux signataires, l'utilisateur assigné et son responsable hiéarchirque s'il est configuré dans son profil utilisateur)
+AddAttendantsDescription = Pouvoir ajouter des signataires pendant la réalisation de la navette <br> (par défaut il y a deux signataires, l'utilisateur assigné et son responsable hiérarchique s'il est configuré dans son profil utilisateur)
 TimesheetsCategoriesArea = Espace des tags/catégories des navettes
 ConsumedWorkedDayMonth = Nombre de jour pointés :
 ExpectedWorkedDayMonth = Nombre de jours ouvrés :
-ExpectedWorkedHoursMonthTimeSheet = Heures de travail prévues du %s au %s
+ExpectedWorkedHoursMonthTimeSheet = Heures de travail prévues (%s - %s)
 CheckDateEnd = Vérifier la date fin de navette
 CheckDateEndDescription = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
 TimeSheetManagement = Gestion des navettes
@@ -386,3 +401,6 @@ ErrorFileNotFound = Fichier non trouvé
 NoData = N/A
 YourDocuments = Documents
 WorkingHours = Horaires de travail
+ChooseBoxToAdd = Ajouter le widget au tableau de bord...
+ByProject/Task = Par projet et tâche
+ByTask/Project = Par tâche et projet

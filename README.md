@@ -3,8 +3,8 @@
 ## Informations
 
 - Numéro du module : 436310
-- Version : 1.2.0
-- Dernière mise à jour :  27/01/2022
+- Version : 1.2.1
+- Dernière mise à jour :  17/02/2022
 - Éditeur : [Evarisk](https://www.evarisk.com)
 - Compatibilité : Dolibarr 15.0.0 - 16.0.4
 - Thème : Eldy Menu
@@ -14,7 +14,7 @@
 ## Liens
 
 - Support & Assistance : [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à contact@evarisk.com
-- Demo : [Demo Digirisk](https://www.demodoli.digirisk.com) - ID: demo - Password: demo
+- Demo : [Demo DoliSIRH](https://www.demodoli.digirisk.com) - ID: demo - Password: demo
 - Documentation : [Wiki DoliSIRH](https://wiki.dolibarr.org/index.php/Module_DoliSIRH)
 - Projet Github : [Projet DoliSIRH](https://github.com/Evarisk/DoliSIRH/projects?query=is%3Aopen)
 - D'autres modules développés par Evarisk disponible sur [Dolistore.com](https://www.dolistore.com)

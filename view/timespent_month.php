@@ -108,11 +108,12 @@ $sortorder = GETPOST('sortorder', 'aZ09comma');
 $firstdaytoshow = dol_get_first_day($year, $month);
 $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
-$currentMonth = date('m', dol_now());
+$currentMonth = date('m', $now);
 if ($currentMonth == $month) {
-	$lastdaytoshow = dol_now();
+    $currentDate   = dol_getdate($now);
+    $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
 } else {
-	$lastdaytoshow = $lastdayofmonth;
+    $lastdaytoshow = $lastdayofmonth;
 }
 
 $daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
@@ -246,109 +247,24 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('assigntask')
 	$action = '';
 }
 
-if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('formfilteraction') != 'listafterchangingselectedfields') {
-	$timetoadd = $_POST['task'];
-	if (empty($timetoadd)) {
-		setEventMessages($langs->trans('ErrorTimeSpentIsEmpty'), null, 'errors');
-	} else {
-		foreach ($timetoadd as $taskid => $value) {     // Loop on each task
-			$updateoftaskdone = 0;
-			foreach ($value as $key => $val) {          // Loop on each day
-				$amountoadd = $timetoadd[$taskid][$key];
-				if (!empty($amountoadd)) {
-					$tmpduration = explode(':', $amountoadd);
-					$newduration = 0;
-					if (!empty($tmpduration[0])) {
-						$newduration += ($tmpduration[0] * 3600);
-					}
-					if (!empty($tmpduration[1])) {
-						$newduration += ($tmpduration[1] * 60);
-					}
-					if (!empty($tmpduration[2])) {
-						$newduration += ($tmpduration[2]);
-					}
-
-					if ($newduration > 0) {
-						$object->fetch($taskid);
-
-						if (GETPOSTISSET($taskid.'progress')) {
-							$object->progress = GETPOST($taskid.'progress', 'int');
-						} else {
-							unset($object->progress);
-						}
-
-						$object->timespent_duration = $newduration;
-						$object->timespent_fk_user = $usertoprocess->id;
-						$object->timespent_date = dol_time_plus_duree($firstdaytoshow, $key, 'd');
-						$object->timespent_datehour = $object->timespent_date;
-						$object->timespent_note = $object->description;
-
-						$result = $object->addTimeSpent($user);
-						if ($result < 0) {
-							setEventMessages($object->error, $object->errors, 'errors');
-							$error++;
-							break;
-						}
-
-						$updateoftaskdone++;
-					}
-				}
-			}
-
-			if (!$updateoftaskdone) {  // Check to update progress if no update were done on task.
-				$object->fetch($taskid);
-				//var_dump($object->progress);var_dump(GETPOST($taskid . 'progress', 'int')); exit;
-				if ($object->progress != GETPOST($taskid.'progress', 'int')) {
-					$object->progress = GETPOST($taskid.'progress', 'int');
-					$result = $object->update($user);
-					if ($result < 0) {
-						setEventMessages($object->error, $object->errors, 'errors');
-						$error++;
-						break;
-					}
-				}
-			}
-		}
-
-		if (!$error) {
-			setEventMessages($langs->trans('RecordSaved'), null, 'mesgs');
-
-			$param = '';
-			$param .= ($mode ? '&mode='.urlencode($mode) : '');
-			$param .= ($projectid ? 'id='.urlencode($projectid) : '');
-			$param .= ($search_usertoprocessid ? '&search_usertoprocessid='.urlencode($search_usertoprocessid) : '');
-			$param .= ($day ? '&day='.urlencode($day) : '').($month ? '&month='.urlencode($month) : '').($year ? '&year='.urlencode($year) : '');
-			$param .= ($search_project_ref ? '&search_project_ref='.urlencode($search_project_ref) : '');
-			$param .= ($search_usertoprocessid > 0 ? '&search_usertoprocessid='.urlencode($search_usertoprocessid) : '');
-			$param .= ($search_thirdparty ? '&search_thirdparty='.urlencode($search_thirdparty) : '');
-			$param .= ($search_task_ref ? '&search_task_ref='.urlencode($search_task_ref) : '');
-			$param .= ($search_task_label ? '&search_task_label='.urlencode($search_task_label) : '');
-
-			// Redirect to avoid submit twice on back
-            if (!empty($backtopage)) {
-                header('Location: ' . $backtopage);
-            } else {
-                header('Location: '.$_SERVER['PHP_SELF'].'?'.$param);
-            }
-			exit;
-		}
-	}
-}
-
 if ($action == 'showOnlyFavoriteTasks') {
-	if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS == 1) {
-		dolibarr_set_const($db, 'DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 0, 'integer', 0, '', $conf->entity);
-	} else {
-		dolibarr_set_const($db, 'DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 1, 'integer', 0, '', $conf->entity);
-	}
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $showOnlyFavoriteTasks = $data['showOnlyFavoriteTasks'];
+
+    $tabparam['DOLISIRH_SHOW_ONLY_FAVORITE_TASKS'] = $showOnlyFavoriteTasks;
+
+    dol_set_user_param($db, $conf, $user, $tabparam);
 }
 
 if ($action == 'showOnlyTasksWithTimeSpent') {
-	if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT == 1) {
-		dolibarr_set_const($db, 'DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT', 0, 'integer', 0, '', $conf->entity);
-	} else {
-		dolibarr_set_const($db, 'DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT', 1, 'integer', 0, '', $conf->entity);
-	}
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $showOnlyTasksWithTimeSpent = $data['showOnlyTasksWithTimeSpent'];
+
+    $tabparam['DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT'] = $showOnlyTasksWithTimeSpent;
+
+    dol_set_user_param($db, $conf, $user, $tabparam);
 }
 
 if ($action == 'addTimeSpent' && $permissiontoadd) {
@@ -374,7 +290,7 @@ if ($action == 'addTimeSpent' && $permissiontoadd) {
     $object->timespent_fk_user  = $user->id;
 
     if ($object->timespent_duration > 0) {
-        $object->addTimeSpent($user, false);
+        $object->addTimeSpent($user);
     }
 }
 
@@ -392,10 +308,10 @@ $taskstatic = new Task($db);
 $thirdpartystatic = new Societe($db);
 $holiday = new Holiday($db);
 
-$title    = $langs->trans('TimeSpent');
-$help_url = '';
-$morejs   = ['/dolisirh/js/dolisirh.js', '/core/js/timesheet.js'];
-$morecss  = ['/dolisirh/css/dolisirh.css'];
+$title     = $langs->trans('TimeSpent');
+ $help_url = 'FR:Module_DoliSIRH';
+$morejs    = ['/dolisirh/js/dolisirh.js', '/core/js/timesheet.js'];
+$morecss   = ['/dolisirh/css/dolisirh.css'];
 
 $projectsListId = $projectstatic->getProjectsAuthorizedForUser($usertoprocess, (empty($usertoprocess->id) ? 2 : 0), 1); // Return all project i have permission on (assigned to me+public). I want my tasks and some of my task may be on a public projet that is not my project
 //var_dump($projectsListId);
@@ -473,18 +389,18 @@ print dol_get_fiche_head($head, 'inputpermonth', $langs->trans('TimeSpent'), -1,
 // Show description of content
 print '<div class="hideonsmartphone opacitymedium">';
 if ($mine || ($usertoprocess->id == $user->id)) {
-	print $langs->trans('MyTasksDesc').'.'.($onlyopenedproject ? ' ' . '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
+    $tooltipTaskInfo = $langs->trans('MyTasksDesc').'.'.($onlyopenedproject ? ' ' . '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
 } elseif (empty($usertoprocess->id) || $usertoprocess->id < 0) {
     if ($user->rights->projet->all->lire && !$socid) {
-        print $langs->trans('ProjectsDesc') . '.' . ($onlyopenedproject ? ' ' . '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
+        $tooltipTaskInfo .= $langs->trans('ProjectsDesc') . '.' . ($onlyopenedproject ? ' ' . '<b style="color: red">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
     } else {
-        print $langs->trans('ProjectsPublicTaskDesc') . '.' . ($onlyopenedproject ? ' ' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
+        $tooltipTaskInfo .= $langs->trans('ProjectsPublicTaskDesc') . '.' . ($onlyopenedproject ? ' ' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
     }
 }
  if ($mine || ($usertoprocess->id == $user->id)) {
-	print $langs->trans('OnlyYourTaskAreVisible').'<br>';
+     $tooltipTaskInfo .= $langs->trans('OnlyYourTaskAreVisible').'<br>';
 } else {
-	print $langs->trans('AllTaskVisibleButEditIfYouAreAssigned').'<br>';
+	$tooltipTaskInfo .= $langs->trans('AllTaskVisibleButEditIfYouAreAssigned').'<br>';
 }
 print '</div>';
 
@@ -502,21 +418,17 @@ print img_picto('', 'projecttask', 'class="pictofixedwidth"');
 $formproject->selectTasks($socid ? $socid : -1, $taskid, 'taskid', 32, 0, '-- '.$langs->trans('ChooseANotYetAssignedTask').' --', 1, 0, 0, '', '', 'all', $usertoprocess);
 print '</div>';
 print ' ';
-print $formcompany->selectTypeContact($object, '', 'type', 'internal', 'rowid', 0, 'maxwidth150onsmartphone');
+print $formcompany->selectTypeContact($object, 46, 'type', 'internal', 'rowid', 0, 'maxwidth150onsmartphone');
 print '<input type="submit" class="button valignmiddle smallonsmartphone" name="assigntask" value="'.dol_escape_htmltag($titleassigntask).'">';
 print '</div>';
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
-print $langs->trans('ShowOnlyFavoriteTasks');
-print '<input type="checkbox"  class="show-only-favorite-tasks"'. ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '').' >';
-if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
-	print '<br>';
-	print '<div class="opacitymedium"><i class="fas fa-exclamation-triangle"></i>'.' '.$langs->trans('WarningShowOnlyFavoriteTasks').'</div>';
+$tooltipTaskInfo .= img_help(1, $langs->trans('KeyEvent')) .  ' ' . $langs->trans('KeyEventTips') . '<br><br>';
+if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
+    $tooltipTaskInfo .= '<div class="opacitymedium"><i class="fas fa-exclamation-triangle"></i>'.' '.$langs->trans('WarningShowOnlyFavoriteTasks').'</div>';
 }
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
-print $langs->trans('ShowOnlyTasksWithTimeSpent');
-print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '').' >';
 
 // Get if user is available or not for each day
 $isavailable = array();
@@ -541,7 +453,7 @@ if (empty($user->rights->user->user->lire)) {
 	$includeonly = array($user->id);
 }
 
-$moreforfilter .= img_picto($langs->trans('Filter').' '.$langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"').$form->select_dolusers($search_usertoprocessid ?: $usertoprocess->id, 'search_usertoprocessid', $user->rights->user->user->lire ? 0 : 0, null, 0, $includeonly, null, 0, 0, 0, '', 0, '', 'maxwidth200');
+$moreforfilter .= img_picto($langs->trans('Filter').' '.$langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"').$form->select_dolusers($search_usertoprocessid ?: $usertoprocess->id, 'search_usertoprocessid', $user->rights->user->user->lire ? 0 : 0, null, 0, $includeonly, null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth200', 1);
 $moreforfilter .= '</div>';
 
 if (empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
@@ -591,7 +503,14 @@ print '</td>';
 print "</tr>\n";
 
 print '<tr class="liste_titre">';
-print '<th>'.$langs->trans('Task').'</th>';
+print '<th>' . $form->textwithpicto($langs->trans('Task'), $tooltipTaskInfo);
+print ' <i class="fas fa-star"></i>';
+print '<input type="checkbox"  class="show-only-favorite-tasks"'. ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '').' >';
+print $form->textwithpicto('', $langs->trans('ShowOnlyFavoriteTasks'));
+print ' <i class="fas fa-clock"></i>';
+print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '').' >';
+print  $form->textwithpicto('', $langs->trans('ShowOnlyTasksWithTimeSpent'));
+print '</th>';
 // TASK fields
 if (!empty($arrayfields['timeconsumed']['checked'])) {
 	print '<th class="right maxwidth75 maxwidth100">'.$langs->trans('TimeSpent').($usertoprocess->firstname ? '<br><span class="nowraponall">'.$usertoprocess->getNomUrl(-2).'<span class="opacitymedium paddingleft">'.dol_trunc($usertoprocess->firstname, 10).'</span></span>' : '').'</th>';
@@ -678,7 +597,7 @@ $j = 0;
 $level = 0;
 
 //Show tasks lines
-$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
+$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
 
 doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $timeSpentOnTasks); ?>
 
@@ -771,7 +690,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     print '<td class="liste_total" colspan="' . ($colspan + $addcolspan) . '">';
     print $langs->trans('Total');
 
-    $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, $lastdaytoshow, $isavailable, $usertoprocess->id);
+    $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
 
     $totalconsumedtime = $timeSpent['total'];
     print '<span class="opacitymediumbycolor">  - ' . $langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')) . ' : <strong>' . convertSecondToTime($totalconsumedtime, 'allhourmin') . '</strong></span>';
@@ -863,8 +782,6 @@ print '</table>';
 print '</div>';
 
 print '<input type="hidden" id="numberOfLines" name="numberOfLines" value="'.count($tasksarray).'"/>'."\n";
-
-print $form->buttonsSaveCancel('Save', '');
 
 print '</form>';
 

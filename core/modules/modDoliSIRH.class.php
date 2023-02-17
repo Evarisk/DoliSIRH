@@ -49,10 +49,10 @@ class modDoliSIRH extends DolibarrModules
 		$this->familyinfo      = array('Evarisk' => array('position' => '01', 'label' => $langs->trans("Evarisk")));
 		$this->name            = preg_replace('/^mod/i', '', get_class($this));
 		$this->description 	   = $langs->trans('DoliSIRHDescription');
-		$this->descriptionlong = 'DoliSIRHDescriptionLong';
+		$this->descriptionlong = $langs->trans('DoliSIRHDescriptionLong');
 		$this->editor_name     = 'Evarisk';
 		$this->editor_url      = 'https://evarisk.com';
-		$this->version         = '1.2.0';
+		$this->version         = '1.2.1';
 		$this->const_name      = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto           = 'dolisirh_red@dolisirh';
 
@@ -80,7 +80,9 @@ class modDoliSIRH extends DolibarrModules
 					  'cron',
 					  'cronjoblist',
 					  'projecttasktime',
-					  'timesheetcard'
+					  'timesheetcard',
+                      'actioncard',
+                      'userihm'
 				  ),
 			),
 			'moduleforexternal' => 0,
@@ -120,7 +122,6 @@ class modDoliSIRH extends DolibarrModules
             $i++ => array('DOLISIRH_HR_PROJECT_SET', 'integer', 0, '', 0, 'current'),
 
             // CONST TIME SPENT
-            $i++ => array('DOLISIRH_SHOW_ONLY_FAVORITE_TASKS', 'integer', 0, '', 0, 'current'),
             $i++ => array('DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 0, '', 0, 'current'),
 
             // CONST TIME SHEET
@@ -482,6 +483,7 @@ class modDoliSIRH extends DolibarrModules
 		$extra_fields->update('fk_task', 'Tâche', 'sellist', '', 'ticket', 0, 0, 100, $param, 1, 1, '1', '','','',0);
 		$extra_fields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, $param, 1, 1, '1', '','',0); //extrafields ticket
 		unset($param);
+        $extra_fields->addExtraField('timespent', $langs->trans('MarkYourTime'), 'boolean', 100, null, 'actioncomm', 0, 0, null, 'a:1:{s:7:"options";a:1:{s:0:"";N;}}', 1, '$user->rights->projet->time', '3', '','',0, 'dolisirh@dolisirh', '$conf->dolisirh->enabled'); //extrafields ticket
 
 		// Document models
 		delDocumentModel('timesheetdocument_odt', 'timesheetdocument');

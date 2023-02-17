@@ -43,10 +43,10 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 		$this->db = $db;
 
 		$this->name = preg_replace('/^Interface/i', '', get_class($this));
-		$this->family = "demo";
-		$this->description = "DoliSIRH triggers.";
+		$this->family = 'demo';
+		$this->description = 'DoliSIRH triggers.';
 		// 'development', 'experimental', 'dolibarr' or version
-		$this->version = '1.2.0';
+		$this->version = '1.2.1';
 		$this->picto = 'dolisirh@dolisirh';
 	}
 
@@ -90,9 +90,9 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 		switch ($action) {
 			// Actions
 			case 'ACTION_CREATE':
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				if (((int) $object->fk_element) > 0 && $object->elementtype == 'ticket' && preg_match('/^TICKET_/', $object->code)) {
-					dol_syslog("Add time spent");
+					dol_syslog('Add time spent');
 					$result= 0;
 					$ticket = new Ticket($this->db);
 					$result = $ticket->fetch($object->fk_element);
@@ -114,7 +114,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 								$name_message = $task->ref;
 
 								$task->addTimeSpent($user);
-								setEventMessages($langs->trans("MessageTimeSpentCreate").' : '.'<a href="'.DOL_URL_ROOT.'/projet/tasks/time.php?id='.$id_message.'">'.$name_message.'</a>', array());
+								setEventMessages($langs->trans('MessageTimeSpentCreate').' : '.'<a href="'.DOL_URL_ROOT.'/projet/tasks/time.php?id='.$id_message.'">'.$name_message.'</a>', array());
 							} else {
 								setEventMessages($task->error, $task->errors, 'errors');
 								return -1;
@@ -125,17 +125,61 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 						return -1;
 					}
 				}
-			break;
+                if ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && $object->fk_element > 0 && $object->elementtype == 'task' && !empty($object->datef)) {
+                    require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+                    $task = new Task($this->db);
+                    $result = $task->fetch($object->fk_element);
+                    if ($result > 0 && $task->id > 0) {
+                        $contactsOfTask = $task->getListContactId();
+                        if (in_array($user->id, $contactsOfTask)) {
+                            $task->timespent_date = dol_print_date($object->datep,'standard', 'tzuser');
+                            $task->timespent_withhour = 1;
+                            $task->timespent_note = $langs->trans('TimeSpentAutoCreate', $object->id) . '<br>' . $object->label . '<br>' . $object->note_private;
+                            $task->timespent_duration = $object->datef - $object->datep;
+                            $task->timespent_fk_user = $user->id;
+
+                            $idMessage = $task->id;
+                            $nameMessage = $task->ref;
+
+                            if ($task->timespent_duration > 0) {
+                                $result = $task->addTimeSpent($user);
+                            } else {
+                                $result = -1;
+                                $task->error = $langs->trans('ErrorTimeSpentDurationCantBeNegative');
+                            }
+
+                            if ($result > 0) {
+                                setEventMessages($langs->trans('MessageTimeSpentCreate') . ' : ' . '<a href="' . DOL_URL_ROOT . '/projet/tasks/time.php?id=' . $idMessage . '">' . $nameMessage . '</a>', []);
+                            } else {
+                                setEventMessages($task->error, $task->errors, 'errors');
+                                return -1;
+                            }
+                        } else {
+                            setEventMessages($langs->trans('ErrorUserNotAssignedToTask'), $task->errors, 'errors');
+                            return -1;
+                        }
+                    } else {
+                        setEventMessages($task->error, $task->errors, 'errors');
+                        return -1;
+                    }
+                } elseif ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && $object->elementtype != 'task') {
+                    setEventMessages('MissingTaskWithTimeSpentOption', $object->errors, 'errors');
+                    return -1;
+                } elseif ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && empty($object->datef)) {
+                    setEventMessages('MissingEndDateWithTimeSpentOption', $object->errors, 'errors');
+                    return -1;
+                }
+                break;
 
 			case 'BILL_CREATE':
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 				$categories = GETPOST('categories', 'array:int');
 				setCategoriesObject($categories, 'invoice', false, $object);
 				break;
 
 			case 'BILLREC_CREATE':
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 				require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 				$cat = new Categorie($this->db);
@@ -152,7 +196,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
 			// Timesheet
 			case 'TIMESHEET_CREATE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 
@@ -174,7 +218,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				$now = dol_now();
 
 				if ($conf->global->DOLISIRH_PRODUCT_SERVICE_SET) {
-					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities("MealTicket")))));
+					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('MealTicket')))));
 					$objectline->date_creation  = $object->db->idate($now);
 					$objectline->qty            = 0;
 					$objectline->rang           = 1;
@@ -184,7 +228,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 					$objectline->product_type   = 0;
 					$objectline->insert($user);
 
-					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities("JourneySubscription")))));
+					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('JourneySubscription')))));
 					$objectline->date_creation  = $object->db->idate($now);
 					$objectline->qty            = 0;
 					$objectline->rang           = 2;
@@ -194,7 +238,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 					$objectline->product_type   = 1;
 					$objectline->insert($user);
 
-					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities("13thMonthBonus")))));
+					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('13thMonthBonus')))));
 					$objectline->date_creation  = $object->db->idate($now);
 					$objectline->qty            = 0;
 					$objectline->rang           = 3;
@@ -204,7 +248,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 					$objectline->product_type   = 1;
 					$objectline->insert($user);
 
-					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities("SpecialBonus")))));
+					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('SpecialBonus')))));
 					$objectline->date_creation  = $object->db->idate($now);
 					$objectline->qty            = 0;
 					$objectline->rang           = 4;
@@ -228,7 +272,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'TIMESHEET_MODIFY' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -246,7 +290,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'TIMESHEET_DELETE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -264,7 +308,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'TIMESHEET_VALIDATE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -282,7 +326,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'TIMESHEET_UNVALIDATE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -300,7 +344,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'TIMESHEET_LOCKED' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -318,7 +362,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'TIMESHEET_ARCHIVED' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -337,7 +381,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
 			// Certificate
 			case 'CERTIFICATE_CREATE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 
@@ -368,7 +412,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'CERTIFICATE_MODIFY' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -386,7 +430,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'CERTIFICATE_DELETE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
+				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -405,7 +449,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
 			case 'ECMFILES_CREATE' :
 				if ($object->src_object_type == 'dolisirh_timesheet') {
-					dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id);
+					dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 					require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
 
 					require_once __DIR__ . '/../../class/timesheet.class.php';
@@ -418,7 +462,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
 					if (!empty($signatories) && $signatories > 0) {
 						foreach ($signatories as $signatory) {
-							$signatory->signature = $langs->transnoentities("FileGenerated");
+							$signatory->signature = $langs->transnoentities('FileGenerated');
 							$signatory->update($user, false);
 						}
 					}
@@ -437,7 +481,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'DOLISIRHSIGNATURE_ADDATTENDANT' :
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id);
+				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
 				$now        = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -458,7 +502,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				break;
 
 			case 'DOLISIRHSIGNATURE_SIGNED' :
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id);
+				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
 				$now = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -482,7 +526,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
 			case 'DOLISIRHSIGNATURE_PENDING_SIGNATURE' :
 
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id);
+				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
 				$now        = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -504,7 +548,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
 			case 'DOLISIRHSIGNATURE_ABSENT' :
 
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id);
+				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
 				$now        = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -526,7 +570,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
 			case 'DOLISIRHSIGNATURE_DELETED' :
 
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id);
+				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
 				$now        = dol_now();
 				$actioncomm = new ActionComm($this->db);
@@ -546,9 +590,9 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				$actioncomm->create($user);
 				break;
 
-			default:
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
-				break;
+            default:
+                dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
+                break;
 		}
 		return 0;
 	}

@@ -99,6 +99,7 @@ function isDayAvailable($date, $userid)
 
 	$statusofholidaytocheck = Holiday::STATUS_APPROVED;
 
+    $date = dol_stringtotime(dol_print_date($date, 'standard'));
 	$is_available_for_user = $holiday->verifDateHolidayForTimestamp($userid, $date, $statusofholidaytocheck);
 	$is_public_holiday = num_public_holiday($date, dol_time_plus_duree($date, 1,'d'));
 
@@ -331,6 +332,10 @@ function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $isavailable, $us
                 if (!empty($timeSpent->timespent_note)) {
                     $timeSpentOnTasks[$timeSpent->fk_task]['comments'][dol_print_date($timeSpent->timespent_date, 'day')][$timeSpent->timespent_id] = $timeSpent->timespent_note;
                 }
+                $timeSpentOnTasks[$timeSpent->fk_task]['project_ref']   = $timeSpent->project_ref;
+                $timeSpentOnTasks[$timeSpent->fk_task]['project_label'] = $timeSpent->project_label;
+                $timeSpentOnTasks[$timeSpent->fk_task]['task_ref']      = $timeSpent->task_ref;
+                $timeSpentOnTasks[$timeSpent->fk_task]['task_label']    = $timeSpent->task_label;
                 $timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
             }
 		}
@@ -553,7 +558,7 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 	// List of tasks (does not care about permissions. Filtering will be done later)
 	$sql = "SELECT ";
 	if ($filteronprojuser > 0 || $filterontaskuser > 0) {
-		$sql .= " DISTINCT"; // We may get several time the same record if user has several roles on same project/task
+		$sql .= "DISTINCT"; // We may get several time the same record if user has several roles on same project/task
 	}
 	$sql .= " p.rowid as projectid, p.ref, p.title as plabel, p.public, p.fk_statut as projectstatus, p.usage_bill_time,";
 	$sql .= " t.rowid as taskid, t.ref as taskref, t.label, t.description, t.fk_task_parent, t.duration_effective, t.progress, t.fk_statut as status,";
@@ -593,21 +598,21 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 			$sql .= ", ".MAIN_DB_PREFIX."element_contact as ec2";
 			$sql .= ", ".MAIN_DB_PREFIX."c_type_contact as ctc2";
 		}
-		if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
+		if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
 			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_element as elel ON (t.rowid = elel.fk_target AND elel.targettype='project_task')";
 		}
-		if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+		if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
 			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task_time as ptt ON (t.rowid = ptt.fk_task)";
 		}
 		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task_extrafields as efpt ON (t.rowid = efpt.fk_object)";
 		$sql .= " WHERE p.entity IN (".getEntity('project').")";
 		$sql .= " AND t.fk_projet = p.rowid";
-		if ($conf->global->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) {
+		if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
 			$sql .= " AND elel.fk_target = t.rowid";
 			$sql .= " AND elel.fk_source = " . $filteronprojuser;
 		}
 
-		if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+		if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
 			$sql .= " AND ptt.fk_task = t.rowid AND ptt.fk_user = " . $filteronprojuser;
 			if ($timeMode == 'month') {
 				$sql .= " AND MONTH(ptt.task_date) = " . $timeArray['month'];
@@ -616,6 +621,7 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 			} else if ($timeMode == 'day') {
 				$sql .= " AND DAY(ptt.task_date) = " . $timeArray['day'];
 			}
+			$sql .= " AND YEAR(ptt.task_date) = " . $timeArray['year'];
 		}
 
 	} elseif ($mode == 1) {
@@ -1204,6 +1210,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 				$taskstatic->id = $lines[$i]->id;
 				$taskstatic->ref = ($lines[$i]->ref ?: $lines[$i]->id);
 				$taskstatic->label = $lines[$i]->label;
+                $taskstatic->planned_workload = $lines[$i]->planned_workload;
 				$taskstatic->date_start = $lines[$i]->date_start;
 				$taskstatic->date_end = $lines[$i]->date_end;
 
@@ -1245,11 +1252,23 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 					print '<div class="marginleftonly">';
 				}
 				print $taskstatic->getNomUrl(1, 'withproject', 'time');
+                if (GETPOST('action') == 'toggleTaskFavorite') {
+                    toggleTaskFavorite(GETPOST('id'), $fuser->id);
+                }
 				if (isTaskFavorite($taskstatic->id, $fuser->id)) {
-					print ' <span class="fas fa-star"></span>';
+					print ' <span class="fas fa-star toggleTaskFavorite" id="'. $taskstatic->id .'" value="'. $taskstatic->id .'"></span>';
 				} else {
-					print ' <span class="far fa-star"></span>';
+					print ' <span class="far fa-star toggleTaskFavorite" id="'. $taskstatic->id .'" value="'. $taskstatic->id .'"></span>';
 				}
+                if ($taskstatic->planned_workload != '') {
+                    $tmparray = $taskstatic->getSummaryOfTimeSpent();
+                    if ($tmparray['total_duration'] > 0 && !empty($taskstatic->planned_workload)) {
+                        print ' <span class="task-progress ' . getTaskProgressColorClass(round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2)) . '">' . ' ' . round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2) . ' %' . '</span>';
+                        print ' <span>' . ' ' . convertSecondToTime($taskstatic->planned_workload, 'allhourmin') . '</span>';
+                    } else {
+                        print ' 0 %';
+                    }
+                }
 				// Label task
 				print '<br>';
 				print '<span class="opacitymedium" title="' . $taskstatic->label . '">' . dol_trunc($taskstatic->label, '64') . '</span>';
@@ -1261,9 +1280,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 				if (!empty($arrayfields['timeconsumed']['checked'])) {
 					// Time spent by user
 					print '<td class="right">';
-					$firstday = dol_print_date($firstdaytoshow, 'dayrfc');
-					$lastday = dol_print_date($lastdaytoshow, 'dayrfc');
-					$filter = ' AND t.task_datehour BETWEEN ' . "'" . $firstday . "'" . ' AND ' . "'" . $lastday . "'";
+                    $filter = ' AND (t.task_date >= "' . $db->idate($firstdaytoshow) . '" AND t.task_date < "' . $db->idate(dol_time_plus_duree($lastdaytoshow, 1, 'd')) . '")';
 					$tmptimespent = $taskstatic->getSummaryOfTimeSpent($fuser->id, $filter);
 					if ($tmptimespent['total_duration']) {
 						print convertSecondToTime($tmptimespent['total_duration'], 'allhourmin');
@@ -1311,10 +1328,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 					if ($totalforeachday[$tmpday] > 0) {
                         $timeSpentComments = $timeSpentOnTasks[$lines[$i]->id]['comments'][dol_print_date($tmpday, 'day')];
                         if (is_array($timeSpentComments) && !empty($timeSpentComments)) {
-                            $text_tooltip = '';
-                            foreach ($timeSpentComments as $timeSpentComment) {
-                                $text_tooltip .= $langs->trans('Comment') . ' : ' . $timeSpentComment . ' - ';
-                            }
+                            $text_tooltip = implode('', $timeSpentComments);
                         } else {
                             $text_tooltip = $langs->trans('TimeSpentAddWithNoComment');
                         }
@@ -1779,4 +1793,23 @@ function doliSirhGetListOfModels($db, $type, $maxfilenamelength = 0)
 	} else {
 		return 0;
 	}
+}
+
+/**
+ * Get task progress css class.
+ *
+ * @param  float  $progress Progress of the task
+ *
+ * @return string           CSS class
+ */
+function getTaskProgressColorClass($progress)
+{
+    switch (true) {
+        case $progress < 50 :
+            return 'progress-green';
+        case $progress < 99 :
+            return 'progress-yellow';
+        case $progress :
+            return 'progress-red';
+    }
 }

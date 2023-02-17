@@ -129,7 +129,7 @@ if ($socid > 0 && empty($usertmp->id)) {
 
 $title = $langs->trans("User");
 if ( ! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/', $conf->global->MAIN_HTML_TITLE) && $usertmp->name) $title = $usertmp->name . " - " . $langs->trans('WorkingHours');
-$help_url = '';
+$help_url = 'FR:Module_DoliSIRH';
 
 $morecss = array("/dolisirh/css/dolisirh.css");
 

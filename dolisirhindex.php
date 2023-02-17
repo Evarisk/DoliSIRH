@@ -44,8 +44,12 @@ $langs->load('dolisirh@dolisirh');
 $modDoliSIRH = new modDoliSIRH($db);
 $stats       = new DashboardDolisirhStats($db);
 
+// Initialize view objects
+$form = new Form($db);
+
 // Get parameters
 $action = GETPOST('action', 'alpha');
+$userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
 
 // Security check
 $permissiontoread = $user->rights->dolisirh->read;
@@ -64,7 +68,14 @@ $morecss  = ['/dolisirh/css/dolisirh.css'];
 
 llxHeader('', $title . ' ' . $modDoliSIRH->version, $help_url, '', 0, 0, $morejs, $morecss);
 
-print load_fiche_titre($title . ' ' . $modDoliSIRH->version, '', 'dolisirh_red.png@dolisirh');
+$currentMonth = date('m', dol_now());
+
+$months = [1 => $langs->trans('January'), 2 => $langs->trans('February'), 3 => $langs->trans('March'), 4 => $langs->trans('April'), 5 => $langs->trans('May'), 6 => $langs->trans('June'), 7 => $langs->trans('July'), 8 => $langs->trans('August'), 9 => $langs->trans('September'), 10 => $langs->trans('October'), 11 => $langs->trans('November'), 12 => $langs->trans('December')];
+$morehtmlright = '<div class="wpeo-button button-primary button-square-30 select-dataset-dashboard-info" style="color: white !important;"><i class="button-icon fas fa-redo"></i></div>';
+$morehtmlright .= ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans('Month'), 'title_agenda', 'class="paddingright pictofixedwidth"') . $form->selectarray('search_month', $months, $currentMonth, 0,0, 0, '', 1, 0, 0, '', 'maxwidth100');
+$morehtmlright .= ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($userID, 'search_userid', '', null, 0, '', null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth300', 1);
+
+print load_fiche_titre($title . ' ' . $modDoliSIRH->version, $morehtmlright, 'dolisirh_red.png@dolisirh');
 
 if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) : ?>
     <div class="wpeo-notice notice-info">
