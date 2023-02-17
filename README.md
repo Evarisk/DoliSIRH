@@ -3,7 +3,7 @@
 ## Informations
 
 - Numéro du module : 436310
-- Version : 1.2.1
+- Version : 1.3.0
 - Dernière mise à jour :  17/02/2022
 - Éditeur : [Evarisk](https://www.evarisk.com)
 - Compatibilité : Dolibarr 15.0.0 - 16.0.4
