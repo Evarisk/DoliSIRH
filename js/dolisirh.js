@@ -1346,7 +1346,7 @@ window.eoxiaJS.dashboard.selectDatasetDashboardInfo = function() {
 	window.eoxiaJS.loader.display($('.fichecenter'));
 
 	$.ajax({
-		url: document.URL + querySeparator + 'action=selectdatasetdashboardinfo&token='  + token + '&search_userid=' + userID + '&search_month=' + month,
+		url: document.URL + querySeparator + 'token=' + token + '&search_userid=' + userID + '&search_month=' + month,
 		type: "POST",
 		processData: false,
 		contentType: false,
