@@ -1259,7 +1259,7 @@ window.eoxiaJS.dashboard.init = function() {
 window.eoxiaJS.dashboard.event = function() {
 	$( document ).on( 'change', '.add-dashboard-widget', window.eoxiaJS.dashboard.addDashBoardInfo );
 	$( document ).on( 'click', '.close-dashboard-widget', window.eoxiaJS.dashboard.closeDashBoardInfo );
-	$( document ).on( 'change', '.select-timespent-dataset-month, .select-user-dashboard', window.eoxiaJS.dashboard.selectDatasetDashboardInfo );
+	$( document ).on( 'click', '.select-dataset-dashboard-info', window.eoxiaJS.dashboard.selectDatasetDashboardInfo );
 };
 
 /**
