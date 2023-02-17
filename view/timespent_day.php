@@ -53,8 +53,8 @@ if (!empty($conf->categorie->enabled)) {
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 }
 
-require_once DOL_DOCUMENT_ROOT.'/custom/dolisirh/lib/dolisirh_function.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/custom/dolisirh/class/workinghours.class.php';
+require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
+require_once __DIR__ . '/../class/workinghours.class.php';
 
 global $conf, $user, $langs, $db;
 

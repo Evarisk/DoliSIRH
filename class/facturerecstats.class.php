@@ -20,7 +20,7 @@
  *       \ingroup    dolisirh
  *       \brief      Recurring invoice class to manage statistics reports
  */
-include_once DOL_DOCUMENT_ROOT . '/custom/dolisirh/class/dolisirhstats.class.php';
+require_once __DIR__ . '/dolisirhstats.class.php';
 include_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture-rec.class.php';
 //include_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
 include_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
