@@ -21,8 +21,8 @@
 
 ## Fonctionnalités
 
-- Simplification de la gestion du temps
-- Génération des navettes de préparation de la fiche de paye
+- Gestion avancée du pointage de temps 
+- Génération de rapports mensuels, hebdomadaires et journaliers du temps passé.
 
 ## Traduction
 
