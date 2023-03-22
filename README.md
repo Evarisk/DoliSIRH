@@ -1,41 +1,43 @@
-# DOLISIRH POUR [DOLIBARR ERP CRM](https://www.dolibarr.org)
+# DoliSIRH sur [DOLIBARR ERP CRM](https://www.dolibarr.org)
 
 ## Informations
 
-Version du module: 1.0.0
+- Numéro du module : 436310
+- Version : 1.3.0
+- Dernière mise à jour :  17/02/2022
+- Éditeur : [Evarisk](https://www.evarisk.com)
+- Compatibilité : Dolibarr 15.0.0 - 16.0.4
+- Thème : Eldy Menu
+- Licence : GPLv3
+- Disponible sur : Windows - MacOS - Linux
 
-Dernière mise à jour: 07/10/2022
+## Liens
 
-Prérequis:
-* Dolibarr min version 15.0.0
-* Dolibarr min version 15.0.4
-
-Thème: Eldy Menu
-
-Editeur/Licence: [Evarisk](https://www.evarisk.com) / GPL-v3
-
-Assitance: [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à contact@evarisk.com
-
-à venir :
-Documentation: [Wiki DoliSIRH](https://wiki.dolibarr.org/index.php/Module_DoliSIRH)
+- Support & Assistance : [Forum www.dolibarr.fr](https://www.dolibarr.fr) / Par mail à contact@evarisk.com
+- Demo : [Demo DoliSIRH](https://www.demodoli.digirisk.com) - ID: demo - Password: demo
+- Documentation : [Wiki DoliSIRH](https://wiki.dolibarr.org/index.php/Module_DoliSIRH)
+- Projet Github : [Projet DoliSIRH](https://github.com/Evarisk/DoliSIRH/projects?query=is%3Aopen)
+- D'autres modules développés par Evarisk disponible sur [Dolistore.com](https://www.dolistore.com)
 
 ## Fonctionnalités
 
-- Simplification de la gestion du temps
-- Génération des navettes de préparation de la fiche de paye
+- Gestion avancée du pointage de temps 
+- Génération de rapports mensuels, hebdomadaires et journaliers du temps passé.
 
-à venir : 
-[Voir les projets](https://github.com/Evarisk/DoliSIRH/projects?query=is%3Aopen)
+## Traduction
+
+- Français
+- Anglais
 
 ## Installation
 
-# Méthode 1 :
+### Méthode 1 :
 
 - Depuis le menu "Déployer/Installer un module externe" de Dolibarr : 
-- Glisser l'archive ZIP 'module_dolisirh-1.2.0' et cliquer sur "SEND"
+- Glisser l'archive ZIP 'module_dolisirh-X.Y.Z' et cliquer sur "ENVOYER FICHIER"
 - Activer le module dans la liste des Modules/Applications installés
 
-# Méthode 2 :
+### Méthode 2 :
 
 - Dans le dossier "dolibarr/htdocs/custom" copier la ligne suivante :
 ``` 

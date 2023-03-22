@@ -20,7 +20,7 @@
  *       \ingroup    dolisirh
  *       \brief      Recurring invoice class to manage statistics reports
  */
-include_once DOL_DOCUMENT_ROOT.'/custom/dolisirh/class/dolisirhstats.php';
+require_once __DIR__ . '/dolisirhstats.class.php';
 include_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture-rec.class.php';
 //include_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.facture.class.php';
 include_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
@@ -201,7 +201,7 @@ class FactureRecStats extends DoliSIRHStats
 		$sql .= " GROUP BY dm";
 		$sql .= $this->db->order('dm', 'DESC');
 
-		return $this->getNbByYear($sql);
+		return $this->_getNbByYear($sql);
 	}
 
 
@@ -254,7 +254,7 @@ class FactureRecStats extends DoliSIRHStats
 		$sql .= " GROUP BY dm";
 		$sql .= $this->db->order('dm', 'DESC');
 
-		return $this->getAverageByMonth($sql, $format);
+		return $this->_getAverageByMonth($sql, $format);
 	}
 
 	/**
@@ -277,7 +277,7 @@ class FactureRecStats extends DoliSIRHStats
 		$sql .= " GROUP BY year";
 		$sql .= $this->db->order('year', 'DESC');
 
-		return $this->getAllByYear($sql);
+		return $this->_getAllByYear($sql);
 	}
 
 	/**
@@ -303,6 +303,6 @@ class FactureRecStats extends DoliSIRHStats
 		$sql .= " GROUP BY dm";
 		$sql .= $this->db->order('dm', 'ASC');
 
-		return $this->getAmountByYear($sql);
+		return $this->_getAmountByYear($sql);
 	}
 }

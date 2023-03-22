@@ -117,7 +117,7 @@ class TimeSheet extends CommonObject
 		'tms'            => array('type'=>'timestamp', 'label'=>'DateModification', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>0,),
 		'import_key'     => array('type'=>'varchar(14)', 'label'=>'ImportId', 'enabled'=>'1', 'position'=>60, 'notnull'=>-1, 'visible'=>0,),
 		'status'         => array('type'=>'integer', 'label'=>'Status', 'enabled'=>'1', 'position'=>70, 'notnull'=>1, 'visible'=>2, 'arrayofkeyval'=>array('0'=>'Draft', '1'=>'Validate', '2'=>'Locked', '3'=>'Archived'),),
-		'label'          => array('type'=>'varchar(255)', 'label'=>'Label', 'enabled'=>'1', 'position'=>80, 'notnull'=>0, 'visible'=>1, 'searchall'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'cssview'=>'wordbreak', 'help'=>"Help text", 'showoncombobox'=>'2',),
+		'label'          => array('type'=>'varchar(255)', 'label'=>'Label', 'enabled'=>'1', 'position'=>80, 'notnull'=>0, 'visible'=>1, 'searchall'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'cssview'=>'wordbreak', 'showoncombobox'=>'2',),
 		'date_start'     => array('type'=>'date', 'label'=>'DateStart', 'enabled'=>'1', 'position'=>90, 'notnull'=>1, 'visible'=>1,),
 		'date_end'       => array('type'=>'date', 'label'=>'DateEnd', 'enabled'=>'1', 'position'=>100, 'notnull'=>1, 'visible'=>1,),
 		'description'    => array('type'=>'html', 'label'=>'Description', 'enabled'=>'1', 'position'=>110, 'notnull'=>0, 'visible'=>3,),
@@ -569,7 +569,7 @@ class TimeSheet extends CommonObject
 
 		$result = '';
 
-		$label = '<i class="fas fa-calendar-check"></i> <u>'.$langs->trans("TimeSheet").'</u>';
+		$label = '<i class="fas fa-calendar-check" style="color: #d35968;"></i> <u>'.$langs->trans("TimeSheet").'</u>';
 		if (isset($this->status)) {
 			$label .= ' '.$this->getLibStatut(5);
 		}
@@ -613,9 +613,8 @@ class TimeSheet extends CommonObject
 			$linkend = '</a>';
 		}
 
-		$result .= $linkstart;
-
-		if ($withpicto) $result .= '<i class="fas fa-calendar-check"></i>' . ' ';
+		if ($withpicto) $result .= '<i class="fas fa-calendar-check" style="color: #d35968;"></i>' . ' ';
+        $result .= $linkstart;
 		if ($withpicto != 2) {
 			$result .= $this->ref;
 		}
@@ -698,7 +697,8 @@ class TimeSheet extends CommonObject
 				$obj = $this->db->fetch_object($result);
 				$this->id = $obj->rowid;
 
-				$this->date_creation = $this->db->jdate($obj->date_creation);
+				$this->date_creation     = $this->db->jdate($obj->date_creation);
+                $this->date_modification = $this->db->jdate($obj->datem);
 			}
 
 			$this->db->free($result);
@@ -813,44 +813,6 @@ class TimeSheet extends CommonObject
 	public function setCategories($categories)
 	{
 		return parent::setCategoriesCommon($categories, 'timesheet');
-	}
-
-	/**
-	 *  Create a document onto disk according to template module.
-	 *
-	 *  @param  string     $modele	    Force template to use ('' to not force)
-	 *  @param  Translate  $outputlangs	Objet lang use for translate
-	 *  @param  int        $hidedetails Hide details of lines
-	 *  @param  int        $hidedesc    Hide description
-	 *  @param  int        $hideref     Hide ref
-	 *  @param  array|null $moreparams  Array to provide more information
-	 *  @return int         		    0 if KO, 1 if OK
-	 */
-	public function generateDocument(string $modele, Translate $outputlangs, int $hidedetails = 0, int $hidedesc = 0, int $hideref = 0, array $moreparams = null): int
-	{
-		global $conf, $langs;
-
-		$result = 0;
-
-		$langs->load("dolisirh@dolisirh");
-
-		if (!dol_strlen($modele)) {
-			$modele = 'standard_timesheet';
-
-			if (!empty($this->model_pdf)) {
-				$modele = $this->model_pdf;
-			} elseif (!empty($conf->global->TIMESHEET_ADDON_PDF)) {
-				$modele = $conf->global->TIMESHEET_ADDON_PDF;
-			}
-		}
-
-		$modelpath = "core/modules/dolisirh/timesheetdocument/";
-
-		if (!empty($modele)) {
-			$result = $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams['object']);
-		}
-
-		return $result;
 	}
 }
 

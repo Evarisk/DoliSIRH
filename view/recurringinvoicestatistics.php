@@ -44,7 +44,7 @@ if (!empty($conf->category->enabled)) {
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 }
 
-require_once DOL_DOCUMENT_ROOT.'/custom/dolisirh/class/facturerecstats.class.php';
+require_once __DIR__ . '/../class/facturerecstats.class.php';
 
 // Global variables definitions
 global $db, $langs, $user;

@@ -22,9 +22,9 @@
  */
 
 /**
- * Class ActionsDolisirh
+ * Class ActionsDoliSIRH
  */
-class ActionsDolisirh
+class ActionsDoliSIRH
 {
 	/**
 	 * @var DoliDB Database handler.
@@ -69,11 +69,11 @@ class ActionsDolisirh
 	 * @param  string $action     Current action (if set). Generally create or edit or null
 	 * @return int                0 < on error, 0 on success, 1 to replace standard code
 	 */
-	public function doActions(array $parameters, object $object, string $action): int
+	public function doActions(array $parameters, $object, string $action): int
 	{
 		require_once DOL_DOCUMENT_ROOT.'/core/modules/project/task/mod_task_simple.php';
 
-		global $langs;
+		global $conf, $db, $langs;
 
 		$error = 0; // Error counter
 
@@ -83,8 +83,8 @@ class ActionsDolisirh
 				// Start
 				// Variable : ref
 				// Description : create the ref of the task
-				$mod = new mod_task_simple;
-				$ref = $mod->getNextValue(0, "");
+				$mod = new mod_task_simple();
+				$ref = $mod->getNextValue(0, '');
 				// End
 
 				//Start
@@ -93,7 +93,7 @@ class ActionsDolisirh
 
 				//Contruction de la chaine de caractère sur le modèle AAAAMMJJ-nomprojet-tag
 				//Variable : datef = Date de début de période de facturation
-				$query = "SELECT datef, ref FROM ".MAIN_DB_PREFIX."facture";
+				$query = 'SELECT datef, ref FROM ' .MAIN_DB_PREFIX. 'facture';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['ref'] == $object->ref) {
@@ -107,7 +107,7 @@ class ActionsDolisirh
 				// Contruction de la chaine de caractère REGEX : AAAAMMJJ-nomprojet-tag
 				// Wording retrieval
 				$fk_projet_fac = $object->fk_project;
-				$query = "SELECT rowid, title FROM ".MAIN_DB_PREFIX."projet";
+				$query = 'SELECT rowid, title FROM ' .MAIN_DB_PREFIX. 'projet';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['rowid'] == $object->fk_project) {
@@ -118,21 +118,21 @@ class ActionsDolisirh
 
 				//Tag retrieval
 				//@todo REGEX à construire dans les réglages dans notre cas : DATEDEBUTPERIODE-NOMPROJET-TAGS EX: 20200801-evarisk.fr-ref
-				$query = "SELECT ref, fk_projet FROM ".MAIN_DB_PREFIX."facture";
+				$query = 'SELECT ref, fk_projet FROM ' .MAIN_DB_PREFIX. 'facture';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['ref'] == $object->ref) {
 						$invoice_fk_projet[0] = $row['fk_projet'];
 					}
 				}
-				$query = "SELECT fk_project, fk_categorie FROM ".MAIN_DB_PREFIX."categorie_project";
+				$query = 'SELECT fk_project, fk_categorie FROM ' .MAIN_DB_PREFIX. 'categorie_project';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['fk_project'] == $invoice_fk_projet[0]) {
 						$fk_categorie[0] = $row['fk_categorie'];
 					}
 				}
-				$query = "SELECT rowid, label FROM ".MAIN_DB_PREFIX."categorie";
+				$query = 'SELECT rowid, label FROM ' .MAIN_DB_PREFIX. 'categorie';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['rowid'] == $fk_categorie[0]) {
@@ -153,7 +153,7 @@ class ActionsDolisirh
 				//Variable : dateo
 				//Decription : retrieval of the start date of the invoice
 				$i = 0;
-				$query = "SELECT fk_facture, date_start, date_end FROM ".MAIN_DB_PREFIX."facturedet";
+				$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
@@ -167,7 +167,7 @@ class ActionsDolisirh
 				//Variable : datee
 				//Description : retrieval of the end date of the invoice
 				$i = 0;
-				$query = "SELECT fk_facture, date_start, date_end FROM ".MAIN_DB_PREFIX."facturedet";
+				$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
@@ -184,7 +184,7 @@ class ActionsDolisirh
 				//We recover all the products from the invoice
 				$i = 0;
 				//We recover the quantity of all the products
-				$query = "SELECT fk_facture, fk_product, qty FROM ".MAIN_DB_PREFIX."facturedet";
+				$query = 'SELECT fk_facture, fk_product, qty FROM ' .MAIN_DB_PREFIX. 'facturedet';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
@@ -196,7 +196,7 @@ class ActionsDolisirh
 				$i = 0;
 				$j = 0;
 				//We recover the time of each product
-				$query = "SELECT rowid, duration FROM ".MAIN_DB_PREFIX."product";
+				$query = 'SELECT rowid, duration FROM ' .MAIN_DB_PREFIX. 'product';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					while (isset($fk_product[$i])) {
@@ -259,7 +259,7 @@ class ActionsDolisirh
 
 				//Check if the invoice is already linked to the task
 				$error_button = 0;
-				$query = "SELECT fk_facture_name FROM ".MAIN_DB_PREFIX."projet_task_extrafields";
+				$query = 'SELECT fk_facture_name FROM ' .MAIN_DB_PREFIX. 'projet_task_extrafields';
 				$result = $this->db->query($query);
 				while ($row = $result->fetch_array()) {
 					if ($row['fk_facture_name'] == $object->id) {
@@ -272,7 +272,7 @@ class ActionsDolisirh
 					if (isset($fk_projet) && $planned_workload != 0 && isset($dateo) && isset($datee)) {
 						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'projet_task(ref, fk_projet, label, dateo, datee, planned_workload) VALUES("'.$ref.'", '.intval($fk_projet).', "'.$label.'", "'.$dateo.'", "'.$datee.'", '.intval($planned_workload).')';
 						$this->db->query($req);
-						$query = "SELECT rowid, ref, fk_projet FROM ".MAIN_DB_PREFIX."projet_task";
+						$query = 'SELECT rowid, ref, fk_projet FROM ' .MAIN_DB_PREFIX. 'projet_task';
 						$result = $this->db->query($query);
 						while ($row = $result->fetch_array()) {
 							if ($row['rowid']) {
@@ -288,23 +288,34 @@ class ActionsDolisirh
 						//Filling of the llx_facture_extrafields table
 						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'facture_extrafields(fk_object, fk_task) VALUES('.$object->lines[0]->fk_facture.', '.$rowid_last_task[0].')';
 						$this->db->query($req);
-						setEventMessages($langs->trans("MessageInfo").' : <a href="'.DOL_URL_ROOT.'/projet/tasks/task.php?id='.$rowid_last_task[0].'">'.$ref.'</a>', null, 'mesgs');
+						setEventMessages($langs->trans('MessageInfo').' : <a href="'.DOL_URL_ROOT.'/projet/tasks/task.php?id='.$rowid_last_task[0].'">'.$ref.'</a>', null, 'mesgs');
 					} else {
 						//Error messages
 						if (!isset($fk_projet)) {
-							setEventMessages($langs->trans("MessageInfoNoCreateProject"), null, 'errors');
+							setEventMessages($langs->trans('MessageInfoNoCreateProject'), null, 'errors');
 						}
 						if ($planned_workload == 0) {
-							setEventMessages($langs->trans("MessageInfoNoCreateTime"), null, 'errors');
+							setEventMessages($langs->trans('MessageInfoNoCreateTime'), null, 'errors');
 						}
 						if (!isset($datee) || !isset($dateo)) {
-							setEventMessages($langs->trans("MessageInfoNoCreatedate"), null, 'errors');
+							setEventMessages($langs->trans('MessageInfoNoCreatedate'), null, 'errors');
 						}
 					}
 				}
 				//End
 			}
 		}
+
+        if ($parameters['currentcontext'] == 'userihm') {
+            if ($action == 'update') {
+                if (GETPOST('set_timespent_dataset_order') == 'on') {
+                    $tabparam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 1;
+                } else {
+                    $tabparam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 0;
+                }
+                dol_set_user_param($db, $conf, $object, $tabparam);
+            }
+        }
 
 		if (!$error) {
 			$this->results = array('myreturn' => 999);
@@ -323,7 +334,7 @@ class ActionsDolisirh
 	 * @param  object $object     The object to process
 	 * @return int                0 < on error, 0 on success, 1 to replace standard code
 	 */
-	public function addMoreActionsButtons(array $parameters, object $object): int
+	public function addMoreActionsButtons(array $parameters, $object): int
 	{
 		global $langs;
 
@@ -345,7 +356,7 @@ class ActionsDolisirh
 
 			//Check if the invoice is already linked to the task
 			$error_button = 0;
-			$query = "SELECT fk_facture_name FROM ".MAIN_DB_PREFIX."projet_task_extrafields";
+			$query = 'SELECT fk_facture_name FROM ' .MAIN_DB_PREFIX. 'projet_task_extrafields';
 			$result = $this->db->query($query);
 			while ($row = $result->fetch_array()) {
 				if ($row['fk_facture_name'] == $object->id) {
@@ -357,7 +368,7 @@ class ActionsDolisirh
 
 			//Check date
 			$i = 0;
-			$query = "SELECT fk_facture, date_start, date_end FROM ".MAIN_DB_PREFIX."facturedet";
+			$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
 			$result = $this->db->query($query);
 			while ($row = $result->fetch_array()) {
 				if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
@@ -371,7 +382,7 @@ class ActionsDolisirh
 
 			//Check service time
 			$i = 0;
-			$query = "SELECT fk_facture, fk_product, qty FROM ".MAIN_DB_PREFIX."facturedet";
+			$query = 'SELECT fk_facture, fk_product, qty FROM ' .MAIN_DB_PREFIX. 'facturedet';
 			$result = $this->db->query($query);
 			while ($row = $result->fetch_array()) {
 				if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
@@ -382,7 +393,7 @@ class ActionsDolisirh
 			}
 			$i = 0;
 			$j = 0;
-			$query = "SELECT rowid, duration FROM ".MAIN_DB_PREFIX."product";
+			$query = 'SELECT rowid, duration FROM ' .MAIN_DB_PREFIX. 'product';
 			$result = $this->db->query($query);
 			while ($row = $result->fetch_array()) {
 				while (isset($fk_product[$i])) {
@@ -445,13 +456,13 @@ class ActionsDolisirh
 				if (isset($object->fk_project) && isset($dateo) && isset($datee) && $planned_workload != 0) {
 					print '<div class="inline-block divButAction"><a class="butAction" href="'. $actual_link .'">Créer tâche</a></div>';
 				} elseif (!isset($object->fk_project)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans("ErrorNoProject").'">Créer tâche</a></div>';
+					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorNoProject').'">Créer tâche</a></div>';
 				} elseif (!isset($dateo)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans("ErrorDateStart").'">Créer tâche</a></div>';
+					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorDateStart').'">Créer tâche</a></div>';
 				} elseif (!isset($datee)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans("ErrorDateEnd").'">Créer tâche</a></div>';
+					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorDateEnd').'">Créer tâche</a></div>';
 				} elseif ($planned_workload == 0) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans("ErrorServiceTime").'">Créer tâche</a></div>';
+					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorServiceTime').'">Créer tâche</a></div>';
 				}
 			}
 		}
@@ -517,7 +528,7 @@ class ActionsDolisirh
 
 				if (!empty($task_id) && $task_id > 0) { ?>
 					<script>
-						jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($task->getNomUrl(1, 'blank', 'task', 1)) ?>);
+						  jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($task->getNomUrl(1, 'blank', 'task', 1)) ?>);
 					</script>
 				<?php }
 			}
@@ -580,7 +591,7 @@ class ActionsDolisirh
 					}
 					?>
 					<script>
-						jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').html(jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').html()  + ' ' + <?php echo json_encode($favoriteStar) ?>  )
+						jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').first().html(jQuery('#row-'+<?php echo json_encode($linked_task->id) ?>).find('.nowraponall').first().html()  + ' ' + <?php echo json_encode($favoriteStar) ?>  )
 					</script>
 					<?php
 				}
@@ -615,6 +626,7 @@ class ActionsDolisirh
 				}
 			}
 		}
+
 		if ($parameters['currentcontext'] == 'invoicereccard') {
 			if (GETPOST('action') == 'create') {
 				require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
@@ -625,7 +637,7 @@ class ActionsDolisirh
 
 				// Categories
 				if ($conf->categorie->enabled) {
-					$html = '<tr><td class="valignmiddle">'.$langs->trans("Categories").'</td><td>';
+					$html = '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
 					$html .= $form->showCategories($invoice_id, 'invoice', 1);
 					$html .= '</td></tr>'; ?>
 					<script>
@@ -634,8 +646,82 @@ class ActionsDolisirh
 				<?php }
 			}
 		}
+
+        if ($parameters['currentcontext'] == 'actioncard') { ?>
+            <script>
+                function getDiffTimestampEvent() {
+                    let dayap   = $('#apday').val();
+                    let monthap = $('#apmonth').val();
+                    let yearap  = $('#apyear').val();
+                    let hourap  = $('#aphour').val() > 0 ? $('#aphour').val() : 0;
+                    let minap   = $('#apmin').val() > 0 ? $('#apmin').val() : 0;
+
+                    let dayp2   = $('#p2day').val();
+                    let monthp2 = $('#p2month').val();
+                    let yearp2  = $('#p2year').val();
+                    let hourp2  = $('#p2hour').val() > 0 ? $('#p2hour').val() : 0;
+                    let minp2   = $('#p2min').val() > 0 ? $('#p2min').val() : 0;
+
+                    if (yearap != '' && monthap != '' && dayap != '' && yearp2 != '' && monthp2 != '' && dayp2 != '') {
+                        let dateap = new Date(yearap, monthap - 1, dayap, hourap, minap);
+                        let datep2 = new Date(yearp2, monthp2 - 1, dayp2, hourp2, minp2);
+
+                        let difftimestamp = (datep2.getTime() - dateap.getTime()) / 3600000;
+                        let difftimestampInMin = ((datep2.getTime() - dateap.getTime()) / 60000)
+                        let displaydifftimestamp = '';
+                        if ((difftimestampInMin % 60) == 0) {
+                            displaydifftimestamp = difftimestamp + ' H';
+                        } else {
+                            displaydifftimestamp = (difftimestampInMin - (difftimestampInMin % 60)) / 60 + ' H ' + Math.abs((difftimestampInMin % 60)) + ' min';
+                        }
+                        let color = difftimestamp > 0 ? 'rgb(0,128,0)' : 'rgb(255,0,0)';
+                        let element = '<span class="difftimestamp" style="color:' + color + '; font-weight: bold" >' + displaydifftimestamp + '</span>';
+                        if ($('.difftimestamp').length > 0) {
+                            $('.difftimestamp').remove();
+                        }
+                        return $('.fulldayendhour').parent().after(element);
+                    }
+                }
+                $('#ap, #aphour, #apmin, #p2, #p2hour, #p2min').change(function () {
+                    setTimeout(function () {
+                        getDiffTimestampEvent();
+                    }, 100);
+                });
+            </script>
+		<?php }
+
+        if ($parameters['currentcontext'] == 'userihm') {
+            $pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_red.png', 1);
+			$picto = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoModule');
+
+            $out = '<tr class="oddeven"><td>' . $picto . $langs->trans('TimeSpentDatasetOrder') . '</td>';
+            $out .= '<td>' . $langs->trans('ByProject/Task') .'</td>';
+            $out .= '<td class="nowrap"><input class="oddeven" name="set_timespent_dataset_order" type="checkbox"' . (GETPOST('action') == 'edit' ? '' : ' disabled ') . (!empty($user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER) ? ' checked' : '') . '>' . $langs->trans('UsePersonalValue') . '</td>';
+            $out .= '<td>' . $langs->trans('ByTask/Project') . '</td></tr>';
+
+            if (GETPOST('action') == 'edit') : ?>
+                <script>
+                    let currentElement = $('table:nth-child(7) .oddeven:last-child');
+                    currentElement.after(<?php echo json_encode($out); ?>);
+                </script>
+            <?php else : ?>
+                <script>
+                    let currentElement = $('table:nth-child(1) tr.oddeven:last-child').first();
+                    currentElement.after(<?php echo json_encode($out); ?>);
+                </script>
+            <?php endif;
+        }
+
+		if (in_array($parameters['currentcontext'], array('timesheetcard')) && GETPOST('action') == 'create') {
+			?>
+			<script>
+				$('.field_fk_soc').find($('.butActionNew')).attr('href', $('.field_fk_soc').find($('.butActionNew')).attr('href').replace('fk_societe', 'fk_soc'))
+			</script>
+			<?php
+		}
+
 		if (preg_match('/categoryindex/', $parameters['context'])) {
-			print '<script src="../custom/dolisirh/js/dolisirh.js.php"></script>';
+			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
 		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
 			toggleTaskFavorite(GETPOST('taskId'), $user->id);
@@ -715,7 +801,7 @@ class ActionsDolisirh
 	 * @param string $action     Current action (if set). Generally create or edit or null
 	 * @return void
 	 */
-	public function formObjectOptions(array $parameters, object $object, string $action)
+	public function formObjectOptions(array $parameters, $object, string $action)
 	{
 		global $conf, $langs;
 
@@ -727,10 +813,10 @@ class ActionsDolisirh
 			if ($action == 'create') {
 				if (!empty($conf->categorie->enabled)) {
 					// Categories
-					print '<tr><td>' . $langs->trans("Categories") . '</td><td>';
+					print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
 					$cate_arbo = $form->select_all_categories('invoice', '', 'parent', 64, 0, 1);
 					print img_picto('', 'category') . $form->multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
-					print "</td></tr>";
+					print '</td></tr>';
 				}
 			} elseif ($action == 'edit') {
 				//              // Tags-Categories
@@ -751,9 +837,9 @@ class ActionsDolisirh
 			} elseif ($action == '') {
 				// Categories
 				if ($conf->categorie->enabled) {
-					print '<tr><td class="valignmiddle">'.$langs->trans("Categories").'</td><td>';
+					print '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
 					print $form->showCategories($object->id, 'invoice', 1);
-					print "</td></tr>";
+					print '</td></tr>';
 				}
 			}
 		}
@@ -765,9 +851,9 @@ class ActionsDolisirh
 			if ($action == '') {
 				// Categories
 				if ($conf->categorie->enabled) {
-					print '<tr><td class="valignmiddle">'.$langs->trans("Categories").'</td><td>';
+					print '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
 					print $form->showCategories($object->id, 'invoicerec', 1);
-					print "</td></tr>";
+					print '</td></tr>';
 				}
 			}
 		}
@@ -780,7 +866,7 @@ class ActionsDolisirh
 	 * @param object $object     Object
 	 * @return void
 	 */
-	public function afterCreationOfRecurringInvoice(array $parameters, object $object)
+	public function afterCreationOfRecurringInvoice(array $parameters, $object)
 	{
 		if (in_array($parameters['currentcontext'], array('cron', 'cronjoblist'))) {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
@@ -944,4 +1030,34 @@ class ActionsDolisirh
 			}
 		}
 	}
+
+    /**
+     * Overloading the getNomUrl function : replacing the parent's function with the one below
+     *
+     * @param  array        $parameters Hook metadata (context, etc...)
+     * @param  CommonObject $object     The object to process
+     * @param  string       $action     Current action (if set). Generally create or edit or null
+     * @return int                      0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function getNomUrl(array $parameters, CommonObject $object, string $action): int
+    {
+        if (in_array('timespentpermonthlist', explode(':', $parameters['context'])) || in_array('timespentperweeklist', explode(':', $parameters['context']))) {
+            $doc = new DOMDocument();
+            $doc->loadHTML($parameters['getnomurl']);
+            $links = $doc->getElementsByTagName('a');
+            foreach ($links as $item) {
+                if (!$item->hasAttribute('target')) {
+                    $item->setAttribute('target','_blank');
+                }
+            }
+            $content = $doc->saveHTML();
+            $this->resprints = $content;
+        }
+
+        if (!empty($this->resprints)) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }
