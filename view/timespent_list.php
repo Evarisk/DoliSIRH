@@ -213,11 +213,10 @@ $form = new Form($db);
 
 $now = dol_now();
 
-$help_url = '';
-$title = $langs->trans($langs->transnoentitiesnoconv("TimeSpentList"));
-$morejs = array();
-$morecss = array();
-
+$help_url = 'FR:Module_DoliSIRH';
+$title    = $langs->trans($langs->transnoentitiesnoconv("TimeSpentList"));
+$morejs   = array();
+$morecss  = array();
 
 // Build and execute select
 // --------------------------------------------------------------------
@@ -255,6 +254,8 @@ if ($object->ismultientitymanaged == 1) {
 	$sql .= " WHERE 1 = 1";
 }
 $sql .= ' AND ptt.task_duration IS NOT NULL';
+
+if (GETPOST('custonly')) $sql .= ' AND s.rowid IS NOT NULL';
 
 foreach ($search as $key => $val) {
 	if (preg_match('/(_dtstart|_dtend)$/', $key) && $search[$key] != '') {
@@ -400,6 +401,8 @@ if (!empty($conf->categorie->enabled) && $user->rights->categorie->lire) {
 	$formcategory = new FormCategory($db);
 	$moreforfilter .= $formcategory->getFilterBox(Categorie::TYPE_PROJECT, $search_category_array);
 }
+
+$moreforfilter .= 'Client seulement : <input type="checkbox" name="custonly"' . (GETPOST('custonly') ? ' checked=checked' : ''). '>';
 
 if (!empty($moreforfilter)) {
 	print '<div class="liste_titre liste_titre_bydiv centpercent">';
@@ -572,8 +575,11 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 					if ($key == 'thm') {
 						$totalarray['val'][$key] += $value;
 					} else {
-						$totalarray['val'][$key] += $obj->{$key};
-					}
+                        $totalarray['val'][$key] += $obj->{$key};
+                    }
+                    if (!$i) {
+                        $totalarray['total'.$key] = $totalarray['nbfield'];
+                    }
 				}
 			}
 		}
@@ -602,7 +608,25 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 }
 
 // Show total line
-include DOL_DOCUMENT_ROOT . '/core/tpl/list_print_total.tpl.php';
+print '<tr class="liste_total">';
+$i = 0;
+while ($i < $totalarray['nbfield']) {
+    $i++;
+    if ($i == 1) {
+        if ($num < $limit && empty($offset)) {
+            print '<td class="left">'.$langs->trans("Total").'</td>';
+        } else {
+            print '<td class="left">'.$langs->trans("Totalforthispage").'</td>';
+        }
+    } elseif ($totalarray['totaltask_duration'] == $i) {
+        print '<td class="left">'.convertSecondToTime($totalarray['val']['task_duration'], 'allhourmin').'</td>';
+    } elseif ($totalarray['totalthm'] == $i) {
+        print '<td class="right">'.price($totalarray['val']['thm']).'</td>';
+    } else {
+        print '<td></td>';
+    }
+}
+print '</tr>';
 
 // If no record found
 if ($num == 0) {
