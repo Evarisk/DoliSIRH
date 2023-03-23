@@ -255,6 +255,8 @@ if ($object->ismultientitymanaged == 1) {
 }
 $sql .= ' AND ptt.task_duration IS NOT NULL';
 
+if (GETPOST('custonly')) $sql .= ' AND s.rowid IS NOT NULL';
+
 foreach ($search as $key => $val) {
 	if (preg_match('/(_dtstart|_dtend)$/', $key) && $search[$key] != '') {
 		if (preg_match('/_dtstart$/', $key)) {
@@ -399,6 +401,8 @@ if (!empty($conf->categorie->enabled) && $user->rights->categorie->lire) {
 	$formcategory = new FormCategory($db);
 	$moreforfilter .= $formcategory->getFilterBox(Categorie::TYPE_PROJECT, $search_category_array);
 }
+
+$moreforfilter .= 'Client seulement : <input type="checkbox" name="custonly"' . (GETPOST('custonly') ? ' checked=checked' : ''). '>';
 
 if (!empty($moreforfilter)) {
 	print '<div class="liste_titre liste_titre_bydiv centpercent">';
