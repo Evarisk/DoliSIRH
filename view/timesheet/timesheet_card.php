@@ -465,13 +465,10 @@ if ($action == 'create') {
 
 	print dol_get_fiche_head(array(), '');
 
-	// Set some default values
-	//if (! GETPOSTISSET('fieldname')) $_POST['fieldname'] = 'myvalue';
+	print '<table class="border centpercent tableforfieldcreate">';
 
-	print '<table class="border centpercent tableforfieldcreate">'."\n";
-
-	$object->fields['label']['default'] = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, $month, $day, $year), "%B %Y") . ' ' . $user->getFullName($langs, 0, 0);
-	$object->fields['fk_project']['default']   = $conf->global->DOLISIRH_HR_PROJECT;
+	$object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, $month, $day, $year), "%B %Y") . ' ' . $user->getFullName($langs, 0, 0);
+	$object->fields['fk_project']['default']     = $conf->global->DOLISIRH_HR_PROJECT;
 	$object->fields['fk_user_assign']['default'] = $user->id;
 
 	$date_start = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
@@ -496,9 +493,6 @@ if ($action == 'create') {
 		$_POST['date_endyear'] = $lastday['year'];
 	}
 
-//	$object->fields['note_public']['visible']  = 1;
-//	$object->fields['note_private']['visible'] = 1;
-
 	// Common attributes
 	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_add.tpl.php';
 
@@ -513,7 +507,7 @@ if ($action == 'create') {
 	// Other attributes
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_add.tpl.php';
 
-	print '</table>'."\n";
+	print '</table>';
 
 	print dol_get_fiche_end();
 
