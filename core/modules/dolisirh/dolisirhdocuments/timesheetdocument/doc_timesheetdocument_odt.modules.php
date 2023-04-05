@@ -226,7 +226,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 
         $objectDocument->fetch($objectDocumentID);
 
-		$objectref = dol_sanitizeFileName($objectDocument->ref);
+        $objectDocumentRef = dol_sanitizeFileName($objectDocument->ref);
 		$dir = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/timesheetdocument/' . $object->ref;
 
         if (!file_exists($dir)) {
@@ -237,27 +237,35 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
         }
 
         if (file_exists($dir)) {
-            $newfile = basename($srctemplatepath);
-            $newfiletmp = preg_replace('/\.od([ts])/i', '', $newfile);
-            $newfiletmp = preg_replace('/template_/i', '', $newfiletmp);
+            $newFile     = basename($srctemplatepath);
+            $newFileTmp  = preg_replace('/\.od([ts])/i', '', $newFile);
+            $newFileTmp  = preg_replace('/template_/i', '', $newFileTmp);
+            $societyName = preg_replace('/\./', '_', $conf->global->MAIN_INFO_SOCIETE_NOM);
 
-            $date       = dol_print_date(dol_now(), 'dayxcard');
-            $newfiletmp = $objectref . '_' . $date . '_' . $newfiletmp . '_' . $conf->global->MAIN_INFO_SOCIETE_NOM;
+            $date = dol_print_date(dol_now(),'dayxcard');
 
-            $objectDocument->last_main_doc = $newfiletmp;
+            $userTmp = new User($this->db);
+            $userTmp->fetch($object->fk_user_assign);
 
-            $sql  = "UPDATE " . MAIN_DB_PREFIX . "dolisirh_dolisirhdocuments";
-            $sql .= " SET last_main_doc =" . (!empty($newfiletmp) ? "'" . $this->db->escape($newfiletmp) . "'" : 'null');
-            $sql .= " WHERE rowid = " . $objectDocument->id;
+            $userAssign = strtoupper($userTmp->lastname) . '_' . $userTmp->firstname;
 
-            dol_syslog("admin.lib::Insert last main doc", LOG_DEBUG);
-            $this->db->query($sql);
+            $newFileTmp = $date . '_' . $object->ref . '_' . $objectDocumentRef . '_' . $langs->transnoentities($newFileTmp) . '_' . $userAssign . '_' . $societyName;
+
+            $newFileTmp = str_replace(' ', '_', $newFileTmp);
 
             // Get extension (ods or odt)
-            $newfileformat = substr($newfile, strrpos($newfile, '.') + 1);
+            $newFileFormat = substr($newFile, strrpos($newFile, '.') + 1);
+            $fileName      = $newFileTmp . '.' . $newFileFormat;
+            $file          = $dir . '/' . $fileName;
 
-            $filename = $newfiletmp . '.' . $newfileformat;
-            $file     = $dir . '/' . $filename;
+            $objectDocument->last_main_doc = $newFileTmp;
+
+            $sql  = "UPDATE " . MAIN_DB_PREFIX . "dolisirh_dolisirhdocuments";
+            $sql .= " SET last_main_doc =" . (!empty($newFileTmp) ? "'" . $this->db->escape($newFileTmp) . "'" : 'null');
+            $sql .= " WHERE rowid = " . $objectDocument->id;
+
+            dol_syslog("dolisirh_dolisirhdocuments::Insert last main doc", LOG_DEBUG);
+            $this->db->query($sql);
 
             dol_mkdir($conf->dolisirh->dir_temp);
 

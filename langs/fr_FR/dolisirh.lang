@@ -284,6 +284,7 @@ DoliSIRHTimeSheetDocumentTemplate = ODT par défaut des documents navette
 # Data - Donnée
 TimeSheetDocument = Document Navette
 timesheetdocument.odt = Navette ODT
+timesheetdocument = navette
 
 
 
