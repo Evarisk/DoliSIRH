@@ -623,7 +623,6 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 			}
 			$sql .= " AND YEAR(ptt.task_date) = " . $timeArray['year'];
 		}
-
 	} elseif ($mode == 1) {
 		if ($filteronprojuser > 0) {
 			$sql .= ", ".MAIN_DB_PREFIX."element_contact as ec";
@@ -1180,11 +1179,15 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 		$restrictBefore = dol_time_plus_duree(dol_now(), - $conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS, 'm');
 	}
-
+    
 	for ($i = 0; $i < $numlines; $i++) {
 		if ($parent == 0) {
 			$level = 0;
 		}
+
+        if ($lines[$i]->fk_task_parent != $parent && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+            $lines[$i]->fk_task_parent = 0;
+        }
 
 		if ($lines[$i]->fk_task_parent == $parent) {
 			$obj = &$lines[$i]; // To display extrafields
