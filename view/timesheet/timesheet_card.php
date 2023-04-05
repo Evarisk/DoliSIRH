@@ -703,10 +703,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("ExpectedWorkedHoursMonthTimeSheet", $start_date, $end_date);
+	print $langs->trans("ExpectedWorkingHoursMonthTimeSheet", $start_date, $end_date);
 	print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '" target="_blank">';
 	print (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong>';
-	print '<span>' . ' - ' . $langs->trans("ExpectedWorkedDayMonth") . ' <strong>' . $planned_working_time['days'] . '</strong></span>';
+	print '<span>' . ' - ' . $langs->trans("ExpectedWorkingDayMonth") . ' <strong>' . $planned_working_time['days'] . '</strong></span>';
 	print '</span>';
 	print '</td></tr>';
 
@@ -716,11 +716,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("SpentWorkedHoursMonth", $start_date, $end_date);
+	print $langs->trans("SpentWorkingHoursMonth", $start_date, $end_date);
 	print ' : <strong>' . (($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</strong></span>';
 	print '</td></tr>';
 
-	//Difference between passed and worked hours
+	//Difference between passed and working hours
 	$difftotaltime = $timeSpendingInfos['difference'];
 
 	if ($difftotaltime < 0) {
@@ -737,12 +737,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$noticetitle = $langs->trans('TimeSpentPerfect');
 	}
 
-	//Worked hours
-	$worked_time = $timeSpendingInfos['spent'];
+	//Working hours
+	$working_time = $timeSpendingInfos['spent'];
 
-	if ($planned_working_time['days'] > $worked_time['days']) {
+	if ($planned_working_time['days'] > $working_time['days']) {
 		$morecssDays = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-	} else if ($planned_working_time['days'] < $worked_time['days']){
+	} else if ($planned_working_time['days'] < $working_time['days']){
 		$morecssDays = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
 	} else {
 		$morecssDays = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
@@ -751,18 +751,18 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("ConsumedWorkedHoursMonth", $start_date, $end_date);
-	print ' : <strong>'.convertSecondToTime($worked_time['total'], 'allhourmin').'</strong>';
-	print '<span>' . ' - ' . $langs->trans("ConsumedWorkedDayMonth") . ' <strong style="color:'.'rgb('.$morecssDays[0].','.$morecssDays[1].','.$morecssDays[2].')'.'">';
-	print $worked_time['days'] . '</strong></span>';
+	print $langs->trans("ConsumedWorkingHoursMonth", $start_date, $end_date);
+	print ' : <strong>'.convertSecondToTime($working_time['total'], 'allhourmin').'</strong>';
+	print '<span>' . ' - ' . $langs->trans("ConsumedWorkingDayMonth") . ' <strong style="color:'.'rgb('.$morecssDays[0].','.$morecssDays[1].','.$morecssDays[2].')'.'">';
+	print $working_time['days'] . '</strong></span>';
 	print '</span>';
 	print '</td></tr>';
 
-	//Difference between worked hours & planned working hours
+	//Difference between working hours & planned working hours
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("DiffSpentAndConsumedWorkedHoursMonth", $start_date, $end_date);
+	print $langs->trans("DiffSpentAndConsumedWorkingHoursMonth", $start_date, $end_date);
 	print ' : <strong style="color:'.'rgb('.$morecssHours[0].','.$morecssHours[1].','.$morecssHours[2].')'.'">';
 	print (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime * 60), 'allhourmin') : '00:00').'</strong>';
 	print '</span>';

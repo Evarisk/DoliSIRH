@@ -443,9 +443,9 @@ if (GETPOST('day')) {
 $wanted_date = $year_post ? $year_post . '-' . ($month_post > 9 ? $month_post : 0 . $month_post) . '-' . ($day_post > 9 ? $day_post : 0 . $day_post) : date("Y-m-d", dol_now());
 $today_workinghours = 'workinghours_' .  strtolower(date("l", dol_strlen($wanted_date) > 0 ? strtotime($wanted_date) : dol_now()));
 
-$worked_hours = floor($current_workinghours->$today_workinghours / 60);
-$worked_minutes = ($current_workinghours->$today_workinghours % 60);
-$worked_minutes = $worked_minutes < 10 ? 0 . $worked_minutes : $worked_minutes;
+$working_hours = floor($current_workinghours->$today_workinghours / 60);
+$working_minutes = ($current_workinghours->$today_workinghours % 60);
+$working_minutes = $working_minutes < 10 ? 0 . $working_minutes : $working_minutes;
 
 $today_consumed_time = $taskstatic->fetchAllTimeSpent($user, ' AND ptt.task_date = "' . $wanted_date . '"');
 $already_consumed_time = 0;
@@ -758,7 +758,7 @@ if (!$isavailable[$daytoparse]['morning'] && !$isavailable[$daytoparse]['afterno
 }
 
 print '<th class="center'.($cssonholiday ? ' '.$cssonholiday : '').($cssweekend ? ' '.$cssweekend : '').'">'.$langs->trans("Duration");
-print '<br>' . $langs->trans('DayWorkTime') . ' : ' . $worked_hours . ':' . $worked_minutes;
+print '<br>' . $langs->trans('DayWorkTime') . ' : ' . $working_hours . ':' . $working_minutes;
 print '<br>' . $langs->trans('ConsumedTime') . ' : ' . $consumed_hours . ':' . $consumed_minutes ;
 print '<br>' . $langs->trans('NonConsumedTime') . ' : ' . $non_consumed_hours . ':' . $non_consumed_minutes;
 print '<input hidden class="non-consumed-time-hour" value="'. $non_consumed_hours .'">';

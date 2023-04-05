@@ -389,12 +389,12 @@ function loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid = 
 				$timeSpent['hours'] += $hours;
 				$timeSpent['minutes'] += $minutes;
 				$timeSpent['total'] += $timeSpentSingle->timespent_duration;
-				$days_worked[$timeSpentSingle->timespent_date] = 1;
+				$days_working[$timeSpentSingle->timespent_date] = 1;
 			}
 		}
 	}
 
-	$timeSpent['days'] = is_array($days_worked) && !empty($days_worked) ? count($days_worked) : 0;
+	$timeSpent['days'] = is_array($days_working) && !empty($days_working) ? count($days_working) : 0;
 
 	return $timeSpent;
 }
