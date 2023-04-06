@@ -645,13 +645,15 @@ abstract class DoliSIRHStats
         global $db, $langs, $user;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $year   = GETPOSTISSET('search_year') ? GETPOST('search_year', 'int') : date('Y');
         $month  = GETPOSTISSET('search_month') ? GETPOST('search_month', 'int') : date('m');
 
-        $firstdaytoshow = dol_get_first_day(date('Y'), $month);
+        $firstdaytoshow = dol_get_first_day($year, $month);
         $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
         $currentMonth = date('m', dol_now());
-        if ($currentMonth == $month) {
+        $currentYear = date('Y', dol_now());
+        if ($currentMonth == $month && $currentYear == $year) {
             $currentDate   = dol_getdate(dol_now());
             $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
         } else {
@@ -679,7 +681,7 @@ abstract class DoliSIRHStats
 
         // Planned working time
         $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-        $array['planned']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ExpectedWorkingHoursMonth', dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), date('Y')), '%B %Y'));
+        $array['planned']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ExpectedWorkingHoursMonth', dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), $year), '%B %Y'));
         $array['planned']['content'] = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00');
 
         // Hours passed
@@ -715,6 +717,7 @@ abstract class DoliSIRHStats
         $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $year   = GETPOSTISSET('search_year') ? GETPOST('search_year', 'int') : date('Y');
 
         // Graph Title parameters
         $array['title'] = $langs->transnoentities('TimeSpentReportByFiscalYear');
@@ -741,11 +744,12 @@ abstract class DoliSIRHStats
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
         for ($i = 1; $i < 13; $i++) {
-            $firstdaytoshow = dol_get_first_day(date('Y'), $i);
+            $firstdaytoshow = dol_get_first_day($year, $i);
             $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
             $currentMonth = date('m', dol_now());
-            if ($currentMonth == date('m')) {
+            $currentYear  = date('Y', dol_now());
+            if ($currentMonth == date('m') && $currentYear == $year) { 
                 $currentDate   = dol_getdate(dol_now());
                 $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
             } else {
@@ -796,12 +800,13 @@ abstract class DoliSIRHStats
         global $db, $langs, $user;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $year   = GETPOSTISSET('search_year') ? GETPOST('search_year', 'int') : date('Y');
         $month  = GETPOSTISSET('search_month') ? GETPOST('search_month', 'int') : date('m');
 
         $datasetOrder = $user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER;
 
         // Graph Title parameters
-        $array['title'] = $langs->transnoentities(($showNotConsumedWorkingHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), date('Y')), '%B %Y'));
+        $array['title'] = $langs->transnoentities(($showNotConsumedWorkingHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), $year), '%B %Y'));
         $array['picto'] = 'projecttask';
 
         // Graph parameters
@@ -813,11 +818,12 @@ abstract class DoliSIRHStats
         $workinghours = new Workinghours($db);
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
-        $firstdaytoshow = dol_get_first_day(date('Y'), $month);
+        $firstdaytoshow = dol_get_first_day($year, $month);
         $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
         $currentMonth = date('m', dol_now());
-        if ($currentMonth == $month) {
+        $currentYear  = date('Y', dol_now());
+        if ($currentMonth == $month && $currentYear == $year) {
             $currentDate   = dol_getdate(dol_now());
             $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
         } else {

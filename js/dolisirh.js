@@ -1337,6 +1337,7 @@ window.eoxiaJS.dashboard.closeDashBoardInfo = function() {
  */
 window.eoxiaJS.dashboard.selectDatasetDashboardInfo = function() {
 	let userID = $('#search_userid').val();
+	let year   = $('#search_year').val();
 	let month  = $('#search_month').val();
 
 	let querySeparator = '?';
@@ -1346,7 +1347,7 @@ window.eoxiaJS.dashboard.selectDatasetDashboardInfo = function() {
 	window.eoxiaJS.loader.display($('.fichecenter'));
 
 	$.ajax({
-		url: document.URL + querySeparator + 'token=' + token + '&search_userid=' + userID + '&search_month=' + month,
+		url: document.URL + querySeparator + 'token=' + token + '&search_userid=' + userID + '&search_year=' + year + '&search_month=' + month,
 		type: "POST",
 		processData: false,
 		contentType: false,
