@@ -89,6 +89,10 @@ ConfigDefaultData = Configuration des données par défaut de DOLISIRH
 # TimeSpent - Temps consommé
 #
 
+# Right - Droit
+CreateAllWorkingHours = Créer/Modifier les horaires de travail des utilisateurs dont on est responsable hiérarchique
+CreateMyWorkingHours  = Créer/Modifier ses propres horaires de travail
+
 # Data - Donnée
 Monday = Lundi
 Tuesday = Mardi

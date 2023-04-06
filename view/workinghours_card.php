@@ -253,16 +253,12 @@ print '</tr>' . "\n";
 
 print '</table>';
 
-if ($firepermit) {
-	$status = $firepermit->status;
-} elseif ($preventionplan) {
-	$status = $preventionplan->status;
+if (($user->rights->dolisirh->workinghours->myworkinghours && $usertmp->id == $user->id) || ($user->rights->dolisirh->workinghours->allworkinghours && $usertmp->fk_user == $user->id)){
+    print '<br><div class="center">';
+    print '<input type="submit" class="button" name="save" value="' . $langs->trans("Save") . '">';
+    print '</div>';
+    print '<br>';
 }
-
-print '<br><div class="center">';
-print '<input type="submit" class="button" name="save" value="' . $langs->trans("Save") . '">';
-print '</div>';
-print '<br>';
 
 print '</form>';
 

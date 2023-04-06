@@ -208,6 +208,18 @@ class modDoliSIRH extends DolibarrModules
 		$this->rights[$r][5] = 'delete';
 		$r++;
 
+        /* WORKING HOURS PERMISSIONS */
+        $this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
+        $this->rights[$r][1] = $langs->transnoentities('CreateAllWorkingHours');
+        $this->rights[$r][4] = 'workinghours';
+        $this->rights[$r][5] = 'allworkinghours';
+        $r++;
+        $this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
+        $this->rights[$r][1] = $langs->transnoentities('CreateMyWorkingHours');
+        $this->rights[$r][4] = 'workinghours';
+        $this->rights[$r][5] = 'myworkinghours';
+        $r++;
+
 		/* ADMINPAGE PANEL ACCESS PERMISSIONS */
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
 		$this->rights[$r][1] = $langs->transnoentities('ReadAdminPage');
