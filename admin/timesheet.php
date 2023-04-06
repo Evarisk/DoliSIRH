@@ -214,12 +214,12 @@ print '</td>';
 print '</tr>';
 
 print '<tr class="oddeven"><td>';
-print $langs->trans('ShowOnlyTasksWithTimespentOnTimeSheet');
+print $langs->trans('ShowTasksWithTimespentOnTimeSheet');
 print "</td><td>";
-print $langs->trans('ShowOnlyTasksWithTimespentOnTimeSheetDescription');
+print $langs->trans('ShowTasksWithTimespentOnTimeSheetDescription');
 print '</td>';
 print '<td class="center">';
-print ajax_constantonoff('DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET');
+print ajax_constantonoff('DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET');
 print '</td>';
 print '</tr>';
 

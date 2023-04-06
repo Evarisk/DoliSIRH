@@ -62,13 +62,55 @@ if (!$permissiontoread) accessforbidden();
  */
 
 if ($action == 'update') {
-	$HRProject = GETPOST('HRProject', 'none');
-	$HRProject = explode('_', $HRProject);
+	$HRProject                   = GETPOST('HRProject', 'int');
+    $holidaysTaskID              = GETPOST('holidaysTaskID', 'int');
+    $paidHolidaysTaskID          = GETPOST('paidHolidaysTaskID', 'int');
+    $sickLeaveTaskID             = GETPOST('sickLeaveTaskID', 'int');
+    $publicHolidayTaskID         = GETPOST('publicHolidayTaskID', 'int');
+    $RTTTaskID                   = GETPOST('RTTTaskID', 'int');
+    $internalMeetingTaskID       = GETPOST('internalMeetingTaskID', 'int');
+    $internalTrainingTaskID      = GETPOST('internalTrainingTaskID', 'int');
+    $externalTrainingTaskID      = GETPOST('externalTrainingTaskID', 'int');
+    $automaticTimeSpendingTaskID = GETPOST('automaticTimeSpendingTaskID', 'int');
+    $miscellaneousTaskID         = GETPOST('miscellaneousTaskID', 'int');
 
-	dolibarr_set_const($db, "DOLISIRH_HR_PROJECT", $HRProject[0], 'integer', 0, '', $conf->entity);
-	setEventMessages($langs->transnoentities('TicketProjectUpdated'), array());
-	header("Location: " . $_SERVER["PHP_SELF"]);
-	exit;
+    if (!empty($HRProject)) {
+        dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT', $HRProject, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($holidaysTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_HOLIDAYS_TASK', $holidaysTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($paidHolidaysTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_PAID_HOLIDAYS_TASK', $paidHolidaysTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($sickLeaveTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_SICK_LEAVE_TASK', $sickLeaveTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($publicHolidayTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_PUBLIC_HOLIDAY_TASK', $publicHolidayTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($RTTTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_RTT_TASK', $RTTTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($internalMeetingTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_INTERNAL_MEETING_TASK', $internalMeetingTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($internalTrainingTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_INTERNAL_TRAINING_TASK', $internalTrainingTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($externalTrainingTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_EXTERNAL_TRAINING_TASK', $externalTrainingTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($automaticTimeSpendingTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_AUTOMATIC_TIMESPENDING_TASK', $automaticTimeSpendingTaskID, 'integer', 0, '', $conf->entity);
+    }
+    if (!empty($miscellaneousTaskID)) {
+        dolibarr_set_const($db, 'DOLISIRH_MISCELLANEOUS_TASK', $miscellaneousTaskID, 'integer', 0, '', $conf->entity);
+    }
+
+    setEventMessage('SavedConfig');
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
 }
 
 if ($action == 'updateThemeColor') {
@@ -126,20 +168,77 @@ print '<input type="hidden" name="action" value="update">';
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
 print '<td>' . $langs->transnoentities("Name") . '</td>';
-print '<td>' . $langs->transnoentities("SelectProject") . '</td>';
-print '<td>' . $langs->transnoentities("Action") . '</td>';
+print '<td>' . $langs->transnoentities("ProjectOrTask") . '</td>';
 print '</tr>';
 
-if ( ! empty($conf->projet->enabled)) {
-	$langs->load("projects");
-	print '<tr class="oddeven"><td><label for="HRProject">' . $langs->transnoentities("HRProject") . '</label></td><td>';
-	$formproject->select_projects(-1,  (GETPOST('projectid')) ? GETPOST('projectid') : $conf->global->DOLISIRH_HR_PROJECT, 'HRProject', 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 'maxwidth500');
-	print ' <a href="' . DOL_URL_ROOT . '/projet/card.php?&action=create&status=1&backtopage=' . urlencode($_SERVER["PHP_SELF"] . '?action=create') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities("AddProject") . '"></span></a>';
-	print '<td><input type="submit" class="button" name="save" value="' . $langs->transnoentities("Save") . '">';
-	print '</td></tr>';
-}
+// HRProject
+print '<tr class="oddeven"><td><label for="HRProject">' . $langs->transnoentities('HRProject') . '</label></td><td>';
+$formproject->select_projects(-1, (GETPOSTISSET('HRProject') ? GETPOST('HRProject', 'int') : $conf->global->DOLISIRH_HR_PROJECT), 'HRProject', 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 'maxwidth500 widthcentpercentminusx');
+print ' <a href="' . DOL_URL_ROOT . '/projet/card.php?action=create&status=1&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?HRProject=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddProject') . '"></span></a>';
+print '</td></tr>';
+
+// Holidays
+print '<tr class="oddeven"><td><label for="Holidays">' . $langs->transnoentities('Holidays') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('holidaysTaskID') ? GETPOST('holidaysTaskID', 'int') : $conf->global->DOLISIRH_HOLIDAYS_TASK), 'holidaysTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?holidaysTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// PaidHolidays
+print '<tr class="oddeven"><td><label for="PaidHolidays">' . $langs->transnoentities('PaidHolidays') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('paidHolidaysTaskID') ? GETPOST('paidHolidaysTaskID', 'int') : $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK), 'paidHolidaysTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?paidHolidaysTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// SickLeave
+print '<tr class="oddeven"><td><label for="SickLeave">' . $langs->transnoentities('SickLeave') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('sickLeaveTaskID') ? GETPOST('sickLeaveTaskID', 'int') : $conf->global->DOLISIRH_SICK_LEAVE_TASK), 'sickLeaveTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?sickLeaveTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// PublicHoliday
+print '<tr class="oddeven"><td><label for="PublicHoliday">' . $langs->transnoentities('PublicHoliday') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('publicHolidayTaskID') ? GETPOST('publicHolidayTaskID', 'int') : $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK), 'publicHolidayTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?publicHolidayTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// RTT
+print '<tr class="oddeven"><td><label for="RTT">' . $langs->transnoentities('RTT') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('RTTTaskID') ? GETPOST('RTTTaskID', 'int') : $conf->global->DOLISIRH_RTT_TASK), 'RTTTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?RTTTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// InternalMeeting
+print '<tr class="oddeven"><td><label for="InternalMeeting">' . $langs->transnoentities('InternalMeeting') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('internalMeetingTaskID') ? GETPOST('internalMeetingTaskID', 'int') : $conf->global->DOLISIRH_INTERNAL_MEETING_TASK), 'internalMeetingTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?internalMeetingTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// InternalTraining
+print '<tr class="oddeven"><td><label for="InternalTraining">' . $langs->transnoentities('InternalTraining') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('internalTrainingTaskID') ? GETPOST('internalTrainingTaskID', 'int') : $conf->global->DOLISIRH_INTERNAL_TRAINING_TASK), 'internalTrainingTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?internalTrainingTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// ExternalTraining
+print '<tr class="oddeven"><td><label for="ExternalTraining">' . $langs->transnoentities('ExternalTraining') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('externalTrainingTaskID') ? GETPOST('externalTrainingTaskID', 'int') : $conf->global->DOLISIRH_EXTERNAL_TRAINING_TASK), 'externalTrainingTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?externalTrainingTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// AutomaticTimeSpending
+print '<tr class="oddeven"><td><label for="AutomaticTimeSpending">' . $langs->transnoentities('AutomaticTimeSpending') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('automaticTimeSpendingTaskID') ? GETPOST('automaticTimeSpendingTaskID', 'int') : $conf->global->DOLISIRH_AUTOMATIC_TIMESPENDING_TASK), 'automaticTimeSpendingTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?automaticTimeSpendingTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
+
+// Miscellaneous
+print '<tr class="oddeven"><td><label for="Miscellaneous">' . $langs->transnoentities('Miscellaneous') . '</label></td><td>';
+$formproject->selectTasks(-1, (GETPOSTISSET('miscellaneousTaskID') ? GETPOST('miscellaneousTaskID', 'int') : $conf->global->DOLISIRH_MISCELLANEOUS_TASK), 'miscellaneousTaskID', 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
+print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?miscellaneousTaskID=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+print '</td></tr>';
 
 print '</table>';
+print '<div class="tabsAction"><input type="submit" class="butAction" name="save" value="' . $langs->trans('Save') . '"></div>';
 print '</form>';
 
 //Time spent
@@ -203,11 +302,7 @@ print '</td>';
 print '</tr>';
 
 print '</table>';
-
-print '<div class="center">';
-print '<input class="button button-save reposition" type="submit" name="submit" value="' . $langs->trans("Save") . '">';
-print '</div>';
-
+print '<div class="tabsAction"><input type="submit" class="butAction" name="save" value="' . $langs->trans('Save') . '"></div>';
 print '</form>';
 
 // Page end

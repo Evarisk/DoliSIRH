@@ -266,8 +266,8 @@ ExpectedWorkingHoursMonthTimeSheet = Heures de travail prévues (%s - %s)
 CheckDateEnd = Vérifier la date fin de navette
 CheckDateEndDescription = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
 TimeSheetManagement = Gestion des navettes
-ShowOnlyTasksWithTimespentOnTimeSheet = Afficher seulement les tâches avec du temps consommé
-ShowOnlyTasksWithTimespentOnTimeSheetDescription = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette plutôt que toutes les tâches
+ShowTasksWithTimespentOnTimeSheet = Afficher les tâches avec du temps consommé
+ShowTasksWithTimespentOnTimeSheetDescription = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
 
 #
 # TimeSheetDocument - Document Navette
@@ -409,3 +409,4 @@ WorkingHours = Horaires de travail
 ChooseBoxToAdd = Ajouter le widget au tableau de bord...
 ByProject/Task = Par projet et tâche
 ByTask/Project = Par tâche et projet
+ProjectOrTask = Projet ou tâche

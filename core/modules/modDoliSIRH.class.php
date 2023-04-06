@@ -122,7 +122,7 @@ class modDoliSIRH extends DolibarrModules
             $i++ => array('DOLISIRH_HR_PROJECT_SET', 'integer', 0, '', 0, 'current'),
 
             // CONST TIME SPENT
-            $i++ => array('DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 0, '', 0, 'current'),
+            $i++ => array('DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 1, '', 0, 'current'),
 
             // CONST TIME SHEET
             $i++ => array('DOLISIRH_TIMESHEET_ADDON', 'chaine', 'mod_timesheet_standard', '', 0, 'current'),
