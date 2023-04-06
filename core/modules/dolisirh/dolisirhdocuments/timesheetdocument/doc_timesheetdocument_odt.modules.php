@@ -315,8 +315,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 
             $daysInRange      = dolisirh_num_between_day($object->date_start, $object->date_end, 1);
             $daysInRange      = !empty($daysInRange) ? $daysInRange : 1;
-            $daysInRangeArray = array();
-
+            $daysInRangeArray = [];
 
             for ($idw = 0; $idw < $daysInRange; $idw++) {
                 $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw, 'd');
@@ -339,7 +338,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
             $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($daystarttoshow, $lastdaytoshow + 1, $isavailable, $object->fk_user_assign);
 
             $tmparray['employee_firstname'] = $usertmp->firstname;
-            $tmparray['employee_lastname']  = $usertmp->lastname;
+            $tmparray['employee_lastname']  = strtoupper($usertmp->lastname);
             $tmparray['date_start']         = dol_print_date($object->date_start, 'day', 'tzuser');
             $tmparray['date_end']           = dol_print_date($object->date_end, 'day', 'tzuser');
             $tmparray['note_public']        = $object->note_public;
@@ -359,7 +358,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
 
             //Signatures
             if (!empty($society_responsible) && $society_responsible > 0) {
-                $tmparray['society_responsible_fullname']       = $society_responsible->lastname . ' ' . $society_responsible->firstname;
+                $tmparray['society_responsible_fullname']       = strtoupper($society_responsible->lastname) . ' ' . $society_responsible->firstname;
                 $tmparray['society_responsible_signature_date'] = dol_print_date($society_responsible->signature_date, 'dayhoursec');
 
                 $encoded_image = explode(",",  $society_responsible->signature)[1];
@@ -373,7 +372,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
             }
 
             if (!empty($societey_attendant) && $societey_attendant > 0) {
-                $tmparray['society_attendant_fullname']       = $societey_attendant->lastname . ' ' . $societey_attendant->firstname;
+                $tmparray['society_attendant_fullname']       = strtoupper($societey_attendant->lastname) . ' ' . $societey_attendant->firstname;
                 $tmparray['society_attendant_signature_date'] = dol_print_date($societey_attendant->signature_date, 'dayhoursec');
 
                 $encoded_image = explode(",",  $societey_attendant->signature)[1];
@@ -443,8 +442,8 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     $odfHandler->mergeSegment($listlines);
                 }
 
-                // Get all tasks except HR project task
-                $totaltimewithoutHRproject = array();
+                // Get all tasks except five HR project task
+                $totaltimewithoutHRproject = [];
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('times');
@@ -456,7 +455,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 }
 
                 if ($foundtagforlines) {
-                    $filter = ' AND p.rowid != ' . $conf->global->DOLISIRH_HR_PROJECT;
+                    $filter = ' AND t.rowid NOT IN (' . $conf->global->DOLISIRH_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_SICK_LEAVE_TASK . ',' . $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK . ',' . $conf->global->DOLISIRH_RTT_TASK . ')';
                     $tasksArray = $task->getTasksArray(0, 0, 0, 0, 0, '', '', $filter,  $object->fk_user_assign);
                     if (is_array($tasksArray) && !empty($tasksArray)) {
                         foreach ($tasksArray as $tasksingle) {
@@ -471,7 +470,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                                     $tmparray['time' . $idw] = '-';
                                 }
                             }
-							if ($conf->global->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET && $timeSpentOnTasks[$tasksingle->id] > 0) {
+							if ($conf->global->DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET && $timeSpentOnTasks[$tasksingle->id] > 0) {
 								$this->setTmparrayVars($tmparray, $listlines);
 							}
                         }
@@ -480,13 +479,15 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 }
 
 				// Get HR project task
+                $totaltimehrproject = [];
                 $i = 0;
-                $segment = array(
-                    array('csss', 'cps', 'rtts', 'jfs', 'cms',), // Row name
-                    array('css', 'cp', 'rtt', 'jf', 'cm',) // Cell name
-                );
+                $segment = [
+                    ['csss', 'cps', 'rtts', 'jfs', 'cms',], // Row name
+                    ['css', 'cp', 'rtt', 'jf', 'cm',] // Cell name
+                ];
 
-                $tasksArray = $task->getTasksArray(0, 0, $conf->global->DOLISIRH_HR_PROJECT, 0, 0, '', '', '',  $object->fk_user_assign);
+                $filter = ' AND t.rowid IN (' . $conf->global->DOLISIRH_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_SICK_LEAVE_TASK . ',' . $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK . ',' . $conf->global->DOLISIRH_RTT_TASK . ')';
+                $tasksArray = $task->getTasksArray(0, 0, $conf->global->DOLISIRH_HR_PROJECT, 0, 0, '', '', $filter,  $object->fk_user_assign);
                 if (is_array($tasksArray) && !empty($tasksArray)) {
                     foreach ($tasksArray as $tasksingle) {
                         $foundtagforlines = 1;
@@ -565,7 +566,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 }
 
                 // Total time spent
-                $totaltimespent = array();
+                $totaltimespent   = [];
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('totaltpss');
@@ -575,13 +576,12 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                     dol_syslog($e->getMessage());
                 }
 
-
                 if ($foundtagforlines) {
                     for ($idw = 1; $idw <= 31; $idw++) {
                         if (in_array($idw, $daysInRangeArray)) {
                             $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
-                            $totaltimespent[$dayInLoop] = $totaltimewithoutHRproject[$dayInLoop] + $totaltimehrproject[$dayInLoop];
-                            $tmparray['totaltps' . $idw] = (($totaltimewithoutHRproject[$dayInLoop] != 0 && $totaltimehrproject[$dayInLoop] != 0) ? convertSecondToTime($totaltimespent[$dayInLoop], (is_float($totaltimespent[$dayInLoop]) ? 'allhourmin' : 'allhour')) : '-');
+                            $totaltimespent[$dayInLoop]  = $totaltimewithoutHRproject[$dayInLoop] + $totaltimehrproject[$dayInLoop];
+                            $tmparray['totaltps' . $idw] = (($totaltimespent[$dayInLoop] != 0) ? convertSecondToTime($totaltimespent[$dayInLoop], (is_float($totaltimespent[$dayInLoop]) ? 'allhourmin' : 'allhour')) : '-');
                         } else {
                             $tmparray['totaltps' . $idw] = '-';
                         }
@@ -592,9 +592,8 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 }
 
                 // Total time planned
-                $totaltimeplanned = array();
+                $totaltimeplanned = [];
                 $foundtagforlines = 1;
-
                 try {
                     $listlines = $odfHandler->setSegment('tas');
                 } catch (OdfException $e) {
@@ -619,6 +618,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
                 }
 
                 // Diff between time planned and time spent
+                $difftotaltime    = [];
                 $foundtagforlines = 1;
                 try {
                     $listlines = $odfHandler->setSegment('diffs');
