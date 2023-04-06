@@ -130,8 +130,8 @@ if ($currentWeek == $week) {
     $lastdaytoshow = $lastdayofweek;
 }
 
-$daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
-$daysInWeek  = num_between_day($firstdaytoshow, $lastdayofweek, 1);
+$daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+$daysInWeek  = dolisirh_num_between_day($firstdaytoshow, $lastdayofweek, 1);
 
 if (empty($search_usertoprocessid) || $search_usertoprocessid == $user->id) {
 	$usertoprocess = $user;

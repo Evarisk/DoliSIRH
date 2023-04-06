@@ -116,8 +116,8 @@ if ($currentMonth == $month) {
     $lastdaytoshow = $lastdayofmonth;
 }
 
-$daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
-$daysInMonth = num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+$daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+$daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
 
 $prev = dol_get_prev_month($month, $year);
 $prev_year  = $prev['year'];

@@ -414,7 +414,7 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $isavai
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
 
-	$daysInRange = num_between_day($datestart, $dateend);
+	$daysInRange = dolisirh_num_between_day($datestart, $dateend);
 
 	$time_to_spend = array(
 		'days' => 0,
@@ -450,7 +450,7 @@ function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavail
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
 
-	$daysInRange = num_between_day($datestart, $dateend);
+	$daysInRange = dolisirh_num_between_day($datestart, $dateend);
 
 	$passed_working_time = array(
 		'minutes' => 0
@@ -1158,7 +1158,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 	$totalforeachday = array();
 	$lineswithoutlevel0 = array();
 
-    $daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+    $daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
 
     // Create a smaller array with sublevels only to be used later. This increase dramatically performances.
 	if ($parent == 0) { // Always and only if at first level
@@ -1815,4 +1815,28 @@ function getTaskProgressColorClass($progress)
         case $progress :
             return 'progress-red';
     }
+}
+
+/**
+ *	Function to return number of days between two dates (date must be UTC date !)
+ *  Example: 2012-01-01 2012-01-02 => 1 if lastday=0, 2 if lastday=1
+ *
+ *	@param	   int			$timestampStart     Timestamp start UTC
+ *	@param	   int			$timestampEnd       Timestamp end UTC
+ *	@param     int			$lastday            Last day is included, 0: no, 1:yes
+ *	@return    int								Number of days
+ *  @seealso num_public_holiday(), num_open_day()
+ */
+function dolisirh_num_between_day($timestampStart, $timestampEnd, $lastday = 0)
+{
+    if ($timestampStart < $timestampEnd) {
+        if ($lastday == 1) {
+            $bit = 0;
+        } else {
+            $bit = 1;
+        }
+        $nbjours = (int) round(($timestampEnd - $timestampStart) / (60 * 60 * 24)) + 1 - $bit;
+    }
+    //print ($timestampEnd - $timestampStart) - $lastday;
+    return $nbjours;
 }
