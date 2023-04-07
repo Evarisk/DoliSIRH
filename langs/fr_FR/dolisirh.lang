@@ -1,4 +1,4 @@
-# Copyright (C) 2023 EVARISK <dev@evarisk.com>
+# Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,38 +17,14 @@
 # Générique
 #
 
-# Module label 'ModuleDoliSIRHName'
-ModuleDoliSIRHName = DoliSIRH
-# Module description 'ModuleDoliSIRHDesc'
-ModuleDoliSIRHDesc = Simplification de la gestion du temps. <br> Génération des navettes.
-DoliSIRHDescription = Simplification de la gestion du temps. <br> Génération des navettes.
-DoliSIRHDescription = Simplification de la gestion du temps. <br> Génération des navettes.
-
-
-
-#
-# Page d'administration
-#
-DoliSIRHSetup = Configuration du module DoliSIRH
-Settings = Réglages
-DoliSIRHSetupPage = Page de configuration du module DoliSIRH
-DOLISIRH_DEFAUT_TICKET_TIME = Temps passé par défaut
-
-#
-# Page À propos
-#
-About = À propos
-DoliSIRHAbout = À propos de DoliSIRH
-DoliSIRHAboutPage = Page à propos de DoliSIRH
+ModuleDoliSIRHName      = DoliSIRH
+ModuleDoliSIRHDesc      = Simplification de la gestion du temps. <br> Génération des navettes.
+DoliSIRHDescription     = Simplification de la gestion du temps. <br> Génération des navettes.
+DoliSIRHDescriptionLong = Simplification de la gestion du temps. <br> Génération des navettes.
 
 #
 # DoliSIRH
 #
-
-# Right - Droit
-LireDoliSIRH = Consulter DoliSIRH
-ReadDoliSIRH = Consulter DoliSIRH (read)
-ReadAdminPage = Accéder à la configuration du module DoliSIRH
 
 # Data - Donnée
 DescriptionTask = Réalisé depuis la facture 
@@ -66,8 +42,6 @@ MessageNoTaskLink = Pas de tâche affectée, pas de temps passé disponible
 DoliSIRHTimeSpent = Rapport de temps passé
 ActionAC_TEL_IN = Appel téléphonique entrant
 ActionAC_TEL_OUT = Appel téléphonique sortant
-DoliSIRHConfig = Configuration
-DoliSIRHArea  = Bienvenue sur DoliSIRH
 DoliSIRHNumberOfModelFilesFound = Nombre de modèles par défaut
 SetupDefaultData = Gestion des données par défaut de DoliSIRH
 HRProjectSet = Création du Projet Ressources Humaines
@@ -82,6 +56,8 @@ AlreadyCreated = Déjà créé(e)s
 SetupDefaultDataNotCreated = Vous n'avez pas créé les données par défaut de DOLISIRH
 HowToSetupDefaultData = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
 ConfigDefaultData = Configuration des données par défaut de DOLISIRH
+DOLISIRH_DEFAUT_TICKET_TIME = Temps passé par défaut
+EnableDoliSIRH = Veuillez activer le module DoliSIRH pour accéder à cette page
 
 
 
@@ -185,29 +161,12 @@ InvoicesCategoriesArea = Espace des tags/catégories des factures
 # TimeSheet - Navette
 #
 
-# Right - Droit
-ReadTimeSheet = Consulter la navette
-CreateTimeSheet = Créer/Modifier la navette
-DeleteTimeSheet = Supprimer la navette
-
 # Trigger - Déclencheur
 TimeSheetDocumentGeneratedWithDolibarr = Fiche de navette générée avec Dolibarr
-TimeSheetCreateTrigger = Création de la navette
-TimeSheetModifyTrigger = Modification de la navette
-TimeSheetDeleteTrigger = Suppression de la navette
-TimeSheetUnValidateTrigger = Navette rouverte
-TimeSheetValidateTrigger = Navette en attente de signature des signataires
-TimeSheetLockedTrigger = Navette verrouillée - Prêt pour la génération du documuent
-TimeSheetArchivedTrigger = Navette archivée
 TimeSheetGenerateTrigger = Fiche navette générée
-TimeSheetSentByMailTrigger = Email navette envoyé
 TimeSheetLineCreateTrigger = Ligne de navette créée
 TimeSheetLineModifyTrigger = Ligne de navette modifiée
 TimeSheetLineDeleteTrigger = Ligne de navette supprimée
-
-# Mod Numbering - Modèle de numérotation
-DoliSIRHTimeSheetNumberingModule = Modèle de numérotation des navettes de DoliSIRH
-DoliSIRHTimeSheetStandardModel = Renvoie le numéro sous la forme TRyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
 
 # SetEventMessage - Notice info
 TimeSheetMustBeDraft = La navette doit être en brouillon pour accéder à cette fonctionnalité
@@ -242,19 +201,8 @@ NewTimeSheet = Nouvelle navette
 ModifyTimeSheet = Modifer la navette
 TimeSheetList = Liste des navettes
 UserAssign = Utilisateur assigné
-TimeSheetData = Données configurables de la navette
 PrefillDate = Préremplir la date de début et de fin de la navette
 PrefillDateDescription = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
-TimeSheetAttendants = Navette - Signataires
-StatusDraft = Brouillon (à valider)
-Lock = Verrouiller
-Locked = Verrouillée
-Archive = Archiver
-Archived = Archivée
-ReOpenDoli = Rouvrir
-ValidatePendingSignature = Validée (en attente de signature)
-GoToLock = Verrouiller la navette
-GoToValidate = Valider la navette
 TIMESHEET_SOCIETY_ATTENDANT = Signataire interne
 TIMESHEET_SOCIETY_RESPONSIBLE = Responsable
 AddAttendantsConf = Ajouter des signataires
@@ -265,9 +213,10 @@ ExpectedWorkingDayMonth = Nombre de jours ouvrés :
 ExpectedWorkingHoursMonthTimeSheet = Heures de travail prévues (%s - %s)
 CheckDateEnd = Vérifier la date fin de navette
 CheckDateEndDescription = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
-TimeSheetManagement = Gestion des navettes
 ShowTasksWithTimespentOnTimeSheet = Afficher les tâches avec du temps consommé
 ShowTasksWithTimespentOnTimeSheetDescription = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
+
+
 
 #
 # TimeSheetDocument - Document Navette
@@ -276,39 +225,16 @@ ShowTasksWithTimespentOnTimeSheetDescription = Permet d'afficher les tâches ave
 # Trigger - Déclencheur
 TimeSheetDocumentGeneratedWithDolibarr = Document navette générée avec Dolibarr
 
-# Mod Numbering - Modèle de numérotation
-DoliSIRHTimeSheetDocumentNumberingModule = Modèle de numérotation des documents navette de DoliSIRH
-DoliSIRHTimeSheetDocumentStandardModel = Renvoie le numéro sous la forme TRDyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
-
-# ODT Template - Template ODT
-DoliSIRHTimeSheetDocumentTemplateDocument = Modèle de documents des documents navette de DoliSIRH
-DoliSIRHTimeSheetDocumentCustomTemplate = ODT custom des documents navette
-DoliSIRHTimeSheetDocumentTemplate = ODT par défaut des documents navette
-
 # Data - Donnée
-TimeSheetDocument = Document Navette
+TimeSheetDocument     = Document Navette
 timesheetdocument.odt = Navette ODT
-timesheetdocument = navette
+timesheetdocument     = navette
 
 
 
 #
 # Certificate - Certificat et Diplôme
 #
-
-# Right - Droit
-ReadCertificate = Consulter le certificat
-CreateCertificate = Créer/Modifier le certificat
-DeleteCertificate = Supprimer le certificat
-
-# Trigger - Déclencheur
-CertificateCreateTrigger = Certificat %s créé
-CertificateModifyTrigger = Certificat %s modifié
-CertificateDeleteTrigger = Certificat %s supprimé
-
-# Mod Numbering - Modèle de numérotation
-DoliSIRHCertificateNumberingModule = Modèle de numérotation des certificats de DoliSIRH
-DoliSIRHCertificateStandardModel = Renvoie le numéro sous la forme CERTyymm-nnnn où yy est l'année, mm le mois et nnnn est un compteur séquentiel sans rupture et sans remise à 0.
 
 # Data - Donnée
 Certificate = Certificat
@@ -317,21 +243,14 @@ ModifyCertificate = Modifer le certificat
 CertificateList = Liste des certificats
 CertificateManagement = Gestion des certificats
 
+
+
 #
 # CertificateDocument - Document certificat
 #
 
 # Trigger - Déclencheur
 CertificateDocumentGeneratedWithDolibarr = Document certificat générée avec Dolibarr
-
-# Mod Numbering - Modèle de numérotation
-DoliSIRHCertificateDocumentNumberingModule = Modèle de numérotation des documents certificat de DoliSIRH
-DoliSIRHCertificateDocumentStandardModel = Renvoie le numéro sous la forme CERTDyymm-nnnn où yy est l'année, mm le mois et nnnnn est un compteur séquentiel sans rupture et sans remise à 0.
-
-# ODT Template - Template ODT
-DoliSIRHCertificateDocumentTemplateDocument = Modèle de documents des documents certificat de DoliSIRH
-DoliSIRHCertificateDocumentCustomTemplate = ODT custom des documents certificat
-DoliSIRHCertificateDocumentTemplate = ODT par défaut des documents certificat
 
 # Data - Donnée
 CertificateDocument = Document Certificat
@@ -340,73 +259,16 @@ certificatedocument.odt = Certificat ODT
 
 
 #
-# DoliSIRHSignature - Signature
-#
-
-# Trigger - Déclencheur
-DoliSIRHAddAttendantTrigger = Ajout d'un signataire
-DoliSIRHSignatureSignedTrigger = Signature du signataire effectuée
-DoliSIRHSignaturePendingSignatureTrigger = Email envoyé, en attente de la signature du signataire
-DoliSIRHSignatureAbsentTrigger = Signataire absent
-DoliSIRHSignatureDeletedTrigger = Signataire supprimé
-
-# SetEventMessage - Notice info
-DisclaimerSignatureTitle = Attention
-AddSignatureSuccess = Signature du document réussie
-AddSignatureSuccessText = La signature a bien été enregistrée pour le document
-AddAttendantMessage = Ajout du signataire :
-DeleteAttendantMessage = Suppression du signataire :
-SignatureEvent = Le signataire a signé : %s
-Attendant = Le signataire
-SetAbsentAttendant = est absent
-
-# Status - Statut
-Registered = Inscrit
-SignatureRequest = Demande de signature
-PendingSignature = En attente de signature
-Denied = Refusé
-Signed = Signé
-Unsigned = Non signé
-Absent = Absent
-JustifiedAbsent = Absence justifiée
-
-# Header table - Entête de tableau
-Role = Rôle
-SignatureLink = Lien signature
-SendMailDate = Date d'envoi d'email
-SignatureDate = Date de signature
-ActionsSignature = Actions
-
-# Data - Donnée
-Attendants = Signataires
-SendEmail = Envoyer un email
-DeleteAttendant = Supprimer le signataire
-Sign = Signer
-Erase = Effacer
-SocietyAttendant = Signataire interne
-SocietyResponsible = Responsable
-NoSocietyAttendants = Pas de signataires liés à cet objet. Pour ajouter des signataires, le statut doit être "Brouillon".
-FileGenerated
-
-
-
-#
 # Other
 #
 
 # Data - Donnée
-SendEmailAt = Envoi de l'email à
-ErrorSetupEmail = Erreur de configuration des mails, vous n'avez pas configuré votre serveur d'envoi de mail
-MealTicket = Ticket restaurant
+MealTicket          = Ticket restaurant
 JourneySubscription = Abonnement trajet
-13thMonthBonus = Prime 13ème mois
-SpecialBonus = Prime spéciale
-MinimizeMenu = Réduire le menu
-ErrorFileNotFound = Fichier non trouvé
-NoData = N/A
-YourDocuments = Documents
-WorkingHours = Horaires de travail
-ChooseBoxToAdd = Ajouter le widget au tableau de bord...
-ByProject/Task = Par projet et tâche
-ByTask/Project = Par tâche et projet
-ProjectOrTask = Projet ou tâche
+13thMonthBonus      = Prime 13ème mois
+SpecialBonus        = Prime spéciale
+WorkingHours        = Horaires de travail
+ChooseBoxToAdd      = Ajouter le widget au tableau de bord...
+ByProject/Task      = Par projet et tâche
+ByTask/Project      = Par tâche et projet
+ProjectOrTask       = Projet ou tâche
