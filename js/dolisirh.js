@@ -1357,3 +1357,62 @@ window.eoxiaJS.dashboard.selectDatasetDashboardInfo = function() {
 		error: function() {}
 	});
 };
+
+/**
+ * Initialise l'objet "form" ainsi que la méthode "init" obligatoire pour la bibliothèque EoxiaJS.
+ *
+ * @since   1.1.0
+ * @version 1.1.0
+ */
+window.eoxiaJS.form = {};
+
+/**
+ * La méthode appelée automatiquement par la bibliothèque EoxiaJS.
+ *
+ * @since   1.1.0
+ * @version 1.1.0
+ *
+ * @return {void}
+ */
+window.eoxiaJS.form.init = function() {
+	window.eoxiaJS.form.event();
+};
+
+/**
+ * La méthode contenant tous les événements pour les buttons.
+ *
+ * @since   1.1.0
+ * @version 1.1.0
+ *
+ * @return {void}
+ */
+window.eoxiaJS.form.event = function() {
+	$( document ).on( 'submit', '#addtimeform', window.eoxiaJS.form.searchForm );
+};
+
+window.eoxiaJS.form.searchForm = function(event) {
+	event.preventDefault()
+
+	var addTimeForm = document.getElementById('addtimeform');
+	var formData = new FormData(addTimeForm);
+	let newFormData = new FormData();
+
+	for (const pair of formData.entries()) {
+		if (pair[1] != '') {
+			newFormData.append(pair[0], pair[1])
+		}
+	}
+	window.eoxiaJS.loader.display($('#addtimeform'));
+
+	$.ajax({
+		url: document.URL,
+		type: "POST",
+		data: newFormData,
+		processData: false,
+		contentType: false,
+		success: function (resp) {
+			$('.wpeo-loader').removeClass('wpeo-loader');
+			$('#addtimeform').html($(resp).find('#addtimeform').children())
+		},
+	});
+}
