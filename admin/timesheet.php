@@ -79,7 +79,7 @@ print load_fiche_titre($title, '', 'object_'.$object->picto);
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();
-print dol_get_fiche_head($head, 'timesheet', $title, -1, 'dolisirh_red@dolisirh');
+print dol_get_fiche_head($head, 'timesheet', $title, -1, 'dolisirh_color@dolisirh');
 
 print load_fiche_titre($langs->trans("TimeSheetManagement"), '', 'object_'.$object->picto);
 print '<hr>';

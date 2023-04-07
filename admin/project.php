@@ -153,11 +153,11 @@ $morecss  = array("/dolisirh/css/dolisirh.css");
 llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
 
 // Subheader
-print load_fiche_titre($title, '', 'dolisirh_red@dolisirh');
+print load_fiche_titre($title, '', 'dolisirh_color@dolisirh');
 
 // Configuration header
 $head = dolisirhAdminPrepareHead();
-print dol_get_fiche_head($head, 'projecttasks', $title, -1, 'dolisirh_red@dolisirh');
+print dol_get_fiche_head($head, 'projecttasks', $title, -1, 'dolisirh_color@dolisirh');
 
 // Project
 print load_fiche_titre($langs->transnoentities("HRProject"), '', 'project');
