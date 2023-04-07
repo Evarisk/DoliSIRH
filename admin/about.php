@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,54 +21,50 @@
  * \brief   About page of module DoliSIRH.
  */
 
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) $res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) { $i--; $j--; }
-if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) $res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
-if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) $res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
-// Try main.inc.php using relative path
-if (!$res && file_exists("../../main.inc.php")) $res = @include "../../main.inc.php";
-if (!$res && file_exists("../../../main.inc.php")) $res = @include "../../../main.inc.php";
-if (!$res) die("Include of main fails");
+// Load DoliSIRH environment
+if (file_exists('../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../dolisirh.main.inc.php';
+} elseif (file_exists('../../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../../dolisirh.main.inc.php';
+} else {
+    die('Include of dolisirh main fails');
+}
 
 // Libraries
-require_once '../lib/dolisirh.lib.php';
-require_once '../core/modules/modDoliSIRH.class.php';
+require_once __DIR__ . '/../lib/dolisirh.lib.php';
+require_once __DIR__ . '/../core/modules/modDoliSIRH.class.php';
 
 // Global variables definitions
 global $db, $langs, $user;
 
-// Translations
-$langs->loadLangs(array("errors", "admin", "dolisirh@dolisirh"));
+// Load translation files required by the page
+saturne_load_langs(['admin']);
 
 // Initialize technical objects
 $modDoliSIRH = new modDoliSIRH($db);
 
-// Access control
+// Get parameters
+$backtopage = GETPOST('backtopage', 'alpha');
+
+// Security check - Protection if external user
 $permissiontoread = $user->rights->dolisirh->adminpage->read;
-if (empty($conf->dolisirh->enabled)) accessforbidden();
-if (!$permissiontoread) accessforbidden();
+saturne_check_access($permissiontoread);
 
 /*
  * View
  */
 
+$title    = $langs->trans('ModuleAbout', 'DoliSIRH');
 $help_url = 'FR:Module_DoliSIRH';
-$title    = $langs->trans("DoliSIRHAbout");
-$morejs   = array("/dolisirh/js/dolisirh.js");
-$morecss  = array("/dolisirh/css/dolisirh.css");
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
+saturne_header(0,'', $title, $help_url);
 
 // Subheader
-print load_fiche_titre($title, '', 'dolisirh_color@dolisirh');
+$linkback = '<a href="' . ($backtopage ?: DOL_URL_ROOT . '/admin/modules.php?restore_lastsearch_values=1') . '">' . $langs->trans('BackToModuleList') . '</a>';
+print load_fiche_titre($title, $linkback, 'dolisirh_color@dolisirh');
 
 // Configuration header
-$head = dolisirhAdminPrepareHead();
+$head = dolisirh_admin_prepare_head();
 print dol_get_fiche_head($head, 'about', $title, -1, 'dolisirh_color@dolisirh');
 
 print $modDoliSIRH->getDescLong();

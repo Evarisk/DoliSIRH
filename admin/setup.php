@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,53 +21,47 @@
  * \brief   DoliSIRH setup page.
  */
 
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) $res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) { $i--; $j--; }
-if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) $res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
-if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) $res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
-// Try main.inc.php using relative path
-if (!$res && file_exists("../../main.inc.php")) $res = @include "../../main.inc.php";
-if (!$res && file_exists("../../../main.inc.php")) $res = @include "../../../main.inc.php";
-if (!$res) die("Include of main fails");
+// Load DoliSIRH environment
+if (file_exists('../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../dolisirh.main.inc.php';
+} elseif (file_exists('../../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../../dolisirh.main.inc.php';
+} else {
+    die('Include of dolisirh main fails');
+}
 
 // Libraries
-require_once DOL_DOCUMENT_ROOT."/core/lib/admin.lib.php";
+require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
 
-require_once '../lib/dolisirh.lib.php';
+require_once __DIR__ . '/../lib/dolisirh.lib.php';
 
 // Global variables definitions
 global $conf, $db, $langs, $user;
 
-// Translations
-$langs->loadLangs(array("admin", "dolisirh@dolisirh"));
+// Load translation files required by the page
+saturne_load_langs(['admin']);
+
+// Initialize view objects
+$form = new Form($db);
 
 // Get parameters
-$action = GETPOST('action', 'alpha');
-$value  = GETPOST('value', 'alpha');
+$action     = GETPOST('action', 'alpha');
+$value      = GETPOST('value', 'alpha');
+$backtopage = GETPOST('backtopage', 'alpha');
 
-$arrayofparameters = array(
-    'DOLISIRH_DEFAUT_TICKET_TIME' => array('css' => 'minwidth200', 'enabled' => 1),
-);
+$arrayofparameters = [
+    'DOLISIRH_DEFAUT_TICKET_TIME' => ['css' => 'minwidth200', 'enabled' => 1],
+];
 
-// Access control
+// Security check - Protection if external user
 $permissiontoread = $user->rights->dolisirh->adminpage->read;
-if (empty($conf->dolisirh->enabled)) accessforbidden();
-if (!$permissiontoread) accessforbidden();
+saturne_check_access($permissiontoread);
 
 /*
  * Actions
  */
 
-include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
-
-/*
- * Actions
- */
+include DOL_DOCUMENT_ROOT . '/core/actions_setmoduleoptions.inc.php';
 
 if (GETPOST('HRProjectSet', 'alpha')) {
     if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) {
@@ -82,9 +76,9 @@ if (GETPOST('HRProjectSet', 'alpha')) {
 
         $obj = empty($conf->global->PROJECT_ADDON) ? 'mod_project_simple' : $conf->global->PROJECT_ADDON;
 
-        if (!empty($conf->global->PROJECT_ADDON) && is_readable(DOL_DOCUMENT_ROOT . "/core/modules/project/" . $conf->global->PROJECT_ADDON . ".php")) {
-            require_once DOL_DOCUMENT_ROOT . "/core/modules/project/" . $conf->global->PROJECT_ADDON . '.php';
-            $modProject = new $obj;
+        if (!empty($conf->global->PROJECT_ADDON) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/' . $conf->global->PROJECT_ADDON . '.php')) {
+            require_once DOL_DOCUMENT_ROOT . '/core/modules/project/' . $conf->global->PROJECT_ADDON . '.php';
+            $modProject = new $obj();
             $projectRef = $modProject->getNextValue('', null);
         }
 
@@ -120,9 +114,9 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             $defaultref = '';
             $obj        = empty($conf->global->PROJECT_TASK_ADDON) ? 'mod_task_simple' : $conf->global->PROJECT_TASK_ADDON;
 
-            if (!empty($conf->global->PROJECT_TASK_ADDON) && is_readable(DOL_DOCUMENT_ROOT . "/core/modules/project/task/" . $conf->global->PROJECT_TASK_ADDON . ".php")) {
-                require_once DOL_DOCUMENT_ROOT . "/core/modules/project/task/" . $conf->global->PROJECT_TASK_ADDON . '.php';
-                $modTask = new $obj;
+            if (!empty($conf->global->PROJECT_TASK_ADDON) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php')) {
+                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php';
+                $modTask = new $obj();
                 $defaultref = $modTask->getNextValue('', null);
             }
 
@@ -135,7 +129,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_HOLIDAYS_TASK', $holidaysTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project   = $result;
-            $task->ref          = $modTask->getNextValue('', null);;
+            $task->ref          = $modTask->getNextValue('', null);
             $task->label        = $langs->transnoentities('PaidHolidays');
             $task->date_c       = dol_now();
             $paidHolidaysTaskID = $task->create($user);
@@ -143,7 +137,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_PAID_HOLIDAYS_TASK', $paidHolidaysTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project   = $result;
-            $task->ref          = $modTask->getNextValue('', null);;
+            $task->ref          = $modTask->getNextValue('', null);
             $task->label        = $langs->transnoentities('SickLeave');
             $task->date_c       = dol_now();
             $sickLeaveTaskID    = $task->create($user);
@@ -151,7 +145,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_SICK_LEAVE_TASK', $sickLeaveTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project    = $result;
-            $task->ref           = $modTask->getNextValue('', null);;
+            $task->ref           = $modTask->getNextValue('', null);
             $task->label         = $langs->transnoentities('PublicHoliday');
             $task->date_c        = dol_now();
             $publicHolidayTaskID = $task->create($user);
@@ -159,7 +153,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_PUBLIC_HOLIDAY_TASK', $publicHolidayTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project = $result;
-            $task->ref        = $modTask->getNextValue('', null);;
+            $task->ref        = $modTask->getNextValue('', null);
             $task->label      = $langs->trans('RTT');
             $task->date_c     = dol_now();
             $RTTTaskID        = $task->create($user);
@@ -167,7 +161,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_RTT_TASK', $RTTTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project      = $result;
-            $task->ref             = $modTask->getNextValue('InternalMeeting', null);;
+            $task->ref             = $modTask->getNextValue('InternalMeeting', null);
             $task->label           = $langs->transnoentities('InternalMeeting');
             $task->date_c          = dol_now();
             $internalMeetingTaskID = $task->create($user);
@@ -175,7 +169,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_INTERNAL_MEETING_TASK', $internalMeetingTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project       = $result;
-            $task->ref              = $modTask->getNextValue('', null);;
+            $task->ref              = $modTask->getNextValue('', null);
             $task->label            = $langs->trans('InternalTraining');
             $task->date_c           = dol_now();
             $internalTrainingTaskID = $task->create($user);
@@ -183,7 +177,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_INTERNAL_TRAINING_TASK', $internalTrainingTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project       = $result;
-            $task->ref              = $modTask->getNextValue('', null);;
+            $task->ref              = $modTask->getNextValue('', null);
             $task->label            = $langs->trans('ExternalTraining');
             $task->date_c           = dol_now();
             $externalTrainingTaskID = $task->create($user);
@@ -191,7 +185,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_EXTERNAL_TRAINING_TASK', $externalTrainingTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project            = $result;
-            $task->ref                   = $modTask->getNextValue('', null);;
+            $task->ref                   = $modTask->getNextValue('', null);
             $task->label                 = $langs->transnoentities('AutomaticTimeSpending');
             $task->date_c                = dol_now();
             $automaticTimeSpendingTaskID = $task->create($user);
@@ -199,7 +193,7 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             dolibarr_set_const($db, 'DOLISIRH_AUTOMATIC_TIMESPENDING_TASK', $automaticTimeSpendingTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project    = $result;
-            $task->ref           = $modTask->getNextValue('', null);;
+            $task->ref           = $modTask->getNextValue('', null);
             $task->label         = $langs->trans('Miscellaneous');
             $task->date_c        = dol_now();
             $miscellaneousTaskID = $task->create($user);
@@ -272,35 +266,29 @@ if (GETPOST('BookmarkSet', 'alpha')) {
  * View
  */
 
-// Initialize view objects
-$form = new Form($db);
-
+$title    = $langs->trans('ModuleSetup', 'DoliSIRH');
 $help_url = 'FR:Module_DoliSIRH';
-$title    = $langs->trans("DoliSIRHSetup");
-$morejs   = array("/dolisirh/js/dolisirh.js");
-$morecss  = array("/dolisirh/css/dolisirh.css");
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
+saturne_header(0,'', $title, $help_url);
 
 // Subheader
-$linkback = '<a href="'.DOL_URL_ROOT.'/admin/modules.php?restore_lastsearch_values=1'.'">'.$langs->trans("BackToModuleList").'</a>';
-
-print load_fiche_titre($title, $linkback, "dolisirh_color@dolisirh");
+$linkback = '<a href="' . ($backtopage ?: DOL_URL_ROOT . '/admin/modules.php?restore_lastsearch_values=1') . '">' . $langs->trans('BackToModuleList') . '</a>';
+print load_fiche_titre($title, $linkback, 'dolisirh_color@dolisirh');
 
 // Configuration header
-$head = dolisirhAdminPrepareHead();
+$head = dolisirh_admin_prepare_head();
 print dol_get_fiche_head($head, 'settings', $title, -1, 'dolisirh_color@dolisirh');
 
 // Setup page goes here
-echo '<span class="opacitymedium">'.$langs->trans("DoliSIRHSetupPage").'</span><br><br>';
+echo '<span class="opacitymedium">'.$langs->trans('DoliSIRHSetupPage').'</span><br><br>';
 
 if ($action == 'edit') {
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+	print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
 	print '<input type="hidden" name="action" value="update">';
 
 	print '<table class="noborder centpercent">';
-	print '<tr class="liste_titre"><td class="titlefield">'.$langs->trans("Parameter").'</td><td>'.$langs->trans("Value").'</td></tr>';
+	print '<tr class="liste_titre"><td class="titlefield">'.$langs->trans('Parameter').'</td><td>'.$langs->trans('Value').'</td></tr>';
 
 	foreach ($arrayofparameters as $key => $val) {
 		print '<tr class="oddeven"><td>';
@@ -311,7 +299,7 @@ if ($action == 'edit') {
 	print '</table>';
 
 	print '<br><div class="center">';
-	print '<input class="button" type="submit" value="'.$langs->trans("Save").'">';
+	print '<input class="button" type="submit" value="'.$langs->trans('Save').'">';
 	print '</div>';
 
 	print '</form>';
@@ -319,7 +307,7 @@ if ($action == 'edit') {
 } else {
 	if (!empty($arrayofparameters)) {
 		print '<table class="noborder centpercent">';
-		print '<tr class="liste_titre"><td class="titlefield">'.$langs->trans("Parameter").'</td><td>'.$langs->trans("Value").'</td></tr>';
+		print '<tr class="liste_titre"><td class="titlefield">'.$langs->trans('Parameter').'</td><td>'.$langs->trans('Value').'</td></tr>';
 
 		foreach ($arrayofparameters as $key => $val) {
 			print '<tr class="oddeven"><td>';
@@ -331,29 +319,29 @@ if ($action == 'edit') {
 		print '</table>';
 
 		print '<div class="tabsAction">';
-		print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?action=edit">'.$langs->trans("Modify").'</a>';
+		print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?action=edit">'.$langs->trans('Modify').'</a>';
 		print '</div>';
 	}
 }
 
-print load_fiche_titre($langs->transnoentities("SetupDefaultData"), '', '');
+print load_fiche_titre($langs->transnoentities('SetupDefaultData'), '', '');
 
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
-print '<td>' . $langs->transnoentities("Parameters") . '</td>';
-print '<td>' . $langs->transnoentities("Description") . '</td>';
-print '<td class="center">' . $langs->transnoentities("Status") . '</td>';
-print '<td class="center">' . $langs->transnoentities("Action") . '</td>';
+print '<td>' . $langs->transnoentities('Parameters') . '</td>';
+print '<td>' . $langs->transnoentities('Description') . '</td>';
+print '<td class="center">' . $langs->transnoentities('Status') . '</td>';
+print '<td class="center">' . $langs->transnoentities('Action') . '</td>';
 print '</tr>';
 
-print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '">';
+print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '">';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="">';
 
 // HR project set
-print '<tr class="oddeven"><td>' . $langs->transnoentities("HRProjectSet") . '</td>';
+print '<tr class="oddeven"><td>' . $langs->transnoentities('HRProjectSet') . '</td>';
 print '<td>';
-print $langs->transnoentities("HRProjectSetHelp");
+print $langs->transnoentities('HRProjectSetHelp');
 print '</td>';
 print '<td class="center">';
 print $conf->global->DOLISIRH_HR_PROJECT_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
@@ -364,9 +352,9 @@ print '</td>';
 print '</tr>';
 
 // Product/service set
-print '<tr class="oddeven"><td>' . $langs->transnoentities("ProductServiceSet") . '</td>';
+print '<tr class="oddeven"><td>' . $langs->transnoentities('ProductServiceSet') . '</td>';
 print '<td>';
-print $langs->transnoentities("ProductServiceSetHelp");
+print $langs->transnoentities('ProductServiceSetHelp');
 print '</td>';
 print '<td class="center">';
 print $conf->global->DOLISIRH_PRODUCT_SERVICE_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
@@ -377,9 +365,9 @@ print '</td>';
 print '</tr>';
 
 // Bookmark set
-print '<tr class="oddeven"><td>' . $langs->transnoentities("BookmarkSet") . '</td>';
+print '<tr class="oddeven"><td>' . $langs->transnoentities('BookmarkSet') . '</td>';
 print '<td>';
-print $langs->transnoentities("BookmarkSetHelp");
+print $langs->transnoentities('BookmarkSetHelp');
 print '</td>';
 print '<td class="center">';
 print $conf->global->DOLISIRH_TIMESPENT_BOOKMARK_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
