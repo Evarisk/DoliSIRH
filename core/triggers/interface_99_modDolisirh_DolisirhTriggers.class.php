@@ -291,8 +291,15 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				$actioncomm->create($user);
 				break;
 
+            case 'CERTIFICATE_CREATE' :
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
+                $actioncomm->label = $langs->trans('ObjectCreateTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
+                break;
+
             // MODIFY
 			case 'TIMESHEET_MODIFY' :
+            case 'CERTIFICATE_MODIFY' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_MODIFY';
                 $actioncomm->label = $langs->trans('ObjectModifyTrigger', $langs->transnoentities(ucfirst($object->element)));
                 $actioncomm->create($user);
@@ -300,13 +307,15 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // DELETE
 			case 'TIMESHEET_DELETE' :
-                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_DELETE';
+            case 'CERTIFICATE_DELETE' :
+                $actioncomm->code  = 'AC_ ' . strtoupper($object->element) . '_DELETE';
                 $actioncomm->label = $langs->trans('ObjectDeleteTrigger', $langs->transnoentities(ucfirst($object->element)));
                 $actioncomm->create($user);
 				break;
 
             // VALIDATE
             case 'TIMESHEET_VALIDATE' :
+            case 'CERTIFICATE_VALIDATE' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_VALIDATE';
                 $actioncomm->label = $langs->trans('ObjectValidateTrigger', $langs->transnoentities(ucfirst($object->element)));
                 $actioncomm->create($user);
@@ -314,6 +323,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // UNVALIDATE
 			case 'TIMESHEET_UNVALIDATE' :
+            case 'CERTIFICATE_UNVALIDATE' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_UNVALIDATE';
                 $actioncomm->label = $langs->trans('ObjectUnValidateTrigger', $langs->transnoentities(ucfirst($object->element)));
                 $actioncomm->create($user);
@@ -321,6 +331,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // LOCKED
             case 'TIMESHEET_LOCKED' :
+            case 'CERTIFICATE_LOCKED' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_LOCKED';
                 $actioncomm->label = $langs->trans('ObjectLockedTrigger', $langs->transnoentities(ucfirst($object->element)));
                 $actioncomm->create($user);
@@ -328,6 +339,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // ARCHIVED
             case 'TIMESHEET_ARCHIVED' :
+            case 'CERTIFICATE_ARCHIVED' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_ARCHIVED';
                 $actioncomm->label = $langs->trans('ObjectArchivedTrigger', $langs->transnoentities(ucfirst($object->element)));
                 $actioncomm->create($user);
@@ -335,242 +347,10 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // SENTBYMAIL
             case 'TIMESHEET_SENTBYMAIL' :
+            case 'CERTIFICATE_SENTBYMAIL' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_SENTBYMAIL';
                 $actioncomm->label = $langs->trans('ObjectSentByMailTrigger', $langs->transnoentities(ucfirst($object->element)));
                 $actioncomm->create($user);
-				break;
-
-			case 'TIMESHEET_ARCHIVED' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype = 'timesheet@dolisirh';
-				$actioncomm->code        = 'AC_TIMESHEET_ARCHIVED';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('TimeSheetArchivedTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
-				break;
-
-			// Certificate
-			case 'CERTIFICATE_CREATE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-
-				require_once __DIR__ . '/../../class/certificate.class.php';
-
-				$signatory  = new CertificateSignature($this->db);
-				$usertmp    = new User($this->db);
-				$actioncomm = new ActionComm($this->db);
-
-				if (!empty($object->fk_user_assign)) {
-					$usertmp->fetch($object->fk_user_assign);
-					$signatory->setSignatory($object->id, 'timesheet', 'user', array($object->fk_user_assign), 'CERTIFICATE_SOCIETY_ATTENDANT');
-					$signatory->setSignatory($object->id, 'timesheet', 'user', array($usertmp->fk_user), 'CERTIFICATE_SOCIETY_RESPONSIBLE');
-				}
-
-				$now = dol_now();
-
-				$actioncomm->elementtype = 'certificate@dolisirh';
-				$actioncomm->code        = 'AC_CERTIFICATE_CREATE';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('CertificateCreateTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
-				break;
-
-			case 'CERTIFICATE_MODIFY' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype = 'certificate@dolisirh';
-				$actioncomm->code        = 'AC_CERTIFICATE_MODIFY';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('CertificateModifyTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
-				break;
-
-			case 'CERTIFICATE_DELETE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype = 'certificate@dolisirh';
-				$actioncomm->code        = 'AC_CERTIFICATE_DELETE';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('CertificateDeleteTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
-				break;
-
-			case 'ECMFILES_CREATE' :
-				if ($object->src_object_type == 'dolisirh_timesheet') {
-					dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
-					require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-
-					require_once __DIR__ . '/../../class/timesheet.class.php';
-
-					$now        = dol_now();
-					$signatory  = new SaturneSignature($this->db, 'dolisirh');
-					$actioncomm = new ActionComm($this->db);
-
-					$signatories = $signatory->fetchSignatories($object->src_object_id, 'timesheet');
-
-					if (!empty($signatories) && $signatories > 0) {
-						foreach ($signatories as $signatory) {
-							$signatory->signature = $langs->transnoentities('FileGenerated');
-							$signatory->update($user, false);
-						}
-					}
-
-					$actioncomm->elementtype = 'timesheet@dolisirh';
-					$actioncomm->code        = 'AC_TIMESHEET_GENERATE';
-					$actioncomm->type_code   = 'AC_OTH_AUTO';
-					$actioncomm->label       = $langs->trans('TimeSheetGenerateTrigger');
-					$actioncomm->datep       = $now;
-					$actioncomm->fk_element  = $object->src_object_id;
-					$actioncomm->userownerid = $user->id;
-					$actioncomm->percentage  = -1;
-
-					$actioncomm->create($user);
-				}
-				break;
-
-			case 'DOLISIRHSIGNATURE_ADDATTENDANT' :
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
-				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
-				$now        = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype       = $object->object_type . '@dolisirh';
-				$actioncomm->code              = 'AC_DOLISIRHSIGNATURE_ADDATTENDANT';
-				$actioncomm->type_code         = 'AC_OTH_AUTO';
-				$actioncomm->label             = $langs->transnoentities('DoliSIRHAddAttendantTrigger', $object->firstname . ' ' . $object->lastname);
-				if ($object->element_type == 'socpeople') {
-					$actioncomm->socpeopleassigned = array($object->element_id => $object->element_id);
-				}
-				$actioncomm->datep             = $now;
-				$actioncomm->fk_element        = $object->fk_object;
-				$actioncomm->userownerid       = $user->id;
-				$actioncomm->percentage        = -1;
-
-				$actioncomm->create($user);
-				break;
-
-			case 'DOLISIRHSIGNATURE_SIGNED' :
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
-				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype = $object->object_type . '@dolisirh';
-				$actioncomm->code        = 'AC_DOLISIRHSIGNATURE_SIGNED';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-
-				$actioncomm->label = $langs->transnoentities('DoliSIRHSignatureSignedTrigger') . ' : ' . $object->firstname . ' ' . $object->lastname;
-
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->fk_object;
-				if ($object->element_type == 'socpeople') {
-					$actioncomm->socpeopleassigned = array($object->element_id => $object->element_id);
-				}
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
-				break;
-
-			case 'DOLISIRHSIGNATURE_PENDING_SIGNATURE' :
-
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
-				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
-				$now        = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype       = $object->object_type . '@dolisirh';
-				$actioncomm->code              = 'AC_DOLISIRHSIGNATURE_PENDING_SIGNATURE';
-				$actioncomm->type_code         = 'AC_OTH_AUTO';
-				$actioncomm->label             = $langs->transnoentities('DoliSIRHSignaturePendingSignatureTrigger') . ' : ' . $object->firstname . ' ' . $object->lastname;
-				$actioncomm->datep             = $now;
-				$actioncomm->fk_element        = $object->fk_object;
-				if ($object->element_type == 'socpeople') {
-					$actioncomm->socpeopleassigned = array($object->element_id => $object->element_id);
-				}
-				$actioncomm->userownerid       = $user->id;
-				$actioncomm->percentage        = -1;
-
-				$actioncomm->create($user);
-				break;
-
-			case 'DOLISIRHSIGNATURE_ABSENT' :
-
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
-				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
-				$now        = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype       = $object->object_type . '@dolisirh';
-				$actioncomm->code              = 'AC_DOLISIRHSIGNATURE_ABSENT';
-				$actioncomm->type_code         = 'AC_OTH_AUTO';
-				$actioncomm->label             = $langs->transnoentities('DoliSIRHSignatureAbsentTrigger') . ' : ' . $object->firstname . ' ' . $object->lastname;
-				$actioncomm->datep             = $now;
-				$actioncomm->fk_element        = $object->fk_object;
-				if ($object->element_type == 'socpeople') {
-					$actioncomm->socpeopleassigned = array($object->element_id => $object->element_id);
-				}
-				$actioncomm->userownerid       = $user->id;
-				$actioncomm->percentage        = -1;
-
-				$actioncomm->create($user);
-				break;
-
-			case 'DOLISIRHSIGNATURE_DELETED' :
-
-				dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
-				require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
-				$now        = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype       = $object->object_type . '@dolisirh';
-				$actioncomm->code              = 'AC_DOLISIRHSIGNATURE_DELETED';
-				$actioncomm->type_code         = 'AC_OTH_AUTO';
-				$actioncomm->label             = $langs->transnoentities('DoliSIRHSignatureDeletedTrigger') . ' : ' . $object->firstname . ' ' . $object->lastname;
-				$actioncomm->datep             = $now;
-				$actioncomm->fk_element        = $object->fk_object;
-				if ($object->element_type == 'socpeople') {
-					$actioncomm->socpeopleassigned = array($object->element_id => $object->element_id);
-				}
-				$actioncomm->userownerid       = $user->id;
-				$actioncomm->percentage        = -1;
-
-				$actioncomm->create($user);
-				break;
-
-            default:
-                dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
                 break;
 		}
 		return 0;
