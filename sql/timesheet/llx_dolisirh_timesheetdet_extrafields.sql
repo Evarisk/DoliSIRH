@@ -1,4 +1,4 @@
--- Copyright (C) 2023 EVARISK <dev@evarisk.com>
+-- Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -14,9 +14,9 @@
 -- along with this program. If not, see https://www.gnu.org/licenses/.
 
 create table llx_dolisirh_timesheetdet_extrafields(
-  rowid                     integer AUTO_INCREMENT PRIMARY KEY,
-  tms                       timestamp,
-  fk_object                 integer NOT NULL,
-  import_key                varchar(14)                          		-- import key
+  rowid      integer AUTO_INCREMENT PRIMARY KEY,
+  tms        timestamp,
+  fk_object  integer NOT NULL,
+  import_key varchar(14)                          -- import key
 ) ENGINE=innodb;
 
