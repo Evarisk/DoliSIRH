@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,41 +21,41 @@
  * \brief   DoliSIRH project/task config page.
  */
 
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) $res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) { $i--; $j--; }
-if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) $res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
-if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) $res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
-// Try main.inc.php using relative path
-if (!$res && file_exists("../../main.inc.php")) $res = @include "../../main.inc.php";
-if (!$res && file_exists("../../../main.inc.php")) $res = @include "../../../main.inc.php";
-if (!$res) die("Include of main fails");
+// Load DoliSIRH environment
+if (file_exists('../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../dolisirh.main.inc.php';
+} elseif (file_exists('../../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../../dolisirh.main.inc.php';
+} else {
+    die('Include of dolisirh main fails');
+}
 
 // Libraries
-require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-require_once DOL_DOCUMENT_ROOT . "/core/class/html.formother.class.php";
-require_once DOL_DOCUMENT_ROOT . "/core/class/html.formprojet.class.php";
+require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/core/class/html.formother.class.php';
+require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
 
-require_once '../lib/dolisirh.lib.php';
+require_once __DIR__ . '/../lib/dolisirh.lib.php';
 
 // Global variables definitions
 global $conf, $db, $langs, $user;
 
-// Translations
-$langs->loadLangs(array("errors", "admin", "dolisirh@dolisirh"));
+// Load translation files required by the page
+saturne_load_langs(['admin']);
+
+// Initialize view objects
+$form        = new Form($db);
+$formother   = new FormOther($db);
+$formproject = new FormProjets($db);
 
 // Get parameters
-$action = GETPOST('action', 'alpha');
+$action     = GETPOST('action', 'alpha');
+$backtopage = GETPOST('backtopage', 'alpha');
 
-// Access control
+// Security check - Protection if external user
 $permissiontoread = $user->rights->dolisirh->adminpage->read;
-if (empty($conf->dolisirh->enabled)) accessforbidden();
-if (!$permissiontoread) accessforbidden();
+saturne_check_access($permissiontoread);
 
 /*
  * Actions
@@ -114,21 +114,21 @@ if ($action == 'update') {
 }
 
 if ($action == 'updateThemeColor') {
-	$val = (implode(',', (colorStringToArray(GETPOST('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'), array()))));
+	$val = (implode(',', (colorStringToArray(GETPOST('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'), []))));
 	if ($val == '') {
 		dolibarr_del_const($db, 'DOLISIRH_EXCEEDED_TIME_SPENT_COLOR', $conf->entity);
 	} else {
 		dolibarr_set_const($db, 'DOLISIRH_EXCEEDED_TIME_SPENT_COLOR', $val, 'chaine', 0, '', $conf->entity);
 	}
 
-	$val = (implode(',', (colorStringToArray(GETPOST('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'), array()))));
+	$val = (implode(',', (colorStringToArray(GETPOST('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'), []))));
 	if ($val == '') {
 		dolibarr_del_const($db, 'DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR', $conf->entity);
 	} else {
 		dolibarr_set_const($db, 'DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR', $val, 'chaine', 0, '', $conf->entity);
 	}
 
-	$val = (implode(',', (colorStringToArray(GETPOST('DOLISIRH_PERFECT_TIME_SPENT_COLOR'), array()))));
+	$val = (implode(',', (colorStringToArray(GETPOST('DOLISIRH_PERFECT_TIME_SPENT_COLOR'), []))));
 	if ($val == '') {
 		dolibarr_del_const($db, 'DOLISIRH_PERFECT_TIME_SPENT_COLOR', $conf->entity);
 	} else {
@@ -140,35 +140,29 @@ if ($action == 'updateThemeColor') {
  * View
  */
 
-// Initialize view objects
-$form        = new Form($db);
-$formother   = new FormOther($db);
-$formproject = new FormProjets($db);
-
+$title    = $langs->trans('ProjectsAndTasks');
 $help_url = 'FR:Module_DoliSIRH';
-$title    = $langs->trans("ProjectsAndTasks");
-$morejs   = array("/dolisirh/js/dolisirh.js");
-$morecss  = array("/dolisirh/css/dolisirh.css");
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
+saturne_header(0,'', $title, $help_url);
 
 // Subheader
-print load_fiche_titre($title, '', 'dolisirh_red@dolisirh');
+$linkback = '<a href="' . ($backtopage ?: DOL_URL_ROOT . '/admin/modules.php?restore_lastsearch_values=1') . '">' . $langs->trans('BackToModuleList') . '</a>';
+print load_fiche_titre($title, $linkback, 'dolisirh_color@dolisirh');
 
 // Configuration header
-$head = dolisirhAdminPrepareHead();
-print dol_get_fiche_head($head, 'projecttasks', $title, -1, 'dolisirh_red@dolisirh');
+$head = dolisirh_admin_prepare_head();
+print dol_get_fiche_head($head, 'projecttasks', $title, -1, 'dolisirh_color@dolisirh');
 
 // Project
-print load_fiche_titre($langs->transnoentities("HRProject"), '', 'project');
+print load_fiche_titre($langs->transnoentities('HRProject'), '', 'project');
 
-print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '" name="project_form">';
+print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '" name="project_form">';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="update">';
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
-print '<td>' . $langs->transnoentities("Name") . '</td>';
-print '<td>' . $langs->transnoentities("ProjectOrTask") . '</td>';
+print '<td>' . $langs->transnoentities('Name') . '</td>';
+print '<td>' . $langs->transnoentities('ProjectOrTask') . '</td>';
 print '</tr>';
 
 // HRProject
@@ -241,21 +235,21 @@ print '</table>';
 print '<div class="tabsAction"><input type="submit" class="butAction" name="save" value="' . $langs->trans('Save') . '"></div>';
 print '</form>';
 
-//Time spent
-print load_fiche_titre($langs->transnoentities("TimeSpent"), '', 'clock');
+// Time spent
+print load_fiche_titre($langs->transnoentities('TimeSpent'), '', 'clock');
 
 print '<table class="noborder centpercent">';
 
 print '<tr class="liste_titre">';
-print '<td>' . $langs->transnoentities("Parameters") . '</td>';
-print '<td>' . $langs->transnoentities("Description") . '</td>';
-print '<td class="center">' . $langs->transnoentities("Status") . '</td>';
+print '<td>' . $langs->transnoentities('Parameters') . '</td>';
+print '<td>' . $langs->transnoentities('Description') . '</td>';
+print '<td class="center">' . $langs->transnoentities('Status') . '</td>';
 print '</tr>';
 
 print '<tr class="oddeven"><td>';
-print $langs->transnoentities("SpendMoreTimeThanPlanned");
+print $langs->transnoentities('SpendMoreTimeThanPlanned');
 print '</td><td>';
-print $langs->transnoentities("SpendMoreTimeThanPlannedDescription");
+print $langs->transnoentities('SpendMoreTimeThanPlannedDescription');
 print '</td>';
 print '<td class="center">';
 print ajax_constantonoff('DOLISIRH_SPEND_MORE_TIME_THAN_PLANNED');
@@ -264,40 +258,40 @@ print '</tr>';
 
 print '</table>';
 
-//Theme dashboard time spent
-print load_fiche_titre($langs->transnoentities("ThemeDashboardTimeSpent"), '', 'clock');
+// Theme dashboard time spent
+print load_fiche_titre($langs->transnoentities('ThemeDashboardTimeSpent'), '', 'clock');
 
-print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '" name="color_form">';
+print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '" name="color_form">';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="updateThemeColor">';
 print '<table class="noborder centpercent">';
 
 print '<tr class="liste_titre">';
-print '<td>' . $langs->transnoentities("Parameters") . '</td>';
-print '<td>' . $langs->transnoentities("Value") . '</td>';
+print '<td>' . $langs->transnoentities('Parameters') . '</td>';
+print '<td>' . $langs->transnoentities('Value') . '</td>';
 print '</tr>';
 
 print '<tr class="oddeven">';
-print '<td>'.$langs->trans("ExceededTimeSpentColor").'</td>';
+print '<td>'.$langs->trans('ExceededTimeSpentColor').'</td>';
 print '<td>';
-print $formother->selectColor(colorArrayToHex(colorStringToArray((!empty($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR) ? $conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR : ''), array()), ''), 'DOLISIRH_EXCEEDED_TIME_SPENT_COLOR', '', 1, '', '', 'dolisirhexceededtimespentcolor');
-print '<span class="nowraponall opacitymedium">'.$langs->trans("Default").'</span>: <strong>#FF0000</strong>';
+print $formother->selectColor(colorArrayToHex(colorStringToArray((!empty($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR) ? $conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR : ''), []), ''), 'DOLISIRH_EXCEEDED_TIME_SPENT_COLOR', '', 1, '', '', 'dolisirhexceededtimespentcolor');
+print '<span class="nowraponall opacitymedium">'.$langs->trans('Default').'</span>: <strong>#FF0000</strong>';
 print '</td>';
 print '</tr>';
 
 print '<tr class="oddeven">';
-print '<td>'.$langs->trans("NotExceededTimeSpentColor").'</td>';
+print '<td>'.$langs->trans('NotExceededTimeSpentColor').'</td>';
 print '<td>';
-print $formother->selectColor(colorArrayToHex(colorStringToArray((!empty($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR) ? $conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR : ''), array()), ''), 'DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR', '', 1, '', '', 'dolisirhnotexceededtimespentcolor');
-print '<span class="nowraponall opacitymedium">'.$langs->trans("Default").'</span>: <strong>#FFA500</strong>';
+print $formother->selectColor(colorArrayToHex(colorStringToArray((!empty($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR) ? $conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR : ''), []), ''), 'DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR', '', 1, '', '', 'dolisirhnotexceededtimespentcolor');
+print '<span class="nowraponall opacitymedium">'.$langs->trans('Default').'</span>: <strong>#FFA500</strong>';
 print '</td>';
 print '</tr>';
 
 print '<tr class="oddeven">';
-print '<td>'.$langs->trans("PerfectTimeSpentColor").'</td>';
+print '<td>'.$langs->trans('PerfectTimeSpentColor').'</td>';
 print '<td>';
-print $formother->selectColor(colorArrayToHex(colorStringToArray((!empty($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR) ? $conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR : ''), array()), ''), 'DOLISIRH_PERFECT_TIME_SPENT_COLOR', '', 1, '', '', 'dolisirhperfecttimespentcolor');
-print '<span class="nowraponall opacitymedium">'.$langs->trans("Default").'</span>: <strong>#008000</strong>';
+print $formother->selectColor(colorArrayToHex(colorStringToArray((!empty($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR) ? $conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR : ''), []), ''), 'DOLISIRH_PERFECT_TIME_SPENT_COLOR', '', 1, '', '', 'dolisirhperfecttimespentcolor');
+print '<span class="nowraponall opacitymedium">'.$langs->trans('Default').'</span>: <strong>#008000</strong>';
 print '</td>';
 print '</tr>';
 
