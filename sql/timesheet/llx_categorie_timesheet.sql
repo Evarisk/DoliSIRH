@@ -1,4 +1,4 @@
--- Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
+-- Copyright (C) 2023 EVARISK <dev@evarisk.com>
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
 CREATE TABLE llx_categorie_timesheet(
-    fk_categorie  integer NOT NULL,
+	fk_categorie  integer NOT NULL,
     fk_timesheet  integer NOT NULL,
     import_key    varchar(14)
 ) ENGINE=innodb;

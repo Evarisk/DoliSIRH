@@ -81,7 +81,7 @@ $lineid              = GETPOST('lineid', 'int');
 // Initialize technical objects
 $object              = new Certificate($db);
 //$objectline          = new CertificateLine($db);
-//$signatory           = new CertificateSignature($db);
+$signatory           = new CertificateSignature($db);
 $certificatedocument = new CertificateDocument($db);
 $extrafields         = new ExtraFields($db);
 $project             = new Project($db);

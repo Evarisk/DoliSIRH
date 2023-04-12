@@ -24,6 +24,8 @@
 // Put here all includes required by your class file
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
 
+require_once __DIR__ . '/dolisirhsignature.class.php';
+
 /**
  * Class for Certificate
  */
@@ -944,5 +946,61 @@ class CertificateLine extends CommonObjectLine
 	public function __construct(DoliDB $db)
 	{
 		$this->db = $db;
+	}
+}
+
+/**
+ * Class CertificateSignature
+ */
+
+class CertificateSignature extends DoliSIRHSignature
+{
+	/**
+	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
+	 */
+
+	public $object_type = 'certificate';
+
+	/**
+	 * @var array Context element object
+	 */
+	public $context = array();
+
+	/**
+	 * @var string String with name of icon for document. Must be the part after the 'object_' into object_document.png
+	 */
+	public $picto = 'certificate@dolisirh';
+
+	/**
+	 * Constructor
+	 *
+	 * @param DoliDb $db Database handler
+	 */
+	public function __construct(DoliDB $db)
+	{
+		global $conf, $langs;
+
+		$this->db = $db;
+
+		if (empty($conf->global->MAIN_SHOW_TECHNICAL_ID) && isset($this->fields['rowid'])) $this->fields['rowid']['visible'] = 0;
+		if (empty($conf->multicompany->enabled) && isset($this->fields['entity'])) $this->fields['entity']['enabled']        = 0;
+
+		// Unset fields that are disabled
+		foreach ($this->fields as $key => $val) {
+			if (isset($val['enabled']) && empty($val['enabled'])) {
+				unset($this->fields[$key]);
+			}
+		}
+
+		// Translate some data of arrayofkeyval
+		if (is_object($langs)) {
+			foreach ($this->fields as $key => $val) {
+				if (is_array($val['arrayofkeyval'])) {
+					foreach ($val['arrayofkeyval'] as $key2 => $val2) {
+						$this->fields[$key]['arrayofkeyval'][$key2] = $langs->trans($val2);
+					}
+				}
+			}
+		}
 	}
 }

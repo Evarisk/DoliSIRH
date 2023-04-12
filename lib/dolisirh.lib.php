@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
+/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,25 +26,22 @@
  *
  * @return array
  */
-function dolisirh_admin_prepare_head(): array
+function dolisirhAdminPrepareHead(): array
 {
-    // Global variables definitions
 	global $conf, $langs;
 
-    // Load translation files required by the page
-    saturne_load_langs();
+	$langs->load("dolisirh@dolisirh");
 
-    // Initialize values
 	$h = 0;
-	$head = [];
+	$head = array();
 
-	$head[$h][0] = dol_buildpath('/dolisirh/admin/project.php', 1);
-	$head[$h][1] = '<i class="fas fa-project-diagram pictofixedwidth"></i>' . $langs->trans('ProjectsAndTasks');
+	$head[$h][0] = dol_buildpath("/dolisirh/admin/project.php", 1);
+	$head[$h][1] = '<i class="fas fa-project-diagram pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->trans("ProjectsAndTasks");
 	$head[$h][2] = 'projecttasks';
 	$h++;
 
-	$head[$h][0] = dol_buildpath('/dolisirh/admin/timesheet.php', 1);
-	$head[$h][1] = '<i class="fas fa-calendar-check pictofixedwidth"></i>' . $langs->trans('TimeSheet');
+	$head[$h][0] = dol_buildpath("/dolisirh/admin/timesheet.php", 1);
+	$head[$h][1] = '<i class="fas fa-calendar-check pictofixedwidth"></i>' . $langs->trans("TimeSheet");
 	$head[$h][2] = 'timesheet';
 	$h++;
 
@@ -53,24 +50,22 @@ function dolisirh_admin_prepare_head(): array
 //	$head[$h][2] = 'certificate';
 //	$h++;
 
-	$head[$h][0] = dol_buildpath('/dolisirh/admin/dolisirhdocuments.php', 1);
-	$head[$h][1] = '<i class="fas fa-file-alt pictofixedwidth"></i>' . $langs->trans('YourDocuments');
-	$head[$h][2] = 'documents';
+	$head[$h][0] = dol_buildpath("/dolisirh/admin/dolisirhdocuments.php", 1);
+	$head[$h][1] = '<i class="fas fa-file-alt pictofixedwidth"></i>' . $langs->trans("YourDocuments");
+	$head[$h][2] = 'dolisirhdocuments';
 	$h++;
 
-	$head[$h][0] = dol_buildpath('/dolisirh/admin/setup.php', 1);
-	$head[$h][1] = '<i class="fas fa-cog pictofixedwidth"></i>' . $langs->trans('ModuleSettings');
+	$head[$h][0] = dol_buildpath("/dolisirh/admin/setup.php", 1);
+	$head[$h][1] = '<i class="fas fa-cog pictofixedwidth"></i>' . $langs->trans("Settings");
 	$head[$h][2] = 'settings';
 	$h++;
 
-	$head[$h][0] = dol_buildpath('/dolisirh/admin/about.php', 1);
-	$head[$h][1] = '<i class="fab fa-readme pictofixedwidth"></i>' . $langs->trans('About');
+	$head[$h][0] = dol_buildpath("/dolisirh/admin/about.php", 1);
+	$head[$h][1] = '<i class="fab fa-readme pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->trans("About");
 	$head[$h][2] = 'about';
 	$h++;
 
-    complete_head_from_modules($conf, $langs, null, $head, $h, 'dolisirh@dolisirh');
-
-	complete_head_from_modules($conf, $langs, null, $head, $h, 'dolisirh@dolisirh', 'remove');
+	complete_head_from_modules($conf, $langs, null, $head, $h, 'dolisirh');
 
 	return $head;
 }
