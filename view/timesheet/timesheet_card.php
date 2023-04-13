@@ -535,13 +535,24 @@ if (($id || $ref) && $action == 'edit') {
 
 	print dol_get_fiche_head();
 
-	print '<table class="border centpercent tableforfieldedit">'."\n";
+	print '<table class="border centpercent tableforfieldedit">';
 
-	$date_start = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
-	$date_end   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
+	$dateStart = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
+	$dateEnd   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
 
-	$_POST['date_start'] = (!empty($date_start) ? $date_start : $object->date_start);
-	$_POST['date_end'] = (!empty($date_end) ? $date_end : $object->date_end);
+    $dateStart = (!empty($dateStart) ? $dateStart : $object->date_start);
+    $dateEnd   = (!empty($dateEnd) ? $dateEnd : $object->date_end);
+
+    $dateStart = dol_getdate($dateStart);
+    $dateEnd   = dol_getdate($dateEnd);
+
+    $_POST['date_startday']   = $dateStart['mday'];
+    $_POST['date_startmonth'] = $dateStart['mon'];
+    $_POST['date_startyear']  = $dateStart['year'];
+
+    $_POST['date_endday']   = $dateEnd['mday'];
+    $_POST['date_endmonth'] = $dateEnd['mon'];
+    $_POST['date_endyear']  = $dateEnd['year'];
 
 	$object->fields['note_public']['visible']  = 1;
 	$object->fields['note_private']['visible'] = 1;
