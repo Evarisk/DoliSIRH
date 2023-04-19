@@ -78,9 +78,13 @@ llxHeader('', $title . ' ' . $modDoliSIRH->version, $help_url, '', 0, 0, $morejs
 $currentMonth = date('m', dol_now());
 $currentYear  = date('Y', dol_now());
 
-//$years = $currentYear - (empty($conf->global->MAIN_STATS_GRAPHS_SHOW_N_YEARS) ? 2 : max(1, min(10, $conf->global->MAIN_STATS_GRAPHS_SHOW_N_YEARS)));
+$showYears = (empty($conf->global->MAIN_STATS_GRAPHS_SHOW_N_YEARS) ? 2 : max(1, min(10, $conf->global->MAIN_STATS_GRAPHS_SHOW_N_YEARS)));
+while ($showYears != 0) {
+    $years[] = $currentYear - $showYears;
+    $showYears--;
+}
+$years[] = $currentYear;
 
-$years = [2021, 2022, 2023];
 $morehtmlright = ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans('Year'), 'title_agenda', 'class="paddingright pictofixedwidth"') . $form->selectarray('search_year', $years, $currentYear, 0,0, 1, '', 0, 0, 0, '', 'maxwidth100');
 $months = [1 => ucfirst($langs->trans('January')), 2 => ucfirst($langs->trans('February')), 3 => ucfirst($langs->trans('March')), 4 => ucfirst($langs->trans('April')), 5 => ucfirst($langs->trans('May')), 6 => ucfirst($langs->trans('June')), 7 => ucfirst($langs->trans('July')), 8 => ucfirst($langs->trans('August')), 9 => ucfirst($langs->trans('September')), 10 => ucfirst($langs->trans('October')), 11 => ucfirst($langs->trans('November')), 12 => ucfirst($langs->trans('December'))];
 $morehtmlright .= ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans('Month'), 'title_agenda', 'class="paddingright pictofixedwidth"') . $form->selectarray('search_month', $months, $currentMonth, 0,0, 0, '', 1, 0, 0, '', 'maxwidth100');
