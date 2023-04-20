@@ -40,15 +40,15 @@ function dolisirhAdminPrepareHead(): array
 	$head[$h][2] = 'projecttasks';
 	$h++;
 
-	$head[$h][0] = dol_buildpath("/dolisirh/admin/timesheet.php", 1);
-	$head[$h][1] = '<i class="fas fa-calendar-check pictofixedwidth"></i>' . $langs->trans("TimeSheet");
+    $head[$h][0] = dol_buildpath('/saturne/admin/object.php', 1) . '?module_name=DoliSIRH&object_type=timesheet';
+	$head[$h][1] = '<i class="fas fa-calendar-check pictofixedwidth"></i>' . $langs->trans('TimeSheet');
 	$head[$h][2] = 'timesheet';
 	$h++;
 
-//	$head[$h][0] = dol_buildpath("/dolisirh/admin/certificate.php", 1);
-//	$head[$h][1] = '<i class="fas fa-user-graduate pictofixedwidth"></i>' . $langs->trans("Certificate");
-//	$head[$h][2] = 'certificate';
-//	$h++;
+	$head[$h][0] = dol_buildpath('/saturne/admin/object.php', 1) . '?module_name=DoliSIRH&object_type=certificate';
+	$head[$h][1] = '<i class="fas fa-user-graduate pictofixedwidth"></i>' . $langs->trans("Certificate");
+	$head[$h][2] = 'certificate';
+	$h++;
 
 	$head[$h][0] = dol_buildpath("/dolisirh/admin/dolisirhdocuments.php", 1);
 	$head[$h][1] = '<i class="fas fa-file-alt pictofixedwidth"></i>' . $langs->trans("YourDocuments");

@@ -365,9 +365,18 @@ foreach ($types as $type => $documentType) {
 						require_once $dir.'/'.$file;
 						$module = new $classname($db);
 
-						$modulequalified = 1;
-						if ($module->version == 'development' && $conf->global->MAIN_FEATURES_LEVEL < 2) $modulequalified = 0;
-						if ($module->version == 'experimental' && $conf->global->MAIN_FEATURES_LEVEL < 1) $modulequalified = 0;
+                        // Active
+                        print '<td class="center">';
+
+                        if (in_array($name, $def)) {
+                            print '<a href="' . $_SERVER['PHP_SELF'] . '?action=del&value=' . $name . '&const=' . $module->scandir . '&label=' . urlencode($module->name) . '&type=' . explode('_', $name)[0] . '&token=' . newToken() . '">';
+                            print img_picto($langs->trans('Enabled'), 'switch_on');
+                        } else {
+                            print '<a href="' . $_SERVER['PHP_SELF'] . '?action=set&value=' . $name . '&const=' . $module->scandir . '&label=' . urlencode($module->name) . '&type=' . explode('_', $name)[0] . '&token=' . newToken() . '">';
+                            print img_picto($langs->trans('Disabled'), 'switch_off');
+                        }
+                        print '</a>';
+                        print '</td>';
 
 						if ($modulequalified) {
 							print '<tr class="oddeven"><td>';

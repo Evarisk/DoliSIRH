@@ -316,10 +316,10 @@ DoliSIRHCertificateStandardModel = Renvoie le numéro sous la forme CERTyymm-nnn
 
 # Data - Donnée
 Certificate = Certificat
+TheCertificate = le certificat
 NewCertificate = Nouveau certificat
 ModifyCertificate = Modifer le certificat
 CertificateList = Liste des certificats
-CertificateManagement = Gestion des certificats
 
 #
 # CertificateDocument - Document certificat
