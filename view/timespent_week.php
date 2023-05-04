@@ -278,6 +278,8 @@ if ($action == 'addTimeSpent' && $permissiontoadd) {
 
     $taskID    = $data['taskID'];
     $timestamp = $data['timestamp'];
+    $datehour  = $data['datehour'];
+    $datemin   = $data['datemin'];
     $comment   = $data['comment'];
     $hour      = (int) $data['hour'];
     $min       = (int) $data['min'];
@@ -285,6 +287,10 @@ if ($action == 'addTimeSpent' && $permissiontoadd) {
     $object->fetch($taskID);
 
     $object->timespent_date     = $timestamp;
+    $object->timespent_datehour = $timestamp + ($datehour * 3600) + ($datemin * 60);
+    if ($datehour > 0 || $datemin > 0) {
+        $object->timespent_withhour = 1;
+    }
     $object->timespent_note     = $comment;
     $object->timespent_duration = ($hour * 3600) + ($min * 60);
     $object->timespent_fk_user  = $user->id;
