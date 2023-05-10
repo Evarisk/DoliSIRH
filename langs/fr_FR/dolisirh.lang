@@ -235,6 +235,8 @@ ErrorDateEndTimeSheet = Erreur date fin de navette %s supérieure à la date du 
 ErrorDateTimeSheet = Erreur date début de navette %s supérieure à la date fin de navette %s
 ErrorConfigWorkingHours = Erreur : configuration des heures de travail manquantes
 GoToWorkingHours = Aller sur la page Horaires de l'utilisateur %s
+ErrorConfigProjectPage = Erreur : configuration des projets et tâches ressources humaines manquantes. <br> Impossible de génerer la navette.
+GoToConfigProjectPage = Aller sur la page de configuration du projet Ressources Humaines
 
 # Data - Donnée
 TimeSheet = Navette
