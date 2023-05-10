@@ -467,7 +467,14 @@ if ($action == 'create') {
 
 	print '<table class="border centpercent tableforfieldcreate">';
 
-	$object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, $month, $day, $year), "%B %Y") . ' ' . $user->getFullName($langs, 0, 0);
+    if ($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) {
+        if ($month == 01) {
+            $specialCaseMonth = 12;
+            $year--;
+        }
+    }
+
+	$object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, (!empty($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) ? (($month != 01) ? $month - 1 : $specialCaseMonth) : $month), $day, $year), "%B %Y") . ' ' . $user->getFullName($langs, 0, 0);
 	$object->fields['fk_project']['default']     = $conf->global->DOLISIRH_HR_PROJECT;
 	$object->fields['fk_user_assign']['default'] = $user->id;
 
@@ -478,14 +485,14 @@ if ($action == 'create') {
 	$_POST['date_end']   = $date_end;
 
 	if ($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE && empty($_POST['date_start']) && empty($_POST['date_end'])) {
-		$firstday = dol_get_first_day($year, $month);
+		$firstday = dol_get_first_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
 		$firstday = dol_getdate($firstday);
 
 		$_POST['date_startday'] = $firstday['mday'];
 		$_POST['date_startmonth'] = $firstday['mon'];
 		$_POST['date_startyear'] = $firstday['year'];
 
-		$lastday = dol_get_last_day($year, $month);
+		$lastday = dol_get_last_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
 		$lastday = dol_getdate($lastday);
 
 		$_POST['date_endday'] = $lastday['mday'];
@@ -535,13 +542,24 @@ if (($id || $ref) && $action == 'edit') {
 
 	print dol_get_fiche_head();
 
-	print '<table class="border centpercent tableforfieldedit">'."\n";
+	print '<table class="border centpercent tableforfieldedit">';
 
-	$date_start = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
-	$date_end   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
+	$dateStart = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
+	$dateEnd   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
 
-	$_POST['date_start'] = (!empty($date_start) ? $date_start : $object->date_start);
-	$_POST['date_end'] = (!empty($date_end) ? $date_end : $object->date_end);
+    $dateStart = (!empty($dateStart) ? $dateStart : $object->date_start);
+    $dateEnd   = (!empty($dateEnd) ? $dateEnd : $object->date_end);
+
+    $dateStart = dol_getdate($dateStart);
+    $dateEnd   = dol_getdate($dateEnd);
+
+    $_POST['date_startday']   = $dateStart['mday'];
+    $_POST['date_startmonth'] = $dateStart['mon'];
+    $_POST['date_startyear']  = $dateStart['year'];
+
+    $_POST['date_endday']   = $dateEnd['mday'];
+    $_POST['date_endmonth'] = $dateEnd['mon'];
+    $_POST['date_endyear']  = $dateEnd['year'];
 
 	$object->fields['note_public']['visible']  = 1;
 	$object->fields['note_private']['visible'] = 1;
@@ -679,7 +697,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$start_date = dol_print_date($firstdaytoshow, "dayreduceformat");
 	$end_date = dol_print_date($lastdaytoshow, "dayreduceformat");
 
-	$daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+	$daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
 
 	$isavailable = array();
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
@@ -703,10 +721,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("ExpectedWorkedHoursMonthTimeSheet", $start_date, $end_date);
+	print $langs->trans("ExpectedWorkingHoursMonthTimeSheet", $start_date, $end_date);
 	print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '" target="_blank">';
 	print (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong>';
-	print '<span>' . ' - ' . $langs->trans("ExpectedWorkedDayMonth") . ' <strong>' . $planned_working_time['days'] . '</strong></span>';
+	print '<span>' . ' - ' . $langs->trans("ExpectedWorkingDayMonth") . ' <strong>' . $planned_working_time['days'] . '</strong></span>';
 	print '</span>';
 	print '</td></tr>';
 
@@ -716,11 +734,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("SpentWorkedHoursMonth", $start_date, $end_date);
+	print $langs->trans("SpentWorkingHoursMonth", $start_date, $end_date);
 	print ' : <strong>' . (($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</strong></span>';
 	print '</td></tr>';
 
-	//Difference between passed and worked hours
+	//Difference between passed and working hours
 	$difftotaltime = $timeSpendingInfos['difference'];
 
 	if ($difftotaltime < 0) {
@@ -737,12 +755,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$noticetitle = $langs->trans('TimeSpentPerfect');
 	}
 
-	//Worked hours
-	$worked_time = $timeSpendingInfos['spent'];
+	//Working hours
+	$working_time = $timeSpendingInfos['spent'];
 
-	if ($planned_working_time['days'] > $worked_time['days']) {
+	if ($planned_working_time['days'] > $working_time['days']) {
 		$morecssDays = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-	} else if ($planned_working_time['days'] < $worked_time['days']){
+	} else if ($planned_working_time['days'] < $working_time['days']){
 		$morecssDays = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
 	} else {
 		$morecssDays = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
@@ -751,18 +769,18 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("ConsumedWorkedHoursMonth", $start_date, $end_date);
-	print ' : <strong>'.convertSecondToTime($worked_time['total'], 'allhourmin').'</strong>';
-	print '<span>' . ' - ' . $langs->trans("ConsumedWorkedDayMonth") . ' <strong style="color:'.'rgb('.$morecssDays[0].','.$morecssDays[1].','.$morecssDays[2].')'.'">';
-	print $worked_time['days'] . '</strong></span>';
+	print $langs->trans("ConsumedWorkingHoursMonth", $start_date, $end_date);
+	print ' : <strong>'.convertSecondToTime($working_time['total'], 'allhourmin').'</strong>';
+	print '<span>' . ' - ' . $langs->trans("ConsumedWorkingDayMonth") . ' <strong style="color:'.'rgb('.$morecssDays[0].','.$morecssDays[1].','.$morecssDays[2].')'.'">';
+	print $working_time['days'] . '</strong></span>';
 	print '</span>';
 	print '</td></tr>';
 
-	//Difference between worked hours & planned working hours
+	//Difference between working hours & planned working hours
 	print '<tr class="liste_total"><td class="liste_total">';
 	print $langs->trans("Total");
 	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("DiffSpentAndConsumedWorkedHoursMonth", $start_date, $end_date);
+	print $langs->trans("DiffSpentAndConsumedWorkingHoursMonth", $start_date, $end_date);
 	print ' : <strong style="color:'.'rgb('.$morecssHours[0].','.$morecssHours[1].','.$morecssHours[2].')'.'">';
 	print (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime * 60), 'allhourmin') : '00:00').'</strong>';
 	print '</span>';
@@ -794,6 +812,17 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			<a class="butAction" style="width = 100%;margin-right:0" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/timespent_month.php?year='.$datestart['year'].'&month='.$datestart['mon'].'&day='.$datestart['mday'].'&search_usertoprocessid='.$object->fk_user_assign . '&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans("GoToTimeSpent", dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y")) ?></a>
 		</div>
 	<?php endif; ?>
+
+    <?php if (empty($conf->global->DOLISIRH_HR_PROJECT) || empty($conf->global->DOLISIRH_HOLIDAYS_TASK) || empty($conf->global->DOLISIRH_PAID_HOLIDAYS_TASK) || empty($conf->global->DOLISIRH_PAID_HOLIDAYS_TASK) || empty($conf->global->DOLISIRH_PAID_HOLIDAYS_TASK)
+            || empty($conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK) || empty($conf->global-> DOLISIRH_RTT_TASK) || empty($conf->global->DOLISIRH_INTERNAL_MEETING_TASK) || empty($conf->global->DOLISIRH_INTERNAL_TRAINING_TASK) || empty($conf->global->DOLISIRH_EXTERNAL_TRAINING_TASK)
+            || empty($conf->global->DOLISIRH_AUTOMATIC_TIMESPENDING_TASK) || empty($conf->global->DOLISIRH_MISCELLANEOUS_TASK)) : ?>
+        <div class="wpeo-notice notice-error">
+            <div class="notice-content">
+                <div class="notice-title"><?php echo $langs->trans('ErrorConfigProjectPage') ?></div>
+            </div>
+            <a class="butAction" style="width = 100%;margin-right:0" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/admin/project.php'; ?>"><?php echo $langs->trans('GoToConfigProjectPage') ?></a>
+        </div>
+    <?php endif; ?>
 
 	<?php print dol_get_fiche_end();
 

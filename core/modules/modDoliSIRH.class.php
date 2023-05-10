@@ -52,7 +52,7 @@ class modDoliSIRH extends DolibarrModules
 		$this->descriptionlong = $langs->trans('DoliSIRHDescriptionLong');
 		$this->editor_name     = 'Evarisk';
 		$this->editor_url      = 'https://evarisk.com';
-		$this->version         = '1.3.0';
+		$this->version         = '1.3.1';
 		$this->const_name      = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto           = 'dolisirh_red@dolisirh';
 
@@ -122,7 +122,7 @@ class modDoliSIRH extends DolibarrModules
             $i++ => array('DOLISIRH_HR_PROJECT_SET', 'integer', 0, '', 0, 'current'),
 
             // CONST TIME SPENT
-            $i++ => array('DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 0, '', 0, 'current'),
+            $i++ => array('DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 1, '', 0, 'current'),
 
             // CONST TIME SHEET
             $i++ => array('DOLISIRH_TIMESHEET_ADDON', 'chaine', 'mod_timesheet_standard', '', 0, 'current'),
@@ -207,6 +207,18 @@ class modDoliSIRH extends DolibarrModules
 		$this->rights[$r][4] = 'certificate';
 		$this->rights[$r][5] = 'delete';
 		$r++;
+
+        /* WORKING HOURS PERMISSIONS */
+        $this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
+        $this->rights[$r][1] = $langs->transnoentities('CreateAllWorkingHours');
+        $this->rights[$r][4] = 'workinghours';
+        $this->rights[$r][5] = 'allworkinghours';
+        $r++;
+        $this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);
+        $this->rights[$r][1] = $langs->transnoentities('CreateMyWorkingHours');
+        $this->rights[$r][4] = 'workinghours';
+        $this->rights[$r][5] = 'myworkinghours';
+        $r++;
 
 		/* ADMINPAGE PANEL ACCESS PERMISSIONS */
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1);

@@ -3,8 +3,8 @@
 ## Informations
 
 - Numéro du module : 436310
-- Version : 1.3.0
-- Dernière mise à jour :  17/02/2022
+- Version : 1.3.1
+- Dernière mise à jour : 10/05/2023
 - Éditeur : [Evarisk](https://www.evarisk.com)
 - Compatibilité : Dolibarr 15.0.0 - 16.0.4
 - Thème : Eldy Menu

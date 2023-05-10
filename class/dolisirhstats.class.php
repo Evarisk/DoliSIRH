@@ -645,20 +645,22 @@ abstract class DoliSIRHStats
         global $db, $langs, $user;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $year   = GETPOSTISSET('search_year') ? GETPOST('search_year', 'int') : date('Y');
         $month  = GETPOSTISSET('search_month') ? GETPOST('search_month', 'int') : date('m');
 
-        $firstdaytoshow = dol_get_first_day(date('Y'), $month);
+        $firstdaytoshow = dol_get_first_day($year, $month);
         $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
         $currentMonth = date('m', dol_now());
-        if ($currentMonth == $month) {
+        $currentYear = date('Y', dol_now());
+        if ($currentMonth == $month && $currentYear == $year) {
             $currentDate   = dol_getdate(dol_now());
             $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
         } else {
             $lastdaytoshow = $lastdayofmonth;
         }
 
-        $daysInMonth = num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+        $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
 
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
@@ -679,22 +681,22 @@ abstract class DoliSIRHStats
 
         // Planned working time
         $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-        $array['planned']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ExpectedWorkedHoursMonth', dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), date('Y')), '%B %Y'));
+        $array['planned']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ExpectedWorkingHoursMonth', dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), $year), '%B %Y'));
         $array['planned']['content'] = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00');
 
         // Hours passed
         $passed_working_time        = $timeSpendingInfos['passed'];
-        $array['passed']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('SpentWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+        $array['passed']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('SpentWorkingHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
         $array['passed']['content'] = (($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00');
 
-        //Worked hours
-        $worked_time               = $timeSpendingInfos['spent'];
-        $array['spent']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
-        $array['spent']['content'] = convertSecondToTime($worked_time['total'], 'allhourmin');
+        //Working hours
+        $working_time               = $timeSpendingInfos['spent'];
+        $array['spent']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ConsumedWorkingHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+        $array['spent']['content'] = convertSecondToTime($working_time['total'], 'allhourmin');
 
-        //Difference between passed and worked hours
+        //Difference between passed and working hours
         $difftotaltime                  = $timeSpendingInfos['difference'] * 60;
-        $array['difference']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('DiffSpentAndConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+        $array['difference']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('DiffSpentAndConsumedWorkingHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
         $array['difference']['content'] = (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00');
 
         return $array;
@@ -715,6 +717,7 @@ abstract class DoliSIRHStats
         $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $year   = GETPOSTISSET('search_year') ? GETPOST('search_year', 'int') : date('Y');
 
         // Graph Title parameters
         $array['title'] = $langs->transnoentities('TimeSpentReportByFiscalYear');
@@ -728,11 +731,11 @@ abstract class DoliSIRHStats
 
         $array['labels'] = [
             0 => [
-                'label' => $langs->transnoentities('ExpectedWorkedHours'),
+                'label' => $langs->transnoentities('ExpectedWorkingHours'),
                 'color' => '#008ECC'
             ],
             1 => [
-                'label' => $langs->transnoentities('ConsumedWorkedHours'),
+                'label' => $langs->transnoentities('ConsumedWorkingHours'),
                 'color' => '#49AF4A'
             ]
         ];
@@ -741,18 +744,19 @@ abstract class DoliSIRHStats
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
         for ($i = 1; $i < 13; $i++) {
-            $firstdaytoshow = dol_get_first_day(date('Y'), $i);
+            $firstdaytoshow = dol_get_first_day($year, $i);
             $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
             $currentMonth = date('m', dol_now());
-            if ($currentMonth == date('m')) {
+            $currentYear  = date('Y', dol_now());
+            if ($currentMonth == date('m') && $currentYear == $year) { 
                 $currentDate   = dol_getdate(dol_now());
                 $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
             } else {
                 $lastdaytoshow = $lastdayofmonth;
             }
 
-            $daysInMonth = num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+            $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
 
             $isavailable = [];
             for ($idw = 0; $idw < $daysInMonth; $idw++) {
@@ -767,15 +771,15 @@ abstract class DoliSIRHStats
             }
 
             $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-            $worked_time          = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
+            $working_time          = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
 
             $planned_working_time_data = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'fullhour') : 0);
-            $worked_time_data = convertSecondToTime($worked_time['total'], 'fullhour');
+            $working_time_data = convertSecondToTime($working_time['total'], 'fullhour');
 
             $month = $langs->transnoentitiesnoconv('MonthShort'.sprintf('%02d', $i));
 			$array_key = $i - $startmonth;
 			$array_key = $array_key >= 0 ? $array_key : $array_key + 12;
-            $array['data'][$array_key] = [$month, $planned_working_time_data, $worked_time_data];
+            $array['data'][$array_key] = [$month, $planned_working_time_data, $working_time_data];
         }
 		ksort($array['data']);
 
@@ -785,23 +789,24 @@ abstract class DoliSIRHStats
     /**
      * Get timespent on current month by task and project.
      *
-     * @param  int       $showNotConsumedWorkedHours  Display not consumed worked hours
+     * @param  int       $showNotConsumedWorkingHours  Display not consumed working hours
      * @return array                                  Graph datas (label/color/type/title/data etc..)
      * @throws Exception
      */
-    public function getTimeSpentCurrentMonthByTaskAndProject(int $showNotConsumedWorkedHours = 0): array
+    public function getTimeSpentCurrentMonthByTaskAndProject(int $showNotConsumedWorkingHours = 0): array
     {
         require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
         global $db, $langs, $user;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $year   = GETPOSTISSET('search_year') ? GETPOST('search_year', 'int') : date('Y');
         $month  = GETPOSTISSET('search_month') ? GETPOST('search_month', 'int') : date('m');
 
         $datasetOrder = $user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER;
 
         // Graph Title parameters
-        $array['title'] = $langs->transnoentities(($showNotConsumedWorkedHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), date('Y')), '%B %Y'));
+        $array['title'] = $langs->transnoentities(($showNotConsumedWorkingHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), $year), '%B %Y'));
         $array['picto'] = 'projecttask';
 
         // Graph parameters
@@ -813,18 +818,19 @@ abstract class DoliSIRHStats
         $workinghours = new Workinghours($db);
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
-        $firstdaytoshow = dol_get_first_day(date('Y'), $month);
+        $firstdaytoshow = dol_get_first_day($year, $month);
         $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
         $currentMonth = date('m', dol_now());
-        if ($currentMonth == $month) {
+        $currentYear  = date('Y', dol_now());
+        if ($currentMonth == $month && $currentYear == $year) {
             $currentDate   = dol_getdate(dol_now());
             $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
         } else {
             $lastdaytoshow = $lastdayofmonth;
         }
 
-        $daysInMonth = num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+        $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
 
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
@@ -870,11 +876,11 @@ abstract class DoliSIRHStats
             }
         }
 
-        if ($showNotConsumedWorkedHours > 0) {
+        if ($showNotConsumedWorkingHours > 0) {
             $plannedWorkingTime = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
             $plannedWorkingTimeData = (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'fullhour') : 0);
             $array['labels'][] = ['color' => '#008ECC'];
-            $array['data'][] = [$langs->transnoentities('NotConsumedWorkedHours'), $plannedWorkingTimeData - $totalTimeSpent, $plannedWorkingTimeData - $totalTimeSpent];
+            $array['data'][] = [$langs->transnoentities('NotConsumedWorkingHours'), $plannedWorkingTimeData - $totalTimeSpent, $plannedWorkingTimeData - $totalTimeSpent];
         }
 
         return $array;

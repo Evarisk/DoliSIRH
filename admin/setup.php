@@ -130,61 +130,81 @@ if (GETPOST('HRProjectSet', 'alpha')) {
             $task->ref        = $defaultref;
             $task->label      = $langs->transnoentities('Holidays');
             $task->date_c     = dol_now();
-            $task->create($user);
+            $holidaysTaskID   = $task->create($user);
 
-            $task->fk_project = $result;
-            $task->ref        = $modTask->getNextValue('', null);;
-            $task->label      = $langs->transnoentities('PaidHolidays');
-            $task->date_c     = dol_now();
-            $task->create($user);
+            dolibarr_set_const($db, 'DOLISIRH_HOLIDAYS_TASK', $holidaysTaskID, 'integer', 0, '', $conf->entity);
 
-            $task->fk_project  = $result;
-            $task->ref         = $modTask->getNextValue('', null);;
-            $task->label       = $langs->transnoentities('SickLeave');
-            $task->date_c      = dol_now();
-            $task->create($user);
+            $task->fk_project   = $result;
+            $task->ref          = $modTask->getNextValue('', null);;
+            $task->label        = $langs->transnoentities('PaidHolidays');
+            $task->date_c       = dol_now();
+            $paidHolidaysTaskID = $task->create($user);
 
-            $task->fk_project = $result;
-            $task->ref        = $modTask->getNextValue('', null);;
-            $task->label      = $langs->transnoentities('PublicHoliday');
-            $task->date_c     = dol_now();
-            $task->create($user);
+            dolibarr_set_const($db, 'DOLISIRH_PAID_HOLIDAYS_TASK', $paidHolidaysTaskID, 'integer', 0, '', $conf->entity);
+
+            $task->fk_project   = $result;
+            $task->ref          = $modTask->getNextValue('', null);;
+            $task->label        = $langs->transnoentities('SickLeave');
+            $task->date_c       = dol_now();
+            $sickLeaveTaskID    = $task->create($user);
+
+            dolibarr_set_const($db, 'DOLISIRH_SICK_LEAVE_TASK', $sickLeaveTaskID, 'integer', 0, '', $conf->entity);
+
+            $task->fk_project    = $result;
+            $task->ref           = $modTask->getNextValue('', null);;
+            $task->label         = $langs->transnoentities('PublicHoliday');
+            $task->date_c        = dol_now();
+            $publicHolidayTaskID = $task->create($user);
+
+            dolibarr_set_const($db, 'DOLISIRH_PUBLIC_HOLIDAY_TASK', $publicHolidayTaskID, 'integer', 0, '', $conf->entity);
 
             $task->fk_project = $result;
             $task->ref        = $modTask->getNextValue('', null);;
             $task->label      = $langs->trans('RTT');
             $task->date_c     = dol_now();
-            $task->create($user);
+            $RTTTaskID        = $task->create($user);
 
-            $task->fk_project = $result;
-            $task->ref        = $modTask->getNextValue('InternalMeeting', null);;
-            $task->label      = $langs->transnoentities('InternalMeeting');
-            $task->date_c     = dol_now();
-            $task->create($user);
+            dolibarr_set_const($db, 'DOLISIRH_RTT_TASK', $RTTTaskID, 'integer', 0, '', $conf->entity);
 
-            $task->fk_project = $result;
-            $task->ref        = $modTask->getNextValue('', null);;
-            $task->label      = $langs->trans('InternalTraining');
-            $task->date_c     = dol_now();
-            $task->create($user);
+            $task->fk_project      = $result;
+            $task->ref             = $modTask->getNextValue('InternalMeeting', null);;
+            $task->label           = $langs->transnoentities('InternalMeeting');
+            $task->date_c          = dol_now();
+            $internalMeetingTaskID = $task->create($user);
 
-            $task->fk_project = $result;
-            $task->ref        = $modTask->getNextValue('', null);;
-            $task->label      = $langs->trans('ExternalTraining');
-            $task->date_c     = dol_now();
-            $task->create($user);
+            dolibarr_set_const($db, 'DOLISIRH_INTERNAL_MEETING_TASK', $internalMeetingTaskID, 'integer', 0, '', $conf->entity);
 
-            $task->fk_project = $result;
-            $task->ref        = $modTask->getNextValue('', null);;
-            $task->label      = $langs->transnoentities('AutomaticTimeSpending');
-            $task->date_c     = dol_now();
-            $task->create($user);
+            $task->fk_project       = $result;
+            $task->ref              = $modTask->getNextValue('', null);;
+            $task->label            = $langs->trans('InternalTraining');
+            $task->date_c           = dol_now();
+            $internalTrainingTaskID = $task->create($user);
 
-            $task->fk_project = $result;
-            $task->ref        = $modTask->getNextValue('', null);;
-            $task->label      = $langs->trans('Miscellaneous');
-            $task->date_c     = dol_now();
-            $task->create($user);
+            dolibarr_set_const($db, 'DOLISIRH_INTERNAL_TRAINING_TASK', $internalTrainingTaskID, 'integer', 0, '', $conf->entity);
+
+            $task->fk_project       = $result;
+            $task->ref              = $modTask->getNextValue('', null);;
+            $task->label            = $langs->trans('ExternalTraining');
+            $task->date_c           = dol_now();
+            $externalTrainingTaskID = $task->create($user);
+
+            dolibarr_set_const($db, 'DOLISIRH_EXTERNAL_TRAINING_TASK', $externalTrainingTaskID, 'integer', 0, '', $conf->entity);
+
+            $task->fk_project            = $result;
+            $task->ref                   = $modTask->getNextValue('', null);;
+            $task->label                 = $langs->transnoentities('AutomaticTimeSpending');
+            $task->date_c                = dol_now();
+            $automaticTimeSpendingTaskID = $task->create($user);
+
+            dolibarr_set_const($db, 'DOLISIRH_AUTOMATIC_TIMESPENDING_TASK', $automaticTimeSpendingTaskID, 'integer', 0, '', $conf->entity);
+
+            $task->fk_project    = $result;
+            $task->ref           = $modTask->getNextValue('', null);;
+            $task->label         = $langs->trans('Miscellaneous');
+            $task->date_c        = dol_now();
+            $miscellaneousTaskID = $task->create($user);
+
+            dolibarr_set_const($db, 'DOLISIRH_MISCELLANEOUS_TASK', $miscellaneousTaskID, 'integer', 0, '', $conf->entity);
 
             $taskarray = $task->getTasksArray(0, 0, $result);
 
@@ -198,7 +218,6 @@ if (GETPOST('HRProjectSet', 'alpha')) {
                 }
             }
 
-            dolibarr_set_const($db, 'DOLISIRH_RTT_TASK', 1, 'integer', 0, '', $conf->entity);
             dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT_SET', 1, 'integer', 0, '', $conf->entity);
         }
     }

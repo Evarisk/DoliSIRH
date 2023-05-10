@@ -513,7 +513,8 @@ class ActionsDoliSIRH
 					setEventMessages($ticket->error, $ticket->errors, 'errors');
 				}
 				dol_htmloutput_events();
-			} elseif ((GETPOST('action') == '' || empty(GETPOST('action')) || GETPOST('action') == 'view')) {
+			}
+            if (((GETPOST('action') != 'edit_extras') || (GETPOST('action') == 'edit_extras') && GETPOST('attribute') != 'fk_task') && GETPOST('action') != 'create') {
 				require_once __DIR__ . '/../../../projet/class/task.class.php';
 
 				$task   = new Task($this->db);
@@ -526,9 +527,11 @@ class ActionsDoliSIRH
 
 				$task->fetch($task_id);
 
+                $out = $task->getNomUrl(1, 'blank', 'task', 1);
+
 				if (!empty($task_id) && $task_id > 0) { ?>
 					<script>
-						  jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($task->getNomUrl(1, 'blank', 'task', 1)) ?>);
+						  jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($out) ?>);
 					</script>
 				<?php }
 			}

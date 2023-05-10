@@ -130,8 +130,8 @@ if ($currentWeek == $week) {
     $lastdaytoshow = $lastdayofweek;
 }
 
-$daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
-$daysInWeek  = num_between_day($firstdaytoshow, $lastdayofweek, 1);
+$daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+$daysInWeek  = dolisirh_num_between_day($firstdaytoshow, $lastdayofweek, 1);
 
 if (empty($search_usertoprocessid) || $search_usertoprocessid == $user->id) {
 	$usertoprocess = $user;
@@ -278,6 +278,8 @@ if ($action == 'addTimeSpent' && $permissiontoadd) {
 
     $taskID    = $data['taskID'];
     $timestamp = $data['timestamp'];
+    $datehour  = $data['datehour'];
+    $datemin   = $data['datemin'];
     $comment   = $data['comment'];
     $hour      = (int) $data['hour'];
     $min       = (int) $data['min'];
@@ -285,6 +287,10 @@ if ($action == 'addTimeSpent' && $permissiontoadd) {
     $object->fetch($taskID);
 
     $object->timespent_date     = $timestamp;
+    $object->timespent_datehour = $timestamp + ($datehour * 3600) + ($datemin * 60);
+    if ($datehour > 0 || $datemin > 0) {
+        $object->timespent_withhour = 1;
+    }
     $object->timespent_note     = $comment;
     $object->timespent_duration = ($hour * 3600) + ($min * 60);
     $object->timespent_fk_user  = $user->id;
@@ -368,7 +374,7 @@ $nav .= '<a class="inline-block valignmiddle" href="?year='.$next_year. '&month=
 $nav .= ' '.$form->selectDate(-1, '', 0, 0, 2, 'addtime', 1, 1).' ';
 $nav .= ' <button type="submit" name="submitdateselect" value="x" class="bordertransp"><span class="fa fa-search"></span></button>';
 
-print '<form name="addtime" method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<form name="addtime" id="addtimeform" method="POST" action="'.$_SERVER['PHP_SELF'].'>';
 print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<input type="hidden" name="action" value="addtime">';
 print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
@@ -553,7 +559,7 @@ if ($conf->use_javascript_ajax) {
 	print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
 	print $langs->trans('Total');
     print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans('ExpectedWorkedHoursWeek', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdayofweek, 'dayreduceformat'));
+	print $langs->trans('ExpectedWorkingHoursWeek', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdayofweek, 'dayreduceformat'));
     print ' : <strong><a href="'. DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $usertoprocess->id.'" target="_blank">';
     print (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00').'</a></strong></span>';
 	print '</td>';
@@ -651,7 +657,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     print $langs->trans('Total');
 
     print '<span class="opacitymediumbycolor">  - ';
-    print $langs->trans('SpentWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
+    print $langs->trans('SpentWorkingHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat'));
     print ' : <strong>'.(($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00').'</strong></span>';
     print '</td>';
     if (!empty($arrayfields['timeconsumed']['checked'])) {
@@ -688,7 +694,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
 
     $totalconsumedtime = $timeSpent['total'];
-    print '<span class="opacitymediumbycolor">  - '.$langs->trans('ConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></span>';
+    print '<span class="opacitymediumbycolor">  - '.$langs->trans('ConsumedWorkingHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></span>';
     print '</td>';
     if (!empty($arrayfields['timeconsumed']['checked'])) {
         print '<td class="liste_total right"><strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></td>';
@@ -716,10 +722,10 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     print '<td></td>';
     print '</tr>';
 
-    //Difference between planned & worked hours
+    //Difference between planned & working hours
     $timeSpentDiff = loadDifferenceBetweenPassedAndSpentTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
 
-    print '<tr class="liste_total planned-worked-difference">';
+    print '<tr class="liste_total planned-working-difference">';
     print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
     print $langs->trans('Total');
     $difftotaltime = $timeSpentDiff * 60;
@@ -730,7 +736,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     } elseif ($difftotaltime == 0) {
         $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
     }
-    print '<span class="opacitymediumbycolor">  - '.$langs->trans('DiffSpentAndConsumedWorkedHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')).' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></span>';
+    print '<span class="opacitymediumbycolor">  - '.$langs->trans('DiffSpentAndConsumedWorkingHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')).' : <strong style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'">'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></span>';
     print '</td>';
     if (!empty($arrayfields['timeconsumed']['checked'])) {
         print '<td class="liste_total right" style="color:'.'rgb('.$morecss[0].','.$morecss[1].','.$morecss[2].')'.'"><strong>'.(($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime), 'allhourmin') : '00:00').'</strong></td>';

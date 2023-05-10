@@ -389,12 +389,12 @@ function loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid = 
 				$timeSpent['hours'] += $hours;
 				$timeSpent['minutes'] += $minutes;
 				$timeSpent['total'] += $timeSpentSingle->timespent_duration;
-				$days_worked[$timeSpentSingle->timespent_date] = 1;
+				$days_working[$timeSpentSingle->timespent_date] = 1;
 			}
 		}
 	}
 
-	$timeSpent['days'] = is_array($days_worked) && !empty($days_worked) ? count($days_worked) : 0;
+	$timeSpent['days'] = is_array($days_working) && !empty($days_working) ? count($days_working) : 0;
 
 	return $timeSpent;
 }
@@ -414,7 +414,7 @@ function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $isavai
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
 
-	$daysInRange = num_between_day($datestart, $dateend);
+	$daysInRange = dolisirh_num_between_day($datestart, $dateend);
 
 	$time_to_spend = array(
 		'days' => 0,
@@ -450,7 +450,7 @@ function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavail
 		dol_print_error('', 'Error datestart parameter is empty');
 	}
 
-	$daysInRange = num_between_day($datestart, $dateend);
+	$daysInRange = dolisirh_num_between_day($datestart, $dateend);
 
 	$passed_working_time = array(
 		'minutes' => 0
@@ -623,7 +623,6 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
 			}
 			$sql .= " AND YEAR(ptt.task_date) = " . $timeArray['year'];
 		}
-
 	} elseif ($mode == 1) {
 		if ($filteronprojuser > 0) {
 			$sql .= ", ".MAIN_DB_PREFIX."element_contact as ec";
@@ -1159,7 +1158,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 	$totalforeachday = array();
 	$lineswithoutlevel0 = array();
 
-    $daysInRange = num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+    $daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
 
     // Create a smaller array with sublevels only to be used later. This increase dramatically performances.
 	if ($parent == 0) { // Always and only if at first level
@@ -1180,11 +1179,15 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 		require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 		$restrictBefore = dol_time_plus_duree(dol_now(), - $conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS, 'm');
 	}
-
+    
 	for ($i = 0; $i < $numlines; $i++) {
 		if ($parent == 0) {
 			$level = 0;
 		}
+
+        if ($lines[$i]->fk_task_parent != $parent && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+            $lines[$i]->fk_task_parent = 0;
+        }
 
 		if ($lines[$i]->fk_task_parent == $parent) {
 			$obj = &$lines[$i]; // To display extrafields
@@ -1622,7 +1625,7 @@ function doliSirhShowDocuments($modulepart, $modulesubdir, $filedir, $urlsource,
 					$out .= '<td class="right nowraponall">';
 					if ($delallowed) {
 						$tmpurlsource = preg_replace('/#[a-zA-Z0-9_]*$/', '', $urlsource);
-						$out         .= '<a href="' . $tmpurlsource . ((strpos($tmpurlsource, '?') === false) ? '?' : '&amp;') . 'action=' . $removeaction . '&amp;file=' . urlencode($relativepath);
+						$out         .= '<a href="' . $tmpurlsource . ((strpos($tmpurlsource, '?') === false) ? '?' : '&amp;') . 'action=' . $removeaction . '&amp;file=' . urlencode($relativepath) . '&token=' . newToken();
 						$out         .= ($param ? '&amp;' . $param : '');
 						$out         .= '">' . img_picto($langs->trans("Delete"), 'delete') . '</a>';
 					}
@@ -1812,4 +1815,28 @@ function getTaskProgressColorClass($progress)
         case $progress :
             return 'progress-red';
     }
+}
+
+/**
+ *	Function to return number of days between two dates (date must be UTC date !)
+ *  Example: 2012-01-01 2012-01-02 => 1 if lastday=0, 2 if lastday=1
+ *
+ *	@param	   int			$timestampStart     Timestamp start UTC
+ *	@param	   int			$timestampEnd       Timestamp end UTC
+ *	@param     int			$lastday            Last day is included, 0: no, 1:yes
+ *	@return    int								Number of days
+ *  @seealso num_public_holiday(), num_open_day()
+ */
+function dolisirh_num_between_day($timestampStart, $timestampEnd, $lastday = 0)
+{
+    if ($timestampStart < $timestampEnd) {
+        if ($lastday == 1) {
+            $bit = 0;
+        } else {
+            $bit = 1;
+        }
+        $nbjours = (int) round(($timestampEnd - $timestampStart) / (60 * 60 * 24)) + 1 - $bit;
+    }
+    //print ($timestampEnd - $timestampStart) - $lastday;
+    return $nbjours;
 }
