@@ -513,7 +513,8 @@ class ActionsDoliSIRH
 					setEventMessages($ticket->error, $ticket->errors, 'errors');
 				}
 				dol_htmloutput_events();
-			} elseif ((GETPOST('action') == '' || empty(GETPOST('action')) || GETPOST('action') == 'view') || GETPOST('action') == 'update_extras') {
+			}
+            if (((GETPOST('action') != 'edit_extras') || (GETPOST('action') == 'edit_extras') && GETPOST('attribute') != 'fk_task') && GETPOST('action') != 'create') {
 				require_once __DIR__ . '/../../../projet/class/task.class.php';
 
 				$task   = new Task($this->db);
