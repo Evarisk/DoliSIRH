@@ -467,7 +467,14 @@ if ($action == 'create') {
 
 	print '<table class="border centpercent tableforfieldcreate">';
 
-	$object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, $month, $day, $year), "%B %Y") . ' ' . $user->getFullName($langs, 0, 0);
+    if ($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) {
+        if ($month == 01) {
+            $specialCaseMonth = 12;
+            $year--;
+        }
+    }
+
+	$object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, (!empty($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) ? (($month != 01) ? $month - 1 : $specialCaseMonth) : $month), $day, $year), "%B %Y") . ' ' . $user->getFullName($langs, 0, 0);
 	$object->fields['fk_project']['default']     = $conf->global->DOLISIRH_HR_PROJECT;
 	$object->fields['fk_user_assign']['default'] = $user->id;
 
@@ -478,14 +485,14 @@ if ($action == 'create') {
 	$_POST['date_end']   = $date_end;
 
 	if ($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE && empty($_POST['date_start']) && empty($_POST['date_end'])) {
-		$firstday = dol_get_first_day($year, $month);
+		$firstday = dol_get_first_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
 		$firstday = dol_getdate($firstday);
 
 		$_POST['date_startday'] = $firstday['mday'];
 		$_POST['date_startmonth'] = $firstday['mon'];
 		$_POST['date_startyear'] = $firstday['year'];
 
-		$lastday = dol_get_last_day($year, $month);
+		$lastday = dol_get_last_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
 		$lastday = dol_getdate($lastday);
 
 		$_POST['date_endday'] = $lastday['mday'];
