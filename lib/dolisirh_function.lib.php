@@ -1823,20 +1823,22 @@ function getTaskProgressColorClass($progress)
  *
  *	@param	   int			$timestampStart     Timestamp start UTC
  *	@param	   int			$timestampEnd       Timestamp end UTC
- *	@param     int			$lastday            Last day is included, 0: no, 1:yes
+ *	@param     int			$lastDay            Last day is included, 0: no, 1:yes
  *	@return    int								Number of days
  *  @seealso num_public_holiday(), num_open_day()
  */
-function dolisirh_num_between_day($timestampStart, $timestampEnd, $lastday = 0)
+function dolisirh_num_between_day($timestampStart, $timestampEnd, $lastDay = 0)
 {
     if ($timestampStart < $timestampEnd) {
-        if ($lastday == 1) {
+        if ($lastDay == 1) {
             $bit = 0;
         } else {
             $bit = 1;
         }
-        $nbjours = (int) round(($timestampEnd - $timestampStart) / (60 * 60 * 24)) + 1 - $bit;
+        $daysNumber = (int) round(($timestampEnd - $timestampStart) / (60 * 60 * 24)) + 1 - $bit;
     }
-    //print ($timestampEnd - $timestampStart) - $lastday;
-    return $nbjours;
+    if (empty($daysNumber)) {
+        $daysNumber = 1;
+    }
+    return $daysNumber;
 }
