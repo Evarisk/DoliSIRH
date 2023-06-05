@@ -1391,8 +1391,6 @@ window.eoxiaJS.form.event = function() {
 };
 
 window.eoxiaJS.form.searchForm = function(event) {
-	event.preventDefault()
-
 	var addTimeForm = document.getElementById('addtimeform');
 	var formData = new FormData(addTimeForm);
 	let newFormData = new FormData();
