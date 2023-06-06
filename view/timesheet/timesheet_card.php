@@ -261,8 +261,7 @@ if (empty($reshook)) {
 
             // Make a redirect to avoid to keep the remove_file into the url that create side effects
             $urltoredirect = $_SERVER['REQUEST_URI'];
-            $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
-            $urltoredirect = preg_replace('/action=remove_file&?/', '', $urltoredirect);
+            $urltoredirect = substr($urltoredirect, 0, strpos($urltoredirect, "&"));
 
             header('Location: ' . $urltoredirect);
             exit;
