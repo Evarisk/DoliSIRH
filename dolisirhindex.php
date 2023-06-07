@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,9 @@
  */
 
 /**
- *	\file       dolisirhindex.php
- *	\ingroup    dolisirh
- *	\brief      Home page of dolisirh top menu
+ * \file    dolisirhindex.php
+ * \ingroup dolisirh
+ * \brief   Home page of dolisirh top menu
  */
 
 // Load DoliSIRH environment
@@ -30,43 +30,14 @@ if (file_exists('dolisirh.main.inc.php')) {
     die('Include of dolisirh main fails');
 }
 
-// Libraries
-require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
-
-require_once __DIR__ . '/core/modules/modDoliSIRH.class.php';
-require_once __DIR__ . '/class/dashboarddolisirhstats.class.php';
-
-// Global variables definitions
+// Global variables definitions.
 global $conf, $db, $langs, $user;
-
-// Load translation files required by the page
-$langs->load('dolisirh@dolisirh');
-
-// Initialize technical objects
-$modDoliSIRH = new modDoliSIRH($db);
-$stats       = new DashboardDolisirhStats($db);
 
 // Initialize view objects
 $form = new Form($db);
 
-// Get parameters
-$action = GETPOST('action', 'alpha');
+// Get parameters.
 $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
-
-// Security check
-$permissiontoread = $user->rights->dolisirh->read;
-if (empty($conf->dolisirh->enabled) || !$permissiontoread) {
-    accessforbidden();
-}
-
-/*
- * View
- */
-
-$help_url = 'FR:Module_DoliSIRH';
-$title    = $langs->trans('DoliSIRHArea');
-
-saturne_header(0, '', $title . ' ' . $modDoliSIRH->version, $help_url);
 
 $currentMonth = date('m', dol_now());
 $currentYear  = date('Y', dol_now());
@@ -95,8 +66,4 @@ if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) : ?>
     </div>
 <?php endif;
 
-require_once __DIR__ . '/core/tpl/dolisirh_dashboard.tpl.php';
-
-// End of page
-llxFooter();
-$db->close();
+require_once __DIR__ . '/../saturne/core/tpl/index/index_view.tpl.php';
