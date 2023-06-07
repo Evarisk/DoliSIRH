@@ -55,15 +55,4 @@ $morehtmlright .= ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans(
 $morehtmlright .= ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($userID, 'search_userid', '', null, 0, '', null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth300', 1);
 $morehtmlright .= '<div class="wpeo-button button-primary button-square-30 select-dataset-dashboard-info" style="color: white !important;"><i class="button-icon fas fa-redo"></i></div>';
 
-print load_fiche_titre($title . ' ' . $modDoliSIRH->version, $morehtmlright, 'dolisirh_red.png@dolisirh');
-
-if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) : ?>
-    <div class="wpeo-notice notice-info">
-        <div class="notice-content">
-            <div class="notice-title"><strong><?php echo $langs->trans('SetupDefaultDataNotCreated'); ?></strong></div>
-            <div class="notice-subtitle"><strong><?php echo $langs->trans('HowToSetupDefaultData') . '  ' ?><a href="admin/setup.php"><?php echo $langs->trans('ConfigDefaultData'); ?></a></strong></div>
-        </div>
-    </div>
-<?php endif;
-
 require_once __DIR__ . '/../saturne/core/tpl/index/index_view.tpl.php';

@@ -83,9 +83,12 @@ class modDoliSIRH extends DolibarrModules
 					  'timesheetcard',
                       'actioncard',
                       'userihm',
-                      'projectcard'
-				  ),
-			),
+                      'timesheetadmin',
+                      'dolisirhadmindocuments',
+                      'dolisirhindex',
+                      'projetcard'
+                  ],
+            ],
 			'moduleforexternal' => 0,
 		);
 
