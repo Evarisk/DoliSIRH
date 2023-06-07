@@ -326,7 +326,6 @@ class doc_projectdocument_odt extends SaturneDocumentModel
         $totalProgress        = 0;
         $totalPlannedWorkload = 0;
         $totalConsumedTime    = 0;
-        $nbTasks              = 0;
         if (is_array($tasksArray) && !empty($tasksArray)) {
             $nbTasks = count($tasksArray);
             foreach ($tasksArray as $task) {
@@ -334,12 +333,16 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                 $totalPlannedWorkload += $task->planned_workload;
                 $totalConsumedTime    += $task->duration;
             }
+            $tmpArray['project_progress']         = (($totalProgress) ? price2num($totalProgress / $nbTasks, 2) . ' %' : '0 %');
+            $tmpArray['project_status']           = $object->getLibStatut();
+            $tmpArray['project_planned_workload'] = convertSecondToTime($totalPlannedWorkload, 'allhourmin');
+            $tmpArray['project_timespent']        = convertSecondToTime($totalConsumedTime, 'allhourmin');
+        } else {
+            $tmpArray['project_progress']         = '';
+            $tmpArray['project_status']           = '';
+            $tmpArray['project_planned_workload'] = '';
+            $tmpArray['project_timespent']        = '';
         }
-
-        $tmpArray['project_progress']         = (($totalProgress) ? price2num($totalProgress / $nbTasks, 2) . ' %' : '0 %');
-        $tmpArray['project_status']           = $object->getLibStatut();
-        $tmpArray['project_planned_workload'] = convertSecondToTime($totalPlannedWorkload, 'allhourmin');
-        $tmpArray['project_timespent']        = convertSecondToTime($totalConsumedTime, 'allhourmin');
 
         $moreParam['tmparray'] = $tmpArray;
         
