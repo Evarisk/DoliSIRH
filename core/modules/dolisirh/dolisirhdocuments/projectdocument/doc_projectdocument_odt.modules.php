@@ -175,12 +175,14 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                     if (is_array($allTasks) && !empty($allTasks)) {
                         foreach ($allTasks as $task) {
                             $tmpArray['project_task_ref']         = $task->ref;
-                            $tmpArray['project_task_description'] = $task->description;
-                            $tmpArray['project_task_timespent']   = convertSecondToTime($task->duration, 'allhourmin');
+                            $tmpArray['project_task_label']       = $task->label;
+                            $tmpArray['project_task_description'] = !empty($task->description) ? $task->description : ' ';
+                            $tmpArray['project_task_timespent']   = !empty($task->duration) ? convertSecondToTime($task->duration, 'allhourmin') : ' ';
                             $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
                         }
                     } else {
                         $tmpArray['project_task_ref']         = '';
+                        $tmpArray['project_task_label']       = '';
                         $tmpArray['project_task_description'] = '';
                         $tmpArray['project_task_timespent']   = '';
                         $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
@@ -209,10 +211,10 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                                     $filter         = ' AND ptt.fk_task = ' . $task->id . ' AND ptt.fk_user = ' . $contact['id'];
                                     $timespentsUser = $saturneTask->fetchAllTimeSpentAllUsers($filter);
                                     foreach ($timespentsUser as $timespent) {
-                                        $tmpArray['project_task_timespent_date']     = dol_print_date($timespent->task_datehour, 'dayhour');
+                                        $tmpArray['project_task_timespent_date']     = dol_print_date($timespent->timespent_datehour, (($timespent->timespent_withhour > 0) ? 'dayhour' : 'day'));
                                         $tmpArray['project_task_timespent_task_ref'] = $task->ref;
                                         $tmpArray['project_task_timespent_user']     = strtoupper($contact['lastname']) . ' ' . ucfirst($contact['firstname']);
-                                        $tmpArray['project_task_timespent_note']     = $timespent->note;
+                                        $tmpArray['project_task_timespent_note']     = !empty($timespent->timespent_note) ? dol_htmlentitiesbr_decode($timespent->timespent_note) : ' ';
                                         $tmpArray['project_task_timespent_duration'] = convertSecondToTime($timespent->timespent_duration, 'allhourmin');
                                         $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
                                     }
