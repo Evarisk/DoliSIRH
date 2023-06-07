@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,80 +16,31 @@
  */
 
 /**
- * \file        class/dolisirhdocuments/certificatedocument.class.php
- * \ingroup     dolisirh
- * \brief       This file is a class file for CertificateDocument
+ * \file    class/dolisirhdocuments/certificatedocument.class.php
+ * \ingroup dolisirh
+ * \brief   This file is a class file for CertificateDocument.
  */
 
-require_once __DIR__ . '/../dolisirhdocuments.class.php';
+// load Saturne libraries.
+require_once __DIR__ . '/../../../saturne/class/saturnedocuments.class.php';
 
 /**
- * Class for CertificateDocument
+ * Class for CertificateDocument.
  */
-class CertificateDocument extends DoliSIRHDocuments
+class CertificateDocument extends SaturneDocuments
 {
-	/**
-	 * @var DoliDB Database handler.
-	 */
-	public $db;
+    /**
+     * @var string Element type of object.
+     */
+    public $element = 'certificatedocument';
 
-	/**
-	 * @var string ID to identify managed object.
-	 */
-	public $element = 'certificatedocument';
-
-	/**
-	 * @var int  Does this object support multicompany module ?
-	 * 0=No test on entity, 1=Test with field entity, 'field@table'=Test with link by field@table
-	 */
-	public $ismultientitymanaged = 1;
-
-	/**
-	 * @var int  Does object support extrafields ? 0=No, 1=Yes
-	 */
-	public $isextrafieldmanaged = 1;
-
-	/**
-	 * @var string String with name of icon for certificatedocument. Must be the part after the 'object_' into object_certificatedocument.png
-	 */
-	public $picto = 'certificatedocument@dolisirh';
-
-	/**
-	 * Constructor
-	 *
-	 * @param DoliDb $db Database handler
-	 */
-	public function __construct(DoliDB $db)
-	{
-		global $conf, $langs;
-
-		$this->db = $db;
-
-		if (empty($conf->global->MAIN_SHOW_TECHNICAL_ID) && isset($this->fields['rowid'])) $this->fields['rowid']['visible'] = 0;
-		if (empty($conf->multicompany->enabled) && isset($this->fields['entity'])) $this->fields['entity']['enabled'] = 0;
-
-		// Unset fields that are disabled
-		foreach ($this->fields as $key => $val)
-		{
-			if (isset($val['enabled']) && empty($val['enabled']))
-			{
-				unset($this->fields[$key]);
-			}
-		}
-
-		// Translate some data of arrayofkeyval
-		if (is_object($langs))
-		{
-			foreach ($this->fields as $key => $val)
-			{
-				if (is_array($val['arrayofkeyval']))
-				{
-					foreach ($val['arrayofkeyval'] as $key2 => $val2)
-					{
-						$this->fields[$key]['arrayofkeyval'][$key2] = $langs->trans($val2);
-					}
-				}
-			}
-		}
-	}
+    /**
+     * Constructor.
+     *
+     * @param DoliDb $db Database handler.
+     */
+    public function __construct(DoliDB $db)
+    {
+        parent::__construct($db);
+    }
 }
