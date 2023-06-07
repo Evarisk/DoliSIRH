@@ -265,11 +265,36 @@ if ($action == 'create') {
     }
     if (!empty($conf->societe->enabled)) {
         $elementList['product'] .= img_picto('', 'product', 'class="pictofixedwidth"') . dol_escape_htmltag($langs->trans('Product'));
-    }
+    } ?>
 
     print '<tr><td class="titlefieldcreate"><label for="element_type">' . $langs->trans('ElementType') . '</label></td>';
     print '<td class="valuefieldcreate">' . $form::selectarray('element_type', $elementList, GETPOSTISSET('element_type') ? GETPOST('element_type') : 'user', 1, 0, 0, '', 0, 0, 0, '', 'maxwidth200 widthcentpercentminusx') . '</td>';
     print '</tr>';
+    
+    <script>
+    $(document).ready(function(){
+        $('#element_type').on('change', function(){
+            let value = $(this).val();
+            let url = new URL(document.URL)
+            let search_params = url.searchParams;
+            search_params.set('element_type', value);
+            url.search = search_params.toString();
+            location.href = url.toString()
+        });
+    });
+    </script>
+<?php
+
+    switch (GETPOST('element_type')) {
+        case 'user' :
+            $object->fields['fk_element']['type']  = 'integer:User:user/class/user.class.php';
+            $object->fields['fk_element']['picto'] = 'user';
+            break;
+        case 'product' :
+            $object->fields['fk_element']['type']  = 'integer:Product:product/class/product.class.php';
+            $object->fields['fk_element']['picto'] = 'product';
+            break;
+    }
 
     // Common attributes
     include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
