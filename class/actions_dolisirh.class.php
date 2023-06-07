@@ -768,6 +768,7 @@ class ActionsDoliSIRH
                 $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $user->rights->projet->creer, $user->rights->projet->supprimer, '', 1, 0, 0, 0, 0, '', 0, '', empty($soc->default_lang) ? '' : $soc->default_lang, $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
                 ?>
 
+                <script src="../custom/saturne/js/saturne.min.js"></script>
                 <script>
                     jQuery('.fichehalfleft .div-table-responsive-no-min').append(<?php echo json_encode($html) ; ?>)
                 </script>
