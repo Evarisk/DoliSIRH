@@ -342,6 +342,16 @@ certificatedocument.odt = Certificat ODT
 
 
 #
+# ProjectDocument - Document projet
+#
+
+# Data - Donnée
+projectdocument.odt = Document projet
+projectdocument     = Document projet
+
+
+
+#
 # DoliSIRHSignature - Signature
 #
 

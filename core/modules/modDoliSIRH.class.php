@@ -82,7 +82,8 @@ class modDoliSIRH extends DolibarrModules
 					  'projecttasktime',
 					  'timesheetcard',
                       'actioncard',
-                      'userihm'
+                      'userihm',
+                      'projectcard'
 				  ),
 			),
 			'moduleforexternal' => 0,
@@ -143,7 +144,12 @@ class modDoliSIRH extends DolibarrModules
             $i++ => array('DOLISIRH_CERTIFICATEDOCUMENT_ADDON', 'chaine', 'mod_certificatedocument_standard', '', 0, 'current'),
             $i++ => array('DOLISIRH_CERTIFICATEDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/certificatedocument/', '', 0, 'current'),
             $i++ => array('DOLISIRH_CERTIFICATEDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/certificatedocument/', '', 0, 'current'),
-            $i   => array('DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL', 'chaine', 'certificatedocument_odt', '', 0, 'current'),
+            $i++ => array('DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL', 'chaine', 'certificatedocument_odt', '', 0, 'current'),
+
+            // CONST PROJECT DOCUMENT
+            $i++ => array('DOLISIRH_PROJECTDOCUMENT_ADDON', 'chaine', 'mod_projectdocument_standard', '', 0, 'current'),
+            $i++ => array('DOLISIRH_PROJECTDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/projectdocument/', '', 0, 'current'),
+            $i   => array('DOLISIRH_PROJECTDOCUMENT_DEFAULT_MODEL', 'chaine', 'projectdocument_odt', '', 0, 'current'),
 		);
 
 		if (!isset($conf->dolisirh) || !isset($conf->dolisirh->enabled)) {
@@ -500,8 +506,10 @@ class modDoliSIRH extends DolibarrModules
 		// Document models
 		delDocumentModel('timesheetdocument_odt', 'timesheetdocument');
 		delDocumentModel('certificatedocument_odt', 'certificatedocument');
+        delDocumentModel('projectdocument_odt', 'projectdocument');
 		addDocumentModel('timesheetdocument_odt', 'timesheetdocument', 'ODT templates', 'DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH');
 		addDocumentModel('certificatedocument_odt', 'certificatedocument', 'ODT templates', 'DOLISIRH_CERTIFICATEDOCUMENT_ADDON_ODT_PATH');
+		addDocumentModel('projectdocument_odt', 'projectdocument', 'ODT templates', 'DOLISIRH_PROJECTDOCUMENT_ADDON_ODT_PATH');
 
 		return $this->_init(array(), $options);
 	}

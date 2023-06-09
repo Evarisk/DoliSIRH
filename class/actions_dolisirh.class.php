@@ -73,7 +73,7 @@ class ActionsDoliSIRH
 	{
 		require_once DOL_DOCUMENT_ROOT.'/core/modules/project/task/mod_task_simple.php';
 
-		global $conf, $db, $langs;
+		global $conf, $db, $langs, $user;
 
 		$error = 0; // Error counter
 
@@ -314,6 +314,37 @@ class ActionsDoliSIRH
                     $tabparam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 0;
                 }
                 dol_set_user_param($db, $conf, $object, $tabparam);
+            }
+        }
+
+        if ($parameters['currentcontext'] == 'projectcard') {
+            if ($action == 'builddoc' && strstr(GETPOST('model'), 'projectdocument_odt')) {
+                require_once __DIR__ . '/dolisirhdocuments/projectdocument.class.php';
+
+                $document = new ProjectDocument($db);
+
+                $moduleNameLowerCase = 'dolisirh';
+                $permissiontoadd     = $user->rights->projet->creer;
+
+                require_once __DIR__ . '/../../saturne/core/tpl/documents/documents_action.tpl.php';
+            }
+
+            if ($action == 'pdfGeneration') {
+                global $conf;
+
+                $moduleName          = 'DoliSIRH';
+                $moduleNameLowerCase = strtolower($moduleName);
+                $upload_dir          = $conf->dolisirh->multidir_output[$conf->entity ?? 1];
+
+                // Action to generate pdf from odt file
+                require_once __DIR__ . '/../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
+
+                $urltoredirect = $_SERVER['REQUEST_URI'];
+                $urltoredirect = preg_replace('/#pdfGeneration$/', '', $urltoredirect);
+                $urltoredirect = preg_replace('/action=pdfGeneration&?/', '', $urltoredirect); // To avoid infinite loop
+
+                header('Location: ' . $urltoredirect );
+                exit;
             }
         }
 
@@ -713,6 +744,36 @@ class ActionsDoliSIRH
                     currentElement.after(<?php echo json_encode($out); ?>);
                 </script>
             <?php endif;
+        }
+
+        if ($parameters['currentcontext'] == 'projectcard') {
+            if (GETPOST('action') == 'view' || empty(GETPOST('action'))) {
+                global $user;
+
+                print '<link rel="stylesheet" type="text/css" href="../custom/saturne/css/saturne.min.css">';
+
+                $moduleNameLowerCase = 'dolisirh';
+
+                require_once __DIR__ . '/../../saturne/lib/documents.lib.php';
+
+                $object = new Project($this->db);
+                $object->fetch(GETPOST('id'), GETPOST('ref','alpha'));
+
+                $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
+                $objRef     = dol_sanitizeFileName($object->ref);
+                $dirFiles   = $object->element . 'document/' . $objRef;
+                $fileDir    = $upload_dir . '/' . $dirFiles;
+                $urlSource  = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
+
+                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $user->rights->projet->creer, $user->rights->projet->supprimer, '', 1, 0, 0, 0, 0, '', 0, '', empty($soc->default_lang) ? '' : $soc->default_lang, $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
+                ?>
+
+                <script src="../custom/saturne/js/saturne.min.js"></script>
+                <script>
+                    jQuery('.fichehalfleft .div-table-responsive-no-min').append(<?php echo json_encode($html) ; ?>)
+                </script>
+                <?php
+            }
         }
 
 		if (in_array($parameters['currentcontext'], array('timesheetcard')) && GETPOST('action') == 'create') {
