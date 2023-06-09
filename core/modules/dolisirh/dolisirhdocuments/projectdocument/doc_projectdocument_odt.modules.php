@@ -143,7 +143,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                                     foreach ($timespentsUser as $timespent) {
                                         $allTimespentUser += $timespent->timespent_duration;
                                     }
-                                    $tmpArray['project_user_timespent'] = convertSecondToTime($allTimespentUser, 'allhourmin');
+                                    $tmpArray['project_user_timespent'] = !empty($allTimespentUser) ? convertSecondToTime($allTimespentUser, 'allhourmin') : '00:00';
                                 }
                             }
                             $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
@@ -177,7 +177,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                             $tmpArray['project_task_ref']         = $task->ref;
                             $tmpArray['project_task_label']       = $task->label;
                             $tmpArray['project_task_description'] = !empty($task->description) ? $task->description : ' ';
-                            $tmpArray['project_task_timespent']   = !empty($task->duration) ? convertSecondToTime($task->duration, 'allhourmin') : ' ';
+                            $tmpArray['project_task_timespent']   = !empty($task->duration) ? convertSecondToTime($task->duration, 'allhourmin') : '00:00';
                             $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
                         }
                     } else {
