@@ -65,7 +65,7 @@ class modDoliSIRH extends DolibarrModules
 			'barcode' 					=> 0,
 			'models' 					=> 1,
 			'theme' 					=> 0,
-			'css' 						=> array("/dolisirh/css/dolisirh_all.css"),
+			'css' 						=> array(),
 			'js' 						=> array(),
 			'hooks' 					=> array(
 				  'data' 				=> array(

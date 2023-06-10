@@ -202,7 +202,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
 				require_once __DIR__ . '/../../class/timesheet.class.php';
 
-				$signatory  = new TimeSheetSignature($this->db);
+				$signatory  = new SaturneSignature($this->db, 'dolisirh');
 				$usertmp    = new User($this->db);
 				$product    = new Product($this->db);
 				$objectline = new TimeSheetLine($this->db);
@@ -455,7 +455,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 					require_once __DIR__ . '/../../class/timesheet.class.php';
 
 					$now        = dol_now();
-					$signatory  = new TimeSheetSignature($this->db);
+					$signatory  = new SaturneSignature($this->db, 'dolisirh');
 					$actioncomm = new ActionComm($this->db);
 
 					$signatories = $signatory->fetchSignatories($object->src_object_id, 'timesheet');
