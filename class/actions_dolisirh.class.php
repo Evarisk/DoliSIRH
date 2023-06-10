@@ -988,7 +988,7 @@ class ActionsDoliSIRH
 
 			require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 
-			$signatory = new TimeSheetSignature($this->db);
+			$signatory = new SaturneSignature($this->db, 'dolisirh');
 			$usertmp   = new User($this->db);
 			$task      = new Task($this->db);
 

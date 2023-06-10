@@ -27,7 +27,7 @@
  * @param  TimeSheet $object TimeSheet
  * @return array             Array of tabs
  */
-function timesheetPrepareHead(TimeSheet $object): array
+function timesheet_prepare_head(TimeSheet $object): array
 {
 	global $conf, $langs;
 
