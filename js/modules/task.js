@@ -210,7 +210,6 @@ window.dolisirh.task.showOnlyTasksWithTimeSpent = function() {
 window.dolisirh.task.createTimeSpent = function() {
     let taskID  = $(this).attr('value');
     let element = $(this).closest('.timespent-add-modal').find('.timespent-container');
-    let cell    = $('#tablelines3').find('tr[data-taskid=' + taskID + ']').find('td[data-cell=' + element.find('.timespent-cell').val() + ']');
 
     let timestamp = element.find('.timespent-timestamp').val();
     let datehour  = element.find('.timespent-datehour').val();
@@ -219,8 +218,7 @@ window.dolisirh.task.createTimeSpent = function() {
     let hour      = element.find('.timespent-hour').val();
     let min       = element.find('.timespent-min').val();
 
-    window.dolisirh.loader.display($(this));
-    window.dolisirh.loader.display(cell);
+    window.saturne.loader.display($(this));
 
     let token = $('.fiche').find('input[name="token"]').val();
     let querySeparator = '?';
@@ -286,4 +284,18 @@ window.dolisirh.task.toggleTaskFavorite = function() {
         },
         error: function(resp) {}
     });
+};
+
+window.saturne.modal.addMoreOpenModalData = function(modalToOpen, elementFrom) {
+    let cell = elementFrom.find('.timespent');
+
+    let taskID    = cell.attr('data-task-id');
+    let timestamp = cell.attr('data-timestamp');
+    let dataCell  = cell.attr('data-cell');
+    let date      = cell.attr('data-date');
+    $('.timespent-taskid').val(taskID);
+    $('.timespent-timestamp').val(timestamp);
+    $('.timespent-cell').val(dataCell);
+    $('.timespent-create').attr('value', taskID);
+    $('.timespent-date').html(date);
 };

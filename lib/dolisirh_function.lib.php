@@ -1356,8 +1356,13 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 					if ($alreadyspent) {
 						$tableCell .= '<span class="timesheetalreadyrecorded wpeo-tooltip-event" aria-label="' . $text_tooltip . '"><input type="text" class="center smallpadd" size="2" disabled id="timespent['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" value="'.$alreadyspent.'"></span>';
 					}
-					$tableCell .= '<input type="text" alt="'.($disabledtaskday ? '' : $alttitle).'" title="'.($disabledtaskday ? '' : $alttitle).'" '.($disabledtaskday ? 'disabled' : $placeholder).' class="center smallpadd timespent modal-open" size="2" id="timeadded['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $tmpday . ' data-date=' . dol_print_date($tmpday, 'day') . ' data-cell=' . $idw . ' value="" cols="2"  maxlength="5"';
-					$tableCell .= '</td>';
+
+                    $tableCell .= '<div class="modal-open">';
+                    $tableCell .= '<input hidden class="modal-to-open" value="timespent">';
+                    $tableCell .= '<input hidden class="from-id" value="' . $lines[$i]->id . '">';
+                    $tableCell .= '<input hidden class="from-module" value="dolisirh">';
+					$tableCell .= '<input type="text" alt="'.($disabledtaskday ? '' : $alttitle).'" title="'.($disabledtaskday ? '' : $alttitle).'" '.($disabledtaskday ? 'disabled' : $placeholder).' class="center smallpadd timespent" size="2" id="timeadded['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $tmpday . ' data-date=' . dol_print_date($tmpday, 'day') . ' data-cell=' . $idw . ' value="" cols="2"  maxlength="5"';
+					$tableCell .= '</div></td>';
 					print $tableCell;
 				}
                 print '<td></td>';
