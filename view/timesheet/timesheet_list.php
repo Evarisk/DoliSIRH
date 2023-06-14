@@ -253,7 +253,6 @@ if (empty($reshook)) {
 
 	// Mass actions
     if ($massaction == 'delete' || ($action == 'delete' && $confirm == 'yes') && $permissiontodelete) {
-        $objectTmp = new TimeSheet($db);
         if (is_array($toselect) && !empty($toselect)) {
             foreach ($toselect as $toselectid) {
                 $objectTmp->fetch($toselectid);
