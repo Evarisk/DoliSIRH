@@ -207,68 +207,10 @@ if (empty($reshook)) {
 
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
 	$conf->global->MAIN_DISABLE_PDF_AUTOUPDATE = 1;
-	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
+    $document                                  = $timesheetdocument;
 
-    // Action to build doc
-    if ($action == 'builddoc' && $permissiontoadd) {
-        $outputlangs = $langs;
-        $newlang     = '';
-
-        if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09')) $newlang = GETPOST('lang_id', 'aZ09');
-        if ( ! empty($newlang)) {
-            $outputlangs = new Translate("", $conf);
-            $outputlangs->setDefaultLang($newlang);
-        }
-
-        // To be sure vars is defined
-        if (empty($hidedetails)) $hidedetails = 0;
-        if (empty($hidedesc)) $hidedesc       = 0;
-        if (empty($hideref)) $hideref         = 0;
-        if (empty($moreparams)) $moreparams   = null;
-
-        $model = GETPOST('model', 'alpha');
-
-        $moreparams['object'] = $object;
-        $moreparams['user']   = $user;
-
-        $result = $timesheetdocument->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
-        if ($result <= 0) {
-            setEventMessages($object->error, $object->errors, 'errors');
-            $action = '';
-        } else {
-            if (empty($donotredirect)) {
-                setEventMessages($langs->trans("FileGenerated") . ' - ' . $timesheetdocument->last_main_doc, null);
-                $urltoredirect = $_SERVER['REQUEST_URI'];
-                $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
-                $urltoredirect = preg_replace('/action=builddoc&?/', '', $urltoredirect); // To avoid infinite loop
-                header('Location: ' . $urltoredirect . '#builddoc');
-                exit;
-            }
-        }
-    }
-
-    // Delete file in doc form
-    if ($action == 'remove_file' && $permissiontodelete) {
-        if ( ! empty($upload_dir)) {
-            require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
-
-            $langs->load("other");
-            $filetodelete = GETPOST('file', 'alpha');
-            $file         = $upload_dir . '/' . $filetodelete;
-            $ret          = dol_delete_file($file, 0, 0, 0, $object);
-            if ($ret) setEventMessages($langs->trans("FileWasRemoved", $filetodelete), null, 'mesgs');
-            else setEventMessages($langs->trans("ErrorFailToDeleteFile", $filetodelete), null, 'errors');
-
-            // Make a redirect to avoid to keep the remove_file into the url that create side effects
-            $urltoredirect = $_SERVER['REQUEST_URI'];
-            $urltoredirect = substr($urltoredirect, 0, strpos($urltoredirect, "&"));
-
-            header('Location: ' . $urltoredirect);
-            exit;
-        } else {
-            setEventMessages('BugFoundVarUploaddirnotDefined', null, 'errors');
-        }
-    }
+	include DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
+    include DOL_DOCUMENT_ROOT . '/custom/saturne/core/tpl/documents/documents_action.tpl.php';
 
 	if ($action == 'set_thirdparty' && $permissiontoadd) {
 		$object->setValueFrom('fk_soc', GETPOST('fk_soc', 'int'), '', '', 'date', '', $user, $triggermodname);
