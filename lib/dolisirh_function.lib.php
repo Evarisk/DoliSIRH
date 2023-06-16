@@ -1829,7 +1829,7 @@ function getTaskProgressColorClass($progress)
  */
 function dolisirh_num_between_day($timestampStart, $timestampEnd, $lastDay = 0)
 {
-    if ($timestampStart < $timestampEnd) {
+    if ($timestampStart <= $timestampEnd) {
         if ($lastDay == 1) {
             $bit = 0;
         } else {
@@ -1837,8 +1837,6 @@ function dolisirh_num_between_day($timestampStart, $timestampEnd, $lastDay = 0)
         }
         $daysNumber = (int) round(($timestampEnd - $timestampStart) / (60 * 60 * 24)) + 1 - $bit;
     }
-    if (empty($daysNumber)) {
-        $daysNumber = 1;
-    }
+
     return $daysNumber;
 }
