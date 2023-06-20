@@ -294,6 +294,54 @@ class ActionsDoliSIRH
 					</script>
 				<?php }
 			}
+            if (GETPOST('action') == 'create') {
+                require_once __DIR__ . '/../../saturne/lib/object.lib.php';
+                require_once __DIR__ . '/../../saturne/class/task/saturnetask.class.php';
+
+                $task = new SaturneTask($this->db);
+                $form = new Form($this->db);
+
+                $taskarray = saturne_fetch_all_object_type('SaturneTask', '', '', 0, 0 , !empty(GETPOST('projectid')) ? ['customsql' => 'fk_projet = ' . GETPOST('projectid')] : []);
+
+				$selectArray[] = ' ';
+				if (is_array($taskarray) && !empty($taskarray)) {
+                    foreach ($taskarray as $id => $taskObject) {
+                        $selectArray[$id] = $taskObject->label;
+                    }
+                }
+                ?>
+
+                <script>
+                    let element    = jQuery('#options_fk_task');
+					let currentUrl = window.location.href;
+					let newOptions = <?php echo json_encode($selectArray) ?>;
+
+					element.addClass('maxwidth500 widthcentpercentminusx');
+					element.empty()
+					$.each(newOptions, function(value, text) {
+						element.append($('<option>').attr('value', value).text(text));
+					});
+
+					$(document).on('change', '#projectid', function() {
+						let newUrl    = currentUrl;
+						let projectId = $(this).val();
+
+						if (newUrl.indexOf('projectid=') === -1) {
+							newUrl += (newUrl.indexOf('?') === -1 ? '?' : '&') + 'projectid=' + projectId;
+						} else {
+							newUrl = newUrl.replace(/(projectid=)[^&]*/, '$1' + projectId);
+						}
+						window.location.href = newUrl;
+
+						element.empty();
+						$.each(newOptions, function(value, text) {
+							element.append($('<option>').attr('value', value).text(text));
+						});
+                    })
+                </script>
+
+                <?php
+            }
 		}
 		if (in_array($parameters['currentcontext'], array('projecttaskcard', 'projecttasktime'))) {
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
