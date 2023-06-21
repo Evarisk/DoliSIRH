@@ -236,9 +236,9 @@ $nav .= '<button type="submit" name="submitdateselect" value="x" class="bordertr
 
 $picto = 'clock';
 
-print '<form name="addtime" id="addtimeform" method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<form name="assigntask" id="assigntaskform" method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.newToken().'">';
-print '<input type="hidden" name="action" value="addtime">';
+print '<input type="hidden" name="action" value="assigntask">';
 print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
 print '<input type="hidden" name="mode" value="'.$mode.'">';
@@ -285,7 +285,7 @@ $formproject->selectTasks($socid ? $socid : -1, $taskid, 'taskid', 32, 0, '-- '.
 print '</div>';
 print ' ';
 print $formcompany->selectTypeContact($object, 46, 'type', 'internal', 'rowid', 0, 'maxwidth150onsmartphone');
-print '<input type="submit" class="button valignmiddle smallonsmartphone" name="assigntask" value="'.dol_escape_htmltag($titleassigntask).'">';
+print '<input type="submit" class="button valignmiddle smallonsmartphone" name="assigntaskbutton" value="'.dol_escape_htmltag($titleassigntask).'">';
 print '</div>';
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';

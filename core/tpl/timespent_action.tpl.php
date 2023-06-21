@@ -28,9 +28,7 @@ if (GETPOST('submitdateselect')) {
     $action = '';
 }
 
-if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('assigntask') && GETPOST('formfilteraction') != 'listafterchangingselectedfields') {
-    $action = 'assigntask';
-
+if ($action == 'assigntask' && $user->rights->projet->lire && GETPOST('assigntaskbutton') && GETPOST('formfilteraction') != 'listafterchangingselectedfields') {
     if ($taskid > 0) {
         $result = $object->fetch($taskid, $ref);
         if ($result < 0) {
@@ -47,7 +45,7 @@ if ($action == 'addtime' && $user->rights->projet->lire && GETPOST('assigntask')
 
     if (!$error) {
         $idfortaskuser = $usertoprocess->id;
-        $result = $object->add_contact($idfortaskuser, GETPOST('type'), 'internal');
+        $result = $object->add_contact($idfortaskuser, GETPOST('type'), 'internal', 1);
 
         if ($result >= 0 || $result == -2) {	// Contact add ok or already contact of task
             // Test if we are already contact of the project (should be rare but sometimes we can add as task contact without being contact of project, like when admin user has been removed from contact of project)

@@ -546,9 +546,9 @@ $nav .= ' <button type="submit" name="button_search_x" value="x" class="bordertr
 
 $picto = 'clock';
 
-print '<form name="addtime" id="addtimeform" method="POST" action="'.$_SERVER["PHP_SELF"].($project->id > 0 ? '?id='.$project->id : '').'">';
+print '<form name="assigntask" id="assigntaskform" method="POST" action="'.$_SERVER["PHP_SELF"].($project->id > 0 ? '?id='.$project->id : '').'">';
 print '<input type="hidden" name="token" value="'.newToken().'">';
-print '<input type="hidden" name="action" value="addtime">';
+print '<input type="hidden" name="action" value="assigntask">';
 print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
 print '<input type="hidden" name="mode" value="'.$mode.'">';

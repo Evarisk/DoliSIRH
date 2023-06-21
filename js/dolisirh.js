@@ -802,7 +802,7 @@ window.eoxiaJS.task.createTimeSpent = function ( event ) {
 
 window.eoxiaJS.task.toggleTaskFavorite = function () {
 	let taskID = $(this).attr('value');
-	let token = $('form[name="addtime"]').find('input[name="token"]').val();
+	let token = $('form[name="assigntask"]').find('input[name="token"]').val();
 	let querySeparator = '?';
 
 	document.URL.match(/\?/) ? querySeparator = '&' : 1
@@ -1387,12 +1387,14 @@ window.eoxiaJS.form.init = function() {
  * @return {void}
  */
 window.eoxiaJS.form.event = function() {
-	$( document ).on( 'submit', '#addtimeform', window.eoxiaJS.form.searchForm );
+	$( document ).on( 'submit', '#assigntaskform', window.eoxiaJS.form.searchForm );
 };
 
 window.eoxiaJS.form.searchForm = function(event) {
-	var addTimeForm = document.getElementById('addtimeform');
-	var formData = new FormData(addTimeForm);
+	event.preventDefault()
+
+	var assigntaskform = document.getElementById('assigntaskform');
+	var formData = new FormData(assigntaskform);
 	let newFormData = new FormData();
 
 	for (const pair of formData.entries()) {
@@ -1400,7 +1402,7 @@ window.eoxiaJS.form.searchForm = function(event) {
 			newFormData.append(pair[0], pair[1])
 		}
 	}
-	window.eoxiaJS.loader.display($('#addtimeform'));
+	window.eoxiaJS.loader.display($('#assigntaskform'));
 
 	$.ajax({
 		url: document.URL,
@@ -1410,7 +1412,7 @@ window.eoxiaJS.form.searchForm = function(event) {
 		contentType: false,
 		success: function (resp) {
 			$('.wpeo-loader').removeClass('wpeo-loader');
-			$('#addtimeform').html($(resp).find('#addtimeform').children())
+			$('#assigntaskform').html($(resp).find('#assigntaskform').children())
 		},
 	});
 }
