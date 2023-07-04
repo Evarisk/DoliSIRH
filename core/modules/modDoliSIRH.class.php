@@ -379,22 +379,6 @@ class modDoliSIRH extends DolibarrModules
             'user'     => 0,
         );
 
-//		$this->menu[$r++] = array(
-//			'fk_menu'  => 'fk_mainmenu=dolisirh',
-//			'type'     => 'left',
-//			'titre'    => $langs->trans('Certificate'),
-//			'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i>',
-//			'mainmenu' => 'dolisirh',
-//			'leftmenu' => 'certificate',
-//			'url'      => '/dolisirh/view/certificate/certificate_list.php',
-//			'langs'    => 'dolisirh@dolisirh',
-//			'position' => 1000 + $r,
-//			'enabled'  => '$conf->dolisirh->enabled',
-//			'perms'    => '$user->rights->dolisirh->certificate->read',
-//			'target'   => '',
-//			'user'     => 0,
-//		);
-
 		$this->menu[$r++] = array(
 			'fk_menu'  => 'fk_mainmenu=dolisirh',                                           // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 			'type'     => 'left',                                                           // This is a Top menu entry
@@ -426,38 +410,6 @@ class modDoliSIRH extends DolibarrModules
             'target'   => '',
             'user'     => 0,                                                                // 0=Menu for internal users, 1=external users, 2=both
         );
-
-		$this->menu[$r++] = array(
-			'fk_menu'  => 'fk_mainmenu=dolisirh',                                           // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'     => 'left',                                                           // This is a Left menu entry
-			'titre'    => $langs->trans('DoliSIRHConfig'),
-			'prefix'   => '<i class="fas fa-cog pictofixedwidth"></i>',
-			'mainmenu' => 'dolisirh',
-			'leftmenu' => 'dolisirhconfig',
-			'url'      => '/dolisirh/admin/setup.php',
-			'langs'    => 'dolisirh@dolisirh',                                              // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position' => 1000 + $r,
-			'enabled'  => '$conf->dolisirh->enabled',                                       // Define condition to show or hide menu entry. Use '$conf->dolisirh->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'    => '$user->rights->dolisirh->adminpage->read',                       // Use 'perms'=>'$user->rights->dolisirh->level1->level2' if you want your menu with a permission rules
-			'target'   => '',
-			'user'     => 0,                                                                // 0=Menu for internal users, 1=external users, 2=both
-		);
-
-		$this->menu[$r++] = array(
-			'fk_menu'  => 'fk_mainmenu=dolisirh',                                           // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'     => 'left',                                                           // This is a Left menu entry
-			'titre'    => $langs->transnoentities('MinimizeMenu'),
-			'prefix'   => '<i class="fas fa-chevron-circle-left pictofixedwidth"></i>',
-			'mainmenu' => 'dolisirh',
-			'leftmenu' => 'minimizemenu',
-			'url'      => '',
-			'langs'    => 'dolisirh@dolisirh',                                              // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position' => 1000 + $r,
-			'enabled'  => '$conf->dolisirh->enabled',                                       // Define condition to show or hide menu entry. Use '$conf->dolisirh->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'    => '$user->rights->dolisirh->lire',                                  // Use 'perms'=>'$user->rights->dolisirh->level1->level2' if you want your menu with a permission rules
-			'target'   => '',
-			'user'     => 0,                                                                // 0=Menu for internal users, 1=external users, 2=both
-		);
 	}
 
 	/**
