@@ -431,7 +431,7 @@ foreach ($arrayfields as $key => $val) {
 	if (!empty($arrayfields[$key]['checked'])) {
 		print '<td class="liste_titre' . ($cssforfield ? ' ' . $cssforfield : '') . '">';
 		if ($val['fieldalias'] == 'fk_user') {
-			print $form->select_dolusers(($search_user > 0 ? $search_user : -1), 'search_user', 1, null, 0, '', '', 0, 0, 0, '', 0, '', 'maxwidth250');
+			print $form->select_dolusers(($search[$keysearch] > 0 ? $search[$keysearch] : -1), 'search_fk_user', 1, null, 0, '', '', 0, 0, 0, '', 0, '', 'maxwidth250');
 		} elseif (in_array($val['fieldalias'], array('socid','projectref', 'taskid', 'invoice_id', 'timesheetid'))) {
 			print $form->selectForForms($val['type'], 'search_' . $keysearch, $search[$keysearch], 1, '', '', $morecss);
 		} elseif (preg_match('/^(date|timestamp|datetime)/', $val['type'])) {
