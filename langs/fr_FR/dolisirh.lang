@@ -240,7 +240,9 @@ GoToConfigProjectPage = Aller sur la page de configuration du projet Ressources 
 
 # Data - Donnée
 TimeSheet = Navette
+Timesheet = Navette
 NewTimeSheet = Nouvelle navette
+NewTimesheet = Nouvelle navette
 ModifyTimeSheet = Modifer la navette
 TimeSheetList = Liste des navettes
 UserAssign = Utilisateur assigné
