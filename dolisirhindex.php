@@ -21,19 +21,14 @@
  *	\brief      Home page of dolisirh top menu
  */
 
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if ( ! $res && ! empty($_SERVER['CONTEXT_DOCUMENT_ROOT'])) $res = @include $_SERVER['CONTEXT_DOCUMENT_ROOT'] . '/main.inc.php';
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) { $i--; $j--; }
-if ( ! $res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1)) . '/main.inc.php')) $res          = @include substr($tmp, 0, ($i + 1)) . '/main.inc.php';
-if ( ! $res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1))) . '/main.inc.php')) $res = @include dirname(substr($tmp, 0, ($i + 1))) . '/main.inc.php';
-// Try main.inc.php using relative path
-if ( ! $res && file_exists('../../main.inc.php')) $res    = @include '../../main.inc.php';
-if ( ! $res && file_exists('../../../main.inc.php')) $res = @include '../../../main.inc.php';
-if ( ! $res) die('Include of main fails');
+// Load DoliSIRH environment
+if (file_exists('dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/dolisirh.main.inc.php';
+} elseif (file_exists('../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../dolisirh.main.inc.php';
+} else {
+    die('Include of dolisirh main fails');
+}
 
 // Libraries
 require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
@@ -70,10 +65,8 @@ if (empty($conf->dolisirh->enabled) || !$permissiontoread) {
 
 $help_url = 'FR:Module_DoliSIRH';
 $title    = $langs->trans('DoliSIRHArea');
-$morejs   = ['/dolisirh/js/dolisirh.js'];
-$morecss  = ['/dolisirh/css/dolisirh.css'];
 
-llxHeader('', $title . ' ' . $modDoliSIRH->version, $help_url, '', 0, 0, $morejs, $morecss);
+saturne_header(0, '', $title . ' ' . $modDoliSIRH->version, $help_url);
 
 $currentMonth = date('m', dol_now());
 $currentYear  = date('Y', dol_now());
