@@ -304,7 +304,7 @@ class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
             $usertmp      = new User($this->db);
             $task         = new Task($this->db);
             $project      = new Project($this->db);
-            $signatory    = new TimeSheetSignature($this->db);
+            $signatory    = new SaturneSignature($this->db, 'dolisirh');
             $workinghours = new Workinghours($this->db);
 
             $usertmp->fetch($object->fk_user_assign);

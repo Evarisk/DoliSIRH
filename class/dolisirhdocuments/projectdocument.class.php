@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
+/* Copyright (C) 2022-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,30 +13,39 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
- * or see https://www.gnu.org/
  */
 
 /**
- * \file    core/modules/dolisirh/dolisirhdocuments/certificatedocument/mod_certificatedocument_standard.php
+ * \file    class/dolisirhdocuments/projectdocument.class.php
  * \ingroup dolisirh
- * \brief   File of class to manage certificate document numbering rules standard.
+ * \brief   This file is a class file for ProjectDocument.
  */
 
-// Load Saturne Libraries.
-require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
+// Load Saturne libraries.
+require_once __DIR__ . '/../../../saturne/class/saturnedocuments.class.php';
 
 /**
- * Class to manage certificate document numbering rules standard.
+ * Class for ProjectDocument.
  */
-class mod_certificatedocument_standard extends ModeleNumRefSaturne
+class ProjectDocument extends SaturneDocuments
 {
     /**
-     * @var string Numbering module ref prefix.
+     * @var string Module name.
      */
-    public string $prefix = 'CERTD';
+    public string $module = 'dolisirh';
 
     /**
-     * @var string Name.
+     * @var string Element type of object.
      */
-    public string $name = 'Skrymir';
+    public $element = 'projectdocument';
+
+    /**
+     * Constructor.
+     *
+     * @param DoliDb $db Database handler.
+     */
+    public function __construct(DoliDB $db)
+    {
+        parent::__construct($db, $this->module, $this->element);
+    }
 }

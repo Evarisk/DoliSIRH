@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,21 +16,19 @@
  */
 
 /**
- * \file    lib/dolisirh_certificate.lib.php
- * \ingroup dolimeet
- * \brief   Library files with common functions for Certificate.
+ * \file    dolisirh.main.inc.php
+ * \ingroup dolisirh
+ * \brief   File that defines environment for Saturne common functions
  */
 
-// Load Saturne Libraries.
-require_once __DIR__ . '/../../saturne/lib/object.lib.php';
+$moduleName = 'DoliSIRH';
+$moduleNameLowerCase = strtolower($moduleName);
 
-/**
- * Prepare certificate pages header
- *
- * @param	Certificate	$object		Certificate
- * @return 	array					Array of tabs
- */
-function certificatePrepareHead($object)
-{
-    return saturne_object_prepare_head($object, true);
+// Load Saturne environment
+if (file_exists(__DIR__ . '/../saturne/saturne.main.inc.php')) {
+    require_once __DIR__ . '/../saturne/saturne.main.inc.php';
+} elseif (file_exists(__DIR__ . '/../../saturne/saturne.main.inc.php')) {
+    require_once __DIR__ . '/../../saturne/saturne.main.inc.php';
+} else {
+    die('Include of saturne main fails');
 }

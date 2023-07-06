@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
+/* Copyright (C) 2022 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,26 +17,26 @@
  */
 
 /**
- * \file    core/modules/dolisirh/dolisirhdocuments/certificatedocument/mod_certificatedocument_standard.php
- * \ingroup dolisirh
- * \brief   File of class to manage certificate document numbering rules standard.
+ *  \file    core/modules/dolisirh/projectdocument/mod_projectdocument_standard.php
+ *  \ingroup dolisirh
+ *  \brief   File of class to manage projectdocument numbering rules standard.
  */
 
-// Load Saturne Libraries.
+// Load Saturne libraries.
 require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
 
 /**
- * Class to manage certificate document numbering rules standard.
+ *	Class to manage projectdocument numbering rules standard.
  */
-class mod_certificatedocument_standard extends ModeleNumRefSaturne
+class mod_projectdocument_standard extends ModeleNumRefSaturne
 {
     /**
      * @var string Numbering module ref prefix.
      */
-    public string $prefix = 'CERTD';
+    public string $prefix = 'PJD';
 
     /**
      * @var string Name.
      */
-    public string $name = 'Skrymir';
+    public string $name = 'Beli';
 }

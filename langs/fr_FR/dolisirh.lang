@@ -240,7 +240,9 @@ GoToConfigProjectPage = Aller sur la page de configuration du projet Ressources 
 
 # Data - Donnée
 TimeSheet = Navette
+Timesheet = Navette
 NewTimeSheet = Nouvelle navette
+NewTimesheet = Nouvelle navette
 ModifyTimeSheet = Modifer la navette
 TimeSheetList = Liste des navettes
 UserAssign = Utilisateur assigné
@@ -314,10 +316,10 @@ DoliSIRHCertificateStandardModel = Renvoie le numéro sous la forme CERTyymm-nnn
 
 # Data - Donnée
 Certificate = Certificat
+TheCertificate = le certificat
 NewCertificate = Nouveau certificat
 ModifyCertificate = Modifer le certificat
 CertificateList = Liste des certificats
-CertificateManagement = Gestion des certificats
 
 #
 # CertificateDocument - Document certificat
@@ -338,6 +340,16 @@ DoliSIRHCertificateDocumentTemplate = ODT par défaut des documents certificat
 # Data - Donnée
 CertificateDocument = Document Certificat
 certificatedocument.odt = Certificat ODT
+
+
+
+#
+# ProjectDocument - Document projet
+#
+
+# Data - Donnée
+projectdocument.odt = Document projet
+projectdocument     = Document projet
 
 
 
