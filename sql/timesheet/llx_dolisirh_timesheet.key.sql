@@ -21,4 +21,3 @@ ALTER TABLE llx_dolisirh_timesheet ADD INDEX idx_dolisirh_timesheet_fk_project (
 ALTER TABLE llx_dolisirh_timesheet ADD UNIQUE INDEX uk_dolisirh_timesheet_ref (ref, entity);
 ALTER TABLE llx_dolisirh_timesheet ADD CONSTRAINT llx_dolisirh_timesheet_fk_user_assign FOREIGN KEY (fk_user_assign) REFERENCES llx_user(rowid);
 ALTER TABLE llx_dolisirh_timesheet ADD CONSTRAINT llx_dolisirh_timesheet_fk_user_creat FOREIGN KEY (fk_user_creat) REFERENCES llx_user(rowid);
-

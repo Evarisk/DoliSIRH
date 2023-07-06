@@ -14,7 +14,7 @@
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
 CREATE TABLE llx_categorie_invoicerec(
-    fk_categorie  integer NOT NULL,
-    fk_invoicerec integer NOT NULL,
-    import_key    varchar(14)
+  fk_categorie  integer NOT NULL,
+  fk_invoicerec integer NOT NULL,
+  import_key    varchar(14)
 ) ENGINE=innodb;

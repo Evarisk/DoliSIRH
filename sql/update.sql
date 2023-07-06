@@ -13,4 +13,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
-
+-- 1.4.0
+ALTER TABLE `llx_dolisirh_timesheet` DROP `last_main_doc`, DROP `model_pdf`, DROP `model_odt`;
+ALTER TABLE `llx_element_workinghours` CHANGE `tms` `tms` TIMESTAMP on update CURRENT_TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE `llx_element_workinghours` ADD `fk_user_modif` INT NULL AFTER `fk_user_creat`;

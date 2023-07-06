@@ -13,4 +13,5 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program. If not, see https://www.gnu.org/licenses/.
 
-ALTER TABLE llx_dolisirh_timesheet_extrafields ADD INDEX idx_timesheet_fk_object(fk_object);
+ALTER TABLE llx_dolisirh_timesheet_extrafields ADD INDEX idx_dolisirh_timesheet_rowid (rowid);
+ALTER TABLE llx_dolisirh_timesheet_extrafields ADD INDEX idx_dolisirh_timesheet_extrafields_fk_object (fk_object);
