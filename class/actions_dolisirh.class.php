@@ -1134,7 +1134,7 @@ class ActionsDoliSIRH
     public function SaturneAdminObjectConst(array $parameters)
     {
         if ($parameters['currentcontext'] == 'timesheetadmin') {
-            $constArray['timesheet'] = [
+            $constArray['dolisirh'] = [
                 'PrefillDate' => [
                     'name'        => 'PrefillDate',
                     'description' => 'PrefillDateDescription',
