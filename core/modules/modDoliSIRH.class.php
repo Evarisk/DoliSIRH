@@ -87,8 +87,8 @@ class modDoliSIRH extends DolibarrModules
                       'dolisirhadmindocuments',
                       'dolisirhindex',
                       'projetcard'
-                  ],
-            ],
+                  ),
+            ),
 			'moduleforexternal' => 0,
 		);
 
