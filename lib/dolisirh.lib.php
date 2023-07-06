@@ -18,13 +18,13 @@
 /**
  * \file    lib/dolisirh.lib.php
  * \ingroup dolisirh
- * \brief   Library files with common functions for DoliSIRH.
+ * \brief   Library files with common functions for Admin conf.
  */
 
 /**
  * Prepare admin pages header.
  *
- * @return array
+ * @return array $head Array of tabs.
  */
 function dolisirh_admin_prepare_head(): array
 {
@@ -49,11 +49,11 @@ function dolisirh_admin_prepare_head(): array
     $h++;
 
     $head[$h][0] = dol_buildpath('/saturne/admin/object.php', 1) . '?module_name=DoliSIRH&object_type=certificate';
-    $head[$h][1] = '<i class="fas fa-user-graduate pictofixedwidth"></i>' . $langs->trans("Certificate");
+    $head[$h][1] = '<i class="fas fa-user-graduate pictofixedwidth"></i>' . $langs->trans('Certificate');
     $head[$h][2] = 'certificate';
     $h++;
 
-    $head[$h][0] = dol_buildpath('/dolisirh/admin/dolisirhdocuments.php', 1);
+    $head[$h][0] = dol_buildpath('/saturne/admin/documents.php?module_name=DoliSIRH', 1);
     $head[$h][1] = '<i class="fas fa-file-alt pictofixedwidth"></i>' . $langs->trans('YourDocuments');
     $head[$h][2] = 'documents';
     $h++;

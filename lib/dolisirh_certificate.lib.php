@@ -21,17 +21,17 @@
  * \brief   Library files with common functions for Certificate.
  */
 
-// Load Saturne Libraries.
+// Load Saturne libraries.
 require_once __DIR__ . '/../../saturne/lib/object.lib.php';
 
 /**
- * Prepare certificate pages header
+ * Prepare certificate pages header.
  *
- * @param  Certificate $object Certificate
- * @return array               Array of tabs
+ * @param  Certificate $object Certificate.
+ * @return array       $head   Array of tabs.
  * @throws Exception
  */
 function certificate_prepare_head(Certificate $object): array
 {
-    return saturne_object_prepare_head($object, true);
+    return saturne_object_prepare_head($object, [], [], true);
 }
