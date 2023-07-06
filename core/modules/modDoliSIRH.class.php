@@ -54,7 +54,7 @@ class modDoliSIRH extends DolibarrModules
 		$this->editor_url      = 'https://evarisk.com';
 		$this->version         = '1.3.1';
 		$this->const_name      = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->picto           = 'dolisirh_red@dolisirh';
+		$this->picto           = 'dolisirh_color@dolisirh';
 
 		$this->module_parts 			= array(
 			'triggers' 					=> 1,
@@ -158,8 +158,8 @@ class modDoliSIRH extends DolibarrModules
 		}
 
 		$this->tabs    = array();
-        $pictopath     = dol_buildpath('/custom/dolisirh/img/dolisirh_red.png', 1);
-        $pictoDoliSIRH = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoDoliSIRH');
+        $pictopath     = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
+        $pictoDoliSIRH = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoModule');
 		$this->tabs[]  = array('data' => 'user:+workinghours:' . $pictoDoliSIRH . $langs->trans('WorkingHours') . ':dolisirh@dolisirh:$user->rights->user->self->creer:/custom/dolisirh/view/workinghours_card.php?id=__ID__'); // To add a new tab identified by code tabname1
 
 		$this->dictionaries = array();
