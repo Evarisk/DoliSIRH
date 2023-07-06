@@ -261,15 +261,43 @@ if ($action == 'create') {
 
     $elementList = [];
     if (!empty($conf->user->enabled)) {
-        $elementList['user'] = img_picto('', 'user', 'class="pictofixedwidth"') . dol_escape_htmltag($langs->trans('User'));
+        $object->fields['element_type']['arrayofkeyval']['user'] = $langs->trans('User');
     }
     if (!empty($conf->societe->enabled)) {
-        $elementList['product'] .= img_picto('', 'product', 'class="pictofixedwidth"') . dol_escape_htmltag($langs->trans('Product'));
-    }
+        $object->fields['element_type']['arrayofkeyval']['product'] = $langs->trans('Product');
+    } ?>
 
     print '<tr><td class="titlefieldcreate"><label for="element_type">' . $langs->trans('ElementType') . '</label></td>';
     print '<td class="valuefieldcreate">' . $form::selectarray('element_type', $elementList, GETPOSTISSET('element_type') ? GETPOST('element_type') : 'user', 1, 0, 0, '', 0, 0, 0, '', 'maxwidth200 widthcentpercentminusx') . '</td>';
     print '</tr>';
+    
+    <script>
+    $(document).ready(function(){
+        $('#element_type').on('change', function(){
+            let value = $(this).val();
+            let url = new URL(document.URL)
+            let search_params = url.searchParams;
+            search_params.set('element_type', value);
+            url.search = search_params.toString();
+            location.href = url.toString()
+        });
+    });
+    </script>
+
+    <?php switch (GETPOST('element_type')) {
+        case 'user' :
+            $object->fields['fk_element']['type']    = 'integer:User:user/class/user.class.php';
+            $object->fields['fk_element']['picto']   = 'user';
+            $object->fields['fk_element']['label']   = $langs->trans('User');
+            $object->fields['element_type']['picto'] = 'user';
+            break;
+        case 'product' :
+            $object->fields['fk_element']['type']    = 'integer:Product:product/class/product.class.php';
+            $object->fields['fk_element']['picto']   = 'product';
+            $object->fields['fk_element']['label']   = $langs->trans('Product');
+            $object->fields['element_type']['picto'] = 'product';
+            break;
+    }
 
     // Common attributes
     include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
@@ -304,6 +332,41 @@ if (($id || $ref) && $action == 'edit') {
     print dol_get_fiche_head();
 
     print '<table class="border centpercent tableforfieldedit">';
+
+    if (!empty($conf->user->enabled)) {
+        $object->fields['element_type']['arrayofkeyval']['user'] = $langs->trans('User');
+    }
+    if (!empty($conf->societe->enabled)) {
+        $object->fields['element_type']['arrayofkeyval']['product'] = $langs->trans('Product');
+    } ?>
+
+    <script>
+        $(document).ready(function(){
+            $('#element_type').on('change', function(){
+                let value = $(this).val();
+                let url = new URL(document.URL)
+                let search_params = url.searchParams;
+                search_params.set('element_type', value);
+                url.search = search_params.toString();
+                location.href = url.toString()
+            });
+        });
+    </script>
+
+    <?php switch (GETPOST('element_type')) {
+        case 'user' :
+            $object->fields['fk_element']['type']    = 'integer:User:user/class/user.class.php';
+            $object->fields['fk_element']['picto']   = 'user';
+            $object->fields['fk_element']['label']   = $langs->trans('User');
+            $object->fields['element_type']['picto'] = 'user';
+            break;
+        case 'product' :
+            $object->fields['fk_element']['type']    = 'integer:Product:product/class/product.class.php';
+            $object->fields['fk_element']['picto']   = 'product';
+            $object->fields['fk_element']['label']   = $langs->trans('Product');
+            $object->fields['element_type']['picto'] = 'product';
+            break;
+    }
 
     // Common attributes.
     include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
@@ -355,37 +418,29 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     // Print form confirm
     print $formconfirm;
 
-    $mesg              = '';
-    $nbAttendantByRole = [];
-    $nbAttendants      = 0;
-    $attendantsRole    = ['Attendant'];
-    foreach ($attendantsRole as $attendantRole) {
-        $signatories = $signatory->fetchSignatory($attendantRole, $object->id, $object->element);
-        if (is_array($signatories) && !empty($signatories)) {
-            foreach ($signatories as $objectSignatory) {
-                if ($objectSignatory->role == $attendantRole) {
-                    $nbAttendantByRole[$attendantRole]++;
-                }
-            }
-        } else {
-            $nbAttendantByRole[$attendantRole] = 0;
-        }
-        if ($nbAttendantByRole[$attendantRole] == 0) {
-            $mesg .= $langs->trans('NoAttendant', $langs->trans($attendantRole), $langs->transnoentities('The' . ucfirst($object->element))) . '<br>';
-        }
-    }
-
-    if (!in_array(0, $nbAttendantByRole)) {
-        $nbAttendants = 1;
-    }
-
     print '<div class="fichecenter">';
     print '<div class="fichehalfleft">';
     print '<table class="border centpercent tableforfield">';
 
-    unset($object->fields['label']);      // Hide field already shown in banner
-    unset($object->fields['fk_soc']);     // Hide field already shown in banner
-    unset($object->fields['fk_project']); // Hide field already shown in banner
+    unset($object->fields['label']);        // Hide field already shown in banner
+    unset($object->fields['fk_soc']);       // Hide field already shown in banner
+    unset($object->fields['fk_project']);   // Hide field already shown in banner
+    unset($object->fields['element_type']); // Unwanted
+
+    switch ($object->element_type) {
+        case 'user' :
+            $object->fields['fk_element']['type'] = 'integer:User:user/class/user.class.php';
+            $object->fields['fk_element']['picto'] = 'user';
+            $object->fields['fk_element']['label'] = $langs->trans('User');
+            $object->fields['element_type']['picto'] = 'user';
+            break;
+        case 'product' :
+            $object->fields['fk_element']['type'] = 'integer:Product:product/class/product.class.php';
+            $object->fields['fk_element']['picto'] = 'product';
+            $object->fields['fk_element']['label'] = $langs->trans('Product');
+            $object->fields['element_type']['picto'] = 'product';
+            break;
+    }
 
     // Common attributes.
     include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
@@ -419,10 +474,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             }
 
             // Validate
-            if ($object->status == SaturneCertificate::STATUS_DRAFT && $nbAttendants > 0) {
+            if ($object->status == SaturneCertificate::STATUS_DRAFT)) {
                 print '<span class="butAction" id="actionButtonPendingSignature"><i class="fas fa-check"></i> ' . $langs->trans('Validate') . '</span>';
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element)))) . '<br>' . $mesg) . '"><i class="fas fa-check"></i> ' . $langs->trans('Validate') . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-check"></i> ' . $langs->trans('Validate') . '</span>';
             }
 
             // ReOpen
@@ -432,15 +487,8 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidated', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-lock-open"></i> ' . $langs->trans('ReOpenDoli') . '</span>';
             }
 
-            // Sign
-            if ($object->status == SaturneCertificate::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
-                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element, 3) . '"><i class="fas fa-signature"></i> ' . $langs->trans('Sign') . '</a>';
-            } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-signature"></i> ' . $langs->trans('Sign') . '</span>';
-            }
-
             // Send mail
-            if ($object->status >= SaturneCertificate::STATUS_VALIDATED && $signatory->checkSignatoriesSignatures($object->id, $object->element)) {
+            if ($object->status >= SaturneCertificate::STATUS_VALIDATED) {
                 $fileparams = dol_most_recent_file($upload_dir . '/' . $object->element . 'document' . '/' . $object->ref);
                 $file       = $fileparams['fullname'];
                 if (file_exists($file) && !preg_match('/specimen/', $fileparams['name'])) {
@@ -458,6 +506,13 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
                 print '<a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=confirm_archive&token=' . newToken() . '"><i class="fas fa-archive"></i> ' . $langs->trans('Archive') . '</a>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToArchive', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-archive"></i> ' . $langs->trans('Archive') . '</span>';
+            }
+            
+            // Sign
+            if ($object->status == SaturneCertificate::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
+                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element, 3) . '"><i class="fas fa-signature"></i> ' . $langs->trans('Sign') . '</a>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-signature"></i> ' . $langs->trans('Sign') . '</span>';
             }
 
             // Delete (need delete permission, or if draft, just need create/modify permission).
@@ -479,7 +534,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
         $fileDir   = $upload_dir . '/' . $dirFiles;
         $urlSource = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
 
-        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', ($object->status > SaturneCertificate::STATUS_DRAFT && $nbAttendants > 0), $langs->trans('ObjectMustBeValidatedToGenerate'));
+        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', ($object->status > SaturneCertificate::STATUS_DRAFT), $langs->trans('ObjectMustBeValidatedToGenerate'));
 
         print '</div><div class="fichehalfright">';
 
