@@ -115,7 +115,7 @@ $arrayfields = array(
 	'pt.rowid'       => array('fieldalias' => 'taskid', 'type' => 'Task:projet/class/task.class.php:1', 'label' => "Task", 'checked' => 1, 'position' => 30, 'visible' => 1),
 	'label'          => array('tablealias' => 'pt.', 'type' => 'text', 'label' => "Label", 'checked' => 1, 'position' => 40, 'visible' => 1),
 	'task_date'      => array('tablealias' => 'ptt.', 'type' => 'datetime', 'label' => "Date", 'checked' => 1, 'position' => 50,  'visible' => 1),
-	'fk_user'        => array('tablealias' => 'ptt.', 'fieldalias' => 'fk_user', 'type' => 'User:user/class/user.class.php', 'label' => "User", 'checked' => 1, 'position' => 60, 'visible' => 1),
+	'fk_user'        => array('tablealias' => 'ptt.', 'fieldalias' => 'fk_user', 'type' => 'User:user/class/user.class.php:1:(t.employee:=:1) AND (t.fk_soc:IS:NULL) AND (statut:=:1)', 'label' => "User", 'checked' => 1, 'position' => 60, 'visible' => 1),
 	'task_duration'  => array('tablealias' => 'ptt.', 'type' => 'duration', 'label' => "Duration",  'checked' => 1, 'position' => 70, 'visible' => 1, 'isameasure'=>1),
 	'note'           => array('tablealias' => 'ptt.', 'type' => 'text', 'label' => "Note",  'checked' => 1, 'position' => 80, 'visible' => 1),
 	'thm'            => array('tablealias' => 'ptt.', 'type' => 'price', 'label' => "Value",  'checked' => 1, 'position' => 90, 'visible' => 1, 'isameasure'=>1),
@@ -430,7 +430,9 @@ foreach ($arrayfields as $key => $val) {
 	}
 	if (!empty($arrayfields[$key]['checked'])) {
 		print '<td class="liste_titre' . ($cssforfield ? ' ' . $cssforfield : '') . '">';
-		if (in_array($val['fieldalias'], array('socid','projectref', 'fk_user','taskid', 'invoice_id', 'timesheetid'))) {
+		if ($val['fieldalias'] == 'fk_user') {
+			print $form->select_dolusers(($search[$keysearch] > 0 ? $search[$keysearch] : -1), 'search_fk_user', 1, null, 0, '', '', 0, 0, 0, '', 0, '', 'maxwidth250');
+		} elseif (in_array($val['fieldalias'], array('socid','projectref', 'taskid', 'invoice_id', 'timesheetid'))) {
 			print $form->selectForForms($val['type'], 'search_' . $keysearch, $search[$keysearch], 1, '', '', $morecss);
 		} elseif (preg_match('/^(date|timestamp|datetime)/', $val['type'])) {
 			print '<div class="nowrap">';

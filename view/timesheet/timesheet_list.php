@@ -570,6 +570,8 @@ foreach ($object->fields as $key => $val) {
 		print '<td class="liste_titre'.($cssforfield ? ' '.$cssforfield : '').'">';
 		if (!empty($val['arrayofkeyval']) && is_array($val['arrayofkeyval'])) {
 			print $form->selectarray('search_'.$key, $val['arrayofkeyval'], (isset($search[$key]) ? $search[$key] : ''), $val['notnull'], 0, 0, '', 1, 0, 0, '', 'maxwidth100', 1);
+		} elseif ($key == 'fk_user_assign') {
+			print $form->select_dolusers(($search[$key] > 0 ? $search[$key] : -1), 'search_fk_user_assign', 1, null, 0, '', '', 0, 0, 0, '', 0, '', 'maxwidth250');
 		} elseif ((strpos($val['type'], 'integer:') === 0) || (strpos($val['type'], 'sellist:') === 0)) {
 			print $object->showInputField($val, $key, (isset($search[$key]) ? $search[$key] : ''), '', '', 'search_', 'maxwidth125', 1);
 		} elseif (preg_match('/^(date|timestamp|datetime)/', $val['type'])) {
