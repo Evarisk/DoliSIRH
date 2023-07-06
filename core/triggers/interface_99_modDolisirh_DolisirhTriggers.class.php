@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,12 @@
  */
 
 /**
- * \file    core/triggers/interface_99_modDoliSIRH_DoliSIRHTriggers.class.php
+ * \file    core/triggers/interface_99_modDoliSIRH_DolisirhTriggers.class.php
  * \ingroup dolisirh
  * \brief   DoliSIRH trigger.
  */
 
-require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
+require_once DOL_DOCUMENT_ROOT . '/core/triggers/dolibarrtriggers.class.php';
 
 /**
  *  Class of triggers for DoliSIRH module
@@ -42,33 +42,32 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 	{
 		$this->db = $db;
 
-		$this->name = preg_replace('/^Interface/i', '', get_class($this));
-		$this->family = 'demo';
+		$this->name        = preg_replace('/^Interface/i', '', get_class($this));
+		$this->family      = 'demo';
 		$this->description = 'DoliSIRH triggers.';
-		// 'development', 'experimental', 'dolibarr' or version
 		$this->version = '1.3.1';
 		$this->picto = 'dolisirh@dolisirh';
 	}
 
-	/**
-	 * Trigger name
-	 *
-	 * @return string Name of trigger file
-	 */
-	public function getName(): string
-	{
-		return $this->name;
-	}
+    /**
+     * Trigger name
+     *
+     * @return string Name of trigger file
+     */
+    public function getName(): string
+    {
+        return parent::getName();
+    }
 
-	/**
-	 * Trigger description
-	 *
-	 * @return string Description of trigger file
-	 */
-	public function getDesc(): string
-	{
-		return $this->description;
-	}
+    /**
+     * Trigger description
+     *
+     * @return string Description of trigger file
+     */
+    public function getDesc(): string
+    {
+        return parent::getDesc();
+    }
 
 	/**
 	 * Function called when a Dolibarr business event is done.
@@ -85,36 +84,51 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 	 */
 	public function runTrigger($action, $object, User $user, Translate $langs, Conf $conf): int
 	{
-		if (empty($conf->dolisirh->enabled)) return 0; // If module is not enabled, we do nothing
+        if (!isModEnabled('dolisirh')) {
+            return 0; // If module is not enabled, we do nothing
+        }
 
-		switch ($action) {
-			// Actions
+        // Data and type of action are stored into $object and $action
+        dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
+
+        require_once DOL_DOCUMENT_ROOT . '/comm/action/class/actioncomm.class.php';
+        $now = dol_now();
+        $actioncomm = new ActionComm($this->db);
+
+        $actioncomm->elementtype = $object->element . '@dolisirh';
+        $actioncomm->type_code   = 'AC_OTH_AUTO';
+        $actioncomm->datep       = $now;
+        $actioncomm->fk_element  = $object->id;
+        $actioncomm->userownerid = $user->id;
+        $actioncomm->percentage  = -1;
+
+        switch ($action) {
+			// CREATE
 			case 'ACTION_CREATE':
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				if (((int) $object->fk_element) > 0 && $object->elementtype == 'ticket' && preg_match('/^TICKET_/', $object->code)) {
 					dol_syslog('Add time spent');
-					$result= 0;
+					$result = 0;
 					$ticket = new Ticket($this->db);
 					$result = $ticket->fetch($object->fk_element);
 					dol_syslog(var_export($ticket, true), LOG_DEBUG);
 					if ($result > 0 && ($ticket->id) > 0) {
-						if (is_array($ticket->array_options) && array_key_exists('options_fk_task', $ticket->array_options) && $ticket->array_options['options_fk_task']>0 && !empty(GETPOST('timespent', 'int'))) {
+						if (is_array($ticket->array_options) && array_key_exists('options_fk_task', $ticket->array_options) && $ticket->array_options['options_fk_task'] > 0 && !empty(GETPOST('timespent', 'int'))) {
 							require_once DOL_DOCUMENT_ROOT .'/projet/class/task.class.php';
-							$task = new Task($this->db);
+							$task   = new Task($this->db);
 							$result = $task->fetch($ticket->array_options['options_fk_task']);
 							dol_syslog(var_export($task, true), LOG_DEBUG);
 							if ($result > 0 && ($task->id) > 0) {
-								$task->timespent_note = $object->note_private;
+								$task->timespent_note     = $object->note_private;
 								$task->timespent_duration = GETPOST('timespent', 'int') * 60; // We store duration in seconds
-								$task->timespent_date = dol_now();
+								$task->timespent_date     = dol_now();
 								$task->timespent_withhour = 1;
-								$task->timespent_fk_user = $user->id;
+								$task->timespent_fk_user  = $user->id;
 
-								$id_message = $task->id;
+								$id_message   = $task->id;
 								$name_message = $task->ref;
 
 								$task->addTimeSpent($user);
-								setEventMessages($langs->trans('MessageTimeSpentCreate').' : '.'<a href="'.DOL_URL_ROOT.'/projet/tasks/time.php?id='.$id_message.'">'.$name_message.'</a>', array());
+								setEventMessages($langs->trans('MessageTimeSpentCreate') . ' : ' . '<a href="' . DOL_URL_ROOT . '/projet/tasks/time.php?id=' . $id_message . '">' . $name_message.'</a>', []);
 							} else {
 								setEventMessages($task->error, $task->errors, 'errors');
 								return -1;
@@ -127,18 +141,18 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				}
                 if ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && $object->fk_element > 0 && $object->elementtype == 'task' && !empty($object->datef)) {
                     require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
-                    $task = new Task($this->db);
+                    $task   = new Task($this->db);
                     $result = $task->fetch($object->fk_element);
                     if ($result > 0 && $task->id > 0) {
                         $contactsOfTask = $task->getListContactId();
                         if (in_array($user->id, $contactsOfTask)) {
-                            $task->timespent_date = dol_print_date($object->datep,'standard', 'tzuser');
+                            $task->timespent_date     = dol_print_date($object->datep,'standard', 'tzuser');
                             $task->timespent_withhour = 1;
-                            $task->timespent_note = $langs->trans('TimeSpentAutoCreate', $object->id) . '<br>' . $object->label . '<br>' . $object->note_private;
+                            $task->timespent_note     = $langs->trans('TimeSpentAutoCreate', $object->id) . '<br>' . $object->label . '<br>' . $object->note_private;
                             $task->timespent_duration = $object->datef - $object->datep;
-                            $task->timespent_fk_user = $user->id;
+                            $task->timespent_fk_user  = $user->id;
 
-                            $idMessage = $task->id;
+                            $idMessage   = $task->id;
                             $nameMessage = $task->ref;
 
                             if ($task->timespent_duration > 0) {
@@ -172,14 +186,12 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 break;
 
 			case 'BILL_CREATE':
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 				$categories = GETPOST('categories', 'array:int');
 				setCategoriesObject($categories, 'invoice', false, $object);
 				break;
 
 			case 'BILLREC_CREATE':
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
 				require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 				require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 				$cat = new Categorie($this->db);
@@ -194,30 +206,45 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 				}
 				break;
 
-			// Timesheet
+            case 'ECMFILES_CREATE' :
+                if ($object->src_object_type == 'dolisirh_timesheet') {
+                    require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
+
+                    $signatory = new SaturneSignature($this->db);
+
+                    $signatories = $signatory->fetchSignatories($object->src_object_id, 'timesheet');
+                    if (!empty($signatories) && $signatories > 0) {
+                        foreach ($signatories as $signatory) {
+                            $signatory->signature = $langs->transnoentities('FileGenerated');
+                            $signatory->update($user, false);
+                        }
+                    }
+
+                    $actioncomm->code       = 'AC_' . strtoupper($object->element) . '_GENERATE';
+                    $actioncomm->label      = $langs->trans('ObjectGenerateTrigger', $langs->transnoentities(ucfirst($object->element)));
+                    $actioncomm->fk_element = $object->src_object_id;
+                    $actioncomm->create($user);
+                }
+                break;
+
 			case 'TIMESHEET_CREATE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-
-				require_once __DIR__ . '/../../class/timesheet.class.php';
-
-				$signatory  = new SaturneSignature($this->db, 'dolisirh');
-				$usertmp    = new User($this->db);
-				$product    = new Product($this->db);
-				$objectline = new TimeSheetLine($this->db);
-				$actioncomm = new ActionComm($this->db);
-
 				if (!empty($object->fk_user_assign)) {
+                    require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
+
+                    $signatory = new SaturneSignature($this->db);
+                    $usertmp   = new User($this->db);
+
 					$usertmp->fetch($object->fk_user_assign);
+                    $signatory->setSignatory($object->id, 'timesheet', 'user', [$object->fk_user_assign], 'TIMESHEET_SOCIETY_ATTENDANT');
+                    $signatory->setSignatory($object->id, 'timesheet', 'user', [$usertmp->fk_user], 'TIMESHEET_SOCIETY_RESPONSIBLE');
 				}
 
-				$signatory->setSignatory($object->id, 'timesheet', 'user', array($object->fk_user_assign), 'TIMESHEET_SOCIETY_ATTENDANT');
-				$signatory->setSignatory($object->id, 'timesheet', 'user', array($usertmp->fk_user), 'TIMESHEET_SOCIETY_RESPONSIBLE');
-
-				$now = dol_now();
-
 				if ($conf->global->DOLISIRH_PRODUCT_SERVICE_SET) {
+                    require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+
+                    $product    = new Product($this->db);
+                    $objectline = new TimeSheetLine($this->db);
+
 					$product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('MealTicket')))));
 					$objectline->date_creation  = $object->db->idate($now);
 					$objectline->qty            = 0;
@@ -259,106 +286,58 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 					$objectline->insert($user);
 				}
 
-				$actioncomm->elementtype = 'timesheet@dolisirh';
-				$actioncomm->code        = 'AC_TIMESHEET_CREATE';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('TimeSheetCreateTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
+				$actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
+				$actioncomm->label = $langs->trans('ObjectCreateTrigger', $langs->transnoentities(ucfirst($object->element)));
 				$actioncomm->create($user);
 				break;
 
+            // MODIFY
 			case 'TIMESHEET_MODIFY' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype = 'timesheet@dolisirh';
-				$actioncomm->code        = 'AC_TIMESHEET_MODIFY';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('TimeSheetModifyTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_MODIFY';
+                $actioncomm->label = $langs->trans('ObjectModifyTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
 				break;
 
+            // DELETE
 			case 'TIMESHEET_DELETE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype = 'timesheet@dolisirh';
-				$actioncomm->code        = 'AC_TIMESHEET_DELETE';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('TimeSheetDeleteTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_DELETE';
+                $actioncomm->label = $langs->trans('ObjectDeleteTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
 				break;
 
-			case 'TIMESHEET_VALIDATE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
+            // VALIDATE
+            case 'TIMESHEET_VALIDATE' :
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_VALIDATE';
+                $actioncomm->label = $langs->trans('ObjectValidateTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
+                break;
 
-				$actioncomm->elementtype = 'timesheet@dolisirh';
-				$actioncomm->code        = 'AC_TIMESHEET_VALIDATE';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('TimeSheetValidateTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
-				break;
-
+            // UNVALIDATE
 			case 'TIMESHEET_UNVALIDATE' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
-
-				$actioncomm->elementtype = 'timesheet@dolisirh';
-				$actioncomm->code        = 'AC_TIMESHEET_UNVALIDATE';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('TimeSheetUnValidateTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
-
-				$actioncomm->create($user);
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_UNVALIDATE';
+                $actioncomm->label = $langs->trans('ObjectUnValidateTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
 				break;
 
-			case 'TIMESHEET_LOCKED' :
-				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__. '. id=' .$object->id);
-				require_once DOL_DOCUMENT_ROOT.'/comm/action/class/actioncomm.class.php';
-				$now = dol_now();
-				$actioncomm = new ActionComm($this->db);
+            // LOCKED
+            case 'TIMESHEET_LOCKED' :
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_LOCKED';
+                $actioncomm->label = $langs->trans('ObjectLockedTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
+                break;
 
-				$actioncomm->elementtype = 'timesheet@dolisirh';
-				$actioncomm->code        = 'AC_TIMESHEET_LOCKED';
-				$actioncomm->type_code   = 'AC_OTH_AUTO';
-				$actioncomm->label       = $langs->trans('TimeSheetLockedTrigger');
-				$actioncomm->datep       = $now;
-				$actioncomm->fk_element  = $object->id;
-				$actioncomm->userownerid = $user->id;
-				$actioncomm->percentage  = -1;
+            // ARCHIVED
+            case 'TIMESHEET_ARCHIVED' :
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_ARCHIVED';
+                $actioncomm->label = $langs->trans('ObjectArchivedTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
+                break;
 
-				$actioncomm->create($user);
+            // SENTBYMAIL
+            case 'TIMESHEET_SENTBYMAIL' :
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_SENTBYMAIL';
+                $actioncomm->label = $langs->trans('ObjectSentByMailTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
 				break;
 
 			case 'TIMESHEET_ARCHIVED' :

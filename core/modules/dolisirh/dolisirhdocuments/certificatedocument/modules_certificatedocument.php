@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +17,30 @@
  */
 
 /**
- *  \file			htdocs/core/modules/dolisirh/certificatedocument/modules_certificatedocument.php
- *  \ingroup		dolisirh
- *  \brief			File that contains parent class for certificates document models
+ * \file    core/modules/dolisirh/certificatedocument/modules_certificatedocument.php
+ * \ingroup dolisirh
+ * \brief   File that contains parent class for certificate document models.
  */
 
+// Load Dolibarr Libraries.
 require_once DOL_DOCUMENT_ROOT . '/core/class/commondocgenerator.class.php';
 
 /**
- *	Parent class for documents models
+ * Parent class for certificate document models.
  */
-abstract class ModeleODTCertificate extends CommonDocGenerator
+abstract class ModeleODTCertificateDocument extends CommonDocGenerator
 {
-	/**
-	 *  Return list of active generation modules
-	 *
-	 *  @param  DoliDB  $db     			Database handler
-	 *  @param  integer $maxfilenamelength  Max length of value to show
-	 *  @return	array					    List of templates
-	 */
-	public static function liste_modeles(DoliDB $db, int $maxfilenamelength = 0): array
-	{
-		$type = 'certificatedocument';
-		$list = array();
-
-        require_once __DIR__ . '/../../../../../lib/dolisirh_function.lib.php';
-		return doliSirhGetListOfModels($db, $type, $maxfilenamelength);
-	}
+    /**
+     * Return list of activated modules usable for document generation.
+     *
+     * @param  DoliDB     $db                Database handler.
+     * @param  int        $maxfilenamelength Max length of value to show.
+     * @return array|int                     0 if no module is activated, or array(key=>label). For modules that need directory scan, key is completed with ":filename".
+     * @throws Exception
+     */
+    public static function liste_modeles(DoliDB $db, int $maxfilenamelength = 0)
+    {
+        require_once __DIR__ . '/../../../../../../saturne/lib/documents.lib.php';
+        return saturne_get_list_of_models($db, 'certificatedocument', $maxfilenamelength);
+    }
 }
