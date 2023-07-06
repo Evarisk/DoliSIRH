@@ -27,35 +27,36 @@ DoliSIRHDescriptionLong = Simplification de la gestion du temps. <br> Générati
 #
 
 # Data - Donnée
-MessageInfo                     = Tâche créée avec succès
-MessageInfoNoCreate             = Aucune tâche n'a été créée
-MessageInfoNoCreateProject      = Aucune tâche n'a été créée car le projet n'est pas lié
-MessageInfoNoCreateTime         = Aucune tâche n'a été créée car le service n'a pas de temps
-MessageInfoNoCreatedate         = Aucune tâche n'a été créée car le service n'a pas de date
-ErrorNoProject                  = Projet non lié
-ErrorDateStart                  = Pas de date de début
-ErrorDateEnd                    = Pas de date de fin
-ErrorServiceTime                = Le temps du(des) service(s) est nul
-MessageTimeSpentCreate          = Temps consommé crée
-MessageNoTaskLink               = Pas de tâche affectée, pas de temps passé disponible
-DoliSIRHTimeSpent               = Rapport de temps passé
-ActionAC_TEL_IN                 = Appel téléphonique entrant
-ActionAC_TEL_OUT                = Appel téléphonique sortant
-DoliSIRHNumberOfModelFilesFound = Nombre de modèles par défaut
-SetupDefaultData                = Gestion des données par défaut de DoliSIRH
-HRProjectSet                    = Création du Projet Ressources Humaines
-HRProjectSetHelp                = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
-ProductServiceSet               = Création des produits et services pour la navette
-ProductServiceSetHelp           = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
-BookmarkSet                     = Création d'un marque-page pour le temps consommé
-BookmarkSetHelp                 = Cette option permet d'accéder rapidement à la gestion du pointage de temps
-NotCreated                      = Pas encore créé(e)s
-AlreadyCreated                  = Déjà créé(e)s
-SetupDefaultDataNotCreated      = Vous n'avez pas créé les données par défaut de DOLISIRH
-HowToSetupDefaultData           = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
-ConfigDefaultData               = Configuration des données par défaut de DOLISIRH
-DOLISIRH_DEFAUT_TICKET_TIME     = Temps passé par défaut
-EnableDoliSIRH                  = Veuillez activer le module DoliSIRH pour accéder à cette page
+MessageInfo                       = Tâche créée avec succès
+MessageInfoNoCreate               = Aucune tâche n'a été créée
+MessageInfoNoCreateProject        = Aucune tâche n'a été créée car le projet n'est pas lié
+MessageInfoNoCreateTime           = Aucune tâche n'a été créée car le service n'a pas de temps
+MessageInfoNoCreatedate           = Aucune tâche n'a été créée car le service n'a pas de date
+ErrorNoProject                    = Projet non lié
+ErrorDateStart                    = Pas de date de début
+ErrorDateEnd                      = Pas de date de fin
+ErrorServiceTime                  = Le temps du(des) service(s) est nul
+MessageTimeSpentCreate            = Temps consommé crée
+MessageNoTaskLink                 = Pas de tâche affectée, pas de temps passé disponible
+DoliSIRHTimeSpent                 = Rapport de temps passé
+ActionAC_TEL_IN                   = Appel téléphonique entrant
+ActionAC_TEL_OUT                  = Appel téléphonique sortant
+DoliSIRHNumberOfModelFilesFound   = Nombre de modèles par défaut
+SetupDefaultData                  = Gestion des données par défaut de DoliSIRH
+HRProjectSet                      = Création du Projet Ressources Humaines
+HRProjectSetHelp                  = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
+ProductServiceSet                 = Création des produits et services pour la navette
+ProductServiceSetHelp             = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
+BookmarkSet                       = Création d'un marque-page pour le temps consommé
+BookmarkSetHelp                   = Cette option permet d'accéder rapidement à la gestion du pointage de temps
+NotCreated                        = Pas encore créé(e)s
+AlreadyCreated                    = Déjà créé(e)s
+SetupDefaultDataNotCreated        = Vous n'avez pas créé les données par défaut de DOLISIRH
+HowToSetupDefaultData             = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
+ConfigDefaultData                 = Configuration des données par défaut de DOLISIRH
+DefaultTicketTimeSpent            = Temps consommé par défaut pour un ticket
+DefaultTicketTimeSpentDescription = Cette option permet de définir le temps consommé par défaut pour un ticket (en min) <br> Valeur par défaut : 15 min
+EnableDoliSIRH                    = Veuillez activer le module DoliSIRH pour accéder à cette page
 
 
 
