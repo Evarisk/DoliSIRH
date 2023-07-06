@@ -255,9 +255,9 @@ if (empty($reshook)) {
     if ($massaction == 'delete' || ($action == 'delete' && $confirm == 'yes') && $permissiontodelete) {
         if (is_array($toselect) && !empty($toselect)) {
             foreach ($toselect as $toselectid) {
-                $objectTmp->fetch($toselectid);
-                $objectTmp->element = 'dolisirh_' . $objectTmp->element;
-                $objectTmp->deleteObjectLinked();
+                $object->fetch($toselectid);
+				$object->element = 'dolisirh_' . $objectTmp->element;
+				$object->deleteObjectLinked();
             }
         }
     }
