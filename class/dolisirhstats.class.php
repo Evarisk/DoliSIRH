@@ -744,7 +744,7 @@ abstract class DoliSIRHStats
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
         for ($i = 1; $i < 13; $i++) {
-            $firstdaytoshow = dol_get_first_day($year, $i);
+            $firstdaytoshow = dol_get_first_day($year + (($startmonth < $i) ? -1 : 0), $i);
             $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
             $currentMonth = date('m', dol_now());
