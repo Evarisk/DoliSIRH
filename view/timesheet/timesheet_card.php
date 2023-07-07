@@ -300,7 +300,7 @@ if (empty($reshook)) {
 		$objectline->fk_parent_line  = 0;
 
 		if ( ! $error) {
-			$result = $objectline->insert($user, false);
+			$result = $objectline->create($user);
 			if ($result > 0) {
 				// Creation timesheet line OK
 				$urltogo = str_replace('__ID__', $result, $backtopage);
