@@ -256,7 +256,7 @@ if (empty($reshook)) {
         if (is_array($toselect) && !empty($toselect)) {
             foreach ($toselect as $toselectid) {
                 $object->fetch($toselectid);
-				$object->element = 'dolisirh_' . $objectTmp->element;
+				$object->element = 'dolisirh_' . $object->element;
 				$object->deleteObjectLinked();
             }
         }
