@@ -262,7 +262,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $objectline->fk_parent_line = 0;
                     $objectline->fk_product     = $product->id;
                     $objectline->product_type   = 0;
-                    $objectline->insert($user);
+                    $objectline->create($user);
 
                     $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('JourneySubscription')))));
                     $objectline->date_creation  = $object->db->idate($now);
@@ -272,7 +272,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $objectline->fk_parent_line = 0;
                     $objectline->fk_product     = $product->id;
                     $objectline->product_type   = 1;
-                    $objectline->insert($user);
+                    $objectline->create($user);
 
                     $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('13thMonthBonus')))));
                     $objectline->date_creation  = $object->db->idate($now);
@@ -282,7 +282,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $objectline->fk_parent_line = 0;
                     $objectline->fk_product     = $product->id;
                     $objectline->product_type   = 1;
-                    $objectline->insert($user);
+                    $objectline->create($user);
 
                     $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('SpecialBonus')))));
                     $objectline->date_creation  = $object->db->idate($now);
@@ -292,13 +292,13 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $objectline->fk_parent_line = 0;
                     $objectline->fk_product     = $product->id;
                     $objectline->product_type   = 1;
-                    $objectline->insert($user);
-                }
+                    $objectline->create($user);
+                  }
 
-                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
-                $actioncomm->label = $langs->trans('ObjectCreateTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
-                $actioncomm->create($user);
-                break;
+                  $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
+                  $actioncomm->label = $langs->trans('ObjectCreateTrigger', $langs->transnoentities(ucfirst($object->element)));
+                  $actioncomm->create($user);
+                  break;
 
             case 'CERTIFICATE_CREATE' :
                 if (!empty($object->fk_user_assign)) {
