@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,714 +17,478 @@
  */
 
 /**
- *	\file       core/modules/dolisirh/timesheetdocument/doc_timesheetdocument_odt.modules.php
- *	\ingroup    dolisirh
- *	\brief      File of class to build ODT documents for timesheet
+ * \file    core/modules/dolisirh/timesheetdocument/doc_timesheetdocument_odt.modules.php
+ * \ingroup dolisirh
+ * \brief   File of class to build ODT timesheet document.
  */
 
-require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+// Load Dolibarr libraries.
+require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/images.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/doc.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/company.lib.php';
 
-require_once __DIR__ . '/modules_timesheetdocument.php';
+// Load Saturne libraries.
+require_once __DIR__ . '/../../../../../../saturne/class/saturnesignature.class.php';
+require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
+
+// Load DoliSIRH libraries.
 require_once __DIR__ . '/mod_timesheetdocument_standard.php';
 
 /**
- *	Class to build documents using ODF templates generator
+ * Class to build documents using ODF templates generator.
  */
-class doc_timesheetdocument_odt extends ModeleODTTimeSheetDocument
+class doc_timesheetdocument_odt extends SaturneDocumentModel
 {
-	/**
-	 * Issuer
-	 * @var Societe
-	 */
-	public $emetteur;
-
-	/**
-	 * @var array Minimum version of PHP required by module.
-	 * e.g.: PHP ≥ 5.6 = array(5, 6)
-	 */
-	public $phpmin = array(5, 6);
-
-	/**
-	 * @var string Dolibarr version of the loaded document
-	 */
-	public $version = 'dolibarr';
-
-	/**
-	 *	Constructor
-	 *
-	 *  @param		DoliDB		$db      Database handler
-	 */
-	public function __construct($db)
-	{
-		global $langs, $mysoc;
-
-		// Load translation files required by the page
-		$langs->loadLangs(array("main", "companies"));
-
-		$this->db = $db;
-		$this->name = $langs->trans('DoliSIRHTimeSheetDocumentTemplate');
-		$this->description = $langs->trans("DocumentModelOdt");
-		$this->scandir = 'DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH'; // Name of constant that is used to save list of directories to scan
-
-		// Page size for A4 format
-		$this->type = 'odt';
-		$this->page_largeur = 0;
-		$this->page_hauteur = 0;
-		$this->format = array($this->page_largeur, $this->page_hauteur);
-		$this->marge_gauche = 0;
-		$this->marge_droite = 0;
-		$this->marge_haute = 0;
-		$this->marge_basse = 0;
-
-		$this->option_logo = 1; // Display logo
-		$this->option_multilang = 1; // Available in several languages
-
-		// Get source company
-		$this->emetteur = $mysoc;
-		if (!$this->emetteur->country_code) {
-			$this->emetteur->country_code = substr($langs->defaultlang, -2); // By default, if is not defined
-		}
-	}
-
-	/**
-	 *	Return description of a module
-	 *
-	 *	@param	Translate	$langs      Lang object to use for output
-	 *	@return string       			Description
-	 */
-	public function info($langs)
-	{
-		global $conf, $langs;
-
-		// Load translation files required by the page
-		$langs->loadLangs(array("errors", "companies"));
-
-		$texte = $this->description.".<br>";
-		$texte .= '<table class="nobordernopadding centpercent">';
-
-		// List of directories area
-		$texte .= '<tr><td>';
-		$texttitle = $langs->trans("ListOfDirectories");
-		$listofdir = explode(',', preg_replace('/[\r\n]+/', ',', trim($conf->global->DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH)));
-		$listoffiles = array();
-		foreach ($listofdir as $key => $tmpdir) {
-			$tmpdir = trim($tmpdir);
-			$tmpdir = preg_replace('/DOL_DATA_ROOT/', DOL_DATA_ROOT, $tmpdir);
-			$tmpdir = preg_replace('/DOL_DOCUMENT_ROOT/', DOL_DOCUMENT_ROOT, $tmpdir);
-			if (!$tmpdir) {
-				unset($listofdir[$key]);
-				continue;
-			}
-			if (!is_dir($tmpdir)) {
-				$texttitle .= img_warning($langs->trans("ErrorDirNotFound", $tmpdir), 0);
-			} else {
-				$tmpfiles = dol_dir_list($tmpdir, 'files', 0, '\.(ods|odt)');
-				if (count($tmpfiles)) {
-					$listoffiles = array_merge($listoffiles, $tmpfiles);
-				}
-			}
-		}
-
-		// Scan directories
-		$nbofiles = count($listoffiles);
-		if (!empty($conf->global->DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH)) {
-			$texte .= $langs->trans("DoliSIRHNumberOfModelFilesFound").': <b>';
-			$texte .= count($listoffiles);
-			$texte .= '</b>';
-		}
-
-		if ($nbofiles) {
-			$texte .= '<div id="div_' . get_class($this) . '" class="hidden">';
-			foreach ($listoffiles as $file) {
-				$texte .= $file['name'] . '<br>';
-			}
-			$texte .= '</div>';
-		}
-
-		$texte .= '</td>';
-		$texte .= '</table>';
-		$texte .= '</form>';
-
-		return $texte;
-	}
-
+    /**
+     * @var array Minimum version of PHP required by module.
+     * e.g.: PHP ≥ 5.5 = array(5, 5)
+     */
+    public array $phpmin = [7, 4];
 
     /**
-     *    Set tmparray vars
-     *
-     * @param  array        $tmparray   temp array contains all document data
-     * @param  Segment      $listlines  Object to fill with data to convert in ODT Segment
-     * @throws Exception
+     * @var string Dolibarr version of the loaded document.
      */
-    public function setTmparrayVars($tmparray, $listlines) {
-        global $langs;
+    public string $version = 'dolibarr';
 
-        unset($tmparray['object_fields']);
-        unset($tmparray['object_lines']);
+    /**
+     * @var string Module.
+     */
+    public string $module = 'dolisirh';
 
-        foreach ($tmparray as $key => $val) {
-            try {
-                if (empty($val)) {
-                    $listlines->setVars($key, $langs->trans('NoData'), true, 'UTF-8');
-                } else {
-                    $listlines->setVars($key, html_entity_decode($val, ENT_QUOTES | ENT_HTML5), true, 'UTF-8');
-                }
-            } catch (SegmentException $e) {
-                dol_syslog($e->getMessage());
-            }
-        }
-        $listlines->merge();
+    /**
+     * @var string Document type.
+     */
+    public string $document_type = 'timesheetdocument';
+
+    /**
+     * Constructor.
+     *
+     * @param DoliDB $db Database handler.
+     */
+    public function __construct(DoliDB $db)
+    {
+        parent::__construct($db, $this->module, $this->document_type);
     }
 
+    /**
+     * Return description of a module.
+     *
+     * @param  Translate $langs Lang object to use for output.
+     * @return string           Description.
+     */
+    public function info(Translate $langs): string
+    {
+        return parent::info($langs);
+    }
 
     /**
-     *  Function to build a document on disk using the generic odt module.
+     * Fill all odt tags for segments lines.
      *
-     * @param  TimeSheetDocument $objectDocument    Object source to build document
-     * @param  Translate         $outputlangs       Lang output object
-     * @param  string            $srctemplatepath   Full path of source filename for generator using a template file
-     * @param  int               $hidedetails       Do not show line details
-     * @param  int               $hidedesc          Do not show desc
-     * @param  int               $hideref           Do not show ref
-     * @param  TimeSheet         $object            TimeSheet Object
-     * @return int                                  1 if OK, <=0 if KO
+     * @param  Odf       $odfHandler  Object builder odf library.
+     * @param  Translate $outputLangs Lang object to use for output.
+     * @param  array     $moreParam   More param (Object/user/etc).
+     *
+     * @return int                    1 if OK, <=0 if KO.
      * @throws Exception
      */
-	public function write_file($objectDocument, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $object)
-	{
-		global $action, $conf, $hookmanager, $langs, $mysoc, $user;
+    public function fillTagsLines(Odf $odfHandler, Translate $outputLangs, array $moreParam): int
+    {
+        global $conf, $user;
 
-		if (empty($srctemplatepath)) {
-			dol_syslog("doc_generic_odt::write_file parameter srctemplatepath empty", LOG_WARNING);
-			return -1;
-		}
+        $object = $moreParam['object'];
 
-		// Add odtgeneration hook
-		if (!is_object($hookmanager)) {
-			include_once DOL_DOCUMENT_ROOT.'/core/class/hookmanager.class.php';
-			$hookmanager = new HookManager($this->db);
-		}
+        $task         = new Task($this->db);
+        $workingHours = new Workinghours($this->db);
 
-		$hookmanager->initHooks(array('odtgeneration'));
+        $workingHours = $workingHours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
 
-		if (!is_object($outputlangs)) {
-			$outputlangs = $langs;
-		}
+        $dayStartToShow = $object->date_start - 12 * 3600;
+        $lastDayToShow  = $object->date_end - 12 * 3600;
 
-		$outputlangs->charset_output = 'UTF-8';
-		$outputlangs->loadLangs(array("main", "dict", "companies", "bills"));
+        $daysInRange      = dolisirh_num_between_day($object->date_start, $object->date_end, 1);
+        $daysInRange      = !empty($daysInRange) ? $daysInRange : 1;
+        $daysInRangeArray = [];
 
-        $refModName          = new $conf->global->DOLISIRH_TIMESHEETDOCUMENT_ADDON($this->db);
-        $objectDocumentRef   = $refModName->getNextValue($objectDocument);
-        $objectDocument->ref = $objectDocumentRef;
-        $objectDocumentID    = $objectDocument->create($user, true, $object);
+        for ($idw = 0; $idw < $daysInRange; $idw++) {
+            $dayInLoop          = dol_time_plus_duree($dayStartToShow, $idw, 'd');
+            $day                = dol_getdate($dayInLoop);
+            $daysInRangeArray[] = $day['mday'];
+        }
 
-        $objectDocument->fetch($objectDocumentID);
-
-        $objectDocumentRef = dol_sanitizeFileName($objectDocument->ref);
-		$dir = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/timesheetdocument/' . $object->ref;
-
-        if (!file_exists($dir)) {
-            if (dol_mkdir($dir) < 0) {
-                $this->error = $langs->transnoentities("ErrorCanNotCreateDir", $dir);
-                return -1;
+        $isAvailable = [];
+        for ($idw = 0; $idw < $daysInRange; $idw++) {
+            $dayInLoop = dol_time_plus_duree($dayStartToShow, $idw, 'd');
+            if (isDayAvailable($dayInLoop, $user->id)) {
+                $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon '=> 1];
+            } elseif (date('N', $dayInLoop) >= 6) {
+                $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
+            } else {
+                $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
             }
         }
 
-        if (file_exists($dir)) {
-            $newFile     = basename($srctemplatepath);
-            $newFileTmp  = preg_replace('/\.od([ts])/i', '', $newFile);
-            $newFileTmp  = preg_replace('/template_/i', '', $newFileTmp);
-            $societyName = preg_replace('/\./', '_', $conf->global->MAIN_INFO_SOCIETE_NOM);
+        $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($dayStartToShow, $lastDayToShow + 1, $isAvailable, $object->fk_user_assign);
 
-            $date = dol_print_date(dol_now(),'dayxcard');
-
-            $userTmp = new User($this->db);
-            $userTmp->fetch($object->fk_user_assign);
-
-            $userAssign = strtoupper($userTmp->lastname) . '_' . $userTmp->firstname;
-
-            $newFileTmp = $date . '_' . $object->ref . '_' . $objectDocumentRef . '_' . $langs->transnoentities($newFileTmp) . '_' . $userAssign . '_' . $societyName;
-
-            $newFileTmp = str_replace(' ', '_', $newFileTmp);
-
-            // Get extension (ods or odt)
-            $newFileFormat = substr($newFile, strrpos($newFile, '.') + 1);
-            $fileName      = $newFileTmp . '.' . $newFileFormat;
-            $file          = $dir . '/' . $fileName;
-
-            $objectDocument->last_main_doc = $newFileTmp;
-
-            $sql  = "UPDATE " . MAIN_DB_PREFIX . "dolisirh_dolisirhdocuments";
-            $sql .= " SET last_main_doc =" . (!empty($newFileTmp) ? "'" . $this->db->escape($newFileTmp) . "'" : 'null');
-            $sql .= " WHERE rowid = " . $objectDocument->id;
-
-            dol_syslog("dolisirh_dolisirhdocuments::Insert last main doc", LOG_DEBUG);
-            $this->db->query($sql);
-
-            dol_mkdir($conf->dolisirh->dir_temp);
-
-            if (!is_writable($conf->dolisirh->dir_temp)) {
-                $this->error = "Failed to write in temp directory ".$conf->dolisirh->dir_temp;
-                dol_syslog('Error in write_file: '.$this->error, LOG_ERR);
-                return -1;
-            }
-
-            // Open and load template
-            require_once ODTPHP_PATH.'odf.php';
+        // Replace tags of lines.
+        try {
+            // Get table header days.
+            $foundTagForLines = 1;
             try {
-                $odfHandler = new odf(
-                    $srctemplatepath,
-                    array(
-                    'PATH_TO_TMP'	  => $conf->dolisirh->dir_temp,
-                    'ZIP_PROXY'		  => 'PclZipProxy', // PhpZipProxy or PclZipProxy. Got "bad compression method" error when using PhpZipProxy.
-                    'DELIMITER_LEFT'  => '{',
-                    'DELIMITER_RIGHT' => '}'
-                    )
-                );
-            } catch (Exception $e) {
-                $this->error = $e->getMessage();
-                dol_syslog($e->getMessage());
-                return -1;
-            }
-
-            // Define substitution array
-            $substitutionarray = getCommonSubstitutionArray($outputlangs, 0, null, $object);
-            $array_soc = $this->get_substitutionarray_mysoc($mysoc, $outputlangs);
-            $array_soc['mycompany_logo']  = preg_replace('/_small/', '_mini', $array_soc['mycompany_logo']);
-
-            $tmparray = array_merge($substitutionarray, $array_soc);
-            complete_substitutions_array($tmparray, $outputlangs, $object);
-
-            $usertmp      = new User($this->db);
-            $task         = new Task($this->db);
-            $project      = new Project($this->db);
-            $signatory    = new SaturneSignature($this->db, 'dolisirh');
-            $workinghours = new Workinghours($this->db);
-
-            $usertmp->fetch($object->fk_user_assign);
-            $workingHours = $workinghours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
-
-            $daystarttoshow   = $object->date_start - 12 * 3600;
-            $lastdaytoshow    = $object->date_end - 12 * 3600;
-
-            $daysInRange      = dolisirh_num_between_day($object->date_start, $object->date_end, 1);
-            $daysInRange      = !empty($daysInRange) ? $daysInRange : 1;
-            $daysInRangeArray = [];
-
-            for ($idw = 0; $idw < $daysInRange; $idw++) {
-                $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw, 'd');
-                $day = dol_getdate($dayInLoop);
-                $daysInRangeArray[] = $day['mday'];
-            }
-
-            $isavailable = array();
-            for ($idw = 0; $idw < $daysInRange; $idw++) {
-                $dayInLoop =  dol_time_plus_duree($daystarttoshow, $idw, 'd');
-                if (isDayAvailable($dayInLoop, $user->id)) {
-                    $isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
-                } else if (date('N', $dayInLoop) >= 6) {
-                    $isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end');
-                } else {
-                    $isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
-                }
-            }
-
-            $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($daystarttoshow, $lastdaytoshow + 1, $isavailable, $object->fk_user_assign);
-
-            $tmparray['employee_firstname'] = $usertmp->firstname;
-            $tmparray['employee_lastname']  = strtoupper($usertmp->lastname);
-            $tmparray['date_start']         = dol_print_date($object->date_start, 'day', 'tzuser');
-            $tmparray['date_end']           = dol_print_date($object->date_end, 'day', 'tzuser');
-            $tmparray['note_public']        = $object->note_public;
-            $tmparray['month_year']         = dol_print_date($object->date_start, "%B %Y", 'tzuser');
-
-            $project->fetch($conf->global->DOLISIRH_HR_PROJECT);
-
-            $tmparray['project_rh_ref'] = $project->ref;
-            $tmparray['project_rh']     = $project->title;
-
-            $society_responsible = $signatory->fetchSignatory('TIMESHEET_SOCIETY_RESPONSIBLE', $object->id, 'timesheet');
-            $society_responsible = is_array($society_responsible) ? array_shift($society_responsible) : $society_responsible;
-            $societey_attendant  = $signatory->fetchSignatory('TIMESHEET_SOCIETY_ATTENDANT', $object->id, 'timesheet');
-            $societey_attendant  = is_array($societey_attendant) ? array_shift($societey_attendant) : $societey_attendant;
-
-            $tempdir = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
-
-            //Signatures
-            if (!empty($society_responsible) && $society_responsible > 0) {
-                $tmparray['society_responsible_fullname']       = strtoupper($society_responsible->lastname) . ' ' . $society_responsible->firstname;
-                $tmparray['society_responsible_signature_date'] = dol_print_date($society_responsible->signature_date, 'dayhoursec');
-
-                $encoded_image = explode(",",  $society_responsible->signature)[1];
-                $decoded_image = base64_decode($encoded_image);
-                file_put_contents($tempdir . "signature.png", $decoded_image);
-                $tmparray['society_responsible_signature'] = $tempdir . "signature.png";
-            } else {
-                $tmparray['society_responsible_fullname'] = '';
-                $tmparray['society_responsible_signature_date'] = '';
-                $tmparray['society_responsible_signature'] = '';
-            }
-
-            if (!empty($societey_attendant) && $societey_attendant > 0) {
-                $tmparray['society_attendant_fullname']       = strtoupper($societey_attendant->lastname) . ' ' . $societey_attendant->firstname;
-                $tmparray['society_attendant_signature_date'] = dol_print_date($societey_attendant->signature_date, 'dayhoursec');
-
-                $encoded_image = explode(",",  $societey_attendant->signature)[1];
-                $decoded_image = base64_decode($encoded_image);
-                file_put_contents($tempdir . "signature1.png", $decoded_image);
-                $tmparray['society_attendant_signature'] = $tempdir . "signature1.png";
-            } else {
-                $tmparray['society_attendant_fullname'] = '';
-                $tmparray['society_attendant_signature_date'] = '';
-                $tmparray['society_attendant_signature'] = '';
-            }
-
-            unset($tmparray['object_fields']);
-            unset($tmparray['object_lines']);
-
-            foreach ($tmparray as $key => $value) {
-                try {
-                    if ($key == 'society_responsible_signature' || $key == 'society_attendant_signature') { // Image
-                        if (file_exists($value)) {
-                            $list = getimagesize($value);
-                            $newWidth = 350;
-                            if ($list[0]) {
-                                $ratio = $newWidth / $list[0];
-                                $newHeight = $ratio * $list[1];
-                                dol_imageResizeOrCrop($value, 0, $newWidth, $newHeight);
-                            }
-                            $odfHandler->setImage($key, $value);
-                        } else {
-                            $odfHandler->setVars($key, $langs->trans('NoData'), true, 'UTF-8');
-                        }
-                    } elseif (preg_match('/logo$/', $key)) {
-                        if (file_exists($value)) $odfHandler->setImage($key, $value);
-                        else $odfHandler->setVars($key, $langs->transnoentities('ErrorFileNotFound'), true, 'UTF-8');
-                    } elseif (empty($value)) { // Text
-                        $odfHandler->setVars($key, $langs->trans('NoData'), true, 'UTF-8');
-                    } else {
-                        $odfHandler->setVars($key, html_entity_decode($value, ENT_QUOTES | ENT_HTML5), true, 'UTF-8');
-                    }
-                } catch (OdfException $e) {
-                    dol_syslog($e->getMessage());
-                }
-            }
-            // Replace tags of lines
-            try {
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment('days');
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    $listlines = '';
-                    dol_syslog($e->getMessage());
-                }
-
-                // Get table header days
-                if ($foundtagforlines) {
-                    for ($idw = 1; $idw <= 31; $idw++) {
-                        if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, array_search($idw, $daysInRangeArray), 'd');
-                            $tmparray['day'.$idw] = dol_print_date($dayInLoop, '%a');
-                        } else {
-                            $tmparray['day'.$idw] = '-';
-                        }
-                    }
-
-                    $this->setTmparrayVars($tmparray, $listlines);
-                    $odfHandler->mergeSegment($listlines);
-                }
-
-                // Get all tasks except five HR project task
-                $totaltimewithoutHRproject = [];
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment('times');
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    $listlines = '';
-                    dol_syslog($e->getMessage());
-                }
-
-                if ($foundtagforlines) {
-                    $filter = ' AND t.rowid NOT IN (' . $conf->global->DOLISIRH_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_SICK_LEAVE_TASK . ',' . $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK . ',' . $conf->global->DOLISIRH_RTT_TASK . ')';
-                    $tasksArray = $task->getTasksArray(0, 0, 0, 0, 0, '', '', $filter,  $object->fk_user_assign);
-                    if (is_array($tasksArray) && !empty($tasksArray)) {
-                        foreach ($tasksArray as $tasksingle) {
-                            for ($idw = 1; $idw <= 31; $idw++) {
-								$tmparray['task_ref'] = $tasksingle->ref;
-								$tmparray['task_label'] = dol_trunc($tasksingle->label, 16);
-                                if (in_array($idw, $daysInRangeArray)) {
-                                    $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
-                                    $tmparray['time' . $idw] = (($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
-                                    $totaltimewithoutHRproject[$dayInLoop] += $timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')];
-                                } else {
-                                    $tmparray['time' . $idw] = '-';
-                                }
-                            }
-							if ($conf->global->DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET && $timeSpentOnTasks[$tasksingle->id] > 0) {
-								$this->setTmparrayVars($tmparray, $listlines);
-							}
-                        }
-                        $odfHandler->mergeSegment($listlines);
-                    }
-                }
-
-				// Get HR project task
-                $totaltimehrproject = [];
-                $i = 0;
-                $segment = [
-                    ['csss', 'cps', 'rtts', 'jfs', 'cms',], // Row name
-                    ['css', 'cp', 'rtt', 'jf', 'cm',] // Cell name
-                ];
-
-                $filter = ' AND t.rowid IN (' . $conf->global->DOLISIRH_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_SICK_LEAVE_TASK . ',' . $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK . ',' . $conf->global->DOLISIRH_RTT_TASK . ')';
-                $tasksArray = $task->getTasksArray(0, 0, $conf->global->DOLISIRH_HR_PROJECT, 0, 0, '', '', $filter,  $object->fk_user_assign);
-                if (is_array($tasksArray) && !empty($tasksArray)) {
-                    foreach ($tasksArray as $tasksingle) {
-                        $foundtagforlines = 1;
-                        try {
-                            $listlines = $odfHandler->setSegment($segment[0][$i]);
-                        } catch (OdfException $e) {
-                            // We may arrive here if tags for lines not present into template
-                            $foundtagforlines = 0;
-                            dol_syslog($e->getMessage());
-                        }
-
-                        if ($foundtagforlines) {
-                            for ($idw = 1; $idw <= 31; $idw++) {
-                                if (in_array($idw, $daysInRangeArray)) {
-                                    $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
-                                    $tmparray[$segment[1][$i] . $idw] = (($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
-                                    $totaltimehrproject[$dayInLoop] += $timeSpentOnTasks[$tasksingle->id][dol_print_date($dayInLoop, 'day')];
-                                } else {
-                                    $tmparray[$segment[1][$i] . $idw] = '-';
-                                }
-                            }
-
-                            $this->setTmparrayVars($tmparray, $listlines);
-                            $odfHandler->mergeSegment($listlines);
-                        }
-                        $i++;
-                    }
-                }
-
-                // Total time RH
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment('totalrhs');
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    dol_syslog($e->getMessage());
-                }
-
-                if ($foundtagforlines) {
-                    for ($idw = 1; $idw <= 31; $idw++) {
-                        if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
-                            $tmparray['totalrh' . $idw] = (($totaltimehrproject[$dayInLoop] != 0) ? convertSecondToTime($totaltimehrproject[$dayInLoop], (is_float($totaltimehrproject[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
-                        } else {
-                            $tmparray['totalrh' . $idw] = '-';
-                        }
-                    }
-
-                    $this->setTmparrayVars($tmparray, $listlines);
-                    $odfHandler->mergeSegment($listlines);
-                }
-
-                // Total time spent without Project RH
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment('totaltimes');
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    dol_syslog($e->getMessage());
-                }
-
-                if ($foundtagforlines) {
-                    for ($idw = 1; $idw <= 31; $idw++) {
-                        if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
-                            $tmparray['totaltime' . $idw] = (($totaltimewithoutHRproject[$dayInLoop] != 0) ? convertSecondToTime($totaltimewithoutHRproject[$dayInLoop], (is_float($totaltimewithoutHRproject[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
-                        } else {
-                            $tmparray['totaltime' . $idw] = '-';
-                        }
-                    }
-
-                    $this->setTmparrayVars($tmparray, $listlines);
-                    $odfHandler->mergeSegment($listlines);
-                }
-
-                // Total time spent
-                $totaltimespent   = [];
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment('totaltpss');
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    dol_syslog($e->getMessage());
-                }
-
-                if ($foundtagforlines) {
-                    for ($idw = 1; $idw <= 31; $idw++) {
-                        if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
-                            $totaltimespent[$dayInLoop]  = $totaltimewithoutHRproject[$dayInLoop] + $totaltimehrproject[$dayInLoop];
-                            $tmparray['totaltps' . $idw] = (($totaltimespent[$dayInLoop] != 0) ? convertSecondToTime($totaltimespent[$dayInLoop], (is_float($totaltimespent[$dayInLoop]) ? 'allhourmin' : 'allhour')) : '-');
-                        } else {
-                            $tmparray['totaltps' . $idw] = '-';
-                        }
-                    }
-
-                    $this->setTmparrayVars($tmparray, $listlines);
-                    $odfHandler->mergeSegment($listlines);
-                }
-
-                // Total time planned
-                $totaltimeplanned = [];
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment('tas');
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    dol_syslog($e->getMessage());
-                }
-
-                if ($foundtagforlines) {
-                    for ($idw = 1; $idw <= 31; $idw++) {
-                        if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
-                            $totaltimeplanned[$dayInLoop] = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), $workingHours, $isavailable);
-                            $tmparray['ta' . $idw] = (($totaltimeplanned[$dayInLoop]['minutes'] != 0) ? convertSecondToTime($totaltimeplanned[$dayInLoop]['minutes'] * 60, (is_float($totaltimeplanned[$dayInLoop]['minutes']/60) ? 'allhourmin' : 'allhour')) : '-');
-                        } else {
-                            $tmparray['ta' . $idw] = '-';
-                        }
-                    }
-
-                    $this->setTmparrayVars($tmparray, $listlines);
-                    $odfHandler->mergeSegment($listlines);
-                }
-
-                // Diff between time planned and time spent
-                $difftotaltime    = [];
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment('diffs');
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    dol_syslog($e->getMessage());
-                }
-
-                if ($foundtagforlines) {
-                    for ($idw = 1; $idw <= 31; $idw++) {
-                        if (in_array($idw, $daysInRangeArray)) {
-                            $dayInLoop = dol_time_plus_duree($daystarttoshow, $idw - 1, 'd');
-                            $difftotaltime[$dayInLoop] = $totaltimeplanned[$dayInLoop]['minutes'] * 60 - $totaltimespent[$dayInLoop];
-                            $tmparray['diff' . $idw] = (($difftotaltime[$dayInLoop] != 0) ? convertSecondToTime(abs($difftotaltime[$dayInLoop]), (is_float($difftotaltime[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
-                        } else {
-                            $tmparray['diff' . $idw] = '-';
-                        }
-                    }
-
-                    $this->setTmparrayVars($tmparray, $listlines);
-                    $odfHandler->mergeSegment($listlines);
-                }
-
-                // TimeSheetDet
-                $foundtagforlines = 1;
-                try {
-                    $listlines = $odfHandler->setSegment('timesheetdet');
-                } catch (OdfException $e) {
-                    // We may arrive here if tags for lines not present into template
-                    $foundtagforlines = 0;
-                    dol_syslog($e->getMessage());
-                }
-
-                if ($foundtagforlines) {
-                    $object->fetchLines();
-                    if (is_array($object->lines) && !empty($object->lines)) {
-                        foreach ($object->lines as $line) {
-                            if ($line->fk_product > 0) {
-                                $product = new Product($this->db);
-                                $product->fetch($line->fk_product);
-                                $tmparray['timesheetdet_label'] = $product->label;
-                                $tmparray['timesheetdet_qty']   = $line->qty;
-                            } elseif (!empty($line->description)) {
-                                $tmparray['timesheetdet_label'] = $line->description;
-                                $tmparray['timesheetdet_qty']   = $line->qty;
-                            }
-
-                            $this->setTmparrayVars($tmparray, $listlines);
-                        }
-                    }
-                    $odfHandler->mergeSegment($listlines);
-                }
+                $listLines = $odfHandler->setSegment('days');
             } catch (OdfException $e) {
-                $this->error = $e->getMessage();
-                dol_syslog($this->error, LOG_WARNING);
-                return -1;
+                // We may arrive here if tags for lines not present into template.
+                $foundTagForLines = 0;
+                $listLines = '';
+                dol_syslog($e->getMessage());
             }
 
-            // Replace labels translated
-            $tmparray = $outputlangs->get_translations_for_substitutions();
-            foreach ($tmparray as $key => $value) {
-                try {
-                    $odfHandler->setVars($key, $value, true, 'UTF-8');
-                } catch (OdfException $e) {
-                    dol_syslog($e->getMessage());
+            if ($foundTagForLines) {
+                for ($idw = 1; $idw <= 31; $idw++) {
+                    if (in_array($idw, $daysInRangeArray)) {
+                        $dayInLoop              = dol_time_plus_duree($dayStartToShow, array_search($idw, $daysInRangeArray), 'd');
+                        $tmpArray['day' . $idw] = dol_print_date($dayInLoop, '%a');
+                    } else {
+                        $tmpArray['day' . $idw] = '-';
+                    }
+                }
+
+                $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                $odfHandler->mergeSegment($listLines);
+            }
+
+            // Get all tasks except five HR project task.
+            $totalTimeWithoutHrProject = [];
+            $foundTagForLines = 1;
+            try {
+                $listLines = $odfHandler->setSegment('times');
+            } catch (OdfException $e) {
+                // We may arrive here if tags for lines not present into template.
+                $foundTagForLines = 0;
+                $listLines = '';
+                dol_syslog($e->getMessage());
+            }
+
+            if ($foundTagForLines) {
+                $filter     = ' AND t.rowid NOT IN (' . $conf->global->DOLISIRH_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_RTT_TASK . ',' . $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK . ',' . $conf->global->DOLISIRH_SICK_LEAVE_TASK . ')';
+                $tasksArray = $task->getTasksArray(0, 0, 0, 0, 0, '', '', $filter,  $object->fk_user_assign);
+                if (is_array($tasksArray) && !empty($tasksArray)) {
+                    foreach ($tasksArray as $taskSingle) {
+                        for ($idw = 1; $idw <= 31; $idw++) {
+                            $tmpArray['task_ref']   = $taskSingle->ref;
+                            $tmpArray['task_label'] = dol_trunc($taskSingle->label, 16);
+                            if (in_array($idw, $daysInRangeArray)) {
+                                $dayInLoop                              = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                                $tmpArray['time' . $idw]                = (($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                                $totalTimeWithoutHrProject[$dayInLoop] += $timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')];
+                            } else {
+                                $tmpArray['time' . $idw] = '-';
+                            }
+                        }
+                        if ($conf->global->DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET && $timeSpentOnTasks[$taskSingle->id] > 0) {
+                            $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                        }
+                    }
+                    $odfHandler->mergeSegment($listLines);
                 }
             }
 
-            // Call the beforeODTSave hook
-            $parameters = array('odfHandler' => &$odfHandler, 'file' => $file, 'object' => $object, 'outputlangs' => $outputlangs, 'substitutionarray' => &$tmparray);
-            $hookmanager->executeHooks('beforeODTSave', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
+            // Get HR project task.
+            $totalTimeHrProject = [];
+            $i = 0;
+            $segment = [
+                ['csss', 'cps', 'rtts', 'jfs', 'cms',], // Row name.
+                ['css', 'cp', 'rtt', 'jf', 'cm',] // Cell name.
+            ];
 
-            // Write new file
-            if (!empty($conf->global->MAIN_ODT_AS_PDF)) {
-                try {
-                    $odfHandler->exportAsAttachedPDF($file);
-                } catch (Exception $e) {
-                    $this->error = $e->getMessage();
-                    dol_syslog($e->getMessage());
-                    return -1;
-                }
-            } else {
-                try {
-                    $odfHandler->saveToDisk($file);
-                } catch (Exception $e) {
-                    $this->error = $e->getMessage();
-                    dol_syslog($e->getMessage());
-                    return -1;
+            $filter     = ' AND t.rowid IN (' . $conf->global->DOLISIRH_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_RTT_TASK. ',' . $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK . ',' . $conf->global->DOLISIRH_SICK_LEAVE_TASK . ')';
+            $tasksArray = $task->getTasksArray(0, 0, $conf->global->DOLISIRH_HR_PROJECT, 0, 0, '', '', $filter,  $object->fk_user_assign);
+            if (is_array($tasksArray) && !empty($tasksArray)) {
+                foreach ($tasksArray as $taskSingle) {
+                    $foundTagForLines = 1;
+                    try {
+                        $listLines = $odfHandler->setSegment($segment[0][$i]);
+                    } catch (OdfException $e) {
+                        // We may arrive here if tags for lines not present into template.
+                        $foundTagForLines = 0;
+                        dol_syslog($e->getMessage());
+                    }
+
+                    if ($foundTagForLines) {
+                        for ($idw = 1; $idw <= 31; $idw++) {
+                            if (in_array($idw, $daysInRangeArray)) {
+                                $dayInLoop                        = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                                $tmpArray[$segment[1][$i] . $idw] = (($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                                $totalTimeHrProject[$dayInLoop]  += $timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')];
+                            } else {
+                                $tmpArray[$segment[1][$i] . $idw] = '-';
+                            }
+                        }
+
+                        $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                        $odfHandler->mergeSegment($listLines);
+                    }
+                    $i++;
                 }
             }
 
-            $parameters = array('odfHandler' => &$odfHandler, 'file' => $file, 'object' => $object, 'outputlangs' => $outputlangs, 'substitutionarray' => &$tmparray);
-            $hookmanager->executeHooks('afterODTCreation', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
+            // Total time RH.
+            $foundTagForLines = 1;
+            try {
+                $listLines = $odfHandler->setSegment('totalrhs');
+            } catch (OdfException $e) {
+                // We may arrive here if tags for lines not present into template.
+                $foundTagForLines = 0;
+                dol_syslog($e->getMessage());
+            }
 
-            $odfHandler = null; // Destroy object
+            if ($foundTagForLines) {
+                for ($idw = 1; $idw <= 31; $idw++) {
+                    if (in_array($idw, $daysInRangeArray)) {
+                        $dayInLoop                  = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $tmpArray['totalrh' . $idw] = (($totalTimeHrProject[$dayInLoop] != 0) ? convertSecondToTime($totalTimeHrProject[$dayInLoop], (is_float($totalTimeHrProject[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                    } else {
+                        $tmpArray['totalrh' . $idw] = '-';
+                    }
+                }
 
-            dol_delete_file($tempdir . "signature.png");
-            dol_delete_file($tempdir . "signature1.png");
+                $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                $odfHandler->mergeSegment($listLines);
+            }
 
-            $this->result = array('fullpath'=>$file);
+            // Total time spent without Project RH.
+            $foundTagForLines = 1;
+            try {
+                $listLines = $odfHandler->setSegment('totaltimes');
+            } catch (OdfException $e) {
+                // We may arrive here if tags for lines not present into template.
+                $foundTagForLines = 0;
+                dol_syslog($e->getMessage());
+            }
 
-            return 1; // Success
-        } else {
-            $this->error = $langs->transnoentities("ErrorCanNotCreateDir", $dir);
+            if ($foundTagForLines) {
+                for ($idw = 1; $idw <= 31; $idw++) {
+                    if (in_array($idw, $daysInRangeArray)) {
+                        $dayInLoop                    = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $tmpArray['totaltime' . $idw] = (($totalTimeWithoutHrProject[$dayInLoop] != 0) ? convertSecondToTime($totalTimeWithoutHrProject[$dayInLoop], (is_float($totalTimeWithoutHrProject[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                    } else {
+                        $tmpArray['totaltime' . $idw] = '-';
+                    }
+                }
+
+                $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                $odfHandler->mergeSegment($listLines);
+            }
+
+            // Total time spent.
+            $totalTimeSpent   = [];
+            $foundTagForLines = 1;
+            try {
+                $listLines = $odfHandler->setSegment('totaltpss');
+            } catch (OdfException $e) {
+                // We may arrive here if tags for lines not present into template.
+                $foundTagForLines = 0;
+                dol_syslog($e->getMessage());
+            }
+
+            if ($foundTagForLines) {
+                for ($idw = 1; $idw <= 31; $idw++) {
+                    if (in_array($idw, $daysInRangeArray)) {
+                        $dayInLoop                   = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $totalTimeSpent[$dayInLoop]  = $totalTimeWithoutHrProject[$dayInLoop] + $totalTimeHrProject[$dayInLoop];
+                        $tmpArray['totaltps' . $idw] = (($totalTimeSpent[$dayInLoop] != 0) ? convertSecondToTime($totalTimeSpent[$dayInLoop], (is_float($totalTimeSpent[$dayInLoop]) ? 'allhourmin' : 'allhour')) : '-');
+                    } else {
+                        $tmpArray['totaltps' . $idw] = '-';
+                    }
+                }
+
+                $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                $odfHandler->mergeSegment($listLines);
+            }
+
+            // Total time planned.
+            $totalTimePlanned = [];
+            $foundTagForLines = 1;
+            try {
+                $listLines = $odfHandler->setSegment('tas');
+            } catch (OdfException $e) {
+                // We may arrive here if tags for lines not present into template.
+                $foundTagForLines = 0;
+                dol_syslog($e->getMessage());
+            }
+
+            if ($foundTagForLines) {
+                for ($idw = 1; $idw <= 31; $idw++) {
+                    if (in_array($idw, $daysInRangeArray)) {
+                        $dayInLoop                    = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $totalTimePlanned[$dayInLoop] = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), $workingHours, $isAvailable);
+                        $tmpArray['ta' . $idw]        = (($totalTimePlanned[$dayInLoop]['minutes'] != 0) ? convertSecondToTime($totalTimePlanned[$dayInLoop]['minutes'] * 60, (is_float($totalTimePlanned[$dayInLoop]['minutes']/60) ? 'allhourmin' : 'allhour')) : '-');
+                    } else {
+                        $tmpArray['ta' . $idw] = '-';
+                    }
+                }
+
+                $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                $odfHandler->mergeSegment($listLines);
+            }
+
+            // Diff between time planned and time spent.
+            $diffTotalTime    = [];
+            $foundTagForLines = 1;
+            try {
+                $listLines = $odfHandler->setSegment('diffs');
+            } catch (OdfException $e) {
+                // We may arrive here if tags for lines not present into template.
+                $foundTagForLines = 0;
+                dol_syslog($e->getMessage());
+            }
+
+            if ($foundTagForLines) {
+                for ($idw = 1; $idw <= 31; $idw++) {
+                    if (in_array($idw, $daysInRangeArray)) {
+                        $dayInLoop                 = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $diffTotalTime[$dayInLoop] = $totalTimePlanned[$dayInLoop]['minutes'] * 60 - $totalTimeSpent[$dayInLoop];
+                        $tmpArray['diff' . $idw]   = (($diffTotalTime[$dayInLoop] != 0) ? convertSecondToTime(abs($diffTotalTime[$dayInLoop]), (is_float($diffTotalTime[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                    } else {
+                        $tmpArray['diff' . $idw] = '-';
+                    }
+                }
+
+                $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                $odfHandler->mergeSegment($listLines);
+            }
+
+            // TimeSheetDet.
+            $foundTagForLines = 1;
+            try {
+                $listLines = $odfHandler->setSegment('timesheetdet');
+            } catch (OdfException $e) {
+                // We may arrive here if tags for lines not present into template.
+                $foundTagForLines = 0;
+                dol_syslog($e->getMessage());
+            }
+
+            if ($foundTagForLines) {
+                $object->fetchLines();
+                if (is_array($object->lines) && !empty($object->lines)) {
+                    foreach ($object->lines as $line) {
+                        if ($line->fk_product > 0) {
+                            $product = new Product($this->db);
+                            $product->fetch($line->fk_product);
+                            $tmpArray['timesheetdet_label'] = $product->label;
+                            $tmpArray['timesheetdet_qty']   = $line->qty;
+                        } elseif (!empty($line->description)) {
+                            $tmpArray['timesheetdet_label'] = $line->description;
+                            $tmpArray['timesheetdet_qty']   = $line->qty;
+                        } else {
+                            $tmpArray['timesheetdet_label'] = '';
+                            $tmpArray['timesheetdet_qty']   = '';
+                        }
+
+                        $this->setTmpArrayVars($tmpArray, $listLines, $outputLangs);
+                    }
+                }
+                $odfHandler->mergeSegment($listLines);
+            }
+        } catch (OdfException $e) {
+            $this->error = $e->getMessage();
+            dol_syslog($this->error, LOG_WARNING);
             return -1;
         }
+        return 0;
+    }
+
+    /**
+     * Function to build a document on disk.
+     *
+     * @param  SaturneDocuments $objectDocument  Object source to build document.
+     * @param  Translate        $outputLangs     Lang object to use for output.
+     * @param  string           $srcTemplatePath Full path of source filename for generator using a template file.
+     * @param  int              $hideDetails     Do not show line details.
+     * @param  int              $hideDesc        Do not show desc.
+     * @param  int              $hideRef         Do not show ref.
+     * @param  array            $moreParam       More param (Object/user/etc).
+     * @return int                               1 if OK, <=0 if KO.
+     * @throws Exception
+     */
+    public function write_file(SaturneDocuments $objectDocument, Translate $outputLangs, string $srcTemplatePath, int $hideDetails = 0, int $hideDesc = 0, int $hideRef = 0, array $moreParam): int
+    {
+        global $conf, $langs;
+
+        $object = $moreParam['object'];
+
+        $userTmp   = new User($this->db);
+        $project   = new Project($this->db);
+        $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
+
+        $userTmp->fetch($object->fk_user_assign);
+
+        $moreParam['documentName'] = strtoupper($userTmp->lastname) . '_' . ucfirst($userTmp->firstname) . '_';
+
+        $tmpArray['employee_firstname'] = ucfirst($userTmp->firstname);
+        $tmpArray['employee_lastname']  = strtoupper($userTmp->lastname);
+        $tmpArray['date_start']         = dol_print_date($object->date_start, 'day', 'tzuser');
+        $tmpArray['date_end']           = dol_print_date($object->date_end, 'day', 'tzuser');
+        $tmpArray['note_public']        = $object->note_public;
+        $tmpArray['month_year']         = dol_print_date($object->date_start, '%B %Y', 'tzuser');
+
+        $project->fetch($conf->global->DOLISIRH_HR_PROJECT);
+
+        $tmpArray['project_rh_ref'] = $project->ref;
+        $tmpArray['project_rh']     = $project->title;
+
+        $signatoryResponsible = $signatory->fetchSignatory('Responsible', $object->id, $object->element);
+        $signatoryAttendant   = $signatory->fetchSignatory('Signatory', $object->id, $object->element);
+
+        // SignatoryResponsible.
+        if (is_array($signatoryResponsible) && !empty($signatoryResponsible)) {
+            $signatoryResponsible                           = array_shift($signatoryResponsible);
+            $tmpArray['society_responsible_fullname']       = strtoupper($signatoryResponsible->lastname) . ' ' . ucfirst($signatoryResponsible->firstname);
+            $tmpArray['society_responsible_signature_date'] = dol_print_date($signatoryResponsible->signature_date, 'dayhoursec');
+        } else {
+            $tmpArray['society_responsible_fullname']       = '';
+            $tmpArray['society_responsible_signature_date'] = '';
+        }
+
+        if (dol_strlen($signatoryResponsible->signature) > 0 && $signatoryResponsible->signature != $langs->transnoentities('FileGenerated')) {
+            if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
+                $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
+                $encodedImage = explode(',', $signatoryResponsible->signature)[1];
+                $decodedImage = base64_decode($encodedImage);
+                file_put_contents($tempDir . 'signature.png', $decodedImage);
+                $tmpArray['society_responsible_signature'] = $tempDir . 'signature.png';
+            } else {
+                $tmpArray['society_responsible_signature'] = '';
+            }
+        } else {
+            $tmpArray['society_responsible_signature'] = '';
+        }
+
+        // SignatoryAttendant.
+        if (is_array($signatoryAttendant) && !empty($signatoryAttendant)) {
+            $signatoryAttendant                           = array_shift($signatoryAttendant);
+            $tmpArray['society_attendant_fullname']       = strtoupper($signatoryAttendant->lastname) . ' ' . ucfirst($signatoryAttendant->firstname);
+            $tmpArray['society_attendant_signature_date'] = dol_print_date($signatoryAttendant->signature_date, 'dayhoursec');
+        } else {
+            $tmpArray['society_attendant_fullname']       = '';
+            $tmpArray['society_attendant_signature_date'] = '';
+        }
+
+        if (dol_strlen($signatoryAttendant->signature) > 0 && $signatoryAttendant->signature != $langs->transnoentities('FileGenerated')) {
+            if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
+                $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
+                $encodedImage = explode(',', $signatoryAttendant->signature)[1];
+                $decodedImage = base64_decode($encodedImage);
+                file_put_contents($tempDir . 'signature.png', $decodedImage);
+                $tmpArray['society_attendant_signature'] = $tempDir . 'signature.png';
+            } else {
+                $tmpArray['society_attendant_signature'] = '';
+            }
+        } else {
+            $tmpArray['society_attendant_signature'] = '';
+        }
+
+        $moreParam['tmparray'] = $tmpArray;
+
+        return parent::write_file($objectDocument, $outputLangs, $srcTemplatePath, $hideDetails, $hideDesc, $hideRef, $moreParam);
 	}
 }

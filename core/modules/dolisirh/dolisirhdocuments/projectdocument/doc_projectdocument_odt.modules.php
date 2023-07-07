@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2022-2023 EVARISK <technique@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,8 +139,8 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                                 $allTimespentUser = 0;
                                 foreach ($allTasks as $task) {
                                     $filter         = ' AND ptt.fk_task = ' . $task->id . ' AND ptt.fk_user = ' . $contact['id'];
-                                    $timespentsUser = $saturneTask->fetchAllTimeSpentAllUsers($filter);
-                                    foreach ($timespentsUser as $timespent) {
+                                    $timeSpentsUser = $saturneTask->fetchAllTimeSpentAllUsers($filter);
+                                    foreach ($timeSpentsUser as $timespent) {
                                         $allTimespentUser += $timespent->timespent_duration;
                                     }
                                     $tmpArray['project_user_timespent'] = !empty($allTimespentUser) ? convertSecondToTime($allTimespentUser, 'allhourmin') : '00:00';
@@ -209,8 +209,8 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                             if (is_array($allTasks) && !empty($allTasks)) {
                                 foreach ($allTasks as $task) {
                                     $filter         = ' AND ptt.fk_task = ' . $task->id . ' AND ptt.fk_user = ' . $contact['id'];
-                                    $timespentsUser = $saturneTask->fetchAllTimeSpentAllUsers($filter);
-                                    foreach ($timespentsUser as $timespent) {
+                                    $timeSpentsUser = $saturneTask->fetchAllTimeSpentAllUsers($filter);
+                                    foreach ($timeSpentsUser as $timespent) {
                                         $tmpArray['project_task_timespent_date']     = dol_print_date($timespent->timespent_datehour, (($timespent->timespent_withhour > 0) ? 'dayhour' : 'day'));
                                         $tmpArray['project_task_timespent_task_ref'] = $task->ref;
                                         $tmpArray['project_task_timespent_user']     = strtoupper($contact['lastname']) . ' ' . ucfirst($contact['firstname']);
@@ -318,7 +318,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
         } else {
             $tmpArray['project_tags'] = '';
         }
-        
+
         $tmpArray['project_start_date'] = dol_print_date($object->date_start, 'day');
         $tmpArray['project_end_date']   = dol_print_date($object->date_end, 'day');
 
@@ -347,7 +347,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
         }
 
         $moreParam['tmparray'] = $tmpArray;
-        
+
         return parent::write_file($objectDocument, $outputLangs, $srcTemplatePath, $hideDetails, $hideDesc, $hideRef, $moreParam);
     }
 }
