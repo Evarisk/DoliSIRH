@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,25 +18,23 @@
 /**
  * \file    lib/dolisirh_timesheet.lib.php
  * \ingroup dolisirh
- * \brief   Library files with common functions for TimeSheet
+ * \brief   Library files with common functions for TimeSheet.
  */
 
+// Load Saturne libraries.
 require_once __DIR__ . '/../../saturne/lib/object.lib.php';
 
 /**
- * Prepare array of tabs for TimeSheet
+ * Prepare timesheet pages header.
  *
- * @param  TimeSheet $object TimeSheet
- * @return array             Array of tabs
+ * @param  TimeSheet $object TimeSheet.
+ * @return array     $head   Array of tabs.
+ * @throws Exception
  */
 function timesheet_prepare_head(TimeSheet $object): array
 {
-	global $langs;
+    $moreParams['documentType']       = 'TimeSheetDocument';
+    $moreParams['attendantTableMode'] = 'simple';
 
-	$head = [];
-
-	$moreparam['documentType']       = 'TimeSheetDocument';
-	$moreparam['attendantTableMode'] = 'simple';
-
-	return saturne_object_prepare_head($object, $head, $moreparam, true);
+    return saturne_object_prepare_head($object, [], $moreParams, true);
 }

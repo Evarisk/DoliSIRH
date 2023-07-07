@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,16 +21,17 @@
  * \brief   Library files with common functions for Certificate.
  */
 
-// Load Saturne Libraries.
+// Load Saturne libraries.
 require_once __DIR__ . '/../../saturne/lib/object.lib.php';
 
 /**
- * Prepare certificate pages header
+ * Prepare certificate pages header.
  *
- * @param	Certificate	$object		Certificate
- * @return 	array					Array of tabs
+ * @param  Certificate $object Certificate.
+ * @return array       $head   Array of tabs.
+ * @throws Exception
  */
-function certificatePrepareHead($object)
+function certificate_prepare_head(Certificate $object): array
 {
-    return saturne_object_prepare_head($object, true);
+    return saturne_object_prepare_head($object, [], [], true);
 }
