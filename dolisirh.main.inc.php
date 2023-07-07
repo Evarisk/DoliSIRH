@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <technique@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,14 @@
 /**
  * \file    dolisirh.main.inc.php
  * \ingroup dolisirh
- * \brief   File that defines environment for Saturne common functions
+ * \brief   File that defines environment for Saturne common functions.
  */
 
-$moduleName = 'DoliSIRH';
+$moduleName          = 'DoliSIRH';
 $moduleNameLowerCase = strtolower($moduleName);
+$moduleNameUpperCase = strtoupper($moduleName);
 
-// Load Saturne environment
+// Load Saturne environment.
 if (file_exists(__DIR__ . '/../saturne/saturne.main.inc.php')) {
     require_once __DIR__ . '/../saturne/saturne.main.inc.php';
 } elseif (file_exists(__DIR__ . '/../../saturne/saturne.main.inc.php')) {
