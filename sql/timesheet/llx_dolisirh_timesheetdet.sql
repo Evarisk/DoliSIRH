@@ -1,4 +1,4 @@
--- Copyright (C) 2023 EVARISK <dev@evarisk.com>
+-- Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -14,13 +14,13 @@
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
 CREATE TABLE llx_dolisirh_timesheetdet(
-	rowid          integer AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    date_creation  datetime NOT NULL,
-	qty            real,
-	rang           integer DEFAULT 0,
-	description    text,
-    product_type   integer DEFAULT 0,
-    fk_timesheet   integer NOT NULL,
-    fk_product     integer NULL,
-    fk_parent_line integer NULL
+  rowid          integer AUTO_INCREMENT PRIMARY KEY NOT NULL,
+  date_creation  datetime NOT NULL,
+  qty            real,
+  rang           integer DEFAULT 0,
+  description    text,
+  product_type   integer DEFAULT 0,
+  fk_timesheet   integer NOT NULL,
+  fk_product     integer NULL,
+  fk_parent_line integer NULL
 ) ENGINE=innodb;

@@ -54,7 +54,7 @@ class modDoliSIRH extends DolibarrModules
 		$this->editor_url      = 'https://evarisk.com';
 		$this->version         = '1.3.1';
 		$this->const_name      = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->picto           = 'dolisirh_red@dolisirh';
+		$this->picto           = 'dolisirh_color@dolisirh';
 
 		$this->module_parts 			= array(
 			'triggers' 					=> 1,
@@ -83,9 +83,12 @@ class modDoliSIRH extends DolibarrModules
 					  'timesheetcard',
                       'actioncard',
                       'userihm',
-                      'projectcard'
-				  ),
-			),
+                      'timesheetadmin',
+                      'dolisirhadmindocuments',
+                      'dolisirhindex',
+                      'projetcard'
+                  ),
+            ),
 			'moduleforexternal' => 0,
 		);
 
@@ -121,6 +124,9 @@ class modDoliSIRH extends DolibarrModules
             $i++ => array('DOLISIRH_PERFECT_TIME_SPENT_COLOR', 'chaine', '#008000', '', 0, 'current'),
             $i++ => array('DOLISIRH_PRODUCT_SERVICE_SET', 'integer', 0, '', 0, 'current'),
             $i++ => array('DOLISIRH_HR_PROJECT_SET', 'integer', 0, '', 0, 'current'),
+            $i++ => ['DOLISIRH_VERSION','chaine', $this->version, '', 0, 'current'],
+            $i++ => ['DOLISIRH_DB_VERSION', 'chaine', $this->version, '', 0, 'current'],
+            $i++ => ['DOLISIRH_SHOW_PATCH_NOTE', 'integer', 1, '', 0, 'current'],
 
             // CONST TIME SPENT
             $i++ => array('DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET', 'integer', 1, '', 0, 'current'),
@@ -158,8 +164,8 @@ class modDoliSIRH extends DolibarrModules
 		}
 
 		$this->tabs    = array();
-        $pictopath     = dol_buildpath('/custom/dolisirh/img/dolisirh_red.png', 1);
-        $pictoDoliSIRH = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoDoliSIRH');
+        $pictopath     = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
+        $pictoDoliSIRH = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoModule');
 		$this->tabs[]  = array('data' => 'user:+workinghours:' . $pictoDoliSIRH . $langs->trans('WorkingHours') . ':dolisirh@dolisirh:$user->rights->user->self->creer:/custom/dolisirh/view/workinghours_card.php?id=__ID__'); // To add a new tab identified by code tabname1
 
 		$this->dictionaries = array();
@@ -439,7 +445,10 @@ class modDoliSIRH extends DolibarrModules
 			return -1; // Do not activate module if error 'not allowed' returned when loading module SQL queries (the _load_table run sql with run_sql with the error allowed parameter set to 'default')
 		}
 
-		// Create extrafields during init
+        dolibarr_set_const($this->db, 'DOLISIRH_VERSION', $this->version, 'chaine', 0, '', $conf->entity);
+        dolibarr_set_const($this->db, 'DOLISIRH_DB_VERSION', $this->version, 'chaine', 0, '', $conf->entity);
+
+        // Create extrafields during init
 		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 		$extra_fields = new ExtraFields($this->db);
 

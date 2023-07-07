@@ -725,7 +725,7 @@ class ActionsDoliSIRH
 		<?php }
 
         if ($parameters['currentcontext'] == 'userihm') {
-            $pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_red.png', 1);
+            $pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
 			$picto = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoModule');
 
             $out = '<tr class="oddeven"><td>' . $picto . $langs->trans('TimeSpentDatasetOrder') . '</td>';
@@ -1122,6 +1122,90 @@ class ActionsDoliSIRH
             return 1;
         } else {
             return 0;
+        }
+    }
+
+    /**
+     * Overloading the SaturneAdminObjectConst function : replacing the parent's function with the one below.
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return void
+     */
+    public function SaturneAdminObjectConst(array $parameters)
+    {
+        if ($parameters['currentcontext'] == 'timesheetadmin') {
+            $constArray['timesheet'] = [
+                'PrefillDate' => [
+                    'name'        => 'PrefillDate',
+                    'description' => 'PrefillDateDescription',
+                    'code'        => 'DOLISIRH_TIMESHEET_PREFILL_DATE',
+                ],
+                'AddAttendantsConf' => [
+                    'name'        => 'AddAttendantsConf',
+                    'description' => 'AddAttendantsDescription',
+                    'code'        => 'DOLISIRH_TIMESHEET_ADD_ATTENDANTS',
+                ],
+                'CheckDateEnd' => [
+                    'name'        => 'CheckDateEnd',
+                    'description' => 'CheckDateEndDescription',
+                    'code'        => 'DOLISIRH_TIMESHEET_CHECK_DATE_END',
+                ],
+                'ShowTasksWithTimespentOnTimeSheet' => [
+                    'name'        => 'ShowTasksWithTimespentOnTimeSheet',
+                    'description' => 'ShowTasksWithTimespentOnTimeSheetDescription',
+                    'code'        => 'DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET',
+                ],
+            ];
+
+            $this->results = $constArray;
+        }
+    }
+    
+    /**
+     * Overloading the SaturneAdminDocumentData function : replacing the parent's function with the one below.
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return void
+     */
+    public function SaturneAdminDocumentData(array $parameters)
+    {
+        if ($parameters['currentcontext'] == 'dolisirhadmindocuments') {
+            $types = [
+                'TimeSheetDocument' => [
+                    'documentType' => 'timesheetdocument',
+                    'picto'        => 'fontawesome_fa-calendar-check_fas_#d35968'
+                ],
+                'CertificateDocument' => [
+                    'documentType' => 'certificatedocument',
+                    'picto'        => 'fontawesome_fa-user-graduate_fas_#d35968'
+                ]
+            ];
+
+            $this->results = $types;
+        }
+    }
+
+    /**
+     * Overloading the SaturneIndex function : replacing the parent's function with the one below.
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return void
+     */
+    public function SaturneIndex(array $parameters)
+    {
+        global $conf, $langs;
+
+        if ($parameters['currentcontext'] == 'dolisirhindex') {
+            if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) {
+                $out = '<div class="wpeo-notice notice-info">';
+                $out .= '<div class="notice-content">';
+                $out .= '<div class="notice-title"><strong>' . $langs->trans('SetupDefaultDataNotCreated') . '</strong></div>';
+                $out .= '<div class="notice-subtitle"><strong>' . $langs->trans('HowToSetupDefaultData') . ' <a href="admin/setup.php">' . $langs->trans('ConfigDefaultData') . '</a></strong></div>';
+                $out .= '</div>';
+                $out .= '</div>';
+
+                $this->resprints = $out;
+            }
         }
     }
 }
