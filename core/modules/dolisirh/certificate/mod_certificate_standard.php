@@ -17,16 +17,16 @@
  */
 
 /**
- *  \file    core/modules/dolisirh/certificate/mod_certificate_standard.php
- *  \ingroup dolisirh
- *  \brief   File of class to manage certificate numbering rules standard.
+ * \file    core/modules/dolisirh/certificate/mod_certificate_standard.php
+ * \ingroup dolisirh
+ * \brief   File of class to manage certificate numbering rules standard.
  */
 
-// Load Saturne Libraries.
+// Load Saturne libraries.
 require_once __DIR__ . '/../../../../../saturne/core/modules/saturne/modules_saturne.php';
 
 /**
- *	Class to manage certificate numbering rules standard.
+ * Class to manage certificate numbering rules standard.
  */
 class mod_certificate_standard extends ModeleNumRefSaturne
 {

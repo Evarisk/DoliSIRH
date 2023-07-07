@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2022 EVARISK <technique@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,16 +17,16 @@
  */
 
 /**
- *  \file    core/modules/dolisirh/dolisirhdocuments/projectdocument/modules_projectdocument.php
- *  \ingroup dolisirh
- *  \brief   File that contains parent class for projectdocuments document models.
+ * \file    core/modules/dolisirh/dolisirhdocuments/projectdocument/modules_projectdocument.php
+ * \ingroup dolisirh
+ * \brief   File that contains parent class for project document models.
  */
 
 // Load Saturne libraries.
 require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
 
 /**
- * Parent class for documents models.
+ * Parent class for project document models.
  */
 abstract class ModeleODTProjectDocument extends SaturneDocumentModel
 {
@@ -37,7 +37,7 @@ abstract class ModeleODTProjectDocument extends SaturneDocumentModel
      * @param  string $type              Document type.
      * @param  int    $maxfilenamelength Max length of value to show.
      *
-     * @return array                     List of templates.
+     * @return array|int                 0 if no module is activated, or array(key=>label). For modules that need directory scan, key is completed with ":filename".
      * @throws Exception
      */
     public static function liste_modeles(DoliDB $db, string $type, int $maxfilenamelength = 0): array
@@ -45,3 +45,4 @@ abstract class ModeleODTProjectDocument extends SaturneDocumentModel
         return parent::liste_modeles($db, 'projectdocument', $maxfilenamelength);
     }
 }
+

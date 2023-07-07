@@ -22,7 +22,7 @@
  * \brief   File of class to manage certificate document numbering rules standard.
  */
 
-// Load Saturne Libraries.
+// Load Saturne libraries.
 require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
 
 /**
