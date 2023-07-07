@@ -67,7 +67,7 @@ if (GETPOST('hr_project_set', 'alpha')) {
         $now             = dol_now();
         $projectRefClass = empty($conf->global->PROJECT_ADDON) ? 'mod_project_simple' : $conf->global->PROJECT_ADDON;
 
-        if (!empty($conf->global->PROJECT_ADDON) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/' . $conf->global->PROJECT_ADDON . '.php')) {
+        if (!empty($projectRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php')) {
             require_once DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php';
             $modProject = new $projectRefClass();
             $projectRef = $modProject->getNextValue('', null);
@@ -118,7 +118,7 @@ if (GETPOST('hr_project_set', 'alpha')) {
 
             $taskRefClass = empty($conf->global->PROJECT_TASK_ADDON) ? 'mod_task_simple' : $conf->global->PROJECT_TASK_ADDON;
 
-            if (!empty($conf->global->PROJECT_TASK_ADDON) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php')) {
+            if (!empty($taskRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php')) {
                 require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php';
                 $modTask = new $taskRefClass();
                 $taskRef = $modTask->getNextValue('', null);
