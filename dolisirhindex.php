@@ -56,7 +56,3 @@ $morehtmlright .= ' ' . img_picto($langs->trans('Filter') . ' ' . $langs->trans(
 $morehtmlright .= '<div class="wpeo-button button-primary button-square-30 select-dataset-dashboard-info" style="color: #ffffff !important;"><i class="button-icon fas fa-redo"></i></div>';
 
 require_once __DIR__ . '/../saturne/core/tpl/index/index_view.tpl.php';
-
-// End of page
-llxFooter();
-$db->close();
