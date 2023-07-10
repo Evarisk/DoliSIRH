@@ -33,10 +33,10 @@ class mod_timesheetdocument_standard extends ModeleNumRefSaturne
     /**
      * @var string Numbering module ref prefix.
      */
-    public $prefix = 'TRD';
+    public string $prefix = 'TRD';
 
     /**
      * @var string Name.
      */
-    public $name = 'Égéon';
+    public string $name = 'Égéon';
 }

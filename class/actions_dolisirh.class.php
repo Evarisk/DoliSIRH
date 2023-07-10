@@ -1129,9 +1129,9 @@ class ActionsDoliSIRH
      * Overloading the SaturneAdminObjectConst function : replacing the parent's function with the one below.
      *
      * @param  array $parameters Hook metadata (context, etc...)
-     * @return void
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
      */
-    public function SaturneAdminObjectConst(array $parameters)
+    public function SaturneAdminObjectConst(array $parameters): int
     {
         if ($parameters['currentcontext'] == 'timesheetadmin') {
             $constArray['dolisirh'] = [
@@ -1156,18 +1156,20 @@ class ActionsDoliSIRH
                     'code'        => 'DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET',
                 ],
             ];
-
             $this->results = $constArray;
+            return 1;
         }
+
+        return 0; // or return 1 to replace standard code.
     }
-    
+
     /**
      * Overloading the SaturneAdminDocumentData function : replacing the parent's function with the one below.
      *
      * @param  array $parameters Hook metadata (context, etc...)
-     * @return void
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
      */
-    public function SaturneAdminDocumentData(array $parameters)
+    public function SaturneAdminDocumentData(array $parameters): int
     {
         if ($parameters['currentcontext'] == 'dolisirhadmindocuments') {
             $types = [
@@ -1180,9 +1182,10 @@ class ActionsDoliSIRH
                     'picto'        => 'fontawesome_fa-user-graduate_fas_#d35968'
                 ]
             ];
-
             $this->results = $types;
         }
+
+        return 0; // or return 1 to replace standard code.
     }
 
     /**

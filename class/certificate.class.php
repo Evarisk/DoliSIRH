@@ -24,8 +24,6 @@
 // Load Saturne libraries.
 require_once __DIR__ . '/../../saturne/class/saturnecertificate.class.php';
 
-require_once __DIR__ . '/dolisirhsignature.class.php';
-
 /**
  * Class for Certificate.
  */
