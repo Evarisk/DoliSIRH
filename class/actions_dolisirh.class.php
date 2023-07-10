@@ -502,11 +502,25 @@ class ActionsDoliSIRH
             $id        = GETPOST('id');
             $elementId = GETPOST('element_id');
             $type      = GETPOST('type');
-            if ($id > 0 && $elementId > 0 && ($type == 'timesheet' || $type == 'certificate') && $user->rights->dolisirh->$type->write) {
-                require_once __DIR__ . '/' . $type . '.class.php';
+            if ($id > 0 && $elementId > 0 && ($type == 'timesheet' || $type == 'certificate' || $type == 'invoice' || $type == 'invoicerec') && ($user->rights->dolisirh->$type->write || $user->rights->facture->creer)) {
+                switch ($type) {
+                    case 'invoice' :
+                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 
-                $classname = ucfirst($type);
-                $newobject = new $classname($this->db);
+                        $newobject = new Facture($this->db);
+                        break;
+                    case 'invoicerec' :
+                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
+
+                        $newobject = new FactureRec($this->db);
+                        break;
+                    default :
+                        require_once __DIR__ . '/' . $type . '.class.php';
+
+                        $classname = ucfirst($type);
+                        $newobject = new $classname($this->db);
+                        break;
+                }
 
                 $newobject->fetch($elementId);
 
@@ -821,6 +835,8 @@ class ActionsDoliSIRH
 		if (preg_match('/categoryindex/', $parameters['context'])) {
 			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
 		} elseif (preg_match('/categorycard/', $parameters['context']) && preg_match('/viewcat.php/', $_SERVER["PHP_SELF"])) {
+            require_once __DIR__ . '/../../saturne/lib/object.lib.php';
+
             $id = GETPOST('id');
             $type = GETPOST('type');
 
@@ -834,13 +850,34 @@ class ActionsDoliSIRH
             }     // If $page is not defined, or '' or -1 or if we click on clear filters or if we select empty mass action
             $offset = $limit * $page;
 
-            if ($type == 'timesheet' || $type == 'certificate') {
-                require_once __DIR__ . '/' . $type . '.class.php';
+            if ($type == 'timesheet' || $type == 'certificate' || $type == 'invoice' || $type == 'invoicerec') {
+                switch ($type) {
+                    case 'invoice' :
+                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 
-                $classname = ucfirst($type);
-                $object = new $classname($this->db);
+                        $classname = 'Facture';
+                        $object    = new $classname($this->db);
 
-                $arrayObjects = $object->fetchAll();
+                        $arrayObjects = saturne_fetch_all_object_type($classname);
+                        break;
+                    case 'invoicerec' :
+                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
+
+                        $classname = 'FactureRec';
+                        $object    = new $classname($this->db);
+
+                        $arrayObjects = saturne_fetch_all_object_type($classname);
+                        break;
+                    default :
+                        require_once __DIR__ . '/' . $type . '.class.php';
+
+                        $classname = ucfirst($type);
+                        $object    = new $classname($this->db);
+
+                        $arrayObjects = $object->fetchAll();
+                        break;
+                }
+
                 if (is_array($arrayObjects) && !empty($arrayObjects)) {
                     foreach ($arrayObjects as $objectsingle) {
                         $array[$objectsingle->id] = $objectsingle->ref;
@@ -859,7 +896,7 @@ class ActionsDoliSIRH
 
                 $out .= '<table class="noborder centpercent">';
                 $out .= '<tr class="liste_titre"><td>';
-                $out .= $langs->trans("Add". ucfirst($type) . "IntoCategory") . ' ';
+                $out .= $langs->trans('AddObjectIntoCategory') . ' ';
                 $out .= $form::selectarray('element_id', $array, '', 1);
                 $out .= '<input type="submit" class="button buttongen" value="'.$langs->trans("ClassifyInCategory").'"></td>';
                 $out .= '</tr>';
