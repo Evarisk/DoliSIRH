@@ -30,13 +30,13 @@ if (file_exists('../../dolisirh.main.inc.php')) {
     die('Include of dolisirh main fails');
 }
 
-// Load Saturne Libraries.
+// Load Saturne libraries.
 require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
 // load DoliSIRH libraries.
+require_once __DIR__ . '/../../lib/dolisirh_certificate.lib.php';
 require_once __DIR__ . '/../../class/certificate.class.php';
 require_once __DIR__ . '/../../class/dolisirhdocuments/certificatedocument.class.php';
-require_once __DIR__ . '/../../lib/dolisirh_certificate.lib.php';
 
 // Global variables definitions.
 global $conf, $db, $hookmanager, $langs, $mysoc, $user;
@@ -55,10 +55,10 @@ $backtopage          = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 
 // Initialize technical objects.
-$object              = new Certificate($db);
-$signatory           = new SaturneSignature($db);
-$certificatedocument = new CertificateDocument($db);
-$extrafields         = new ExtraFields($db);
+$object      = new Certificate($db);
+$signatory   = new SaturneSignature($db, 'dolisirh', $object->element);
+$document    = new CertificateDocument($db);
+$extrafields = new ExtraFields($db);
 
 // Initialize view objects.
 $form = new Form($db);
@@ -72,7 +72,7 @@ $search_array_options = $extrafields->getOptionalsFromPost($object->table_elemen
 
 // Initialize array of search criterias.
 $search_all = GETPOST('search_all', 'alpha');
-$search = [];
+$search     = [];
 foreach ($object->fields as $key => $val) {
     if (GETPOST('search_'.$key, 'alpha')) {
         $search[$key] = GETPOST('search_'.$key, 'alpha');
@@ -123,99 +123,16 @@ if (empty($reshook)) {
     $conf->global->MAIN_DISABLE_PDF_AUTOUPDATE = 1;
     include DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
 
-    // Action to build doc.
-    if (($action == 'builddoc' || GETPOST('forcebuilddoc')) && $permissiontoadd) {
-        $outputlangs = $langs;
-        $newlang     = '';
+    // Actions save_project.
+    include __DIR__ . '/../../../saturne/core/tpl/actions/edit_project_action.tpl.php';
 
-        if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09')) {
-            $newlang = GETPOST('lang_id', 'aZ09');
-        }
-        if (!empty($newlang)) {
-            $outputlangs = new Translate('', $conf);
-            $outputlangs->setDefaultLang($newlang);
-        }
+    // Actions builddoc, forcebuilddoc, remove_file.
+    require_once __DIR__ . '/../../../saturne/core/tpl/documents/documents_action.tpl.php';
 
-        // To be sure vars is defined
-        if (empty($hidedetails)){
-            $hidedetails = 0;
-        }
-        if (empty($hidedesc)) {
-            $hidedesc = 0;
-        }
-        if (empty($hideref)) {
-            $hideref = 0;
-        }
-        if (empty($moreparams)) {
-            $moreparams = null;
-        }
+    // Action to generate pdf from odt file.
+    require_once __DIR__ . '/../../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
 
-        if (GETPOST('forcebuilddoc')) {
-            $model  = '';
-            $modellist = saturne_get_list_of_models($db, $object->element . 'document');
-            if (!empty($modellist)) {
-                asort($modellist);
-                $modellist = array_filter($modellist, 'saturne_remove_index');
-                if (is_array($modellist)) {
-                    $models = array_keys($modellist);
-                }
-            }
-        } else {
-            $model = GETPOST('model', 'alpha');
-        }
-
-        $moreparams['object'] = $object;
-        $moreparams['user']   = $user;
-
-        if ($object->status < SaturneCertificate::STATUS_ARCHIVED) {
-            $moreparams['specimen'] = 1;
-            $moreparams['zone']     = 'private';
-        } else {
-            $moreparams['specimen'] = 0;
-        }
-
-        $result = $certificatedocument->generateDocument((!empty($models) ? $models[0] : $model), $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
-        if ($result <= 0) {
-            setEventMessages($certificatedocument->error, $certificatedocument->errors, 'errors');
-            $action = '';
-        } elseif (empty($donotredirect)) {
-            setEventMessages($langs->trans('FileGenerated') . ' - ' . $certificatedocument->last_main_doc, []);
-            $urltoredirect = $_SERVER['REQUEST_URI'];
-            $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
-            $urltoredirect = preg_replace('/action=builddoc&?/', '', $urltoredirect); // To avoid infinite loop
-            $urltoredirect = preg_replace('/forcebuilddoc=1&?/', '', $urltoredirect); // To avoid infinite loop
-            header('Location: ' . $urltoredirect . '#builddoc');
-            exit;
-        }
-    }
-
-    // Delete file in doc form.
-    if ($action == 'remove_file' && $permissiontodelete) {
-        if (!empty($upload_dir)) {
-            require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
-
-            $langs->load('other');
-            $fileToDelete = GETPOST('file', 'alpha');
-            $file         = $upload_dir . '/' . $fileToDelete;
-            $ret          = dol_delete_file($file, 0, 0, 0, $object);
-            if ($ret) {
-                setEventMessages($langs->trans('FileWasRemoved', $fileToDelete), []);
-            } else {
-                setEventMessages($langs->trans('ErrorFailToDeleteFile', $fileToDelete), [], 'errors');
-            }
-
-            // Make a redirect to avoid to keep the remove_file into the url that create side effects.
-            $urltoredirect = $_SERVER['REQUEST_URI'];
-            $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
-            $urltoredirect = preg_replace('/action=remove_file&?/', '', $urltoredirect);
-
-            header('Location: ' . $urltoredirect);
-            exit;
-        } else {
-            setEventMessages('BugFoundVarUploaddirnotDefined', [], 'errors');
-        }
-    }
-
+    // Action confirm_lock, confirm_archive.
     require_once __DIR__ . '/../../../saturne/core/tpl/signature/signature_action_workflow.tpl.php';
 
     // Actions to send emails.
@@ -259,17 +176,12 @@ if ($action == 'create') {
 
     $object->fields['fk_project']['default'] = $conf->global->DOLISIRH_HR_PROJECT;
 
-    $elementList = [];
-    if (!empty($conf->user->enabled)) {
+    if (isModEnabled('user')) {
         $object->fields['element_type']['arrayofkeyval']['user'] = $langs->trans('User');
     }
-    if (!empty($conf->societe->enabled)) {
+    if (isModEnabled('product')) {
         $object->fields['element_type']['arrayofkeyval']['product'] = $langs->trans('Product');
     } ?>
-
-    print '<tr><td class="titlefieldcreate"><label for="element_type">' . $langs->trans('ElementType') . '</label></td>';
-    print '<td class="valuefieldcreate">' . $form::selectarray('element_type', $elementList, GETPOSTISSET('element_type') ? GETPOST('element_type') : 'user', 1, 0, 0, '', 0, 0, 0, '', 'maxwidth200 widthcentpercentminusx') . '</td>';
-    print '</tr>';
 
     <script>
     $(document).ready(function(){
@@ -333,10 +245,10 @@ if (($id || $ref) && $action == 'edit') {
 
     print '<table class="border centpercent tableforfieldedit">';
 
-    if (!empty($conf->user->enabled)) {
+    if (isModEnabled('user')) {
         $object->fields['element_type']['arrayofkeyval']['user'] = $langs->trans('User');
     }
-    if (!empty($conf->societe->enabled)) {
+    if (isModEnabled('product')) {
         $object->fields['element_type']['arrayofkeyval']['product'] = $langs->trans('Product');
     } ?>
 
@@ -392,11 +304,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     $formconfirm = '';
 
-    // setDraft confirmation
+    // setDraft confirmation.
     if (($action == 'draft' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
         $formconfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&object_type=' . $object->element, $langs->trans('ReOpenObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmReOpenObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_setdraft', '', 'yes', 'actionButtonInProgress', 350, 600);
     }
-    // setPendingSignature confirmation
+
+    // setPendingSignature confirmation.
     if (($action == 'pending_signature' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
         $formconfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&object_type=' . $object->element, $langs->trans('ValidateObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmValidateObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_validate', '', 'yes', 'actionButtonPendingSignature', 350, 600);
     }
@@ -406,16 +319,16 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
         $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('DeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmDeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_delete', '', 'yes', 1);
     }
 
-    // Call Hook formConfirm
+    // Call Hook formConfirm.
     $parameters = ['formConfirm' => $formconfirm];
-    $reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
+    $reshook    = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
     if (empty($reshook)) {
         $formconfirm .= $hookmanager->resPrint;
     } elseif ($reshook > 0) {
         $formconfirm = $hookmanager->resPrint;
     }
 
-    // Print form confirm
+    // Print form confirm.
     print $formconfirm;
 
     print '<div class="fichecenter">';

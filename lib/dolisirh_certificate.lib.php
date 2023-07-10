@@ -17,7 +17,7 @@
 
 /**
  * \file    lib/dolisirh_certificate.lib.php
- * \ingroup dolimeet
+ * \ingroup dolisirh
  * \brief   Library files with common functions for Certificate.
  */
 
@@ -33,5 +33,8 @@ require_once __DIR__ . '/../../saturne/lib/object.lib.php';
  */
 function certificate_prepare_head(Certificate $object): array
 {
-    return saturne_object_prepare_head($object, [], [], true);
+    $moreParams['documentType']       = 'CertificateDocument';
+    $moreParams['attendantTableMode'] = 'simple';
+
+    return saturne_object_prepare_head($object, [], $moreParams, true);
 }
