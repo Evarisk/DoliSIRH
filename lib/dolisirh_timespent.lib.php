@@ -21,44 +21,47 @@
  * \brief   Library files with common functions for TimeSpent.
  */
 
+// Load DoliSIRH libraries.
+require_once __DIR__ . '/dolisirh_function.lib.php';
+
 /**
- * Prepare array with list of tabs
+ * Prepare timespent pages header.
  *
- * @param	string	$mode		Mode
- * @param   string  $fuser      Filter on user
- * @return  array				Array of tabs to show
+ * @param  string $mode   Mode.
+ * @param  User   $fkUser Filter on user.
+ * @return array  $head   Array of tabs.
  */
-function timeSpendPrepareHead($mode, $fuser = null)
+function timespent_prepare_head(string $mode, User $fkUser): array
 {
-    global $langs, $conf, $user;
-    $h = 0;
-    $head = array();
+    // Global variables definitions.
+    global $conf, $langs, $user;
 
-    $h = 0;
+    // Initialize values.
+    $h    = 0;
+    $head = [];
 
-    $param = '';
-    $param .= ($mode ? '&mode='.$mode : '');
-    if (is_object($fuser) && $fuser->id > 0 && $fuser->id != $user->id) {
-        $param .= '&search_usertoprocessid='.$fuser->id;
+    $param = ($mode ? '&mode=' . $mode : '');
+    if ($fkUser->id > 0 && $fkUser->id != $user->id) {
+        $param .= '&search_usertoprocessid=' . $fkUser->id;
     }
 
-    if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERMONTH)) {
-        $head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_month.php".($param ? '?'.$param : '');
-        $head[$h][1] = $langs->trans("InputPerMonth");
+    if (!getDolGlobalInt($conf->global->PROJECT_DISABLE_TIMESHEET_PERMONTH)) {
+        $head[$h][0] = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_month.php' . ($param ? '?' . $param : '');
+        $head[$h][1] = $langs->trans('InputPerMonth');
         $head[$h][2] = 'inputpermonth';
         $h++;
     }
 
-    if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERWEEK)) {
-        $head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_week.php".($param ? '?'.$param : '');
-        $head[$h][1] = $langs->trans("InputPerWeek");
+    if (!getDolGlobalInt($conf->global->PROJECT_DISABLE_TIMESHEET_PERWEEK)) {
+        $head[$h][0] = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_week.php' . ($param ? '?' . $param : '');
+        $head[$h][1] = $langs->trans('InputPerWeek');
         $head[$h][2] = 'inputperweek';
         $h++;
     }
 
-    if (empty($conf->global->PROJECT_DISABLE_TIMESHEET_PERTIME)) {
-        $head[$h][0] = DOL_URL_ROOT."/custom/dolisirh/view/timespent_day.php".($param ? '?'.$param : '');
-        $head[$h][1] = $langs->trans("InputPerDay");
+    if (!getDolGlobalInt($conf->global->PROJECT_DISABLE_TIMESHEET_PERTIME)) {
+        $head[$h][0] = DOL_URL_ROOT.'/custom/dolisirh/view/timespent_day.php' . ($param ? '?' . $param : '');
+        $head[$h][1] = $langs->trans('InputPerDay');
         $head[$h][2] = 'inputperday';
         $h++;
     }
@@ -73,30 +76,38 @@ function timeSpendPrepareHead($mode, $fuser = null)
 /**
  * Load time spent by tasks within a time range.
  *
- * @param  int       $datestart First day
- * @param  int       $dateend   Last day
- * @param  int       $userid    Time spent by a particular user
- * @return array                Array with minutes, hours and total time spent
+ * @param  int       $timestampStart Timestamp first day.
+ * @param  int       $timestampEnd   Timestamp last day.
+ * @param  int       $userID         Time spent by a particular user.
+ * @param  array     $daysAvailable  Available days.
+ * @return array                     Array with minutes, hours and total time spent.
  * @throws Exception
  */
-function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $isavailable, $userid = 0)
+function load_time_spent_on_tasks_within_range(int $timestampStart, int $timestampEnd, array $daysAvailable, int $userID = 0): array
 {
     global $db;
 
-    $task = new Task($db);
-    $userobj = new User($db);
-
-    if ($userid > 0) {
-        $userobj->fetch($userid);
+    if (empty($timestampStart)) {
+        dol_print_error('', 'Error datestart parameter is empty');
     }
 
-    $timeSpentList = $task->fetchAllTimeSpent($userobj, 'AND (ptt.task_date >= "'.$db->idate($datestart) .'" AND ptt.task_date < "'.$db->idate($dateend) . '")');
+    $task    = new Task($db);
+    $userTmp = new User($db);
 
-    $timeSpentOnTasks = [];
+    if ($userID > 0) {
+        $userTmp->fetch($userID);
+    }
 
+    $timeSpentOnTasks = ['days' => 0, 'hours' => 0, 'minutes' => 0, 'total' => 0];
+    $timeSpentList    = $task->fetchAllTimeSpent($userTmp, 'AND (ptt.task_date >= "' . $db->idate($timestampStart) . '" AND ptt.task_date < "' . $db->idate($timestampEnd) . '")');
     if (is_array($timeSpentList) && !empty($timeSpentList)) {
         foreach ($timeSpentList as $timeSpent) {
-            if ($isavailable[$timeSpent->timespent_date]['morning'] && $isavailable[$timeSpent->timespent_date]['afternoon']) {
+            $hours   = floor($timeSpent->timespent_duration / 3600);
+            $minutes = floor($timeSpent->timespent_duration / 60);
+            if ($daysAvailable[$timeSpent->timespent_date]['morning'] && $daysAvailable[$timeSpent->timespent_date]['afternoon']) {
+                $timeSpentOnTasks['hours']   += $hours;
+                $timeSpentOnTasks['minutes'] += $minutes;
+                $timeSpentOnTasks['total']   += $timeSpent->timespent_duration;
                 if (!empty($timeSpent->timespent_note)) {
                     $timeSpentOnTasks[$timeSpent->fk_task]['comments'][dol_print_date($timeSpent->timespent_date, 'day')][$timeSpent->timespent_id] = $timeSpent->timespent_note;
                 }
@@ -104,191 +115,132 @@ function loadTimeSpentOnTasksWithinRange($datestart, $dateend, $isavailable, $us
                 $timeSpentOnTasks[$timeSpent->fk_task]['project_label'] = $timeSpent->project_label;
                 $timeSpentOnTasks[$timeSpent->fk_task]['task_ref']      = $timeSpent->task_ref;
                 $timeSpentOnTasks[$timeSpent->fk_task]['task_label']    = $timeSpent->task_label;
+
                 $timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
             }
         }
+        $timeSpentOnTasks['days'] = count($daysAvailable);
     }
 
     return $timeSpentOnTasks;
 }
 
 /**
- * Load time spent within a time range.
- *
- * @param  int       $datestart First day
- * @param  int       $dateend   Last day
- * @param  int       $taskid    Filter on a task id
- * @param  int       $userid    Time spent by a particular user
- * @return array                Array with minutes, hours and total time spent
- * @throws Exception
- */
-function loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid = 0)
-{
-    global $db;
-
-    if (empty($datestart)) {
-        dol_print_error('', 'Error datestart parameter is empty');
-    }
-
-    $task = new Task($db);
-    $userobj = new User($db);
-
-    if ($userid > 0) {
-        $userobj->fetch($userid);
-    }
-
-    $timeSpentList = $task->fetchAllTimeSpent($userobj, 'AND (ptt.task_date >= "'.$db->idate($datestart) .'" AND ptt.task_date < "'.$db->idate($dateend) . '")');
-
-    $timeSpent = array(
-        'days' => 0,
-        'hours' => 0,
-        'minutes' => 0,
-        'total' => 0
-    );
-
-
-    if (is_array($timeSpentList) && !empty($timeSpentList)) {
-        foreach ($timeSpentList as $timeSpentSingle) {
-
-            $hours = floor($timeSpentSingle->timespent_duration / 3600);
-            $minutes = floor($timeSpentSingle->timespent_duration / 60);
-
-            if ($isavailable[$timeSpentSingle->timespent_date]['morning'] && $isavailable[$timeSpentSingle->timespent_date]['afternoon']) {
-                $timeSpent['hours'] += $hours;
-                $timeSpent['minutes'] += $minutes;
-                $timeSpent['total'] += $timeSpentSingle->timespent_duration;
-                $days_working[$timeSpentSingle->timespent_date] = 1;
-            }
-        }
-    }
-
-    $timeSpent['days'] = is_array($days_working) && !empty($days_working) ? count($days_working) : 0;
-
-    return $timeSpent;
-}
-
-/**
  * Load time to spend within a time range.
  *
- * @param  int       $datestart First day
- * @param  int       $dateend   Last day
- * @param  int       $userid    Time spent by a particular user
- * @return int                  0 < if OK, >0 if KO
+ * @param  int          $timestampStart Timestamp first day.
+ * @param  int          $timestampEnd   Timestamp last day.
+ * @param  Workinghours $workingHours   Working hours object.
+ * @param  array        $daysAvailable  Available days.
+ * @return array                        Array with minutes, days on time to spend.
  * @throws Exception
  */
-function loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable)
+function load_planned_time_within_range(int $timestampStart, int $timestampEnd, Workinghours $workingHours, array $daysAvailable): array
 {
-    if (empty($datestart)) {
+    if (empty($timestampStart)) {
         dol_print_error('', 'Error datestart parameter is empty');
     }
 
-    $daysInRange = dolisirh_num_between_day($datestart, $dateend);
-
-    $time_to_spend = array(
-        'days' => 0,
-        'minutes' => 0
-    );
-
+    $timeToSpend = ['days' => 0, 'minutes' => 0];
+    $daysInRange = dolisirh_num_between_day($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-
-        if ($isavailable[$day_start_date]['morning'] && $isavailable[$day_start_date]['afternoon']) {
-            $currentDay = date('l', $day_start_date);
+        $newTimestampStart = dol_time_plus_duree($timestampStart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0.
+        if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
+            $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
-            $time_to_spend['minutes'] += $workingHours->$currentDay;
+
+            $timeToSpend['minutes'] += $workingHours->$currentDay;
             if ($workingHours->$currentDay / 60 > 0) {
-                $time_to_spend['days']++;
+                $timeToSpend['days']++;
             }
         }
     }
-    return $time_to_spend;
+
+    return $timeToSpend;
 }
 
 /**
  * Load time to spend within a time range.
  *
- * @param  int       $datestart First day
- * @param  int       $dateend   Last day
- * @return int                  0 < if OK, >0 if KO
+ * @param  int          $timestampStart    Timestamp first day.
+ * @param  int          $timestampEnd      Timestamp last day.
+ * @param  Workinghours $workingHours      Working hours object.
+ * @param  array        $daysAvailable     Available days.
+ * @return array        $passedWorkingTime Array with minutes on passed working time.
  * @throws Exception
  */
-function loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable)
+function load_passed_time_within_range(int $timestampStart, int $timestampEnd, Workinghours $workingHours, array $daysAvailable): array
 {
-    if (empty($datestart)) {
+    if (empty($timestampStart)) {
         dol_print_error('', 'Error datestart parameter is empty');
     }
 
-    $daysInRange = dolisirh_num_between_day($datestart, $dateend);
-
-    $passed_working_time = array(
-        'minutes' => 0
-    );
-
+    $passedWorkingTime = ['minutes' => 0];
+    $daysInRange         = dolisirh_num_between_day($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $day_start_date = dol_time_plus_duree($datestart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0
-
-        if ($isavailable[$day_start_date]['morning'] && $isavailable[$day_start_date]['afternoon']) {
-            $currentDay = date('l', $day_start_date);
+        $newTimestampStart = dol_time_plus_duree($timestampStart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0.
+        if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
+            $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
-            $passed_working_time['minutes'] += $workingHours->$currentDay;
+
+            $passedWorkingTime['minutes'] += $workingHours->$currentDay;
         }
     }
-    return $passed_working_time;
+
+    return $passedWorkingTime;
 }
 
 /**
  * Load difference between passed time and spent time within a time range.
  *
- * @param  int       $datestart First day
- * @param  int       $dateend   Last day
- * @param  int       $taskid    Filter on a task id
- * @param  int       $userid    Time spent by a particular user
- * @return int                  0 < if OK, >0 if KO
+ * @param  int          $timestampStart Timestamp first day.
+ * @param  int          $timestampEnd   Timestamp last day.
+ * @param  Workinghours $workingHours   Working hours object.
+ * @param  array        $daysAvailable  Available days.
+ * @param  int          $userID         Time spent by a particular user.
+ * @return int                          Array with minutes on passed working time.
  * @throws Exception
  */
-function loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid = 0)
+function load_difference_between_passed_and_spent_time_within_range(int $timestampStart, int $timestampEnd, Workinghours $workingHours, array $daysAvailable, int $userID = 0): int
 {
-    global $db;
-
-    if (empty($datestart)) {
+    if (empty($timestampStart)) {
         dol_print_error('', 'Error datestart parameter is empty');
     }
-    $passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable);
-    $spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid);
 
-    return $passed_working_time['minutes'] - $spent_working_time['minutes'];
+    $passedWorkingTime = load_passed_time_within_range($timestampStart, $timestampEnd, $workingHours, $daysAvailable);
+    $spentWorkingTime  = load_time_spent_on_tasks_within_range($timestampStart, $timestampEnd, $daysAvailable, $userID);
+
+    return $passedWorkingTime['minutes'] - $spentWorkingTime['minutes'];
 }
 
 /**
  * Load all time spending infos within a time range.
  *
- * @param  int       $datestart First day
- * @param  int       $dateend   Last day
- * @param  int       $taskid    Filter on a task id
- * @param  int       $userid    Time spent by a particular user
- * @return int                  0 < if OK, >0 if KO
+ * @param  int          $timestampStart Timestamp first day.
+ * @param  int          $timestampEnd   Timestamp last day.
+ * @param  Workinghours $workingHours   Working hours object.
+ * @param  array        $daysAvailable  Available days.
+ * @param  int          $userID         Time spent by a particular user.
+ * @return array                        Array with all time spent infos.
  * @throws Exception
  */
-function loadTimeSpendingInfosWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid = 0)
+function load_time_spending_infos_within_range(int $timestampStart, int $timestampEnd, Workinghours $workingHours, array $daysAvailable, int $userID = 0): array
 {
-    global $db;
-
-    if (empty($datestart)) {
+    if (empty($timestampStart)) {
         dol_print_error('', 'Error datestart parameter is empty');
     }
-    $planned_working_time = loadPlannedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid);
-    $passed_working_time = loadPassedTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid);
-    $spent_working_time = loadTimeSpentWithinRange($datestart, $dateend, $isavailable, $userid);
-    $working_time_difference = loadDifferenceBetweenPassedAndSpentTimeWithinRange($datestart, $dateend, $workingHours, $isavailable, $userid);
 
-    $time_spending_infos = array(
-        'planned' => $planned_working_time,
-        'passed' => $passed_working_time,
-        'spent' => $spent_working_time,
-        'difference' => $working_time_difference
-    );
+    $plannedWorkingTime    = load_planned_time_within_range($timestampStart, $timestampEnd, $workingHours, $daysAvailable);
+    $passedWorkingTime     = load_passed_time_within_range($timestampStart, $timestampEnd, $workingHours, $daysAvailable);
+    $spentWorkingTime      = load_time_spent_on_tasks_within_range($timestampStart, $timestampEnd, $daysAvailable, $userID);
+    $workingTimeDifference = load_difference_between_passed_and_spent_time_within_range($timestampStart, $timestampEnd, $workingHours, $daysAvailable, $userID);
 
-    return $time_spending_infos;
+    return [
+        'planned'    => $plannedWorkingTime,
+        'passed'     => $passedWorkingTime,
+        'spent'      => $spentWorkingTime,
+        'difference' => $workingTimeDifference
+    ];
 }
 
 /**
@@ -586,13 +538,13 @@ function doliSirhGetTasksArray($usert = null, $userp = null, $projectid = 0, $so
  * @param	string		$mine					Show only task lines I am assigned to
  * @param   int			$restricteditformytask	0=No restriction, 1=Enable add time only if task is assigned to me, 2=Enable add time only if tasks is assigned to me and hide others
  * @param	int			$preselectedday			Preselected day
- * @param   array       $isavailable			Array with data that say if user is available for several days for morning and afternoon
+ * @param   array       $daysAvailable			Array with data that say if user is available for several days for morning and afternoon
  * @param	int			$oldprojectforbreak		Old project id of last project break
  * @param	array		$arrayfields		    Array of additional column
  * @param	Extrafields	$extrafields		    Object extrafields
  * @return  array								Array with time spent for $fuser for each day of week on tasks in $lines and substasks
  */
-function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, $preselectedday, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null)
+function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, $preselectedday, &$daysAvailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null)
 {
     global $conf, $db, $user, $langs;
     global $form, $formother, $projectstatic, $taskstatic, $thirdpartystatic;
@@ -743,7 +695,7 @@ function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projects
                     print '<div class="marginleftonly">';
                 }
                 print $taskstatic->getNomUrl(1, 'withproject', 'time');
-                if (isTaskFavorite($taskstatic->id, $fuser->id)) {
+                if (is_task_favorite($taskstatic->id, $fuser->id)) {
                     print ' <span class="fas fa-star"></span>';
                 } else {
                     print ' <span class="far fa-star"></span>';
@@ -797,11 +749,11 @@ function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projects
                 print '</td>';
 
                 $cssonholiday = '';
-                if (!$isavailable[$preselectedday]['morning'] && !$isavailable[$preselectedday]['afternoon']) {
+                if (!$daysAvailable[$preselectedday]['morning'] && !$daysAvailable[$preselectedday]['afternoon']) {
                     $cssonholiday .= 'onholidayallday ';
-                } elseif (!$isavailable[$preselectedday]['morning']) {
+                } elseif (!$daysAvailable[$preselectedday]['morning']) {
                     $cssonholiday .= 'onholidaymorning ';
-                } elseif (!$isavailable[$preselectedday]['afternoon']) {
+                } elseif (!$daysAvailable[$preselectedday]['afternoon']) {
                     $cssonholiday .= 'onholidayafternoon ';
                 }
 
@@ -876,7 +828,7 @@ function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projects
             if ($lines[$i]->id > 0) {
                 //var_dump('totalforeachday after taskid='.$lines[$i]->id.' and previous one on level '.$level);
                 //var_dump($totalforeachday);
-                $ret = doliSirhLinesPerDay($inc, $lines[$i]->id, $fuser, ($parent == 0 ? $lineswithoutlevel0 : $lines), $level, $projectsrole, $tasksrole, $mine, $restricteditformytask, $preselectedday, $isavailable, $oldprojectforbreak, $arrayfields, $extrafields);
+                $ret = doliSirhLinesPerDay($inc, $lines[$i]->id, $fuser, ($parent == 0 ? $lineswithoutlevel0 : $lines), $level, $projectsrole, $tasksrole, $mine, $restricteditformytask, $preselectedday, $daysAvailable, $oldprojectforbreak, $arrayfields, $extrafields);
                 //var_dump('ret with parent='.$lines[$i]->id.' level='.$level);
                 //var_dump($ret);
                 foreach ($ret as $key => $val) {
@@ -908,13 +860,13 @@ function doliSirhLinesPerDay(&$inc, $parent, $fuser, $lines, &$level, &$projects
  * @param   string		$tasksrole				Array of roles user has on task
  * @param	string		$mine					Show only task lines I am assigned to
  * @param   int			$restricteditformytask	0=No restriction, 1=Enable add time only if task is assigned to me, 2=Enable add time only if tasks is assigned to me and hide others
- * @param   array       $isavailable			Array with data that say if user is available for several days for morning and afternoon
+ * @param   array       $daysAvailable			Array with data that say if user is available for several days for morning and afternoon
  * @param	int			$oldprojectforbreak		Old project id of last project break
  * @param	array		$arrayfields		    Array of additional column
  * @param	Extrafields	$extrafields		    Object extrafields
  * @return  array								Array with time spent for $fuser for each day of week on tasks in $lines and substasks
  */
-function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$isavailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null, $timeSpentOnTasks)
+function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $fuser, $parent, $lines, &$level, &$projectsrole, &$tasksrole, $mine, $restricteditformytask, &$daysAvailable, $oldprojectforbreak = 0, $arrayfields = array(), $extrafields = null, $timeSpentOnTasks)
 {
     global $conf, $db, $user, $langs;
     global $form, $formother, $projectstatic, $taskstatic, $thirdpartystatic;
@@ -1024,9 +976,9 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
                 }
                 print $taskstatic->getNomUrl(1, 'withproject', 'time');
                 if (GETPOST('action') == 'toggleTaskFavorite') {
-                    toggleTaskFavorite(GETPOST('id'), $fuser->id);
+                    toggle_task_favorite(GETPOST('id'), $fuser->id);
                 }
-                if (isTaskFavorite($taskstatic->id, $fuser->id)) {
+                if (is_task_favorite($taskstatic->id, $fuser->id)) {
                     print ' <span class="fas fa-star toggleTaskFavorite" id="'. $taskstatic->id .'" value="'. $taskstatic->id .'"></span>';
                 } else {
                     print ' <span class="far fa-star toggleTaskFavorite" id="'. $taskstatic->id .'" value="'. $taskstatic->id .'"></span>';
@@ -1034,7 +986,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
                 if ($taskstatic->planned_workload != '') {
                     $tmparray = $taskstatic->getSummaryOfTimeSpent();
                     if ($tmparray['total_duration'] > 0 && !empty($taskstatic->planned_workload)) {
-                        print ' <span class="task-progress ' . getTaskProgressColorClass(round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2)) . '">' . ' ' . round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2) . ' %' . '</span>';
+                        print ' <span class="task-progress ' . get_task_progress_color_class(round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2)) . '">' . ' ' . round($tmparray['total_duration'] / $taskstatic->planned_workload * 100, 2) . ' %' . '</span>';
                         print ' <span>' . ' ' . convertSecondToTime($taskstatic->planned_workload, 'allhourmin') . '</span>';
                     } else {
                         print ' 0 %';
@@ -1079,11 +1031,11 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 
                     $cellCSS = '';
 
-                    if (!$isavailable[$tmpday]['morning'] && !$isavailable[$tmpday]['afternoon']) {
+                    if (!$daysAvailable[$tmpday]['morning'] && !$daysAvailable[$tmpday]['afternoon']) {
 
-                        if ($isavailable[$tmpday]['morning_reason'] == 'public_holiday') {
+                        if ($daysAvailable[$tmpday]['morning_reason'] == 'public_holiday') {
                             $cellCSS = 'onholidayallday';
-                        } else if ($isavailable[$tmpday]['morning_reason'] == 'week_end') {
+                        } else if ($daysAvailable[$tmpday]['morning_reason'] == 'week_end') {
                             $cellCSS = 'weekend';
                         }
                     } else {
@@ -1127,7 +1079,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
 
                     $tableCell .= '<div class="modal-open">';
                     $tableCell .= '<input hidden class="modal-options" data-modal-to-open="timespent" data-from-id="' . $lines[$i]->id . '" data-from-module="dolisirh">';
-                    $tableCell .= '<input type="text" alt="'.($disabledtaskday ? '' : $alttitle).'" title="'.($disabledtaskday ? '' : $alttitle).'" '.($disabledtaskday ? 'disabled' : $placeholder).' class="center smallpadd timespent" size="2" id="timeadded['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $tmpday . ' data-date=' . dol_print_date($tmpday, 'day') . ' data-cell=' . $idw . ' value="" cols="2"  maxlength="5"';
+                    $tableCell .= '<input type="text" alt="'.($disabledtaskday ? '' : $alttitle).'" title="'.($disabledtaskday ? '' : $alttitle).'" '.($disabledtaskday ? 'disabled' : $placeholder).' class="center smallpadd timespent" size="2" id="timeadded['.$inc.']['.$idw.']" name="task['.$lines[$i]->id.']['.$idw.']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $tmpday . ' data-date=' . dol_print_date($tmpday, 'day') . ' data-cell=' . $idw . ' value="" cols="2"  maxlength="5">';
                     $tableCell .= '</div></td>';
                     print $tableCell;
                 }
@@ -1139,7 +1091,7 @@ function doliSirhTaskLinesWithinRange(&$inc, $firstdaytoshow, $lastdaytoshow, $f
             $inc++;
             $level++;
             if ($lines[$i]->id > 0) {
-                $ret = doliSirhTaskLinesWithinRange($inc, $firstdaytoshow, $lastdaytoshow, $fuser, $lines[$i]->id, ($parent == 0 ? $lineswithoutlevel0 : $lines), $level, $projectsrole, $tasksrole, $mine, $restricteditformytask, $isavailable, $oldprojectforbreak, $arrayfields, $extrafields, $timeSpentOnTasks);
+                $ret = doliSirhTaskLinesWithinRange($inc, $firstdaytoshow, $lastdaytoshow, $fuser, $lines[$i]->id, ($parent == 0 ? $lineswithoutlevel0 : $lines), $level, $projectsrole, $tasksrole, $mine, $restricteditformytask, $daysAvailable, $oldprojectforbreak, $arrayfields, $extrafields, $timeSpentOnTasks);
                 foreach ($ret as $key => $val) {
                     $totalforeachday[$key] += $val;
                 }

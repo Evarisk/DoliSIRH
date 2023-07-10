@@ -35,7 +35,7 @@ require_once __DIR__ . '/../class/workinghours.class.php';
  * @param  int $userID User ID.
  * @return int
  */
-function toggleTaskFavorite(int $taskID, int $userID): int
+function toggle_task_favorite(int $taskID, int $userID): int
 {
     global $db;
 
@@ -68,7 +68,7 @@ function toggleTaskFavorite(int $taskID, int $userID): int
  * @param  int $userID     User ID.
  * @return int $linkExists 0 = Not favorite | 1 = Favorite.
  */
-function isTaskFavorite(int $taskID, int $userID): int
+function is_task_favorite(int $taskID, int $userID): int
 {
     global $db;
 
@@ -97,7 +97,7 @@ function isTaskFavorite(int $taskID, int $userID): int
  * @param  int      $userID User ID.
  * @return bool             false = not availability | true = availability.
  */
-function isDayAvailable(int $date, int $userID): bool
+function is_day_available(int $date, int $userID): bool
 {
     global $db;
 
@@ -116,95 +116,13 @@ function isDayAvailable(int $date, int $userID): bool
     return $isAvailableForUser && !$isPublicHoliday;
 }
 
-
-/**
- * Sets object to given categories.
- *
- * Adds it to non-existing supplied categories.
- * Deletes object from existing categories not supplied (if remove_existing==true).
- * Existing categories are left untouch.
- *
- * @param int[]|int $categories Category ID or array of Categories IDs
- * @param string $type_categ Category type ('customer', 'supplier', 'website_page', ...) definied into const class Categorie type
- * @param boolean $remove_existing True: Remove existings categories from Object if not supplies by $categories, False: let them
- * @param CommonObject $object Object
- * @return    int                            <0 if KO, >0 if OK
- * @throws Exception
- */
-function setCategoriesObject($categories = array(), $type_categ = '', $remove_existing = true, $object)
-{
-	// Handle single category
-	if (!is_array($categories)) {
-		$categories = array($categories);
-	}
-
-	dol_syslog(get_class($object)."::setCategoriesCommon Oject Id:".$object->id.' type_categ:'.$type_categ.' nb tag add:'.count($categories), LOG_DEBUG);
-
-	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
-
-	if (empty($type_categ)) {
-		dol_syslog(__METHOD__.': Type '.$type_categ.'is an unknown category type. Done nothing.', LOG_ERR);
-		return -1;
-	}
-
-	// Get current categories
-	$c = new Categorie($object->db);
-	$existing = $c->containing($object->id, $type_categ, 'id');
-	if ($remove_existing) {
-		// Diff
-		if (is_array($existing)) {
-			$to_del = array_diff($existing, $categories);
-			$to_add = array_diff($categories, $existing);
-		} else {
-			$to_del = array(); // Nothing to delete
-			$to_add = $categories;
-		}
-	} else {
-		$to_del = array(); // Nothing to delete
-		$to_add = array_diff($categories, $existing);
-	}
-
-	$error = 0;
-	$ok = 0;
-
-	// Process
-	foreach ($to_del as $del) {
-		if ($c->fetch($del) > 0) {
-			$result=$c->del_type($object, $type_categ);
-			if ($result < 0) {
-				$error++;
-				$object->error = $c->error;
-				$object->errors = $c->errors;
-				break;
-			} else {
-				$ok += $result;
-			}
-		}
-	}
-	foreach ($to_add as $add) {
-		if ($c->fetch($add) > 0) {
-			$result = $c->add_type($object, $type_categ);
-			if ($result < 0) {
-				$error++;
-				$object->error = $c->error;
-				$object->errors = $c->errors;
-				break;
-			} else {
-				$ok += $result;
-			}
-		}
-	}
-
-	return $error ? -1 * $error : $ok;
-}
-
 /**
  * Get task progress css class.
  *
  * @param  float $progress Progress of the task.
  * @return string          CSS class.
  */
-function getTaskProgressColorClass(float $progress): string
+function get_task_progress_color_class(float $progress): string
 {
     switch ($progress) {
         case $progress < 50 :
@@ -217,17 +135,18 @@ function getTaskProgressColorClass(float $progress): string
 }
 
 /**
- *	Function to return number of days between two dates (date must be UTC date !)
- *  Example: 2012-01-01 2012-01-02 => 1 if lastday=0, 2 if lastday=1
+ * Function to return number of days between two dates (date must be UTC date !).
+ * Example: 2012-01-01 2012-01-02 => 1 if lastday = 0, 2 if lastday = 1.
  *
- *	@param	   int			$timestampStart     Timestamp start UTC
- *	@param	   int			$timestampEnd       Timestamp end UTC
- *	@param     int			$lastDay            Last day is included, 0: no, 1:yes
- *	@return    int								Number of days
- *  @seealso num_public_holiday(), num_open_day()
+ * @param   int $timestampStart  Timestamp start UTC.
+ * @param   int $timestampEnd    Timestamp end UTC.
+ * @param   int $lastDay         Last day is included, 0: no, 1:yes.
+ * @return  int $daysNumber      Number of days.
+ * @seealso num_public_holiday()
  */
-function dolisirh_num_between_day($timestampStart, $timestampEnd, $lastDay = 0)
+function dolisirh_num_between_day(int $timestampStart, int$timestampEnd, int $lastDay = 0): int
 {
+    $daysNumber = 0;
     if ($timestampStart <= $timestampEnd) {
         if ($lastDay == 1) {
             $bit = 0;

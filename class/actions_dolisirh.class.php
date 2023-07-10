@@ -571,10 +571,10 @@ class ActionsDoliSIRH
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
 			if (GETPOST('action') == 'toggleTaskFavorite') {
-				toggleTaskFavorite(GETPOST('id'), $user->id);
+				toggle_task_favorite(GETPOST('id'), $user->id);
 			}
 
-			if (isTaskFavorite(GETPOST('id'), $user->id)) {
+			if (is_task_favorite(GETPOST('id'), $user->id)) {
 				$favoriteStar = '<span class="fas fa-star toggleTaskFavorite" onclick="toggleTaskFavorite()"></span>';
 			} else {
 				$favoriteStar = '<span class="far fa-star toggleTaskFavorite" onclick="toggleTaskFavorite()"></span>';
@@ -618,7 +618,7 @@ class ActionsDoliSIRH
 			$tasksarray = $task->getTasksArray(0, 0, GETPOST('id'));
 			if (is_array($tasksarray) && !empty($tasksarray)) {
 				foreach ($tasksarray as $linked_task) {
-					if (isTaskFavorite($linked_task->id, $user->id)) {
+					if (is_task_favorite($linked_task->id, $user->id)) {
 						$favoriteStar = '<span class="fas fa-star toggleTaskFavorite" id="'. $linked_task->id .'" onclick="toggleTaskFavoriteWithId(this.id)"></span>';
 					} else {
 						$favoriteStar = '<span class="far fa-star toggleTaskFavorite" id="'. $linked_task->id .'" onclick="toggleTaskFavoriteWithId(this.id)"></span>';
@@ -642,7 +642,7 @@ class ActionsDoliSIRH
 
 			if (is_array($tasksarray) && !empty($tasksarray)) {
 				foreach ($tasksarray as $linked_task) {
-					if (isTaskFavorite($linked_task->id, $user->id)) {
+					if (is_task_favorite($linked_task->id, $user->id)) {
 						$favoriteStar = '<span class="fas fa-star toggleTaskFavorite" id="'. $linked_task->id .'" onclick="toggleTaskFavoriteWithId(this.id)"></span>';
 					} else {
 						$favoriteStar = '<span class="far fa-star toggleTaskFavorite" id="'. $linked_task->id .'" onclick="toggleTaskFavoriteWithId(this.id)"></span>';
@@ -788,7 +788,7 @@ class ActionsDoliSIRH
 			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
 		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
-			toggleTaskFavorite(GETPOST('taskId'), $user->id);
+			toggle_task_favorite(GETPOST('taskId'), $user->id);
 		}
 		?>
 		<script>
@@ -944,7 +944,7 @@ class ActionsDoliSIRH
 					$categoryArray[] =  $category->id;
 				}
 				if (!empty($categoryArray)) {
-					setCategoriesObject($categoryArray, 'invoice', false, $object);
+                    $object->setCategoriesCommon($categoryArray, 'invoice', false);
 				}
 			}
 		}
