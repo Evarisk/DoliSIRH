@@ -637,7 +637,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                     }
 
                     print '<tr class="oddeven trforbreak nobold">';
-                    print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '">';
+                    print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '"' . ($project->status == $project::STATUS_CLOSED ? 'style="background-color: #CBCDCD!important;"' : '') . '>';
                     print $project->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv('YourRole') . ' : </strong> ' . $projectsRole[$lines[$i]->fk_project]);
                     if ($thirdparty->id > 0) {
                         print ' - ' . $thirdparty->getNomUrl(1);
@@ -646,6 +646,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                         print ' - ';
                         print '<span class="secondary" title="' . $project->title . '">' . dol_trunc($project->title, '64') . '</span>';
                     }
+                    print ' - ' . $project->getLibStatut(5);
                     print '</td>';
                     print '</tr>';
                 }
