@@ -118,7 +118,7 @@ $lastdayofweek  = dol_time_plus_duree($firstdaytoshow, 6, 'd');
 
 
 $currentWeek = date('W', $now);
-if ($currentWeek == $week) {
+if ($currentWeek == $week && date('Y', $now) == $year) {
     $currentDate   = dol_getdate($now);
     $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
 } else {
@@ -367,7 +367,7 @@ $nav .= '<a class="inline-block valignmiddle" href="?year='.$next_year. '&month=
 $nav .= ' '.$form->selectDate(-1, '', 0, 0, 2, 'addtime', 1, 1).' ';
 $nav .= ' <button type="submit" name="submitdateselect" value="x" class="bordertransp"><span class="fa fa-search"></span></button>';
 
-print '<form name="addtime" id="addtimeform" method="POST" action="'.$_SERVER['PHP_SELF'].'>';
+print '<form name="addtime" id="addtimeform" method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<input type="hidden" name="action" value="addtime">';
 print '<input type="hidden" name="formfilteraction" id="formfilteraction" value="list">';

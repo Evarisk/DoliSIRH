@@ -104,7 +104,7 @@ $firstdaytoshow = dol_get_first_day($year, $month);
 $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
 $currentMonth = date('m', $now);
-if ($currentMonth == $month) {
+if ($currentMonth == $month && date('Y', $now) == $year) {
     $currentDate   = dol_getdate($now);
     $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
 } else {
