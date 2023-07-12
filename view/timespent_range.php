@@ -363,7 +363,7 @@ if (isModEnabled('categorie')) {
 }
 
 $timeArray  = ['year' => $year, 'month' => $month, 'day' => $day, 'week' => $week];
-$tasksArray = doliSirhGetTasksArray(0, 0, ($project->id ?: 0), 0, 0, $searchProjectRef, $onlyOpenedProject, $moreWhereFilter, ($searchUserID ?: 0), 0, $extraFields,0, [], 0,$timeArray, $viewMode);
+$tasksArray = get_tasks_array(0, 0, ($project->id ?: 0), 0, 0, $searchProjectRef, $onlyOpenedProject, $moreWhereFilter, ($searchUserID ?: 0), 0, $extraFields,0, [], 0,$timeArray, $viewMode);
 
 $tasksRole    = $task->getUserRolesForProjectsOrTasks(0, $userTmp, ($project->id ?: 0), 0, $onlyOpenedProject);
 $projectsRole = $task->getUserRolesForProjectsOrTasks($userTmp, 0, ($project->id ?: 0), 0, $onlyOpenedProject);
@@ -619,7 +619,7 @@ $level = 0;
 // Show tasks lines.
 $timeSpentOnTasks = load_time_spent_on_tasks_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $isAvailable, $userTmp->id);
 
-doliSirhTaskLinesWithinRange($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $tasksArray, $level, $projectsRole, $tasksRole, $mine, $restrictViewForMyTask, $isAvailable, 0, $arrayFields, $extraFields, $timeSpentOnTasks); ?>
+task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $tasksArray, $level, $projectsRole, $tasksRole, $mine, $restrictViewForMyTask, $isAvailable, $timeSpentOnTasks, 0, $arrayFields, $extraFields); ?>
 
 <!-- TIMESPENT ADD MODAL -->
 <div class="timespent-add-modal">
