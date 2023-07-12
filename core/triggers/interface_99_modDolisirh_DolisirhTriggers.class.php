@@ -21,8 +21,13 @@
  * \brief   DoliSIRH trigger.
  */
 
-// Load DoliSIRH libraries.
+// Load Dolibarr libraries.
 require_once DOL_DOCUMENT_ROOT . '/core/triggers/dolibarrtriggers.class.php';
+
+// Load DoliSIRH libraries.
+require_once __DIR__ . '/../../lib/dolisirh.lib.php';
+require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
+
 
 /**
  * Class of triggers for DoliSIRH module.
@@ -193,14 +198,12 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 break;
 
             case 'BILL_CREATE':
-                require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
                 $categories = GETPOST('categories', 'array:int');
                 setCategoriesObject($categories, 'invoice', false, $object);
                 break;
 
             case 'BILLREC_CREATE':
                 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
-                require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 
                 $cat = new Categorie($this->db);
 
@@ -244,8 +247,8 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $usertmp   = new User($this->db);
 
                     $usertmp->fetch($object->fk_user_assign);
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'TIMESHEET_SOCIETY_ATTENDANT');
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$usertmp->fk_user], 'TIMESHEET_SOCIETY_RESPONSIBLE');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'Signatory');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$usertmp->fk_user], 'Responsible');
                 }
 
                 if (getDolGlobalInt($conf->global->DOLISIRH_PRODUCT_SERVICE_SET)) {
@@ -254,45 +257,19 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $product    = new Product($this->db);
                     $objectline = new TimeSheetLine($this->db);
 
-                    $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('MealTicket')))));
-                    $objectline->date_creation  = $object->db->idate($now);
-                    $objectline->qty            = 0;
-                    $objectline->rang           = 1;
-                    $objectline->fk_timesheet   = $object->id;
-                    $objectline->fk_parent_line = 0;
-                    $objectline->fk_product     = $product->id;
-                    $objectline->product_type   = 0;
-                    $objectline->create($user);
+                    $productOrServiceTimesheets = get_product_service_timesheet();
 
-                    $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('JourneySubscription')))));
-                    $objectline->date_creation  = $object->db->idate($now);
-                    $objectline->qty            = 0;
-                    $objectline->rang           = 2;
-                    $objectline->fk_timesheet   = $object->id;
-                    $objectline->fk_parent_line = 0;
-                    $objectline->fk_product     = $product->id;
-                    $objectline->product_type   = 1;
-                    $objectline->create($user);
-
-                    $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('13thMonthBonus')))));
-                    $objectline->date_creation  = $object->db->idate($now);
-                    $objectline->qty            = 0;
-                    $objectline->rang           = 3;
-                    $objectline->fk_timesheet   = $object->id;
-                    $objectline->fk_parent_line = 0;
-                    $objectline->fk_product     = $product->id;
-                    $objectline->product_type   = 1;
-                    $objectline->create($user);
-
-                    $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('SpecialBonus')))));
-                    $objectline->date_creation  = $object->db->idate($now);
-                    $objectline->qty            = 0;
-                    $objectline->rang           = 4;
-                    $objectline->fk_timesheet   = $object->id;
-                    $objectline->fk_parent_line = 0;
-                    $objectline->fk_product     = $product->id;
-                    $objectline->product_type   = 1;
-                    $objectline->create($user);
+                    foreach ($productOrServiceTimesheets as $productOrServiceTimesheet) {
+                        $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities($productOrServiceTimesheet['name'])))));
+                        $objectline->date_creation  = $object->db->idate($now);
+                        $objectline->qty            = 0;
+                        $objectline->rang           = 1;
+                        $objectline->fk_timesheet   = $object->id;
+                        $objectline->fk_parent_line = 0;
+                        $objectline->fk_product     = $product->id;
+                        $objectline->product_type   = 0;
+                        $objectline->create($user);
+                    }
                   }
 
                   $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
