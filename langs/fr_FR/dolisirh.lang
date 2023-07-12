@@ -23,45 +23,92 @@ DoliSIRHDescription     = Simplification de la gestion du temps. <br> Générati
 DoliSIRHDescriptionLong = Simplification de la gestion du temps. <br> Génération des navettes.
 
 #
+# Config page - Page d'administration
+#
+
+# Projects and tasks - Projets et tâches
+HRProject                           = Projet Ressources Humaines
+ProjectsAndTasks                    = Projets et tâches
+ProjectOrTask                       = Projet ou tâche
+Holidays                            = Congés
+PaidHolidays                        = Congés payés
+SickLeave                           = Congés maladie
+PublicHoliday                       = Jour férié
+AutomaticTimeSpending               = Auto-pointage
+InternalMeeting                     = Réunion interne
+InternalTraining                    = Formation interne
+ExternalTraining                    = Formation externe
+Miscellaneous                       = Divers
+TimeSpent                           = Temps consommé
+SpendMoreTimeThanPlanned            = Pointer plus de temps que planifié
+SpendMoreTimeThanPlannedDescription = Cette option permet de pointer plus de temps que le temps renseigné dans l'onglet "Horaire de travail"
+DefaultTicketTimeSpent              = Temps consommé par défaut pour un ticket
+DefaultTicketTimeSpentDescription   = Cette option permet de définir le temps consommé par défaut pour un ticket (en min) <br> Valeur par défaut : 15 min
+ThemeDashboardTimeSpent             = Thème du Rapport de pointage de temps
+ExceededTimeSpentColor              = Couleur temps consommés dépassés
+NotExceededTimeSpentColor           = Couleur temps consommés pas dépassés ou non pointés
+PerfectTimeSpentColor               = Couleur temps consommés parfait
+
+# Timesheet - Navette
+PrefillDate                                  = Préremplir la date de début et de fin de la navette
+PrefillDateDescription                       = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
+AddAttendantsConf                            = Ajouter des signataires
+AddAttendantsDescription                     = Pouvoir ajouter des signataires pendant la réalisation de la navette <br> (par défaut il y a deux signataires, l'utilisateur assigné et son responsable hiérarchique s'il est configuré dans son profil utilisateur)
+CheckDateEnd                                 = Vérifier la date fin de navette
+CheckDateEndDescription                      = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
+ShowTasksWithTimespentOnTimeSheet            = Afficher les tâches avec du temps consommé
+ShowTasksWithTimespentOnTimeSheetDescription = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
+
+# Setup - Réglages
+SetupDefaultData      = Gestion des données par défaut de DoliSIRH
+HumanResources        = Ressources humaines
+HRDescription         = Projet comprenant les tâches liées aux ressources humaines
+HRProjectSet          = Création du Projet Ressources Humaines
+HRProjectSetHelp      = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
+ProductServiceSet     = Création des produits et services pour la navette
+ProductServiceSetHelp = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
+BookmarkSet           = Création d'un marque-page pour le temps consommé
+BookmarkSetHelp       = Cette option permet d'accéder rapidement à la gestion du pointage de temps
+NotCreated            = Pas encore créé(e)s
+AlreadyCreated        = Déjà créé(e)s
+
+
+
+#
 # DoliSIRH
 #
 
+# User IHM - interface utilisateur
+TimeSpentDatasetOrder = Changer l'ordre d'affichage des données des tableaux de bord sur la répartition.
+ByProject/Task        = Par projet et tâche
+ByTask/Project        = Par tâche et projet
+
+# SetEventMessage - Notice info
+MessageInfo                = Tâche créée avec succès
+MessageInfoNoCreate        = Aucune tâche n'a été créée
+MessageInfoNoCreateProject = Aucune tâche n'a été créée car le projet n'est pas lié
+MessageInfoNoCreateTime    = Aucune tâche n'a été créée car le service n'a pas de temps
+MessageInfoNoCreatedate    = Aucune tâche n'a été créée car le service n'a pas de date
+MessageTimeSpentCreate     = Temps consommé crée
+MessageNoTaskLink          = Pas de tâche affectée, pas de temps passé disponible
+
 # Data - Donnée
-MessageInfo                       = Tâche créée avec succès
-MessageInfoNoCreate               = Aucune tâche n'a été créée
-MessageInfoNoCreateProject        = Aucune tâche n'a été créée car le projet n'est pas lié
-MessageInfoNoCreateTime           = Aucune tâche n'a été créée car le service n'a pas de temps
-MessageInfoNoCreatedate           = Aucune tâche n'a été créée car le service n'a pas de date
-ErrorNoProject                    = Projet non lié
-ErrorDateStart                    = Pas de date de début
-ErrorDateEnd                      = Pas de date de fin
-ErrorServiceTime                  = Le temps du(des) service(s) est nul
-MessageTimeSpentCreate            = Temps consommé crée
-MessageNoTaskLink                 = Pas de tâche affectée, pas de temps passé disponible
-DoliSIRHTimeSpent                 = Rapport de temps passé
-ActionAC_TEL_IN                   = Appel téléphonique entrant
-ActionAC_TEL_OUT                  = Appel téléphonique sortant
-DoliSIRHNumberOfModelFilesFound   = Nombre de modèles par défaut
-SetupDefaultData                  = Gestion des données par défaut de DoliSIRH
-HRProjectSet                      = Création du Projet Ressources Humaines
-HRProjectSetHelp                  = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
-ProductServiceSet                 = Création des produits et services pour la navette
-ProductServiceSetHelp             = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
-BookmarkSet                       = Création d'un marque-page pour le temps consommé
-BookmarkSetHelp                   = Cette option permet d'accéder rapidement à la gestion du pointage de temps
-NotCreated                        = Pas encore créé(e)s
-AlreadyCreated                    = Déjà créé(e)s
-SetupDefaultDataNotCreated        = Vous n'avez pas créé les données par défaut de DOLISIRH
-HowToSetupDefaultData             = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
-ConfigDefaultData                 = Configuration des données par défaut de DOLISIRH
-DefaultTicketTimeSpent            = Temps consommé par défaut pour un ticket
-DefaultTicketTimeSpentDescription = Cette option permet de définir le temps consommé par défaut pour un ticket (en min) <br> Valeur par défaut : 15 min
-EnableDoliSIRH                    = Veuillez activer le module DoliSIRH pour accéder à cette page
+DoliSIRHTimeSpent          = Rapport de temps passé
+ActionAC_TEL_IN            = Appel téléphonique entrant
+ActionAC_TEL_OUT           = Appel téléphonique sortant
+ErrorNoProject             = Projet non lié
+ErrorDateStart             = Pas de date de début
+ErrorDateEnd               = Pas de date de fin
+ErrorServiceTime           = Le temps du(des) service(s) est nul
+SetupDefaultDataNotCreated = Vous n'avez pas créé les données par défaut de DOLISIRH
+HowToSetupDefaultData      = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
+ConfigDefaultData          = Configuration des données par défaut de DOLISIRH
+EnableDoliSIRH             = Veuillez activer le module DoliSIRH pour accéder à cette page
 
 
 
 #
-# TimeSpent - Temps consommé
+# WorkingHours - Horaires de travail
 #
 
 # Right - Droit
@@ -69,34 +116,26 @@ CreateAllWorkingHours = Créer/Modifier les horaires de travail des utilisateurs
 CreateMyWorkingHours  = Créer/Modifier ses propres horaires de travail
 
 # Data - Donnée
-WorkingHoursFormatDesc                 = Renseigner le temps travaillé par jour (en minutes)
-UserWorkingHours                       = Horaires de l'utilisateur
-WrongWorkingHoursFormat                = Mauvais format pour les heures travaillées : %s
-UserWorkingHoursSaved                  = Horaires de l'utilisateurs sauvegardés
-WorkingHours(min)                      = Temps travaillé (en minutes)
+WorkingHours            = Horaire de travail
+WorkingHoursFormatDesc  = Renseigner le temps travaillé par jour (en minutes)
+WrongWorkingHoursFormat = Mauvais format pour les heures travaillées : %s
+UserWorkingHoursSaved   = Horaire de travail sauvegardée
+WorkingHours(min)       = Temps travaillé (en minutes)
+
+
+
+#
+# TimeSpent - Temps consommé
+#
+
+# Data - Donnée
 DayWorkTime                            = Temps du jour
 NonConsumedTime                        = Temps non pointé
-TimeSpent                              = Temps consommé
-Holidays                               = Congés
-PaidHolidays                           = Congés payés
-SickLeave                              = Congés maladie
-PublicHoliday                          = Jour férié
-AutomaticTimeSpending                  = Auto-pointage
-InternalMeeting                        = Réunion interne
-InternalTraining                       = Formation interne
-ExternalTraining                       = Formation externe
-Miscellaneous                          = Divers
 TooMuchTimeSpent                       = Vous avez pointé plus de temps que le temps non pointé disponible
 TimeSpending                           = Pointage de temps
-HumanResources                         = Ressources humaines
-ProjectsAndTasks                       = Projets et tâches
-HRProject                              = Projet Ressources Humaines
-HRDescription                          = Projet comprenant les tâches liées aux ressources humaines
 DoliSIRHNewTimeSpent                   = Temps consommé (en minutes)
 DivideTimeIntoTasks                    = Répartir entre les tâches du projet
 ShowOnlyFavoriteTasks                  = Afficher uniquement les tâches favorites
-SpendMoreTimeThanPlanned               = Pointer plus de temps que planifié
-SpendMoreTimeThanPlannedDescription    = Cette option permet de pointer plus de temps que le temps renseigné dans l'onglet "Horaires" de l'utilisateur
 ConsumedTime                           = Temps pointé
 ExpectedWorkingHoursMonth              = Heures de travail prévues au mois de %s
 SpentWorkingHoursMonth                 = Heures de travail dues (%s - %s)
@@ -104,7 +143,6 @@ ConsumedWorkingHoursMonth              = Heures de travail consommées (%s - %s)
 DiffSpentAndConsumedWorkingHoursMonth  = Différence d'heures de travail dues/consommées (%s - %s)
 WarningShowOnlyFavoriteTasks           = Attention, quand l'option 'Afficher uniquement les tâches favorites' est activée, les valeurs totales récupèrent l'ensembles des tâches.
 ExpectedWorkingHoursWeek               = Heures de travail prévues (%s - %s)
-ThemeDashboardTimeSpent                = Thème du Rapport de pointage de temps
 TimeSpentList                          = Liste des temps consommés
 ShowOnlyTasksWithTimeSpent             = Afficher uniquement les tâches avec du temps consommé sur cette période
 ExpectedWorkingHours                   = Heures de travail prévues
@@ -120,7 +158,6 @@ TimeSpentCurrentMonthByTaskAndProject  = Répartition du temps consommé au mois
 NotConsumedWorkingHours                = Heures de travail non consommées
 GlobalTimeCurrentMonthByTaskAndProject = Répartition du temps global au mois de %s par tâche sur chaque projet
 KeyEvent                               = Raccourci clavier
-TimeSpentDatasetOrder                  = Changer l'ordre d'affichage des données des tableaux de bord sur la répartition.
 
 
 
@@ -134,9 +171,6 @@ NumberOfRecurringBills          = Nb de factures récurrentes
 NumberOfRecurringBillsByMonth   = Nb de factures récurrentes par mois
 AmountOfRecurringBills          = Montant de factures récurrentes
 AmountOfRecurringBillsByMonthHT = Montant de factures récurrentes par mois (HT)
-ExceededTimeSpentColor          = Couleur temps consommés dépassés
-NotExceededTimeSpentColor       = Couleur temps consommés pas dépassés ou non pointés
-PerfectTimeSpentColor           = Couleur temps consommés parfait
 InvoicesCategoriesArea          = Espace des tags/catégories des factures
 
 
@@ -170,32 +204,22 @@ ConfirmRemoveFileTimeSheet                    = Êtes-vous sûr de vouloir suppr
 ErrorDateEndTimeSheet                         = Erreur date fin de navette %s supérieure à la date du jour %s
 ErrorDateTimeSheet                            = Erreur date début de navette %s supérieure à la date fin de navette %s
 ErrorConfigWorkingHours                       = Erreur : configuration des heures de travail manquantes
-GoToWorkingHours                              = Aller sur la page Horaires de l'utilisateur %s
+GoToWorkingHours                              = Aller sur la page Horaire de travail de l'utilisateur %s
 ErrorConfigProjectPage                        = Erreur : configuration des projets et tâches ressources humaines manquantes. <br> Impossible de génerer la navette.
 GoToConfigProjectPage                         = Aller sur la page de configuration du projet Ressources Humaines
 
 # Data - Donnée
-TimeSheet                                    = Navette
-Timesheet                                    = Navette
-NewTimeSheet                                 = Nouvelle navette
-NewTimesheet                                 = Nouvelle navette
-ModifyTimeSheet                              = Modifer la navette
-TimeSheetList                                = Liste des navettes
-UserAssign                                   = Utilisateur assigné
-PrefillDate                                  = Préremplir la date de début et de fin de la navette
-PrefillDateDescription                       = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
-TIMESHEET_SOCIETY_ATTENDANT                  = Signataire interne
-TIMESHEET_SOCIETY_RESPONSIBLE                = Responsable
-AddAttendantsConf                            = Ajouter des signataires
-AddAttendantsDescription                     = Pouvoir ajouter des signataires pendant la réalisation de la navette <br> (par défaut il y a deux signataires, l'utilisateur assigné et son responsable hiérarchique s'il est configuré dans son profil utilisateur)
-TimesheetsCategoriesArea                     = Espace des tags/catégories des navettes
-ConsumedWorkingDayMonth                      = Nombre de jour pointés :
-ExpectedWorkingDayMonth                      = Nombre de jours ouvrés :
-ExpectedWorkingHoursMonthTimeSheet           = Heures de travail prévues (%s - %s)
-CheckDateEnd                                 = Vérifier la date fin de navette
-CheckDateEndDescription                      = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
-ShowTasksWithTimespentOnTimeSheet            = Afficher les tâches avec du temps consommé
-ShowTasksWithTimespentOnTimeSheetDescription = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
+TimeSheet                          = Navette
+Timesheet                          = Navette
+NewTimeSheet                       = Nouvelle navette
+NewTimesheet                       = Nouvelle navette
+ModifyTimeSheet                    = Modifier la navette
+TimeSheetList                      = Liste des navettes
+UserAssign                         = Utilisateur assigné
+ConsumedWorkingDayMonth            = Nombre de jour pointés :
+ExpectedWorkingDayMonth            = Nombre de jours ouvrés :
+ExpectedWorkingHoursMonthTimeSheet = Heures de travail prévues (%s - %s)
+TimesheetsCategoriesArea           = Espace des tags/catégories des navettes
 
 
 
@@ -253,7 +277,3 @@ MealTicket          = Ticket restaurant
 JourneySubscription = Abonnement trajet
 13thMonthBonus      = Prime 13ème mois
 SpecialBonus        = Prime spéciale
-WorkingHours        = Horaires de travail
-ByProject/Task      = Par projet et tâche
-ByTask/Project      = Par tâche et projet
-ProjectOrTask       = Projet ou tâche
