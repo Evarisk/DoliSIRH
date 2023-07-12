@@ -110,7 +110,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $actioncomm->userownerid = $user->id;
         $actioncomm->percentage  = -1;
 
-        if (getDolGlobalInt($conf->global->DOLISIRH_ADVANCED_TRIGGER) && !empty($object->fields)) {
+        if (getDolGlobalInt('DOLISIRH_ADVANCED_TRIGGER') && !empty($object->fields)) {
             $actioncomm->note_private = method_exists($object, 'getTriggerDescription') ? $object->getTriggerDescription($object) : '';
         }
 
@@ -222,7 +222,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 if ($object->src_object_type == 'dolisirh_timesheet') {
                     require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
-                    $signatory = new SaturneSignature($this->db);
+                    $signatory = new SaturneSignature($this->db, 'dolisirh');
 
                     $signatories = $signatory->fetchSignatories($object->src_object_id, 'timesheet');
                     if (!empty($signatories) && $signatories > 0) {
@@ -243,7 +243,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 if (!empty($object->fk_user_assign)) {
                     require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
-                    $signatory = new SaturneSignature($this->db);
+                    $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
                     $usertmp   = new User($this->db);
 
                     $usertmp->fetch($object->fk_user_assign);
@@ -251,7 +251,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $signatory->setSignatory($object->id, $object->element, 'user', [$usertmp->fk_user], 'Responsible');
                 }
 
-                if (getDolGlobalInt($conf->global->DOLISIRH_PRODUCT_SERVICE_SET)) {
+                if (getDolGlobalInt('DOLISIRH_PRODUCT_SERVICE_SET')) {
                     require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
                     $product    = new Product($this->db);
