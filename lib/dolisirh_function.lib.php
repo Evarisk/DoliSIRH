@@ -148,12 +148,7 @@ function dolisirh_num_between_day(int $timestampStart, int$timestampEnd, int $la
 {
     $daysNumber = 0;
     if ($timestampStart <= $timestampEnd) {
-        if ($lastDay == 1) {
-            $bit = 0;
-        } else {
-            $bit = 1;
-        }
-        $daysNumber = (int) round(($timestampEnd - $timestampStart) / (60 * 60 * 24)) + 1 - $bit;
+        $daysNumber = (int) round(($timestampEnd - $timestampStart) / (60 * 60 * 24)) + 1 - abs($lastDay - 1);
     }
 
     return $daysNumber;

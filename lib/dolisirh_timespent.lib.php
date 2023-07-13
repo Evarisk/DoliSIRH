@@ -48,21 +48,21 @@ function timespent_prepare_head(string $mode, User $fkUser): array
         $param .= '&search_user_id=' . $fkUser->id;
     }
 
-    if (!getDolGlobalInt($conf->global->PROJECT_DISABLE_TIMESHEET_PERMONTH)) {
+    if (!getDolGlobalInt('PROJECT_DISABLE_TIMESHEET_PERMONTH')) {
         $head[$h][0] = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?view_mode=month' . $param;
         $head[$h][1] = $langs->trans('InputPerMonth');
         $head[$h][2] = 'inputpermonth';
         $h++;
     }
 
-    if (!getDolGlobalInt($conf->global->PROJECT_DISABLE_TIMESHEET_PERWEEK)) {
+    if (!getDolGlobalInt('PROJECT_DISABLE_TIMESHEET_PERWEEK')) {
         $head[$h][0] = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?view_mode=week' . $param;
         $head[$h][1] = $langs->trans('InputPerWeek');
         $head[$h][2] = 'inputperweek';
         $h++;
     }
 
-    if (!getDolGlobalInt($conf->global->PROJECT_DISABLE_TIMESHEET_PERTIME)) {
+    if (!getDolGlobalInt('PROJECT_DISABLE_TIMESHEET_PERTIME')) {
         $head[$h][0] = DOL_URL_ROOT.'/custom/dolisirh/view/timespent_range.php?view_mode=day' . $param;
         $head[$h][1] = $langs->trans('InputPerDay');
         $head[$h][2] = 'inputperday';
@@ -581,12 +581,12 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
     }
 
     if (empty($oldProjectForBreak)) {
-        $oldProjectForBreak = (!getDolGlobalInt($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT) ? 0 : -1); // 0 = start break, -1 = never break.
+        $oldProjectForBreak = (!getDolGlobalInt('PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT') ? 0 : -1); // 0 = start break, -1 = never break.
     }
 
     $restrictBefore = null;
 
-    if (getDolGlobalInt($conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS)) {
+    if (getDolGlobalInt('PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS')) {
         $restrictBefore = dol_time_plus_duree(dol_now(), - $conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS, 'm');
     }
 
