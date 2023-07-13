@@ -148,7 +148,7 @@ dol_banner_tab($usertmp, 'socid', $linkback, ($usertmp->socid ? 0 : 1), 'rowid',
 
 print dol_get_fiche_end();
 
-print load_fiche_titre($langs->trans("UserWorkingHours"), '', '');
+print load_fiche_titre($langs->trans('WorkingHours'), '', '');
 
 //Show common fields
 
