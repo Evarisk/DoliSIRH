@@ -115,7 +115,7 @@ class DolisirhDashboard
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
             $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-            if (isDayAvailable($dayInLoop, $userID)) {
+            if (is_day_available($dayInLoop, $userID)) {
                 $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
             } else if (date('N', $dayInLoop) >= 6) {
                 $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
@@ -127,10 +127,10 @@ class DolisirhDashboard
         $workinghours = new Workinghours($db);
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
-        $timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $userID);
+        $timeSpendingInfos = load_time_spending_infos_within_range($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $userID);
 
         // Planned working time
-        $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
+        $planned_working_time = load_planned_time_within_range($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
         $array['planned']['label']   = $langs->trans('Total') . ' - ' . $langs->trans('ExpectedWorkingHoursMonth', dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), $year), '%B %Y'));
         $array['planned']['content'] = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00');
 
@@ -199,7 +199,7 @@ class DolisirhDashboard
 
             $currentMonth = date('m', dol_now());
             $currentYear  = date('Y', dol_now());
-            if ($currentMonth == date('m') && $currentYear == $year) { 
+            if ($currentMonth == date('m') && $currentYear == $year) {
                 $currentDate   = dol_getdate(dol_now());
                 $lastdaytoshow = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
             } else {
@@ -211,7 +211,7 @@ class DolisirhDashboard
             $isavailable = [];
             for ($idw = 0; $idw < $daysInMonth; $idw++) {
                 $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-                if (isDayAvailable($dayInLoop, $userID)) {
+                if (is_day_available($dayInLoop, $userID)) {
                     $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
                 } else if (date('N', $dayInLoop) >= 6) {
                     $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
@@ -220,7 +220,7 @@ class DolisirhDashboard
                 }
             }
 
-            $planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
+            $planned_working_time = load_planned_time_within_range($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
             $working_time          = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
 
             $planned_working_time_data = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'fullhour') : 0);
@@ -285,7 +285,7 @@ class DolisirhDashboard
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
             $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-            if (isDayAvailable($dayInLoop, $userID)) {
+            if (is_day_available($dayInLoop, $userID)) {
                 $isavailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
             } else if (date('N', $dayInLoop) >= 6) {
                 $isavailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
@@ -295,7 +295,7 @@ class DolisirhDashboard
 
         }
 
-        $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
+        $timeSpentOnTasks = load_time_spent_on_tasks_within_range($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
         $datas = [];
         $totalTimeSpent = 0;
 
@@ -327,7 +327,7 @@ class DolisirhDashboard
         }
 
         if ($showNotConsumedWorkingHours > 0) {
-            $plannedWorkingTime = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
+            $plannedWorkingTime = load_planned_time_within_range($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
             $plannedWorkingTimeData = (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'fullhour') : 0);
             $array['labels'][] = ['color' => '#008ECC'];
             $array['data'][] = [$langs->transnoentities('NotConsumedWorkingHours'), $plannedWorkingTimeData - $totalTimeSpent, $plannedWorkingTimeData - $totalTimeSpent];

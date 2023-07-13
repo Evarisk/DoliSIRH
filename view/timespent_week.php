@@ -46,6 +46,7 @@ if (!empty($conf->categorie->enabled)) {
 }
 
 require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
+require_once __DIR__ . '/../lib/dolisirh_timespent.lib.php';
 require_once __DIR__ . '/../class/workinghours.class.php';
 
 // Global variables definitions
@@ -343,7 +344,7 @@ if (!empty($conf->categorie->enabled)) {
 
 $timeArray  = array('year' => $year, 'month' => $month, 'week' => $week, 'day' => $day);
 $tasksarray = [];
-$tasksarray = doliSirhGetTasksArray(0, 0, ($project->id ?: 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields,0,array(), 0, $timeArray, 'week');
+$tasksarray = get_tasks_array(0, 0, ($project->id ?: 0), $socid, 0, $search_project_ref, $onlyopenedproject, $morewherefilter, ($search_usertoprocessid ? $search_usertoprocessid : 0), 0, $extrafields,0,array(), 0, $timeArray, 'week');
 
 $projectsrole = $taskstatic->getUserRolesForProjectsOrTasks($usertoprocess, 0, ($project->id ? $project->id : 0), 0, $onlyopenedproject);
 $tasksrole = $taskstatic->getUserRolesForProjectsOrTasks(0, $usertoprocess, ($project->id ? $project->id : 0), 0, $onlyopenedproject);
@@ -377,7 +378,7 @@ print '<input type="hidden" name="day" value="'.$day.'">';
 print '<input type="hidden" name="month" value="'.$month.'">';
 print '<input type="hidden" name="year" value="'.$year.'">';
 
-$head = timeSpendPrepareHead($mode, $usertoprocess);
+$head = timespent_prepare_head($mode, $usertoprocess);
 print dol_get_fiche_head($head, 'inputperweek', $langs->trans('TimeSpent'), -1, 'clock');
 
 // Show description of content
@@ -428,7 +429,7 @@ print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
 $isavailable = array();
 for ($idw = 0; $idw < $daysInWeek; $idw++) {
     $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-    if (isDayAvailable($dayInLoop, $user->id)) {
+    if (is_day_available($dayInLoop, $user->id)) {
         $isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
     } else if (date('N', $dayInLoop) >= 6) {
         $isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end');
@@ -543,7 +544,7 @@ $colspan = 1 + (empty($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT) 
 $workinghours = new Workinghours($db);
 $workingHours = $workinghours->fetchCurrentWorkingHours($usertoprocess->id, 'user');
 
-$planned_working_time = loadPlannedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdayofweek, 1, 'd'), $workingHours, $isavailable);
+$planned_working_time = load_planned_time_within_range($firstdaytoshow, dol_time_plus_duree($lastdayofweek, 1, 'd'), $workingHours, $isavailable);
 
 $workinghoursWeek = 0;
 
@@ -563,7 +564,7 @@ if ($conf->use_javascript_ajax) {
     //Fill days data
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-        $planned_hours_on_day = loadPlannedTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable);
+        $planned_hours_on_day = load_planned_time_within_range($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable);
 
         $cellCSS = '';
 
@@ -591,9 +592,9 @@ $j = 0;
 $level = 0;
 
 //Show tasks lines
-$timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
+$timeSpentOnTasks = load_time_spent_on_tasks_within_range($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
 
-doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, 0, $arrayfields, $extrafields, $timeSpentOnTasks); ?>
+task_lines_within_range($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess, 0, $tasksarray, $level, $projectsrole, $tasksrole, $mine, $restrictviewformytask, $isavailable, $timeSpentOnTasks, 0, $arrayfields, $extrafields); ?>
 
 <!-- TIMESPENT ADD MODAL -->
 <div class="timespent-add-modal">
@@ -643,7 +644,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
 
 <?php if ($conf->use_javascript_ajax) {
     //Passed working hours
-    $passed_working_time = loadPassedTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable);
+    $passed_working_time = load_passed_time_within_range($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable);
 
     print '<tr class="liste_total">';
     print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
@@ -660,7 +661,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     //Fill days data
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-        $passed_hours_on_day = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable);
+        $passed_hours_on_day = load_passed_time_within_range($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable);
 
         $cellCSS = '';
 
@@ -684,7 +685,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
     print $langs->trans('Total');
 
-    $timeSpent = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
+    $timeSpent = load_time_spent_on_tasks_within_range($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $usertoprocess->id);
 
     $totalconsumedtime = $timeSpent['total'];
     print '<span class="opacitymediumbycolor">  - '.$langs->trans('ConsumedWorkingHoursMonth', dol_print_date($firstdaytoshow, 'dayreduceformat'), dol_print_date($lastdaytoshow, 'dayreduceformat')).' : <strong>'.convertSecondToTime($totalconsumedtime, 'allhourmin').'</strong></span>';
@@ -695,7 +696,10 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-        $timespent_hours_on_day = loadTimeSpentWithinRange($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $isavailable, $usertoprocess->id);
+        $timespent_hours_on_day = load_time_spent_on_tasks_within_range($dayInLoop, dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $isavailable, $usertoprocess->id);
+
+        echo '<pre>'; print_r( $timespent_hours_on_day ); echo '</pre>';
+
 
         $cellCSS = '';
 
@@ -716,7 +720,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
     print '</tr>';
 
     //Difference between planned & working hours
-    $timeSpentDiff = loadDifferenceBetweenPassedAndSpentTimeWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
+    $timeSpentDiff = load_difference_between_passed_and_spent_time_within_range($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
 
     print '<tr class="liste_total planned-working-difference">';
     print '<td class="liste_total" colspan="'.($colspan + $addcolspan).'">';
@@ -737,7 +741,7 @@ doliSirhTaskLinesWithinRange($j, $firstdaytoshow, $lastdaytoshow, $usertoprocess
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-        $timeSpentDiffThisDay = loadDifferenceBetweenPassedAndSpentTimeWithinRange(dol_time_plus_duree($firstdaytoshow, $idw, 'd'), dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
+        $timeSpentDiffThisDay = load_difference_between_passed_and_spent_time_within_range(dol_time_plus_duree($firstdaytoshow, $idw, 'd'), dol_time_plus_duree($firstdaytoshow, $idw + 1, 'd'), $workingHours, $isavailable, $usertoprocess->id);
 
         if ($timeSpentDiffThisDay < 0) {
             $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);

@@ -256,7 +256,7 @@ class Workinghours extends CommonObject
 	 *
 	 * @param  int        $id   ID object
 	 * @param  string     $type Type of object
-	 * @return array|int        int <0 if KO, array of pages if OK
+	 * @return Workinghours|int  int <0 if KO, array of pages if OK
 	 * @throws Exception
 	 */
 	public function fetchCurrentWorkingHours(int $id, string $type)
@@ -265,6 +265,7 @@ class Workinghours extends CommonObject
 		if (is_array($current_workinghours) && !empty($current_workinghours)) {
 			$current_workinghours = array_shift($current_workinghours);
 		}
+
 		return $current_workinghours;
 	}
 
