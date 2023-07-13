@@ -131,14 +131,14 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
 /**
  * Load time to spend within a time range.
  *
- * @param  int          $timestampStart Timestamp first day.
- * @param  int          $timestampEnd   Timestamp last day.
- * @param  Workinghours $workingHours   Working hours object.
- * @param  array        $daysAvailable  Available days.
- * @return array                        Array with minutes, days on time to spend.
+ * @param  int                $timestampStart Timestamp first day.
+ * @param  int                $timestampEnd   Timestamp last day.
+ * @param  Workinghours|array $workingHours   Working hours object.
+ * @param  array              $daysAvailable  Available days.
+ * @return array                              Array with minutes, days on time to spend.
  * @throws Exception
  */
-function load_planned_time_within_range(int $timestampStart, int $timestampEnd, Workinghours $workingHours, array $daysAvailable): array
+function load_planned_time_within_range(int $timestampStart, int $timestampEnd, $workingHours, array $daysAvailable): array
 {
     if (empty($timestampStart)) {
         dol_print_error('', 'Error datestart parameter is empty');
@@ -165,14 +165,14 @@ function load_planned_time_within_range(int $timestampStart, int $timestampEnd, 
 /**
  * Load time to spend within a time range.
  *
- * @param  int          $timestampStart    Timestamp first day.
- * @param  int          $timestampEnd      Timestamp last day.
- * @param  Workinghours $workingHours      Working hours object.
- * @param  array        $daysAvailable     Available days.
- * @return array        $passedWorkingTime Array with minutes on passed working time.
+ * @param  int                $timestampStart    Timestamp first day.
+ * @param  int                $timestampEnd      Timestamp last day.
+ * @param  Workinghours|array $workingHours      Working hours object.
+ * @param  array              $daysAvailable     Available days.
+ * @return array              $passedWorkingTime Array with minutes on passed working time.
  * @throws Exception
  */
-function load_passed_time_within_range(int $timestampStart, int $timestampEnd, Workinghours $workingHours, array $daysAvailable): array
+function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $workingHours, array $daysAvailable): array
 {
     if (empty($timestampStart)) {
         dol_print_error('', 'Error datestart parameter is empty');
@@ -196,15 +196,15 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, W
 /**
  * Load difference between passed time and spent time within a time range.
  *
- * @param  int          $timestampStart Timestamp first day.
- * @param  int          $timestampEnd   Timestamp last day.
- * @param  Workinghours $workingHours   Working hours object.
- * @param  array        $daysAvailable  Available days.
- * @param  int          $userID         Time spent by a particular user.
- * @return int                          Array with minutes on passed working time.
+ * @param  int                $timestampStart Timestamp first day.
+ * @param  int                $timestampEnd   Timestamp last day.
+ * @param  Workinghours|array $workingHours   Working hours object.
+ * @param  array              $daysAvailable  Available days.
+ * @param  int                $userID         Time spent by a particular user.
+ * @return int                                Array with minutes on passed working time.
  * @throws Exception
  */
-function load_difference_between_passed_and_spent_time_within_range(int $timestampStart, int $timestampEnd, Workinghours $workingHours, array $daysAvailable, int $userID = 0): int
+function load_difference_between_passed_and_spent_time_within_range(int $timestampStart, int $timestampEnd, $workingHours, array $daysAvailable, int $userID = 0): int
 {
     if (empty($timestampStart)) {
         dol_print_error('', 'Error datestart parameter is empty');
@@ -219,15 +219,15 @@ function load_difference_between_passed_and_spent_time_within_range(int $timesta
 /**
  * Load all time spending infos within a time range.
  *
- * @param  int          $timestampStart Timestamp first day.
- * @param  int          $timestampEnd   Timestamp last day.
- * @param  Workinghours $workingHours   Working hours object.
- * @param  array        $daysAvailable  Available days.
- * @param  int          $userID         Time spent by a particular user.
- * @return array                        Array with all time spent infos.
+ * @param  int                $timestampStart Timestamp first day.
+ * @param  int                $timestampEnd   Timestamp last day.
+ * @param  Workinghours|array $workingHours   Working hours object.
+ * @param  array              $daysAvailable  Available days.
+ * @param  int                $userID         Time spent by a particular user.
+ * @return array                              Array with all time spent infos.
  * @throws Exception
  */
-function load_time_spending_infos_within_range(int $timestampStart, int $timestampEnd, Workinghours $workingHours, array $daysAvailable, int $userID = 0): array
+function load_time_spending_infos_within_range(int $timestampStart, int $timestampEnd, $workingHours, array $daysAvailable, int $userID = 0): array
 {
     if (empty($timestampStart)) {
         dol_print_error('', 'Error datestart parameter is empty');
@@ -601,8 +601,8 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
         if ($lines[$i]->fk_task_parent == $parent) {
             // If we want all, or we have a role on task, we show it.
-            if (empty($mine) || !empty($tasksrole[$lines[$i]->id])) {
-                if ($restrictEditForMyTask == 2 && empty($tasksrole[$lines[$i]->id])) { // we have no role on task, and we request to hide such cases.
+            if (empty($mine) || !empty($tasksRole[$lines[$i]->id])) {
+                if ($restrictEditForMyTask == 2 && empty($tasksRole[$lines[$i]->id])) { // we have no role on task, and we request to hide such cases.
                     continue;
                 }
 
@@ -632,7 +632,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                 if (empty($oldProjectForBreak) || ($oldProjectForBreak != -1 && $oldProjectForBreak != $project->id)) {
                     $addColSpan = 0;
-                    if (!empty($arrayfields['timeconsumed']['checked'])) {
+                    if (!empty($arrayFields['timeconsumed']['checked'])) {
                         $addColSpan++;
                     }
 
@@ -688,13 +688,13 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 }
                 print '</td>';
 
-                if (!empty($arrayfields['timeconsumed']['checked'])) {
+                if (!empty($arrayFields['timeconsumed']['checked'])) {
                     // Time spent by user.
                     print '<td class="right">';
-                    $filter = ' AND (t.task_date >= "' . $db->idate($timestampStart) . '" AND t.task_date < "' . $db->idate(dol_time_plus_duree($timestampEnd, 1, 'd')) . '")';
-                    $tmptimespent = $task->getSummaryOfTimeSpent($fuser->id, $filter);
-                    if ($tmptimespent['total_duration']) {
-                        print convertSecondToTime($tmptimespent['total_duration'], 'allhourmin');
+                    $filter             = ' AND (t.task_date >= "' . $db->idate($timestampStart) . '" AND t.task_date < "' . $db->idate(dol_time_plus_duree($timestampEnd, 1, 'd')) . '")';
+                    $summaryOfTimeSpent = $task->getSummaryOfTimeSpent($fuser->id, $filter);
+                    if ($summaryOfTimeSpent['total_duration']) {
+                        print convertSecondToTime($summaryOfTimeSpent['total_duration'], 'allhourmin');
                     } else {
                         print '--:--';
                     }
@@ -706,7 +706,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 if ($lines[$i]->public || !empty($projectsRole[$lines[$i]->fk_project]) || $user->rights->projet->all->creer) {
                     $disabledTask = 0;
                 }
-                if ($restrictEditForMyTask && empty($tasksrole[$lines[$i]->id])) {
+                if ($restrictEditForMyTask && empty($tasksRole[$lines[$i]->id])) {
                     $disabledTask = 1;
                 }
 
@@ -763,7 +763,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
             $inc++;
             $level++;
             if ($lines[$i]->id > 0) {
-                $ret = task_lines_within_range($inc, $timestampStart, $timestampEnd, $fuser, $lines[$i]->id, ($parent == 0 ? $linesWithoutLevel0 : $lines), $level, $projectsRole, $tasksrole, $mine, $restrictEditForMyTask, $daysAvailable, $timeSpentOnTasks, $oldProjectForBreak, $arrayFields, $extraFields);
+                $ret = task_lines_within_range($inc, $timestampStart, $timestampEnd, $fuser, $lines[$i]->id, ($parent == 0 ? $linesWithoutLevel0 : $lines), $level, $projectsRole, $tasksRole, $mine, $restrictEditForMyTask, $daysAvailable, $timeSpentOnTasks, $oldProjectForBreak, $arrayFields, $extraFields);
                 foreach ($ret as $key => $val) {
                     $totalForEachDay[$key] += $val;
                 }
