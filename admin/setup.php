@@ -34,6 +34,7 @@ if (file_exists('../dolisirh.main.inc.php')) {
 require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
 
 // Load DoliSIRH libraries.
+require_once __DIR__ . '/../lib/dolisirh.lib.php';
 require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
 // Global variables definitions.
