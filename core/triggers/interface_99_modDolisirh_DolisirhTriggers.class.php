@@ -257,13 +257,15 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $product    = new Product($this->db);
                     $objectline = new TimeSheetLine($this->db);
 
+                    $i = 1;
+
                     $productOrServiceTimesheets = get_product_service_timesheet();
 
                     foreach ($productOrServiceTimesheets as $productOrServiceTimesheet) {
                         $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities($productOrServiceTimesheet['name'])))));
                         $objectline->date_creation  = $object->db->idate($now);
                         $objectline->qty            = 0;
-                        $objectline->rang           = 1;
+                        $objectline->rang           = $i++;
                         $objectline->fk_timesheet   = $object->id;
                         $objectline->fk_parent_line = 0;
                         $objectline->fk_product     = $product->id;
