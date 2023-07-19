@@ -37,7 +37,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
 
 // Load DoliSIRH libraries.
-require_once __DIR__ . '/../lib/dolisirh.lib.php';
+require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
 // Global variables definitions.
 global $conf, $db, $langs, $user;

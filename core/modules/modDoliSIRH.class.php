@@ -190,6 +190,7 @@ class modDoliSIRH extends DolibarrModules
             $i++ => ['DOLISIRH_PERFECT_TIME_SPENT_COLOR', 'chaine', '#008000', '', 0, 'current'],
             $i++ => ['DOLISIRH_PRODUCT_SERVICE_SET', 'integer', 0, '', 0, 'current'],
             $i++ => ['DOLISIRH_HR_PROJECT_SET', 'integer', 0, '', 0, 'current'],
+            $i++ => ['DOLISIRH_BACKWARD_COMPATIBILITY_PRODUCT_SERVICE', 'integer', 0, '', 0, 'current'],
             $i++ => ['DOLISIRH_ADVANCED_TRIGGER', 'integer', 1, '', 0, 'current'],
             $i++ => ['DOLISIRH_SHOW_PATCH_NOTE', 'integer', 1, '', 0, 'current'],
             $i++ => ['DOLISIRH_DB_VERSION', 'chaine', $this->version, '', 0, 'current'],
@@ -551,7 +552,7 @@ class modDoliSIRH extends DolibarrModules
      */
     public function init($options = ''): int
     {
-        global $conf, $langs;
+        global $conf, $langs, $user;
 
         // Permissions.
         $this->remove($options);
@@ -597,6 +598,24 @@ class modDoliSIRH extends DolibarrModules
         $extraFields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, $param, 1, 1, '1', '','',0); //extrafields ticket.
         unset($param);
         $extraFields->addExtraField('timespent', $langs->trans('MarkYourTime'), 'boolean', 100, null, 'actioncomm', 0, 0, null, 'a:1:{s:7:"options";a:1:{s:0:"";N;}}', 1, '$user->rights->projet->time', '3', '','',0, 'dolisirh@dolisirh', '$conf->dolisirh->enabled'); //extrafields ticket.
+
+        if (getDolGlobalInt('DOLISIRH_BACKWARD_COMPATIBILITY_PRODUCT_SERVICE') == 0) {
+            require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
+
+            require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
+
+            $product = new Product($this->db);
+
+            $timesheetProductAndServices = get_timesheet_product_service();
+
+            foreach ($timesheetProductAndServices as $timesheetProductAndService) {
+                $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities($timesheetProductAndService['name'])))));
+                $productID = $product->create($user);
+                dolibarr_set_const($this->db, $timesheetProductAndService['code'], $productID, 'integer', 0, '', $conf->entity);
+            }
+
+            dolibarr_set_const($this->db, 'DOLISIRH_BACKWARD_COMPATIBILITY_PRODUCT_SERVICE', 1, 'integer', 0, '', $conf->entity);
+        }
 
         return $this->_init([], $options);
     }
