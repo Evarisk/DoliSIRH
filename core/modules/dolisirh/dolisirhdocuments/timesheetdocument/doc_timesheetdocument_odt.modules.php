@@ -32,6 +32,8 @@ require_once __DIR__ . '/../../../../../../saturne/class/saturnesignature.class.
 require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
 
 // Load DoliSIRH libraries.
+require_once __DIR__ . '/../../../../../lib/dolisirh_function.lib.php';
+require_once __DIR__ . '/../../../../../lib/dolisirh_timespent.lib.php';
 require_once __DIR__ . '/mod_timesheetdocument_standard.php';
 
 /**
@@ -118,7 +120,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
         $isAvailable = [];
         for ($idw = 0; $idw < $daysInRange; $idw++) {
             $dayInLoop = dol_time_plus_duree($dayStartToShow, $idw, 'd');
-            if (isDayAvailable($dayInLoop, $user->id)) {
+            if (is_day_available($dayInLoop, $user->id)) {
                 $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon '=> 1];
             } elseif (date('N', $dayInLoop) >= 6) {
                 $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
@@ -127,7 +129,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             }
         }
 
-        $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($dayStartToShow, $lastDayToShow + 1, $isAvailable, $object->fk_user_assign);
+        $timeSpentOnTasks = load_time_spent_on_tasks_within_range($dayStartToShow, $lastDayToShow + 1, $isAvailable, $object->fk_user_assign);
 
         // Replace tags of lines.
         try {
@@ -320,7 +322,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
                 for ($idw = 1; $idw <= 31; $idw++) {
                     if (in_array($idw, $daysInRangeArray)) {
                         $dayInLoop                    = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
-                        $totalTimePlanned[$dayInLoop] = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), $workingHours, $isAvailable);
+                        $totalTimePlanned[$dayInLoop] = load_passed_time_within_range($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), $workingHours, $isAvailable);
                         $tmpArray['ta' . $idw]        = (($totalTimePlanned[$dayInLoop]['minutes'] != 0) ? convertSecondToTime($totalTimePlanned[$dayInLoop]['minutes'] * 60, (is_float($totalTimePlanned[$dayInLoop]['minutes']/60) ? 'allhourmin' : 'allhour')) : '-');
                     } else {
                         $tmpArray['ta' . $idw] = '-';
