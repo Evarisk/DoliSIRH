@@ -15,6 +15,7 @@
 
 CREATE TABLE llx_dolisirh_timesheetdet(
   rowid          integer AUTO_INCREMENT PRIMARY KEY NOT NULL,
+  entity         integer DEFAULT 1 NOT NULL,
   date_creation  datetime NOT NULL,
   qty            real,
   rang           integer DEFAULT 0,
