@@ -167,7 +167,7 @@ if ($currentRange == $range && date('Y', $now) == $year) {
     $lastDayOfRange = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
 }
 
-$daysInRange = dolisirh_num_between_day($firstDayToShow, $lastDayOfRange, 1);
+$daysInRange = dolisirh_num_between_days($firstDayToShow, $lastDayOfRange, 1);
 
 if (empty($searchUserID) || $searchUserID == $user->id) {
     $userTmp = $user;

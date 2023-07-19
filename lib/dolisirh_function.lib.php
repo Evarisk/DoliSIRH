@@ -138,13 +138,13 @@ function get_task_progress_color_class(float $progress): string
  * Function to return number of days between two dates (date must be UTC date !).
  * Example: 2012-01-01 2012-01-02 => 1 if lastday = 0, 2 if lastday = 1.
  *
- * @param   int $timestampStart  Timestamp start UTC.
- * @param   int $timestampEnd    Timestamp end UTC.
- * @param   int $lastDay         Last day is included, 0: no, 1:yes.
- * @return  int $daysNumber      Number of days.
- * @seealso num_public_holiday()
+ * @param   int $timestampStart Timestamp start UTC.
+ * @param   int $timestampEnd   Timestamp end UTC.
+ * @param   int $lastDay        Last day is included, 0: no, 1:yes.
+ * @return  int $daysNumber     Number of days.
+ * @seealso num_between_day(), num_public_holiday()
  */
-function dolisirh_num_between_day(int $timestampStart, int$timestampEnd, int $lastDay = 0): int
+function dolisirh_num_between_days(int $timestampStart, int $timestampEnd, int $lastDay = 0): int
 {
     $daysNumber = 0;
     if ($timestampStart <= $timestampEnd) {
