@@ -193,25 +193,26 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 break;
 
             case 'BILL_CREATE':
-                require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
                 $categories = GETPOST('categories', 'array:int');
-                $object->setCategoriesCommon($categories, 'invoice', false);
+                $object->setCategoriesCommon($categories, 'facture', false);
                 break;
 
             case 'BILLREC_CREATE':
                 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
-                require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 
-                $cat = new Categorie($this->db);
+                $categorie = new Categorie($this->db);
+                $facture   = new Facture($this->db);
 
-                $categories = $cat->containing(GETPOST('facid'), 'invoice');
+                $categories = GETPOST('categories', 'array:int');
+                $object->setCategoriesCommon($categories, 'facturerec', false);
+
+                $facture->fetch(GETPOST('facid'));
+
+                $categories = $categorie->containing($facture->id, 'facture');
                 if (is_array($categories) && !empty($categories)) {
-                    foreach ($categories as $category) {
-                        $categoryArray[] =  $category->id;
+                    foreach ($categories as $categorie) {
+                        $categorie->del_type($facture, 'facture');
                     }
-                }
-                if (!empty($categoryArray)) {
-                    $object->setCategoriesCommon($categoryArray, 'invoicerec', false);
                 }
                 break;
 

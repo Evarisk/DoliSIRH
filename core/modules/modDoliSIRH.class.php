@@ -136,7 +136,9 @@ class modDoliSIRH extends DolibarrModules
                     'timesheetadmin',
                     'dolisirhadmindocuments',
                     'dolisirhindex',
-                    'projectcard'
+                    'projectcard',
+                    'invoicelist',
+                    'invoicereclist'
                 ]
             ],
             // Set this to 1 if features of module are opened to external users.
@@ -450,7 +452,7 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent',
             'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
+            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
             'mainmenu' => 'project',
             'leftmenu' => 'dolisirh_timespent_list',
             'url'      => '/dolisirh/view/timespent_list.php',
@@ -465,7 +467,7 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent',
             'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('TimeSpending'),
+            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('TimeSpending'),
             'mainmenu' => 'project',
             'leftmenu' => 'timespent',
             'url'      => '/dolisirh/view/timespent_range.php?view_mode=month',
@@ -481,7 +483,7 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent',
             'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
+            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
             'mainmenu' => 'hrm',
             'leftmenu' => 'dolisirh_timespent_list',
             'url'      => '/dolisirh/view/timespent_list.php',
@@ -496,7 +498,7 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent',
             'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('TimeSpending'),
+            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('TimeSpending'),
             'mainmenu' => 'hrm',
             'leftmenu' => 'timespent',
             'url'      => '/dolisirh/view/timespent_range.php?view_mode=month',
@@ -512,7 +514,7 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=billing,fk_leftmenu=customers_bills',
             'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('RecurringInvoicesStatistics'),
+            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('RecurringInvoicesStatistics'),
             'mainmenu' => 'billing',
             'leftmenu' => 'customers_bills_recurring_stats',
             'url'      => '/dolisirh/view/recurringinvoicestatistics.php',
@@ -527,10 +529,25 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=billing,fk_leftmenu=customers_bills',
             'type'     => 'left',
-            'titre'    => '<i class="fas fa-tags pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('Categories'),
+            'titre'    => '<i class="fas fa-tags pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('FactureCategories'),
             'mainmenu' => 'billing',
             'leftmenu' => 'customers_bills_tags',
-            'url'      => '/categories/index.php?type=invoice',
+            'url'      => '/categories/index.php?type=facture',
+            'langs'    => 'dolisirh@dolisirh',
+            'position' => 1000 + $r,
+            'enabled'  => '$conf->dolisirh->enabled && $conf->categorie->enabled && $conf->facture->enabled',
+            'perms'    => '$user->rights->dolisirh->lire && $user->rights->categorie->lire && $user->rights->facture->lire',
+            'target'   => '',
+            'user'     => 0,
+        ];
+
+        $this->menu[$r++] = [
+            'fk_menu'  => 'fk_mainmenu=billing,fk_leftmenu=customers_bills',
+            'type'     => 'left',
+            'titre'    => '<i class="fas fa-tags pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('FactureRecCategories'),
+            'mainmenu' => 'billing',
+            'leftmenu' => 'customers_bills_recurring_tags',
+            'url'      => '/categories/index.php?type=facturerec',
             'langs'    => 'dolisirh@dolisirh',
             'position' => 1000 + $r,
             'enabled'  => '$conf->dolisirh->enabled && $conf->categorie->enabled && $conf->facture->enabled',

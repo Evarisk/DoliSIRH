@@ -166,12 +166,16 @@ KeyEvent                               = Raccourci clavier
 #
 
 # Data - Donnée
+FactureRec                      = Factures récurrentes
 RecurringInvoicesStatistics     = Statistiques facture récurrentes
 NumberOfRecurringBills          = Nb de factures récurrentes
 NumberOfRecurringBillsByMonth   = Nb de factures récurrentes par mois
 AmountOfRecurringBills          = Montant de factures récurrentes
 AmountOfRecurringBillsByMonthHT = Montant de factures récurrentes par mois (HT)
-InvoicesCategoriesArea          = Espace des tags/catégories des factures
+FactureCategories               = Tags factures
+FactureRecCategories            = Tags factures récurrentes
+FacturesCategoriesArea          = Espace des tags/catégories des factures
+FacturerecsCategoriesArea       = Espace des tags/catégories des factures récurrentes
 
 
 

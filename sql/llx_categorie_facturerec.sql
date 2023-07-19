@@ -13,8 +13,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
-CREATE TABLE llx_categorie_invoice(
+CREATE TABLE llx_categorie_facturerec(
   fk_categorie  integer NOT NULL,
-  fk_invoice    integer NOT NULL,
+  fk_facturerec integer NOT NULL,
   import_key    varchar(14)
 ) ENGINE=innodb;
