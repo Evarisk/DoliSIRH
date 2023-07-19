@@ -153,3 +153,95 @@ function dolisirh_num_between_days(int $timestampStart, int $timestampEnd, int $
 
     return $daysNumber;
 }
+
+/**
+ * Get all HR project tasks info.
+ *
+ * @return array
+ */
+function get_hr_project_tasks(): array
+{
+    return [
+        [
+            'name' => 'Holidays',
+            'code' => 'DOLISIRH_HOLIDAYS_TASK'
+        ],
+        [
+            'name' => 'PaidHolidays',
+            'code' => 'DOLISIRH_PAID_HOLIDAYS_TASK'
+        ],
+        [
+            'name' => 'SickLeave',
+            'code' => 'DOLISIRH_SICK_LEAVE_TASK'
+        ],
+        [
+            'name' => 'PublicHoliday',
+            'code' => 'DOLISIRH_PUBLIC_HOLIDAY_TASK'
+        ],
+        [
+            'name' => 'RTT',
+            'code' => 'DOLISIRH_RTT_TASK'
+        ],
+        [
+            'name' => 'InternalMeeting',
+            'code' => 'DOLISIRH_INTERNAL_MEETING_TASK'
+        ],
+        [
+            'name' => 'InternalTraining',
+            'code' => 'DOLISIRH_INTERNAL_TRAINING_TASK'
+        ],
+        [
+            'name' => 'ExternalTraining',
+            'code' => 'DOLISIRH_EXTERNAL_TRAINING_TASK'
+        ],
+        [
+            'name' => 'AutomaticTimeSpending',
+            'code' => 'DOLISIRH_AUTOMATIC_TIMESPENDING_TASK'
+        ],
+        [
+            'name' => 'Miscellaneous',
+            'code' => 'DOLISIRH_MISCELLANEOUS_TASK'
+        ]
+    ];
+}
+
+/**
+ * Get all product or service for timesheet line.
+ *
+ * @return array
+ */
+function get_timesheet_product_service(): array
+{
+    return [
+        [
+            'name' => 'MealTicket',
+            'code' => 'DOLISIRH_MEAL_TICKET',
+            'type' => 0
+        ],
+        [
+            'name' => 'JourneySubscription',
+            'code' => 'DOLISIRH_JOURNEY_SUBSCRIPTION',
+            'type' => 1
+        ],
+        [
+            'name' => '13thMonthBonus',
+            'code' => 'DOLISIRH_13TH_MONTH_BONUS',
+            'type' => 1
+        ],
+        [
+            'name' => 'SpecialBonus',
+            'code' => 'DOLISIRH_SPECIAL_BONUS',
+            'type' => 1
+        ],
+        [
+            'name' => 'MealBaskets',
+            'code' => 'DOLISIRH_MEAL_BASKETS',
+            'type' => 1
+        ],
+        [
+            'name' => 'TeleworkingPackage',
+            'code' => 'DOLISIRH_TELEWORKING_PACKAGE',
+            'type' => 1
+        ]
+    ];
+}
