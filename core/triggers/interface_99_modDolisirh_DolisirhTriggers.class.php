@@ -25,9 +25,7 @@
 require_once DOL_DOCUMENT_ROOT . '/core/triggers/dolibarrtriggers.class.php';
 
 // Load DoliSIRH libraries.
-require_once __DIR__ . '/../../lib/dolisirh.lib.php';
 require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
-
 
 /**
  * Class of triggers for DoliSIRH module.
@@ -244,33 +242,33 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
                     $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
-                    $usertmp   = new User($this->db);
+                    $userTmp   = new User($this->db);
 
-                    $usertmp->fetch($object->fk_user_assign);
+                    $userTmp->fetch($object->fk_user_assign);
                     $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'Signatory');
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$usertmp->fk_user], 'Responsible');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'Responsible');
                 }
 
                 if (getDolGlobalInt('DOLISIRH_PRODUCT_SERVICE_SET')) {
                     require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
-                    $product    = new Product($this->db);
-                    $objectline = new TimeSheetLine($this->db);
+                    $product       = new Product($this->db);
+                    $timeSheetLine = new TimeSheetLine($this->db);
 
                     $i = 1;
 
-                    $productOrServiceTimesheets = get_product_service_timesheet();
+                    $timesheetProductAndServices = get_timesheet_product_service();
 
-                    foreach ($productOrServiceTimesheets as $productOrServiceTimesheet) {
-                        $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities($productOrServiceTimesheet['name'])))));
-                        $objectline->date_creation  = $object->db->idate($now);
-                        $objectline->qty            = 0;
-                        $objectline->rang           = $i++;
-                        $objectline->fk_timesheet   = $object->id;
-                        $objectline->fk_parent_line = 0;
-                        $objectline->fk_product     = $product->id;
-                        $objectline->product_type   = 0;
-                        $objectline->create($user);
+                    foreach ($timesheetProductAndServices as $timesheetProductAndService) {
+                        $product->fetch($conf->global->$timesheetProductAndService['code']);
+                        $timeSheetLine->date_creation  = $object->db->idate($now);
+                        $timeSheetLine->qty            = 0;
+                        $timeSheetLine->rang           = $i++;
+                        $timeSheetLine->fk_timesheet   = $object->id;
+                        $timeSheetLine->fk_parent_line = 0;
+                        $timeSheetLine->fk_product     = $product->id;
+                        $timeSheetLine->product_type   = $timesheetProductAndService['type'];
+                        $timeSheetLine->create($user);
                     }
                   }
 
@@ -283,12 +281,12 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 if (!empty($object->fk_user_assign)) {
                     require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
-                    $signatory = new SaturneSignature($this->db, 'dolisirh');
+                    $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
                     $userTmp   = new User($this->db);
 
                     $userTmp->fetch($object->fk_user_assign);
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'CERTIFICATE_SOCIETY_ATTENDANT');
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'CERTIFICATE_SOCIETY_RESPONSIBLE');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'Signatory');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'Responsible');
                 }
 
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
