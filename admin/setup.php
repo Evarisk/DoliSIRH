@@ -194,6 +194,16 @@ if (GETPOST('create_bookmark', 'alpha')) {
     }
 }
 
+if ($action == 'update') {
+    $certificateUserResponsible = GETPOST('certificateUserResponsible');
+
+    dolibarr_set_const($db, 'DOLISIRH_CERTIFICATE_USER_RESPONSIBLE', $certificateUserResponsible, 'integer', 0, '', $conf->entity);
+
+    setEventMessage('SavedConfig');
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
+}
+
 /*
  * View.
  */
@@ -267,6 +277,32 @@ print '</tr>';
 
 print '</form>';
 print '</table>';
+
+print load_fiche_titre($langs->transnoentities('Config'), '', '');
+
+print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '">';
+print '<input type="hidden" name="token" value="' . newToken() . '">';
+print '<input type="hidden" name="action" value="update">';
+
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<td>' . $langs->transnoentities('Parameters') . '</td>';
+print '<td>' . $langs->transnoentities('Description') . '</td>';
+print '<td>' . $langs->transnoentities('Value') . '</td>';
+print '</tr>';
+
+// CertificateUserResponsible
+print '<tr class="oddeven"><td>' . $langs->trans('CertificateUserResponsible') . '</td>';
+print '<td>';
+print $langs->transnoentities('CertificateUserResponsibleDescription');
+print '</td><td>';
+print img_picto('', 'user', 'class="pictofixedwidth"') . $form->select_dolusers($conf->global->DOLISIRH_CERTIFICATE_USER_RESPONSIBLE, 'certificateUserResponsible', 1, null, 0, '', '', $conf->entity, 0, 0, 'AND u.statut = 1', 0, '', 'minwidth300');
+print '<a href="' . DOL_URL_ROOT . '/user/card.php?action=create&backtopage=' . urlencode($_SERVER["PHP_SELF"]) . '"><span class="fa fa-plus-circle valignmiddle paddingleft" title="' . $langs->trans('AddUser') . '"></span></a>';
+print '</td></tr>';
+
+print '</table>';
+print '<div class="tabsAction"><input type="submit" class="butAction" name="save" value="' . $langs->trans('Save') . '"></div>';
+print '</form>';
 
 // Page end.
 print dol_get_fiche_end();

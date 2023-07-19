@@ -283,15 +283,15 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                   break;
 
             case 'CERTIFICATE_CREATE' :
-                if (!empty($object->fk_user_assign)) {
+                if ($object->element_type == 'user') {
                     require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
                     $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
-                    $userTmp   = new User($this->db);
 
-                    $userTmp->fetch($object->fk_user_assign);
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'Signatory');
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'Responsible');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_element], 'Signatory');
+                    if (getDolGlobalInt('DOLISIRH_CERTIFICATE_USER_RESPONSIBLE')) {
+                        $signatory->setSignatory($object->id, $object->element, 'user', [$conf->global->DOLISIRH_CERTIFICATE_USER_RESPONSIBLE], 'Responsible');
+                    }
                 }
 
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
