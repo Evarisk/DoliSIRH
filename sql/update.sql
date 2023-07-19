@@ -17,3 +17,9 @@
 ALTER TABLE `llx_dolisirh_timesheet` DROP `last_main_doc`, DROP `model_pdf`, DROP `model_odt`;
 ALTER TABLE `llx_element_workinghours` CHANGE `tms` `tms` TIMESTAMP on update CURRENT_TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE `llx_element_workinghours` ADD `fk_user_modif` INT NULL AFTER `fk_user_creat`;
+
+RENAME TABLE `llx_categorie_invoice` TO `llx_categorie_facture`;
+ALTER TABLE `llx_categorie_facture` CHANGE `fk_invoice` `fk_facture` INT NOT NULL;
+
+RENAME TABLE `llx_categorie_invoicerec` TO `llx_categorie_facturerec`;
+ALTER TABLE `llx_categorie_facturerec` CHANGE `fk_invoicerec` `fk_facturerec` INT NOT NULL;

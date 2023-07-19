@@ -1349,13 +1349,13 @@ class ActionsDoliSIRH
      */
     public function printFieldPreListTitle(array $parameters): int
     {
-        global $conf, $db, $user;
+        global $db, $user;
 
         if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
             // Filter on categories.
             if (isModEnabled('categorie') && $user->rights->categorie->lire) {
                 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcategory.class.php';
-                $formCategory    = new FormCategory($db);
+                $formCategory = new FormCategory($db);
                 switch ($parameters['currentcontext']) {
                     case 'invoicelist' :
                         $type = 'facture';
