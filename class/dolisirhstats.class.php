@@ -660,7 +660,7 @@ abstract class DoliSIRHStats
             $lastdaytoshow = $lastdayofmonth;
         }
 
-        $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+        $daysInMonth = dolisirh_num_between_days($firstdaytoshow, $lastdayofmonth, 1);
 
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
@@ -756,7 +756,7 @@ abstract class DoliSIRHStats
                 $lastdaytoshow = $lastdayofmonth;
             }
 
-            $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+            $daysInMonth = dolisirh_num_between_days($firstdaytoshow, $lastdayofmonth, 1);
 
             $isavailable = [];
             for ($idw = 0; $idw < $daysInMonth; $idw++) {
@@ -830,7 +830,7 @@ abstract class DoliSIRHStats
             $lastdaytoshow = $lastdayofmonth;
         }
 
-        $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+        $daysInMonth = dolisirh_num_between_days($firstdaytoshow, $lastdayofmonth, 1);
 
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {

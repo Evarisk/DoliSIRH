@@ -145,7 +145,7 @@ function load_planned_time_within_range(int $timestampStart, int $timestampEnd, 
     }
 
     $timeToSpend = ['days' => 0, 'minutes' => 0];
-    $daysInRange = dolisirh_num_between_day($timestampStart, $timestampEnd);
+    $daysInRange = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $newTimestampStart = dol_time_plus_duree($timestampStart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0.
         if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
@@ -179,7 +179,7 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $
     }
 
     $passedWorkingTime = ['minutes' => 0];
-    $daysInRange         = dolisirh_num_between_day($timestampStart, $timestampEnd);
+    $daysInRange         = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $newTimestampStart = dol_time_plus_duree($timestampStart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0.
         if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
@@ -569,7 +569,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
     $totalForEachDay    = [];
     $linesWithoutLevel0 = [];
 
-    $daysInRange = dolisirh_num_between_day($timestampStart, $timestampEnd, 1);
+    $daysInRange = dolisirh_num_between_days($timestampStart, $timestampEnd, 1);
 
     // Create a smaller array with sublevels only to be used later. This increase dramatically performances.
     if ($parent == 0) { // Always and only if at first level.

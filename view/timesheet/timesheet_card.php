@@ -637,7 +637,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$start_date = dol_print_date($firstdaytoshow, 'dayreduceformat');
 	$end_date = dol_print_date($lastdaytoshow, 'dayreduceformat');
 
-	$daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+	$daysInRange = dolisirh_num_between_days($firstdaytoshow, $lastdaytoshow, 1);
 
 	$isavailable = array();
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
