@@ -872,7 +872,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
         print '</div><div class="fichehalfright">';
 
-        $moreHtmlCenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-list-alt imgforviewmode', dol_buildpath('/dolisirh/view/timesheet/timesheet_agenda.php', 1) . '?id='. $object->id);
+        $moreHtmlCenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-bars imgforviewmode', dol_buildpath('/saturne/view/saturne_agenda.php', 1) . '?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element);
 
         // List of actions on element.
         require_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
