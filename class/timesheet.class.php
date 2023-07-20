@@ -470,9 +470,9 @@ class TimeSheetLine extends SaturneObject
     public ?float $qty;
 
     /**
-     * @var int Rang.
+     * @var int|null Rang.
      */
-    public int $rang;
+    public ?int $rang;
 
     /**
      * @var string Description.
