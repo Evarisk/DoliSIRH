@@ -92,6 +92,59 @@ class doc_certificatedocument_odt extends SaturneDocumentModel
      */
     public function write_file(SaturneDocuments $objectDocument, Translate $outputLangs, string $srcTemplatePath, int $hideDetails = 0, int $hideDesc = 0, int $hideRef = 0, array $moreParam): int
     {
+        global $conf, $langs;
+
+        $object = $moreParam['object'];
+
+        $signatory = new SaturneSignature($this->db);
+
+        $tmpArray['object_ref']         = $object->ref;
+        $tmpArray['object_description'] = $object->description;
+        $tmpArray['object_date_start']  = dol_print_date($object->date_start, 'day', 'tzuser');
+        $tmpArray['object_date_end']    = dol_print_date($object->date_end, 'day', 'tzuser');
+        $tmpArray['object_public_url']  = $object->public_url;
+
+        $signatory = $signatory->fetchSignatory('Signatory', $object->id, $object->element);
+        if (is_array($signatory) && !empty($signatory)) {
+            $signatory = array_shift($signatory);
+            $tmpArray['attendant_fullname'] = strtoupper($signatory->lastname) . ' ' . ucfirst($signatory->firstname);
+        } else {
+            $tmpArray['attendant_fullname'] = '';
+        }
+
+        if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
+            if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
+                $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
+                $encodedImage = explode(',', $signatory->signature)[1];
+                $decodedImage = base64_decode($encodedImage);
+                file_put_contents($tempDir . 'signature.png', $decodedImage);
+                $tmpArray['attendant_signature'] = $tempDir . 'signature.png';
+            } else {
+                $tmpArray['attendant_signature'] = '';
+            }
+        } else {
+            $tmpArray['attendant_signature'] = '';
+        }
+
+        $signatory = $signatory->fetchSignatory('Responsible', $object->id, $object->element);
+        if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
+            if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
+                $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
+                $encodedImage = explode(',', $signatory->signature)[1];
+                $decodedImage = base64_decode($encodedImage);
+                file_put_contents($tempDir . 'signature.png', $decodedImage);
+                $tmpArray['responsible_signature'] = $tempDir . 'signature.png';
+            } else {
+                $tmpArray['responsible_signature'] = '';
+            }
+        } else {
+            $tmpArray['responsible_signature'] = '';
+        }
+
+        $tmpArray['object_document_date_creation'] = dol_print_date(dol_now(), 'dayhour', 'tzuser');
+
+        $moreParam['tmparray'] = $tmpArray;
+
         return parent::write_file($objectDocument, $outputLangs, $srcTemplatePath, $hideDetails, $hideDesc, $hideRef, $moreParam);
     }
 }
