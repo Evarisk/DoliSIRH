@@ -559,7 +559,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     // Due to Dolibarr issue in common field add we do substract 12 hours in timestamp.
     $firstDayToShow = $object->date_start - 12 * 3600;
-    $lastDayToShow = $object->date_end - 12 * 3600;
+    $lastDayToShow  = $object->date_end - 12 * 3600;
 
     $startDate = dol_print_date($firstDayToShow, 'dayreduceformat');
     $endDate   = dol_print_date($lastDayToShow, 'dayreduceformat');
@@ -628,7 +628,6 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     // Working hours.
     $workingTime = $timeSpendingInfos['spent'];
-
     if ($plannedWorkingTime['days'] > $workingTime['days']) {
         $morecssDays = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
     } elseif ($plannedWorkingTime['days'] < $workingTime['days']){
@@ -639,9 +638,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     print '<tr class="liste_total"><td class="liste_total">';
     print $langs->trans('Total');
-    print '<span class="opacitymediumbycolor">  - ';
+    print '<span class="opacitymediumbycolor"> - ';
     print $langs->trans('ConsumedWorkingHoursMonth', $startDate, $endDate);
-    print ' : <strong>'.convertSecondToTime($workingTime['total'], 'allhourmin') . '</strong>';
+    print ' : <strong>' . convertSecondToTime($workingTime['total'], 'allhourmin') . '</strong>';
     print '<span>' . ' - ' . $langs->trans('ConsumedWorkingDayMonth') . ' <strong style="color:' . 'rgb(' . $morecssDays[0] . ',' . $morecssDays[1] . ',' . $morecssDays[2] . ');' . '">';
     print $workingTime['days'] . '</strong></span>';
     print '</span>';

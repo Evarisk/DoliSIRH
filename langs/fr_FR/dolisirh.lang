@@ -103,7 +103,7 @@ ErrorServiceTime           = Le temps du(des) service(s) est nul
 SetupDefaultDataNotCreated = Vous n'avez pas créé les données par défaut de DOLISIRH
 HowToSetupDefaultData      = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
 ConfigDefaultData          = Configuration des données par défaut de DOLISIRH
-EnableDoliSIRH             = Veuillez activer le module DoliSIRH pour accéder à cette page
+EnableDolisirh             = Veuillez activer le module DoliSIRH pour accéder à cette page
 
 CertificateUserResponsible            = Responsable des certificats
 CertificateUserResponsibleDescription = Cette option permet définir l'utilisateur responsable des certificats des différents participants
