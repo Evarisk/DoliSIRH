@@ -199,7 +199,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             case 'BILL_CREATE':
                 $categories = GETPOST('categories', 'array:int');
-                setCategoriesObject($categories, 'invoice', false, $object);
+                $object->setCategoriesCommon($categories, 'invoice', false);
                 break;
 
             case 'BILLREC_CREATE':
@@ -214,7 +214,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     }
                 }
                 if (!empty($categoryArray)) {
-                    setCategoriesObject($categoryArray, 'invoicerec', false, $object);
+                    $object->setCategoriesCommon($categoryArray, 'invoicerec', false);
                 }
                 break;
 

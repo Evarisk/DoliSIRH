@@ -105,7 +105,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
         $dayStartToShow = $object->date_start - 12 * 3600;
         $lastDayToShow  = $object->date_end - 12 * 3600;
 
-        $daysInRange      = dolisirh_num_between_day($object->date_start, $object->date_end, 1);
+        $daysInRange      = dolisirh_num_between_days($object->date_start, $object->date_end, 1);
         $daysInRange      = !empty($daysInRange) ? $daysInRange : 1;
         $daysInRangeArray = [];
 

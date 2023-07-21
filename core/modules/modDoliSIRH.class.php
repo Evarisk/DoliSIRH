@@ -194,7 +194,7 @@ class modDoliSIRH extends DolibarrModules
             $i++ => ['DOLISIRH_SHOW_PATCH_NOTE', 'integer', 1, '', 0, 'current'],
             $i++ => ['DOLISIRH_DB_VERSION', 'chaine', $this->version, '', 0, 'current'],
             $i++ => ['DOLISIRH_VERSION','chaine', $this->version, '', 0, 'current'],
-            
+
             // CONST DOLISIRH DOCUMENTS.
             $i++ => ['DOLISIRH_AUTOMATIC_PDF_GENERATION', 'integer', 0, '', 0, 'current'],
             $i++ => ['DOLISIRH_MANUAL_PDF_GENERATION', 'integer', 0, '', 0, 'current'],
@@ -421,7 +421,7 @@ class modDoliSIRH extends DolibarrModules
             'prefix'   => '<i class="far fa-clock pictofixedwidth"></i>',
             'mainmenu' => 'dolisirh',
             'leftmenu' => 'timespent',
-            'url'      => '/dolisirh/view/timespent_month.php',
+            'url'      => '/dolisirh/view/timespent_range.php?view_mode=month',
             'langs'    => 'dolisirh@dolisirh',
             'position' => 1000 + $r,
             'enabled'  => '$conf->dolisirh->enabled && $conf->projet->enabled',
@@ -468,7 +468,7 @@ class modDoliSIRH extends DolibarrModules
             'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('TimeSpending'),
             'mainmenu' => 'project',
             'leftmenu' => 'timespent',
-            'url'      => '/dolisirh/view/timespent_day.php',
+            'url'      => '/dolisirh/view/timespent_range.php?view_mode=month',
             'langs'    => 'dolisirh@dolisirh',
             'position' => 1000 + $r,
             'enabled'  => '$conf->dolisirh->enabled && $conf->projet->enabled',
@@ -499,7 +499,7 @@ class modDoliSIRH extends DolibarrModules
             'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('TimeSpending'),
             'mainmenu' => 'hrm',
             'leftmenu' => 'timespent',
-            'url'      => '/dolisirh/view/timespent_day.php',
+            'url'      => '/dolisirh/view/timespent_range.php?view_mode=month',
             'langs'    => 'dolisirh@dolisirh',
             'position' => 1000 + $r,
             'enabled'  => '$conf->dolisirh->enabled && $conf->salaries->enabled',

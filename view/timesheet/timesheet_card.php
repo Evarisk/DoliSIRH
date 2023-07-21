@@ -637,12 +637,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$start_date = dol_print_date($firstdaytoshow, 'dayreduceformat');
 	$end_date = dol_print_date($lastdaytoshow, 'dayreduceformat');
 
-	$daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+	$daysInRange = dolisirh_num_between_days($firstdaytoshow, $lastdaytoshow, 1);
 
 	$isavailable = array();
 	for ($idw = 0; $idw < $daysInRange; $idw++) {
 		$dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-		if (isDayAvailable($dayInLoop, $user->id)) {
+		if (is_day_available($dayInLoop, $user->id)) {
 			$isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
 		} else if (date('N', $dayInLoop) >= 6) {
 			$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end');
@@ -653,7 +653,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	$workingHours = $workinghours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
 
-	$timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $object->fk_user_assign);
+	$timeSpendingInfos = load_time_spending_infos_within_range($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $object->fk_user_assign);
 
 	// Planned working time
 	$planned_working_time = $timeSpendingInfos['planned'];
@@ -749,7 +749,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			<div class="notice-content">
 				<div class="notice-title"><?php echo $noticetitle ?></div>
 			</div>
-			<a class="butAction" style="width = 100%;margin-right:0" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/timespent_month.php?year='.$datestart['year'].'&month='.$datestart['mon'].'&day='.$datestart['mday'].'&search_usertoprocessid='.$object->fk_user_assign . '&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans('GoToTimeSpent', dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), '%B %Y')) ?></a>
+			<a class="butAction" style="width = 100%;margin-right:0" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?year='.$datestart['year'].'&month='.$datestart['mon'].'&day='.$datestart['mday'].'&search_user_id='.$object->fk_user_assign . '&view_mode=month&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans('GoToTimeSpent', dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), '%B %Y')) ?></a>
 		</div>
 	<?php endif; ?>
 

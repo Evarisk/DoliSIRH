@@ -145,7 +145,7 @@ window.dolisirh.task.showOnlyFavoriteTasks = function() {
     }
 
     $.ajax({
-        url: document.URL + querySeparator + "action=showOnlyFavoriteTasks&token=" + token,
+        url: document.URL + querySeparator + "action=show_only_favorite_tasks&token=" + token,
         type: "POST",
         processData: false,
         data: JSON.stringify({
@@ -183,7 +183,7 @@ window.dolisirh.task.showOnlyTasksWithTimeSpent = function() {
     }
 
     $.ajax({
-        url: document.URL + querySeparator + "action=showOnlyTasksWithTimeSpent&token=" + token,
+        url: document.URL + querySeparator + "action=show_only_tasks_with_timespent&token=" + token,
         type: "POST",
         processData: false,
         data: JSON.stringify({
@@ -226,7 +226,7 @@ window.dolisirh.task.createTimeSpent = function() {
     document.URL.match(/\?/) ? querySeparator = '&' : 1;
 
     $.ajax({
-        url: document.URL + querySeparator + 'action=addTimeSpent&token=' + token,
+        url: document.URL + querySeparator + 'action=add_timespent&token=' + token,
         data: JSON.stringify({
             taskID: taskID,
             timestamp: timestamp,
