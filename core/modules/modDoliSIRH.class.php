@@ -267,7 +267,7 @@ class modDoliSIRH extends DolibarrModules
             // Request to select fields.
             'tabsql' => [
                 'SELECT f.rowid as rowid, f.ref, f.label, f.description, f.position, f.active FROM ' . MAIN_DB_PREFIX . 'c_timesheet_attendants_role as f',
-                'SELECT f.rowid as rowid, f.ref, f.label, f.description, f.position, f.active FROM ' . MAIN_DB_PREFIX . 'c_timesheet_attendants_role as f'
+                'SELECT f.rowid as rowid, f.ref, f.label, f.description, f.position, f.active FROM ' . MAIN_DB_PREFIX . 'c_certificate_attendants_role as f'
             ],
             // Sort order.
             'tabsqlsort' => [
