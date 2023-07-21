@@ -304,6 +304,10 @@ class DolisirhDashboard
         $totalTimeSpent = 0;
 
         if (is_array($timeSpentOnTasks) && !empty($timeSpentOnTasks)) {
+            unset($timeSpentOnTasks['days']);
+            unset($timeSpentOnTasks['hours']);
+            unset($timeSpentOnTasks['minutes']);
+            unset($timeSpentOnTasks['total']);
             $timeSpentOnTasks = array_values($timeSpentOnTasks);
             foreach ($timeSpentOnTasks as $key => $timeSpent) {
                 $timeSpentDuration = 0;
