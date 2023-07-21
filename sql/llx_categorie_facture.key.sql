@@ -13,8 +13,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see https://www.gnu.org/licenses/.
 
-ALTER TABLE llx_categorie_invoicerec ADD PRIMARY KEY pk_categorie_invoicerec (fk_categorie, fk_invoicerec);
-ALTER TABLE llx_categorie_invoicerec ADD INDEX idx_categorie_invoicerec_fk_categorie (fk_categorie);
-ALTER TABLE llx_categorie_invoicerec ADD INDEX idx_categorie_invoicerec_fk_invoicerec (fk_invoicerec);
-ALTER TABLE llx_categorie_invoicerec ADD CONSTRAINT fk_categorie_invoicerec_categorie_rowid FOREIGN KEY (fk_categorie) REFERENCES llx_categorie (rowid);
-ALTER TABLE llx_categorie_invoicerec ADD CONSTRAINT fk_categorie_invoicerec_facture_rec_rowid FOREIGN KEY (fk_invoicerec) REFERENCES llx_facture_rec (rowid);
+ALTER TABLE llx_categorie_facture ADD PRIMARY KEY pk_categorie_facture (fk_categorie, fk_facture);
+ALTER TABLE llx_categorie_facture ADD INDEX idx_categorie_facture_fk_categorie (fk_categorie);
+ALTER TABLE llx_categorie_facture ADD INDEX idx_categorie_facture_fk_facture (fk_facture);
+ALTER TABLE llx_categorie_facture ADD CONSTRAINT fk_categorie_facture_categorie_rowid FOREIGN KEY (fk_categorie) REFERENCES llx_categorie (rowid);
+ALTER TABLE llx_categorie_facture ADD CONSTRAINT fk_categorie_facture_facture_rowid FOREIGN KEY (fk_facture) REFERENCES llx_facture (rowid);

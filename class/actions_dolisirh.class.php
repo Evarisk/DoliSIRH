@@ -502,14 +502,14 @@ class ActionsDoliSIRH
             $id        = GETPOST('id');
             $elementId = GETPOST('element_id');
             $type      = GETPOST('type');
-            if ($id > 0 && $elementId > 0 && ($type == 'timesheet' || $type == 'certificate' || $type == 'invoice' || $type == 'invoicerec') && ($user->rights->dolisirh->$type->write || $user->rights->facture->creer)) {
+            if ($id > 0 && $elementId > 0 && ($type == 'timesheet' || $type == 'certificate' || $type == 'facture' || $type == 'facturerec') && ($user->rights->dolisirh->$type->write || $user->rights->facture->creer)) {
                 switch ($type) {
-                    case 'invoice' :
+                    case 'facture' :
                         require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 
                         $newobject = new Facture($this->db);
                         break;
-                    case 'invoicerec' :
+                    case 'facturerec' :
                         require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
 
                         $newobject = new FactureRec($this->db);
@@ -715,16 +715,15 @@ class ActionsDoliSIRH
 
 				$form = new Form($this->db);
 
-				$invoice_id = GETPOST('facid');
-
 				// Categories
-				if ($conf->categorie->enabled) {
-					$html = '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
-					$html .= $form->showCategories($invoice_id, 'invoice', 1);
-					$html .= '</td></tr>'; ?>
+                if (!empty($conf->categorie->enabled)) {
+					$html = '<td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
+                    $cate_arbo = $form->select_all_categories('facturerec', '', 'parent', 64, 0, 1);
+					$html .= img_picto('', 'category') . $form::multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx');
+					$html .= '</td>'; ?>
 					<script>
 						jQuery('.fiche').find('.tabBar').find('.border tr:last').first().html(<?php echo json_encode($html) ?>);
-					</script>;
+					</script>
 				<?php }
 			}
 		}
@@ -850,9 +849,9 @@ class ActionsDoliSIRH
             }     // If $page is not defined, or '' or -1 or if we click on clear filters or if we select empty mass action
             $offset = $limit * $page;
 
-            if ($type == 'timesheet' || $type == 'certificate' || $type == 'invoice' || $type == 'invoicerec') {
+            if ($type == 'timesheet' || $type == 'certificate' || $type == 'facture' || $type == 'facturerec') {
                 switch ($type) {
-                    case 'invoice' :
+                    case 'facture' :
                         require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 
                         $classname = 'Facture';
@@ -860,7 +859,7 @@ class ActionsDoliSIRH
 
                         $arrayObjects = saturne_fetch_all_object_type($classname);
                         break;
-                    case 'invoicerec' :
+                    case 'facturerec' :
                         require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
 
                         $classname = 'FactureRec';
@@ -880,7 +879,11 @@ class ActionsDoliSIRH
 
                 if (is_array($arrayObjects) && !empty($arrayObjects)) {
                     foreach ($arrayObjects as $objectsingle) {
-                        $array[$objectsingle->id] = $objectsingle->ref;
+                        if ($objectsingle->element == 'facturerec') {
+                            $array[$objectsingle->id] = $objectsingle->titre;
+                        } else {
+                            $array[$objectsingle->id] = $objectsingle->ref;
+                        }
                     }
                 }
 
@@ -988,39 +991,39 @@ class ActionsDoliSIRH
 		<?php
 	}
 
-	/**
-	 * Overloading the constructCategory function : replacing the parent's function with the one below
-	 *
-	 * @param  array $parameters Hook metadata (context, etc...)
-	 * @return void
-	 */
-	public function constructCategory(array $parameters)
-	{
-		if (in_array($parameters['currentcontext'], array('category', 'invoicecard', 'invoicereccard', 'timesheetcard'))) {
-			$tags = array(
-				'invoice' => array(
-					'id' => 436370001,
-					'code' => 'invoice',
-					'obj_class' => 'Facture',
-					'obj_table' => 'facture',
-				),
-				'invoicerec' => array(
-					'id' => 436370002,
-					'code' => 'invoicerec',
-					'obj_class' => 'Facture',
-					'obj_table' => 'facture',
-				),
-				'timesheet' => array(
-					'id' => 436370003,
-					'code' => 'timesheet',
-					'obj_class' => 'TimeSheet',
-					'obj_table' => 'dolisirh_timesheet',
-				)
-			);
+    /**
+     * Overloading the constructCategory function : replacing the parent's function with the one below
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return void
+     */
+    public function constructCategory(array $parameters)
+    {
+        if (in_array($parameters['currentcontext'], ['category', 'invoicecard', 'invoicereccard', 'timesheetcard', 'invoicelist', 'invoicereclist'])) {
+            $tags = [
+                'facture' => [
+                    'id' => 436370001,
+                    'code' => 'facture',
+                    'obj_class' => 'Facture',
+                    'obj_table' => 'facture',
+                ],
+                'facturerec' => [
+                    'id' => 436370002,
+                    'code' => 'facturerec',
+                    'obj_class' => 'FactureRec',
+                    'obj_table' => 'facture_rec',
+                ],
+                'timesheet' => [
+                    'id' => 436370003,
+                    'code' => 'timesheet',
+                    'obj_class' => 'TimeSheet',
+                    'obj_table' => 'dolisirh_timesheet',
+                ]
+            ];
 
-			$this->results = $tags;
-		}
-	}
+            $this->results = $tags;
+        }
+    }
 
 	/**
 	 * Overloading the formObjectOptions function : replacing the parent's function with the one below
@@ -1043,31 +1046,31 @@ class ActionsDoliSIRH
 				if (!empty($conf->categorie->enabled)) {
 					// Categories
 					print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
-					$cate_arbo = $form->select_all_categories('invoice', '', 'parent', 64, 0, 1);
+					$cate_arbo = $form->select_all_categories('facture', '', 'parent', 64, 0, 1);
 					print img_picto('', 'category') . $form->multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
 					print '</td></tr>';
 				}
 			} elseif ($action == 'edit') {
-				//              // Tags-Categories
-				//              if ($conf->categorie->enabled) {
-				//                  print '<tr><td>'.$langs->trans("Categories").'</td><td>';
-				//                  $cate_arbo = $form->select_all_categories('invoice', '', 'parent', 64, 0, 1);
-				//                  $c = new Categorie($this->db);
-				//                  $cats = $c->containing($object->id, 'invoice');
-				//                  $arrayselected = array();
-				//                  if (is_array($cats)) {
-				//                      foreach ($cats as $cat) {
-				//                          $arrayselected[] = $cat->id;
-				//                      }
-				//                  }
-				//                  print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
-				//                  print "</td></tr>";
-				//              }
+              // Tags-Categories
+              if ($conf->categorie->enabled) {
+                  print '<tr><td>'.$langs->trans("Categories").'</td><td>';
+                  $cate_arbo = $form->select_all_categories('facture', '', 'parent', 64, 0, 1);
+                  $c = new Categorie($this->db);
+                  $cats = $c->containing($object->id, 'facture');
+                  $arrayselected = array();
+                  if (is_array($cats)) {
+                      foreach ($cats as $cat) {
+                          $arrayselected[] = $cat->id;
+                      }
+                  }
+                  print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
+                  print "</td></tr>";
+              }
 			} elseif ($action == '') {
 				// Categories
 				if ($conf->categorie->enabled) {
 					print '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
-					print $form->showCategories($object->id, 'invoice', 1);
+					print $form->showCategories($object->id, 'facture', 1);
 					print '</td></tr>';
 				}
 			}
@@ -1081,7 +1084,7 @@ class ActionsDoliSIRH
 				// Categories
 				if ($conf->categorie->enabled) {
 					print '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
-					print $form->showCategories($object->id, 'invoicerec', 1);
+					print $form->showCategories($object->id, 'facturerec', 1);
 					print '</td></tr>';
 				}
 			}
@@ -1103,13 +1106,13 @@ class ActionsDoliSIRH
 
 			$cat = new Categorie($this->db);
 
-			$categories = $cat->containing($parameters['facturerec']->id, 'invoicerec');
+			$categories = $cat->containing($parameters['facturerec']->id, 'facturerec');
 			if (is_array($categories) && !empty($categories)) {
 				foreach ($categories as $category) {
 					$categoryArray[] =  $category->id;
 				}
 				if (!empty($categoryArray)) {
-                    $object->setCategoriesCommon($categoryArray, 'invoice', false);
+                    $object->setCategoriesCommon($categoryArray, 'facture', false);
 				}
 			}
 		}
@@ -1259,6 +1262,140 @@ class ActionsDoliSIRH
 			}
 		}
 	}
+
+    /**
+     *  Overloading the printFieldListSelect function : replacing the parent's function with the one below
+     *
+     * @param  array $parameters Hook metadata (context, etc...).
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldListSelect(array $parameters): int
+    {
+        global $conf;
+
+        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+            switch ($parameters['currentcontext']) {
+                case 'invoicelist' :
+                    $type = 'facture';
+                    break;
+                case 'invoicereclist' :
+                    $type = 'facturerec';
+                    break;
+                default :
+                    $type = '';
+                    break;
+            }
+            if (isModEnabled('categorie') && GETPOSTISSET('search_category_' . $type . '_list')) {
+                $conf->global->MAIN_DISABLE_FULL_SCANLIST = 1;
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     *  Overloading the printFieldListFrom function : replacing the parent's function with the one below
+     *
+     * @param  array               $parameters Hook metadata (context, etc...).
+     * @param  CommonObject|string $object     The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...).
+     * @return int                             0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldListFrom(array $parameters, $object): int
+    {
+        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+            if (isModEnabled('categorie')) {
+                require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+                $this->resprints = Categorie::getFilterJoinQuery($object->element, 'f.rowid');
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     *  Overloading the printFieldListWhere function : replacing the parent's function with the one below
+     *
+     * @param  array $parameters Hook metadata (context, etc...).
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldListWhere(array $parameters): int
+    {
+        if (in_array($parameters['currentcontext'], ['invoicelist', 'invoicereclist'])) {
+            if (isModEnabled('categorie')) {
+                require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+                switch ($parameters['currentcontext']) {
+                    case 'invoicelist' :
+                        $type = 'facture';
+                        break;
+                    case 'invoicereclist' :
+                        $type = 'facturerec';
+                        break;
+                    default :
+                        $type = '';
+                        break;
+                }
+                $this->resprints = Categorie::getFilterSelectQuery($type, 'f.rowid', GETPOST('search_category_' . $type . '_list', 'array'));
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     *  Overloading the printFieldPreListTitle function : replacing the parent's function with the one below
+     *
+     * @param  array $parameters Hook metadata (context, etc...).
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldPreListTitle(array $parameters): int
+    {
+        global $db, $user;
+
+        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+            // Filter on categories.
+            if (isModEnabled('categorie') && $user->rights->categorie->lire) {
+                require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcategory.class.php';
+                $formCategory = new FormCategory($db);
+                switch ($parameters['currentcontext']) {
+                    case 'invoicelist' :
+                        $type = 'facture';
+                        break;
+                    case 'invoicereclist' :
+                        $type = 'facturerec';
+                        break;
+                    default :
+                        $type = '';
+                        break;
+                }
+                $this->resprints = $formCategory->getFilterBox($type, GETPOST('search_category_' . $type . '_list', 'array'));
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     *  Overloading the printFieldListSearchParam function : replacing the parent's function with the one below
+     *
+     * @param  array               $parameters Hook metadata (context, etc...).
+     * @param  CommonObject|string $object     The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...).
+     * @return int                             0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldListSearchParam(array $parameters, $object): int
+    {
+        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+            if (isModEnabled('categorie')) {
+                $searchCategoryObjectList = GETPOST('search_category_' . $object->element . '_list', 'array');
+                if (!empty($searchCategoryObjectList)) {
+                    foreach ($searchCategoryObjectList as $searchCategoryObject) {
+                        $this->resprints = '&search_category_' . $object->element . '_list[]=' . urlencode($searchCategoryObject);
+                    }
+                }
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
 
     /**
      * Overloading the getNomUrl function : replacing the parent's function with the one below
