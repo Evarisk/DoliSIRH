@@ -992,9 +992,9 @@ class ActionsDoliSIRH
 	}
 
     /**
-     * Overloading the constructCategory function : replacing the parent's function with the one below
+     * Overloading the constructCategory function : replacing the parent's function with the one below.
      *
-     * @param  array $parameters Hook metadata (context, etc...)
+     * @param  array $parameters Hook metadata (context, etc...).
      * @return void
      */
     public function constructCategory(array $parameters)
@@ -1002,34 +1002,34 @@ class ActionsDoliSIRH
         if (in_array($parameters['currentcontext'], ['category', 'invoicecard', 'invoicereccard', 'timesheetcard', 'certificatecard', 'invoicelist', 'invoicereclist'])) {
             $tags = [
                 'facture' => [
-                    'id' => 436370001,
-                    'code' => 'facture',
+                    'id'        => 436370001,
+                    'code'      => 'facture',
                     'obj_class' => 'Facture',
                     'obj_table' => 'facture',
                 ],
                 'facturerec' => [
-                    'id' => 436370002,
-                    'code' => 'facturerec',
+                    'id'        => 436370002,
+                    'code'      => 'facturerec',
                     'obj_class' => 'FactureRec',
                     'obj_table' => 'facture_rec',
                 ],
                 'timesheet' => [
-                    'id' => 436370003,
-                    'code' => 'timesheet',
+                    'id'        => 436370003,
+                    'code'      => 'timesheet',
                     'obj_class' => 'TimeSheet',
                     'obj_table' => 'dolisirh_timesheet',
                 ],
                 'certificate' => [
-                    'id' => 436370003,
-                    'code' => 'certificate',
+                    'id'        => 436370004,
+                    'code'      => 'certificate',
                     'obj_class' => 'Certificate',
                     'obj_table' => 'saturne_object_certificate',
                 ]
             ];
 
-			$this->results = $tags;
-		}
-	}
+            $this->results = $tags;
+        }
+    }
 
 	/**
 	 * Overloading the formObjectOptions function : replacing the parent's function with the one below

@@ -60,17 +60,19 @@ ShowTasksWithTimespentOnTimeSheet            = Afficher les tâches avec du temp
 ShowTasksWithTimespentOnTimeSheetDescription = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
 
 # Setup - Réglages
-SetupDefaultData      = Gestion des données par défaut de DoliSIRH
-HumanResources        = Ressources humaines
-HRDescription         = Projet comprenant les tâches liées aux ressources humaines
-HRProjectSet          = Création du Projet Ressources Humaines
-HRProjectSetHelp      = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
-ProductServiceSet     = Création des produits et services pour la navette
-ProductServiceSetHelp = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
-BookmarkSet           = Création d'un marque-page pour le temps consommé
-BookmarkSetHelp       = Cette option permet d'accéder rapidement à la gestion du pointage de temps
-NotCreated            = Pas encore créé(e)s
-AlreadyCreated        = Déjà créé(e)s
+SetupDefaultData                      = Gestion des données par défaut de DoliSIRH
+HumanResources                        = Ressources humaines
+HRDescription                         = Projet comprenant les tâches liées aux ressources humaines
+HRProjectSet                          = Création du Projet Ressources Humaines
+HRProjectSetHelp                      = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
+ProductServiceSet                     = Création des produits et services pour la navette
+ProductServiceSetHelp                 = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
+BookmarkSet                           = Création d'un marque-page pour le temps consommé
+BookmarkSetHelp                       = Cette option permet d'accéder rapidement à la gestion du pointage de temps
+NotCreated                            = Pas encore créé(e)s
+AlreadyCreated                        = Déjà créé(e)s
+CertificateUserResponsible            = Responsable des certificats
+CertificateUserResponsibleDescription = Cette option permet définir l'utilisateur responsable des certificats des différents participants
 
 
 
@@ -104,9 +106,6 @@ SetupDefaultDataNotCreated = Vous n'avez pas créé les données par défaut de 
 HowToSetupDefaultData      = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
 ConfigDefaultData          = Configuration des données par défaut de DOLISIRH
 EnableDolisirh             = Veuillez activer le module DoliSIRH pour accéder à cette page
-
-CertificateUserResponsible            = Responsable des certificats
-CertificateUserResponsibleDescription = Cette option permet définir l'utilisateur responsable des certificats des différents participants
 
 
 
@@ -206,7 +205,7 @@ GoToConfigProjectPage                         = Aller sur la page de configurati
 # Data - Donnée
 TimeSheet                          = Navette
 Timesheet                          = Navette
-TheTimesheet                       = La navette
+TheTimesheet                       = la navette
 NewTimeSheet                       = Nouvelle navette
 NewTimesheet                       = Nouvelle navette
 ModifyTimeSheet                    = Modifier la navette
@@ -235,11 +234,12 @@ timesheetdocument     = navette
 #
 
 # Data - Donnée
-Certificate       = Certificat
-TheCertificate    = le certificat
-NewCertificate    = Nouveau certificat
-ModifyCertificate = Modifier le certificat
-CertificateList   = Liste des certificats
+Certificate                = Certificat
+TheCertificate             = le certificat
+NewCertificate             = Nouveau certificat
+ModifyCertificate          = Modifier le certificat
+CertificateList            = Liste des certificats
+CertificatesCategoriesArea = Espace des tags/catégories des certificats
 
 
 

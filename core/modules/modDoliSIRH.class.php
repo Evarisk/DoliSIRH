@@ -138,7 +138,8 @@ class modDoliSIRH extends DolibarrModules
                     'dolisirhindex',
                     'projectcard',
                     'invoicelist',
-                    'invoicereclist'
+                    'invoicereclist',
+                    'certificatecard'
                 ]
             ],
             // Set this to 1 if features of module are opened to external users.
