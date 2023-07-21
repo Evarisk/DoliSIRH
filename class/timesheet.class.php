@@ -388,7 +388,7 @@ class TimeSheetLine extends SaturneObject
      * @var int Does this object support multicompany module ?
      * 0 = No test on entity, 1 = Test with field entity, 'field@table' = Test with link by field@table.
      */
-    public int $ismultientitymanaged = 1;
+    public int $ismultientitymanaged = 0;
 
     /**
      * @var int Does object support extrafields ? 0 = No, 1 = Yes.
@@ -459,9 +459,9 @@ class TimeSheetLine extends SaturneObject
     public $date_creation;
 
     /**
-     * @var float Quantity.
+     * @var float|null Quantity.
      */
-    public float $qty;
+    public ?float $qty;
 
     /**
      * @var int Rang.
@@ -471,7 +471,7 @@ class TimeSheetLine extends SaturneObject
     /**
      * @var string Description.
      */
-    public string $description;
+    public string $description = '';
 
     /**
      * @var int|null Product type.

@@ -136,15 +136,27 @@ function get_product_service_timesheet(): array
     return [
         [
             'name' => 'MealTicket',
+            'type' => 0
         ],
         [
             'name' => 'JourneySubscription',
+            'type' => 1
         ],
         [
             'name' => '13thMonthBonus',
+            'type' => 1
         ],
         [
             'name' => 'SpecialBonus',
+            'type' => 1
+        ],
+        [
+            'name' => 'MealBaskets',
+            'type' => 1
+        ],
+        [
+            'name' => 'TeleworkingPackage',
+            'type' => 1
         ]
     ];
 }

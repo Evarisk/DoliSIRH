@@ -67,7 +67,7 @@ $day                 = (GETPOST('day', 'int') ? GETPOST('day', 'int') : date('d'
 // Initialize technical objects
 $object            = new TimeSheet($db);
 $objectline        = new TimeSheetLine($db);
-$signatory         = new SaturneSignature($db);
+$signatory         = new SaturneSignature($db, 'dolisirh');
 $timesheetdocument = new TimeSheetDocument($db);
 $extrafields       = new ExtraFields($db);
 $project           = new Project($db);
@@ -924,7 +924,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			$genallowed = $permissiontoadd; // If you can read, you can build the PDF to read content
 			$delallowed = $permissiontodelete; // If you can create/edit, you can remove a file on card
 
-			print doliSirhShowDocuments('dolisirh:TimeSheetDocument', $dir_files, $filedir, $urlsource, $genallowed, $object->status == $object::STATUS_LOCKED ? $delallowed : 0, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'removefile', $object->status == $object::STATUS_LOCKED && empty(dol_dir_list($filedir)), $langs->trans('TimeSheetMustBeLocked'));
+			print saturne_show_documents('dolisirh:TimeSheetDocument', $dir_files, $filedir, $urlsource, $genallowed, $object->status == $object::STATUS_LOCKED ? $delallowed : 0, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'removefile', $object->status == $object::STATUS_LOCKED && empty(dol_dir_list($filedir)), $langs->trans('TimeSheetMustBeLocked'));
 		}
 
 		print '</div><div class="fichehalfright">';

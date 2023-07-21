@@ -158,7 +158,7 @@ if (GETPOST('hr_project_set', 'alpha')) {
 }
 
 if (GETPOST('product_service_set', 'alpha')) {
-    if ($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 0) {
+    if ($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 0 || $conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 1) {
         require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
         $product = new Product($db);
@@ -166,12 +166,13 @@ if (GETPOST('product_service_set', 'alpha')) {
         $productOrServiceTimesheets = get_product_service_timesheet();
 
         foreach ($productOrServiceTimesheets as $productOrServiceTimesheet) {
-            $product->ref   = $productOrServiceTimesheet['name'];
-            $product->label = $productOrServiceTimesheet['name'];
+            $product->ref   = $langs->transnoentities($productOrServiceTimesheet['name']);
+            $product->label = $langs->transnoentities($productOrServiceTimesheet['name']);
+            $product->type  = $productOrServiceTimesheet['type'];
             $product->create($user);
         }
 
-        dolibarr_set_const($db, 'DOLISIRH_PRODUCT_SERVICE_SET', 1, 'integer', 0, '', $conf->entity);
+        dolibarr_set_const($db, 'DOLISIRH_PRODUCT_SERVICE_SET', 2, 'integer', 0, '', $conf->entity);
     }
 }
 
@@ -242,10 +243,10 @@ print '<td>';
 print $langs->transnoentities('ProductServiceSetHelp');
 print '</td>';
 print '<td class="center">';
-print $conf->global->DOLISIRH_PRODUCT_SERVICE_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
+print (($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 2) ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated'));
 print '</td>';
 print '<td class="center">';
-print $conf->global->DOLISIRH_PRODUCT_SERVICE_SET ? '<a class="butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="product_service_set" value="' . $langs->transnoentities('Create') . '">';
+print (($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 2) ? '<a class="butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="product_service_set" value="' . $langs->transnoentities('Create') . '">');
 print '</td>';
 print '</tr>';
 
