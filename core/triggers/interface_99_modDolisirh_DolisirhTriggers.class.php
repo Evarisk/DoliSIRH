@@ -92,6 +92,8 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
             return 0; // If module is not enabled, we do nothing.
         }
 
+        saturne_load_langs();
+
         // Data and type of action are stored into $object and $action.
         dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 
@@ -312,6 +314,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // VALIDATE
             case 'TIMESHEET_VALIDATE' :
+            case 'CERTIFICATE_VALIDATE' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_VALIDATE';
                 $actioncomm->label = $langs->trans('ObjectValidateTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
@@ -319,6 +322,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // UNVALIDATE
             case 'TIMESHEET_UNVALIDATE' :
+            case 'CERTIFICATE_UNVALIDATE' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_UNVALIDATE';
                 $actioncomm->label = $langs->trans('ObjectUnValidateTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
@@ -326,6 +330,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // LOCK
             case 'TIMESHEET_LOCK' :
+            case 'CERTIFICATE_LOCK' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_LOCK';
                 $actioncomm->label = $langs->trans('ObjectLockedTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
@@ -333,13 +338,22 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // ARCHIVE
             case 'TIMESHEET_ARCHIVE' :
+            case 'CERTIFICATE_ARCHIVE' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_ARCHIVE';
                 $actioncomm->label = $langs->trans('ObjectArchivedTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
                 break;
 
+            // EXPIRE
+            case 'CERTIFICATE_EXPIRE' :
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_EXPIRE';
+                $actioncomm->label = $langs->trans('ObjectExpiredTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
+                $actioncomm->create($user);
+                break;
+
             // SENTBYMAIL
             case 'TIMESHEET_SENTBYMAIL' :
+            case 'CERTIFICATE_SENTBYMAIL' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_SENTBYMAIL';
                 $actioncomm->label = $langs->trans('ObjectSentByMailTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
