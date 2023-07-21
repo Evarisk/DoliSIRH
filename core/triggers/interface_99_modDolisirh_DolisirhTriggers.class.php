@@ -265,7 +265,8 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     $timesheetProductAndServices = get_timesheet_product_service();
 
                     foreach ($timesheetProductAndServices as $timesheetProductAndService) {
-                        $product->fetch($conf->global->$timesheetProductAndService['code']);
+                        $confName = $timesheetProductAndService['code'];
+                        $product->fetch($conf->global->$confName);
                         $timeSheetLine->date_creation  = $object->db->idate($now);
                         $timeSheetLine->qty            = 0;
                         $timeSheetLine->rang           = $i++;
@@ -275,12 +276,12 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                         $timeSheetLine->product_type   = $timesheetProductAndService['type'];
                         $timeSheetLine->create($user);
                     }
-                  }
+                }
 
-                  $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
-                  $actioncomm->label = $langs->trans('ObjectCreateTrigger', $langs->transnoentities(ucfirst($object->element)));
-                  $actioncomm->create($user);
-                  break;
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
+                $actioncomm->label = $langs->trans('ObjectCreateTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->create($user);
+                break;
 
             case 'CERTIFICATE_CREATE' :
                 if ($object->element_type == 'user') {
