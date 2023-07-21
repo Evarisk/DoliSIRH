@@ -126,8 +126,8 @@ class TimeSheet extends SaturneObject
         'fk_user_creat'  => ['type' => 'integer:User:user/class/user.class.php',                                                          'label' => 'UserAuthor', 'picto' => 'user',    'enabled' => 1,                         'position' => 160, 'notnull' => 1, 'visible' => 0, 'foreignkey' => 'user.rowid'],
         'fk_user_modif'  => ['type' => 'integer:User:user/class/user.class.php',                                                          'label' => 'UserModif',  'picto' => 'user',    'enabled' => 1,                         'position' => 170, 'notnull' => 0, 'visible' => 0, 'foreignkey' => 'user.rowid'],
         'fk_user_assign' => ['type' => 'integer:User:user/class/user.class.php:1:(t.employee:=:1:AND:t.fk_soc:IS:NULL:AND:t.statut:=:1)', 'label' => 'UserAssign', 'picto' => 'user',    'enabled' => 1,                         'position' => 90,  'notnull' => 1, 'visible' => 1, 'index' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'user.rowid'],
-        'fk_project'     => ['type' => 'integer:Project:projet/class/project.class.php:1',                                                'label' => 'Project',    'picto' => 'company', 'enabled' => '$conf->project->enabled', 'position' => 80,  'notnull' => 0, 'visible' => 1, 'index' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'projet.rowid'],
-        'fk_soc'         => ['type' => 'integer:Societe:societe/class/societe.class.php:1',                                               'label' => 'ThirdParty', 'picto' => 'project', 'enabled' => '$conf->societe->enabled', 'position' => 120, 'notnull' => 0, 'visible' => 1, 'index' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'societe.rowid'],
+        'fk_project'     => ['type' => 'integer:Project:projet/class/project.class.php:1',                                                'label' => 'Project',    'picto' => 'project', 'enabled' => '$conf->project->enabled', 'position' => 80,  'notnull' => 0, 'visible' => 1, 'index' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'projet.rowid'],
+        'fk_soc'         => ['type' => 'integer:Societe:societe/class/societe.class.php:1',                                               'label' => 'ThirdParty', 'picto' => 'company', 'enabled' => '$conf->societe->enabled', 'position' => 120, 'notnull' => 0, 'visible' => 1, 'index' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'societe.rowid'],
     ];
 
     /**
@@ -470,9 +470,9 @@ class TimeSheetLine extends SaturneObject
     public ?float $qty;
 
     /**
-     * @var int Rang.
+     * @var int|null Rang.
      */
-    public int $rang;
+    public ?int $rang;
 
     /**
      * @var string Description.

@@ -104,6 +104,7 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
     $timeSpentOnTasks = ['days' => 0, 'hours' => 0, 'minutes' => 0, 'total' => 0];
     $timeSpentList    = $task->fetchAllTimeSpent($userTmp, 'AND (ptt.task_date >= "' . $db->idate($timestampStart) . '" AND ptt.task_date < "' . $db->idate($timestampEnd) . '")');
     if (is_array($timeSpentList) && !empty($timeSpentList)) {
+        $workingDays = [];
         foreach ($timeSpentList as $timeSpent) {
             $hours   = floor($timeSpent->timespent_duration / 3600);
             $minutes = floor($timeSpent->timespent_duration / 60);
@@ -120,9 +121,10 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
                 $timeSpentOnTasks[$timeSpent->fk_task]['task_label']    = $timeSpent->task_label;
 
                 $timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
+                $workingDays[$timeSpent->timespent_date] = 1;
             }
         }
-        $timeSpentOnTasks['days'] = count($daysAvailable);
+        $timeSpentOnTasks['days'] = is_array($workingDays) && !empty($workingDays) ? count($workingDays) : 0;
     }
 
     return $timeSpentOnTasks;

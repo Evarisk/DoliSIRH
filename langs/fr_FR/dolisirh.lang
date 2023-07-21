@@ -103,7 +103,7 @@ ErrorServiceTime           = Le temps du(des) service(s) est nul
 SetupDefaultDataNotCreated = Vous n'avez pas créé les données par défaut de DOLISIRH
 HowToSetupDefaultData      = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
 ConfigDefaultData          = Configuration des données par défaut de DOLISIRH
-EnableDoliSIRH             = Veuillez activer le module DoliSIRH pour accéder à cette page
+EnableDolisirh             = Veuillez activer le module DoliSIRH pour accéder à cette page
 
 CertificateUserResponsible            = Responsable des certificats
 CertificateUserResponsibleDescription = Cette option permet définir l'utilisateur responsable des certificats des différents participants
@@ -187,20 +187,8 @@ FacturerecsCategoriesArea       = Espace des tags/catégories des factures récu
 #
 
 # SetEventMessage - Notice info
-TimeSheetMustBeDraft                          = La navette doit être en brouillon pour accéder à cette fonctionnalité
-TimeSheetMustBeDraftToValidate                = La navette est déjà validée
-TimeSheetMustBeValidated                      = La navette doit être validée pour la rouvrir
-TimeSheetMustBeValidatedToSign                = La navette doit être validée pour que les signataires puissent signer
 AllSignatoriesMustHaveSignedAndDiffTimeSetAt0 = Tous les signataires doivent avoir signé et l'utilisateur assigné doit avoir consommée toutes ses heures de travail pour verrouiller la navette
-TimeSheetMustBeLockedToSendEmail              = La navette doit être verrouillée pour envoyer un email
-TimeSheetMustBeLocked                         = La navette doit être verrouillée afin de permettre la génération
-TimeSheetMustBeLockedGenerated                = La navette doit être verrouillée et le document généré afin de pouvoir l'archiver
-ValidateTimeSheet                             = Valider la navette
-ConfirmValidateTimeSheet                      = Êtes-vous sûr de vouloir valider la navette ? <br> La validation permet aux signataires de signer le document mais <b> empêche l'ajout de nouveaux signataires ou la modification de la navette. </b> <br><br> <b>  N'oubliez pas de vérifier les quantités des produits ou services liés. </b>
-ReOpenTimeSheet                               = Ouvrir à nouveau la navette
-ConfirmReOpenTimeSheet                        = Êtes-vous sûr de vouloir rouvrir la navette ? La réouverture permet la modification de la navette et l'ajout de nouveaux signataires mais <b>toutes les signatures du document seront perdues</b>.
-LockTimeSheet                                 = Verrouiller la navette
-ConfirmLockTimeSheet                          = Êtes-vous sûr de vouloir verrouiller la navette ?<br>Ce verrouillage permet de figer les données et la génération du document.
+ConfirmValidateTimeSheet                      = <br><br><b>  N'oubliez pas de vérifier les quantités des produits ou services liés. </b>
 TimeSpentPerfect                              = Parfait, toutes tes heures de travail ont été consommées
 TimeSpentMustBeCompleted                      = Attention, toutes tes heures de travail n'ont pas été consommées (%s - %s) <br> Va sur ton pointage de temps du mois de %s pour arranger cela
 TimeSpentDiff                                 = Attention, tu as consommé trop d'heures de travail (%s - %s) <br> Va sur ton pointage de temps du mois de %s pour arranger cela
@@ -218,6 +206,7 @@ GoToConfigProjectPage                         = Aller sur la page de configurati
 # Data - Donnée
 TimeSheet                          = Navette
 Timesheet                          = Navette
+TheTimesheet                       = La navette
 NewTimeSheet                       = Nouvelle navette
 NewTimesheet                       = Nouvelle navette
 ModifyTimeSheet                    = Modifier la navette
