@@ -105,6 +105,9 @@ HowToSetupDefaultData      = Pour configurer les données par défaut de DOLISIR
 ConfigDefaultData          = Configuration des données par défaut de DOLISIRH
 EnableDoliSIRH             = Veuillez activer le module DoliSIRH pour accéder à cette page
 
+CertificateUserResponsible            = Responsable des certificats
+CertificateUserResponsibleDescription = Cette option permet définir l'utilisateur responsable des certificats des différents participants
+
 
 
 #

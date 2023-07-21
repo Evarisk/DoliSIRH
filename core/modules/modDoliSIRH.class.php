@@ -220,6 +220,7 @@ class modDoliSIRH extends DolibarrModules
 
             // CONST CERTIFICATE.
             $i++ => ['DOLISIRH_CERTIFICATE_ADDON', 'chaine', 'mod_certificate_standard', '', 0, 'current'],
+            $i++ => ['DOLISIRH_CERTIFICATE_USER_RESPONSIBLE', 'integer', 0, '', 0, 'current'],
 
             // CONST CERTIFICATE DOCUMENT.
             $i++ => ['DOLISIRH_CERTIFICATEDOCUMENT_ADDON', 'chaine', 'mod_certificatedocument_standard', '', 0, 'current'],
