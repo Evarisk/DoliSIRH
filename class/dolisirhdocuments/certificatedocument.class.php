@@ -30,6 +30,11 @@ require_once __DIR__ . '/../../../saturne/class/saturnedocuments.class.php';
 class CertificateDocument extends SaturneDocuments
 {
     /**
+     * @var string Module name.
+     */
+    public string $module = 'dolisirh';
+
+    /**
      * @var string Element type of object.
      */
     public $element = 'certificatedocument';
@@ -41,6 +46,6 @@ class CertificateDocument extends SaturneDocuments
      */
     public function __construct(DoliDB $db)
     {
-        parent::__construct($db);
+        parent::__construct($db, $this->module, $this->element);
     }
 }

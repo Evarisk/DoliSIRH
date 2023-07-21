@@ -32,6 +32,8 @@ require_once __DIR__ . '/../../../../../../saturne/class/saturnesignature.class.
 require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
 
 // Load DoliSIRH libraries.
+require_once __DIR__ . '/../../../../../lib/dolisirh_function.lib.php';
+require_once __DIR__ . '/../../../../../lib/dolisirh_timespent.lib.php';
 require_once __DIR__ . '/mod_timesheetdocument_standard.php';
 
 /**
@@ -118,8 +120,8 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
         $isAvailable = [];
         for ($idw = 0; $idw < $daysInRange; $idw++) {
             $dayInLoop = dol_time_plus_duree($dayStartToShow, $idw, 'd');
-            if (isDayAvailable($dayInLoop, $user->id)) {
-                $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon '=> 1];
+            if (is_day_available($dayInLoop, $user->id)) {
+                $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
             } elseif (date('N', $dayInLoop) >= 6) {
                 $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
             } else {
@@ -127,7 +129,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             }
         }
 
-        $timeSpentOnTasks = loadTimeSpentOnTasksWithinRange($dayStartToShow, $lastDayToShow + 1, $isAvailable, $object->fk_user_assign);
+        $timeSpentOnTasks = load_time_spent_on_tasks_within_range($dayStartToShow, $lastDayToShow + 1, $isAvailable, $object->fk_user_assign);
 
         // Replace tags of lines.
         try {
@@ -194,16 +196,25 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
 
             // Get HR project task.
             $totalTimeHrProject = [];
+            $tasksID            = [];
             $i = 0;
             $segment = [
-                ['csss', 'cps', 'rtts', 'jfs', 'cms',], // Row name.
-                ['css', 'cp', 'rtt', 'jf', 'cm',] // Cell name.
+                ['csss', 'cps', 'rtts', 'jfs', 'cms'], // Row name.
+                ['css', 'cp', 'rtt', 'jf', 'cm'] // Cell name.
             ];
 
-            $filter     = ' AND t.rowid IN (' . $conf->global->DOLISIRH_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_RTT_TASK. ',' . $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK . ',' . $conf->global->DOLISIRH_SICK_LEAVE_TASK . ')';
-            $tasksArray = $task->getTasksArray(0, 0, $conf->global->DOLISIRH_HR_PROJECT, 0, 0, '', '', $filter,  $object->fk_user_assign);
-            if (is_array($tasksArray) && !empty($tasksArray)) {
-                foreach ($tasksArray as $taskSingle) {
+            $hrProjectTasks = get_hr_project_tasks();
+
+            foreach ($hrProjectTasks as $hrProjectTask) {
+                if (isset($hrProjectTask['position'])) {
+                    $confName                            = $hrProjectTask['code'];
+                    $tasksID[$hrProjectTask['position']] = $conf->global->$confName;
+                }
+            }
+
+            if (!empty($tasksID)) {
+                ksort($tasksID);
+                foreach ($tasksID as $taskID) {
                     $foundTagForLines = 1;
                     try {
                         $listLines = $odfHandler->setSegment($segment[0][$i]);
@@ -217,8 +228,8 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
                         for ($idw = 1; $idw <= 31; $idw++) {
                             if (in_array($idw, $daysInRangeArray)) {
                                 $dayInLoop                        = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
-                                $tmpArray[$segment[1][$i] . $idw] = (($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
-                                $totalTimeHrProject[$dayInLoop]  += $timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')];
+                                $tmpArray[$segment[1][$i] . $idw] = (($timeSpentOnTasks[$taskID][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$taskID][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$taskID][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
+                                $totalTimeHrProject[$dayInLoop]  += $timeSpentOnTasks[$taskID][dol_print_date($dayInLoop, 'day')];
                             } else {
                                 $tmpArray[$segment[1][$i] . $idw] = '-';
                             }
@@ -320,7 +331,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
                 for ($idw = 1; $idw <= 31; $idw++) {
                     if (in_array($idw, $daysInRangeArray)) {
                         $dayInLoop                    = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
-                        $totalTimePlanned[$dayInLoop] = loadPassedTimeWithinRange($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), $workingHours, $isAvailable);
+                        $totalTimePlanned[$dayInLoop] = load_passed_time_within_range($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), $workingHours, $isAvailable);
                         $tmpArray['ta' . $idw]        = (($totalTimePlanned[$dayInLoop]['minutes'] != 0) ? convertSecondToTime($totalTimePlanned[$dayInLoop]['minutes'] * 60, (is_float($totalTimePlanned[$dayInLoop]['minutes']/60) ? 'allhourmin' : 'allhour')) : '-');
                     } else {
                         $tmpArray['ta' . $idw] = '-';
@@ -490,5 +501,5 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
         $moreParam['tmparray'] = $tmpArray;
 
         return parent::write_file($objectDocument, $outputLangs, $srcTemplatePath, $hideDetails, $hideDesc, $hideRef, $moreParam);
-	}
+    }
 }
