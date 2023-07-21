@@ -86,14 +86,14 @@ if (GETPOST('hr_project_set', 'alpha')) {
             $project->date_c      = $now;
             $currentYear          = dol_print_date(dol_now(), '%Y');
             $fiscalMonthStart     = $conf->global->SOCIETE_FISCAL_MONTH_START;
-            $DateStart            = dol_mktime('0', '0', '0', $fiscalMonthStart ?: '1', '1', $currentYear);
-            $project->date_start  = $DateStart;
+            $dateStart            = dol_mktime('0', '0', '0', $fiscalMonthStart ?: '1', '1', $currentYear);
+            $project->date_start  = $dateStart;
 
             $project->usage_task = 1;
 
-            $DateStartAddYear      = dol_time_plus_duree($DateStart, 1, 'y');
-            $DateStartAddYearMonth = dol_time_plus_duree($DateStartAddYear, -1, 'd');
-            $dateEnd               = dol_print_date($DateStartAddYearMonth, 'dayrfc');
+            $dateStartAddYear      = dol_time_plus_duree($dateStart, 1, 'y');
+            $dateStartAddYearMonth = dol_time_plus_duree($dateStartAddYear, -1, 'd');
+            $dateEnd               = dol_print_date($dateStartAddYearMonth, 'dayrfc');
             $project->date_end     = $dateEnd;
             $project->statut       = 1;
 
@@ -108,7 +108,7 @@ if (GETPOST('hr_project_set', 'alpha')) {
             $users = $userTmp->get_full_tree(0, 'u.employee = 1 AND u.fk_soc IS NULL AND u.statut = 1');
             if (!empty($users) && is_array($users)) {
                 foreach ($users as $userSingle) {
-                    $project->add_contact($userSingle['id'], 161, 'internal');
+                    $project->add_contact($userSingle['id'], 'PROJECTCONTRIBUTOR', 'internal');
                 }
             }
 
@@ -121,9 +121,9 @@ if (GETPOST('hr_project_set', 'alpha')) {
             if (!empty($taskRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php')) {
                 require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php';
                 $modTask = new $taskRefClass();
-                $taskRef = $modTask->getNextValue('', null);
+                $modTask->getNextValue('', null);
             } else {
-                $taskRef = '';
+                $modTask = null;
                 $error++;
             }
 
@@ -133,7 +133,7 @@ if (GETPOST('hr_project_set', 'alpha')) {
                 foreach ($hrProjectTasks as $hrProjectTask) {
                     $task->date_c     = $now;
                     $task->fk_project = $projectID;
-                    $task->ref        = $taskRef;
+                    $task->ref        = $modTask->getNextValue('', null);
                     $task->label      = $langs->transnoentities($hrProjectTask['name']);
                     $taskID           = $task->create($user);
                     dolibarr_set_const($db, $hrProjectTask['code'], $taskID, 'integer', 0, '', $conf->entity);
@@ -145,7 +145,7 @@ if (GETPOST('hr_project_set', 'alpha')) {
                     foreach ($users as $userSingle) {
                         if (is_array($taskArray) && !empty($taskArray)) {
                             foreach ($taskArray as $task) {
-                                $task->add_contact($userSingle['id'], 181, 'internal');
+                                $task->add_contact($userSingle['id'], 'TASKCONTRIBUTOR', 'internal');
                             }
                         }
                     }
