@@ -17,3 +17,4 @@
 ALTER TABLE `llx_dolisirh_timesheet` DROP `last_main_doc`, DROP `model_pdf`, DROP `model_odt`;
 ALTER TABLE `llx_element_workinghours` CHANGE `tms` `tms` TIMESTAMP on update CURRENT_TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE `llx_element_workinghours` ADD `fk_user_modif` INT NULL AFTER `fk_user_creat`;
+ALTER TABLE `llx_dolisirh_timesheetdet` ADD `entity` INT NOT NULL DEFAULT '1' AFTER `rowid`;

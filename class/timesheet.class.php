@@ -438,6 +438,7 @@ class TimeSheetLine extends SaturneObject
      */
     public array $fields = [
         'rowid'          => ['type' => 'integer',  'label' => 'TechnicalID',  'enabled' => 1, 'position' => 1,  'notnull' => 1, 'visible' => 0, 'noteditable' => 1, 'index' => 1, 'css' => 'left', 'comment' => 'Id'],
+        'entity'         => ['type' => 'integer',  'label' => 'Entity',       'enabled' => 1, 'position' => 5,  'notnull' => 1, 'visible' => 0],
         'date_creation'  => ['type' => 'datetime', 'label' => 'DateCreation', 'enabled' => 1, 'position' => 10, 'notnull' => 1, 'visible' => 0],
         'qty'            => ['type' => 'real',     'label' => 'Quantity',     'enabled' => 1, 'position' => 20, 'notnull' => 0, 'visible' => 0],
         'rang'           => ['type' => 'integer',  'label' => 'Order',        'enabled' => 1, 'position' => 30, 'notnull' => 0, 'visible' => 0, 'default' => 0],
@@ -452,6 +453,11 @@ class TimeSheetLine extends SaturneObject
      * @var int ID.
      */
     public int $rowid;
+
+    /**
+     * @var int Entity.
+     */
+    public $entity;
 
     /**
      * @var int|string Creation date.
