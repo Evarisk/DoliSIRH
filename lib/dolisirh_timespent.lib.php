@@ -664,26 +664,28 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                     print '<div class="marginleftonly">';
                 }
                 print $task->getNomUrl(1, 'withproject', 'time');
-                if (GETPOST('action') == 'toggle_task_favorite') {
-                    toggle_task_favorite(GETPOST('id'), $fuser->id);
+                if (GETPOST('action') == 'toggleTaskFavorite') {
+                    toggle_task_favorite((int) GETPOST('taskid', 'int'), $fuser->id);
                 }
                 if (is_task_favorite($task->id, $fuser->id)) {
-                    print '<span class="fas fa-star toggleTaskFavorite" id="' . $task->id . '" value="' . $task->id . '"></span>';
+                    print '<span class="fas fa-star toggleTaskFavorite" style="margin-left: 5px;" id="' . $task->id . '" value="' . $task->id . '"></span>';
                 } else {
-                    print '<span class="far fa-star toggleTaskFavorite" id="' . $task->id . '" value="' . $task->id . '"></span>';
+                    print '<span class="far fa-star toggleTaskFavorite" style="margin-left: 5px;" id="' . $task->id . '" value="' . $task->id . '"></span>';
                 }
                 if ($task->planned_workload != '') {
                     $tmpArray = $task->getSummaryOfTimeSpent();
                     if ($tmpArray['total_duration'] > 0 && !empty($task->planned_workload)) {
-                        print '<span class="task-progress ' . get_task_progress_color_class(round($tmpArray['total_duration'] / $task->planned_workload * 100, 2)) . '">' . ' ' . round($tmpArray['total_duration'] / $task->planned_workload * 100, 2) . ' %' . '</span>';
-                        print '<span>' . ' ' . convertSecondToTime($task->planned_workload, 'allhourmin') . '</span>';
+                        print '<span class="task-progress ' . get_task_progress_color_class(round($tmpArray['total_duration'] / $task->planned_workload * 100, 2)) . '" style="margin-left: 5px;">';
+                        print convertSecondToTime($tmpArray['total_duration'], 'allhourmin');
+                        print ' / ' . convertSecondToTime($task->planned_workload, 'allhourmin');
+                        print ' - ' . round($tmpArray['total_duration'] / $task->planned_workload * 100, 2) . ' %';
+                        print '</span>';
                     } else {
                         print ' 0 %';
                     }
                 }
                 // Label task.
-                print '<br>';
-                print '<span class="opacitymedium" title="' . $task->label . '">' . dol_trunc($task->label, '64') . '</span>';
+                print '<span class="opacitymedium" style="margin-left: 5px;" title="' . $task->label . '">' . dol_trunc($task->label, '64') . '</span>';
                 for ($k = 0; $k < $level; $k++) {
                     print '</div>';
                 }
