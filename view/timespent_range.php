@@ -159,6 +159,22 @@ switch ($viewMode) {
         $rangeDate      = 'W';
         $range          = $week;
         break;
+    case 'day' :
+        $prev      = dol_get_prev_day($day, $month, $year);
+        $prevYear  = $prev['year'];
+        $prevMonth = $prev['month'];
+        $prevDay   = $prev['day'];
+
+        $next      = dol_get_next_day($day, $month, $year);
+        $nextYear  = $next['year'];
+        $nextMonth = $next['month'];
+        $nextDay   = $next['day'];
+
+        $firstDayToShow = dol_mktime(0, 0, 0, $month, $day, $year);
+        $lastDayOfRange = dol_mktime(0, 0, 0, $month, $day, $year);
+        $rangeDate      = 'd';
+        $range          = $day;
+        break;
 }
 
 $currentRange = date($rangeDate, $now);
@@ -167,7 +183,7 @@ if ($currentRange == $range && date('Y', $now) == $year) {
     $lastDayOfRange = dol_mktime(0, 0, 0, $currentDate['mon'], $currentDate['mday'], $currentDate['year']);
 }
 
-$daysInRange = dolisirh_num_between_day($firstDayToShow, $lastDayOfRange, 1);
+$daysInRange = dolisirh_num_between_days($firstDayToShow, $lastDayOfRange, 1);
 
 if (empty($searchUserID) || $searchUserID == $user->id) {
     $userTmp = $user;
@@ -485,7 +501,7 @@ if (empty($user->rights->user->user->lire)) {
 $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($searchUserID ?: $userTmp->id, 'search_user_id', 0, null, 0, $includeOnly, null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth200', 1);
 $moreForFilter .= '</div>';
 
-if (!getDolGlobalInt($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT)) {
+if (!getDolGlobalInt('PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT')) {
     $moreForFilter .= '<div class="divsearchfield">';
     $moreForFilter .= '<div class="inline-block"></div>';
     $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('Project'), 'project', 'class="paddingright pictofixedwidth"') . '<input type="text" name="search_project_ref" class="maxwidth100" value="' . dol_escape_htmltag($searchProjectRef) . '">';
@@ -567,7 +583,7 @@ print_liste_field_titre('', $_SERVER['PHP_SELF'], '', '', '', '', $sortField, $s
 
 print '</tr>';
 
-$colspan = 1 + (!getDolGlobalInt($conf->global->PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT) ? 0 : 2);
+$colspan = 1 + (!getDolGlobalInt('PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT') ? 0 : 2);
 
 $workingHours = $workingHours->fetchCurrentWorkingHours($userTmp->id, 'user');
 
@@ -580,7 +596,7 @@ if ($conf->use_javascript_ajax) {
     print '<span class="opacitymediumbycolor">  - ';
     if ($viewMode == 'month') {
         print $langs->trans('ExpectedWorkingHoursMonth', dol_print_date(dol_mktime(0, 0, 0, $month, $day, $year), '%B %Y'));
-    } elseif ($viewMode == 'week') {
+    } else {
         print $langs->trans('ExpectedWorkingHoursWeek', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayOfRange, 'dayreduceformat'));
     }
     print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $userTmp->id.'" target="_blank">';

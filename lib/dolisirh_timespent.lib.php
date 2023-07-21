@@ -145,7 +145,7 @@ function load_planned_time_within_range(int $timestampStart, int $timestampEnd, 
     }
 
     $timeToSpend = ['days' => 0, 'minutes' => 0];
-    $daysInRange = dolisirh_num_between_day($timestampStart, $timestampEnd);
+    $daysInRange = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $newTimestampStart = dol_time_plus_duree($timestampStart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0.
         if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
@@ -179,7 +179,7 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $
     }
 
     $passedWorkingTime = ['minutes' => 0];
-    $daysInRange         = dolisirh_num_between_day($timestampStart, $timestampEnd);
+    $daysInRange         = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $newTimestampStart = dol_time_plus_duree($timestampStart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0.
         if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
@@ -569,7 +569,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
     $totalForEachDay    = [];
     $linesWithoutLevel0 = [];
 
-    $daysInRange = dolisirh_num_between_day($timestampStart, $timestampEnd, 1);
+    $daysInRange = dolisirh_num_between_days($timestampStart, $timestampEnd, 1);
 
     // Create a smaller array with sublevels only to be used later. This increase dramatically performances.
     if ($parent == 0) { // Always and only if at first level.
@@ -637,7 +637,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                     }
 
                     print '<tr class="oddeven trforbreak nobold">';
-                    print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '">';
+                    print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '"' . ($project->status == $project::STATUS_CLOSED ? 'style="background-color: #CBCDCD!important;"' : '') . '>';
                     print $project->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv('YourRole') . ' : </strong> ' . $projectsRole[$lines[$i]->fk_project]);
                     if ($thirdparty->id > 0) {
                         print ' - ' . $thirdparty->getNomUrl(1);
@@ -646,6 +646,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                         print ' - ';
                         print '<span class="secondary" title="' . $project->title . '">' . dol_trunc($project->title, '64') . '</span>';
                     }
+                    print ' - ' . $project->getLibStatut(5);
                     print '</td>';
                     print '</tr>';
                 }
@@ -663,26 +664,28 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                     print '<div class="marginleftonly">';
                 }
                 print $task->getNomUrl(1, 'withproject', 'time');
-                if (GETPOST('action') == 'toggle_task_favorite') {
-                    toggle_task_favorite(GETPOST('id'), $fuser->id);
+                if (GETPOST('action') == 'toggleTaskFavorite') {
+                    toggle_task_favorite((int) GETPOST('taskid', 'int'), $fuser->id);
                 }
                 if (is_task_favorite($task->id, $fuser->id)) {
-                    print '<span class="fas fa-star toggleTaskFavorite" id="' . $task->id . '" value="' . $task->id . '"></span>';
+                    print '<span class="fas fa-star toggleTaskFavorite" style="margin-left: 5px;" id="' . $task->id . '" value="' . $task->id . '"></span>';
                 } else {
-                    print '<span class="far fa-star toggleTaskFavorite" id="' . $task->id . '" value="' . $task->id . '"></span>';
+                    print '<span class="far fa-star toggleTaskFavorite" style="margin-left: 5px;" id="' . $task->id . '" value="' . $task->id . '"></span>';
                 }
                 if ($task->planned_workload != '') {
                     $tmpArray = $task->getSummaryOfTimeSpent();
                     if ($tmpArray['total_duration'] > 0 && !empty($task->planned_workload)) {
-                        print '<span class="task-progress ' . get_task_progress_color_class(round($tmpArray['total_duration'] / $task->planned_workload * 100, 2)) . '">' . ' ' . round($tmpArray['total_duration'] / $task->planned_workload * 100, 2) . ' %' . '</span>';
-                        print '<span>' . ' ' . convertSecondToTime($task->planned_workload, 'allhourmin') . '</span>';
+                        print '<span class="task-progress ' . get_task_progress_color_class(round($tmpArray['total_duration'] / $task->planned_workload * 100, 2)) . '" style="margin-left: 5px;">';
+                        print convertSecondToTime($tmpArray['total_duration'], 'allhourmin');
+                        print ' / ' . convertSecondToTime($task->planned_workload, 'allhourmin');
+                        print ' - ' . round($tmpArray['total_duration'] / $task->planned_workload * 100, 2) . ' %';
+                        print '</span>';
                     } else {
                         print ' 0 %';
                     }
                 }
                 // Label task.
-                print '<br>';
-                print '<span class="opacitymedium" title="' . $task->label . '">' . dol_trunc($task->label, '64') . '</span>';
+                print '<span class="opacitymedium" style="margin-left: 5px;" title="' . $task->label . '">' . dol_trunc($task->label, '64') . '</span>';
                 for ($k = 0; $k < $level; $k++) {
                     print '</div>';
                 }

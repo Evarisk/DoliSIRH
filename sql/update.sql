@@ -23,3 +23,5 @@ ALTER TABLE `llx_categorie_facture` CHANGE `fk_invoice` `fk_facture` INT NOT NUL
 
 RENAME TABLE `llx_categorie_invoicerec` TO `llx_categorie_facturerec`;
 ALTER TABLE `llx_categorie_facturerec` CHANGE `fk_invoicerec` `fk_facturerec` INT NOT NULL;
+
+ALTER TABLE `llx_dolisirh_timesheetdet` ADD `entity` INT NOT NULL DEFAULT '1' AFTER `rowid`;

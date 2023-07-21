@@ -21,6 +21,9 @@
  *  \brief      DoliSIRH class to manage statistics reports
  */
 
+// Load DoliSIRH libraries.
+require_once __DIR__ . '/../lib/dolisirh_timespent.lib.php';
+
 /**
  * 	Parent class of statistics class
  */
@@ -660,7 +663,7 @@ abstract class DoliSIRHStats
             $lastdaytoshow = $lastdayofmonth;
         }
 
-        $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+        $daysInMonth = dolisirh_num_between_days($firstdaytoshow, $lastdayofmonth, 1);
 
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
@@ -756,7 +759,7 @@ abstract class DoliSIRHStats
                 $lastdaytoshow = $lastdayofmonth;
             }
 
-            $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+            $daysInMonth = dolisirh_num_between_days($firstdaytoshow, $lastdayofmonth, 1);
 
             $isavailable = [];
             for ($idw = 0; $idw < $daysInMonth; $idw++) {
@@ -771,7 +774,7 @@ abstract class DoliSIRHStats
             }
 
             $planned_working_time = load_planned_time_within_range($firstdaytoshow, dol_time_plus_duree($lastdayofmonth, 1, 'd'), $workingHours, $isavailable);
-            $working_time          = loadTimeSpentWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
+            $working_time         = load_time_spent_on_tasks_within_range($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $isavailable, $userID);
 
             $planned_working_time_data = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'fullhour') : 0);
             $working_time_data = convertSecondToTime($working_time['total'], 'fullhour');
@@ -830,7 +833,7 @@ abstract class DoliSIRHStats
             $lastdaytoshow = $lastdayofmonth;
         }
 
-        $daysInMonth = dolisirh_num_between_day($firstdaytoshow, $lastdayofmonth, 1);
+        $daysInMonth = dolisirh_num_between_days($firstdaytoshow, $lastdayofmonth, 1);
 
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {

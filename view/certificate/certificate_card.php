@@ -270,7 +270,7 @@ if ($action == 'create') {
     print '<tr><td class="titlefieldcreate"><label for="element_type">' . $langs->trans('ElementType') . '</label></td>';
     print '<td class="valuefieldcreate">' . $form::selectarray('element_type', $elementList, GETPOSTISSET('element_type') ? GETPOST('element_type') : 'user', 1, 0, 0, '', 0, 0, 0, '', 'maxwidth200 widthcentpercentminusx') . '</td>';
     print '</tr>';
-    
+
     <script>
     $(document).ready(function(){
         $('#element_type').on('change', function(){
@@ -474,7 +474,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             }
 
             // Validate
-            if ($object->status == SaturneCertificate::STATUS_DRAFT)) {
+            if ($object->status == SaturneCertificate::STATUS_DRAFT) {
                 print '<span class="butAction" id="actionButtonPendingSignature"><i class="fas fa-check"></i> ' . $langs->trans('Validate') . '</span>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-check"></i> ' . $langs->trans('Validate') . '</span>';
@@ -507,7 +507,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToArchive', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-archive"></i> ' . $langs->trans('Archive') . '</span>';
             }
-            
+
             // Sign
             if ($object->status == SaturneCertificate::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
                 print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element, 3) . '"><i class="fas fa-signature"></i> ' . $langs->trans('Sign') . '</a>';

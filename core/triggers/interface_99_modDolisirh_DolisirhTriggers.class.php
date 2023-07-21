@@ -21,8 +21,11 @@
  * \brief   DoliSIRH trigger.
  */
 
-// Load DoliSIRH libraries.
+// Load Dolibarr libraries.
 require_once DOL_DOCUMENT_ROOT . '/core/triggers/dolibarrtriggers.class.php';
+
+// Load DoliSIRH libraries.
+require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 
 /**
  * Class of triggers for DoliSIRH module.
@@ -89,6 +92,8 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
             return 0; // If module is not enabled, we do nothing.
         }
 
+        saturne_load_langs();
+
         // Data and type of action are stored into $object and $action.
         dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 
@@ -105,7 +110,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $actioncomm->userownerid = $user->id;
         $actioncomm->percentage  = -1;
 
-        if (getDolGlobalInt($conf->global->DOLISIRH_ADVANCED_TRIGGER) && !empty($object->fields)) {
+        if (getDolGlobalInt('DOLISIRH_ADVANCED_TRIGGER') && !empty($object->fields)) {
             $actioncomm->note_private = method_exists($object, 'getTriggerDescription') ? $object->getTriggerDescription($object) : '';
         }
 
@@ -220,7 +225,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 if ($object->src_object_type == 'dolisirh_timesheet') {
                     require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
-                    $signatory = new SaturneSignature($this->db);
+                    $signatory = new SaturneSignature($this->db, 'dolisirh');
 
                     $signatories = $signatory->fetchSignatories($object->src_object_id, 'timesheet');
                     if (!empty($signatories) && $signatories > 0) {
@@ -241,59 +246,35 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 if (!empty($object->fk_user_assign)) {
                     require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
-                    $signatory = new SaturneSignature($this->db);
-                    $usertmp   = new User($this->db);
+                    $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
+                    $userTmp   = new User($this->db);
 
-                    $usertmp->fetch($object->fk_user_assign);
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'TIMESHEET_SOCIETY_ATTENDANT');
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$usertmp->fk_user], 'TIMESHEET_SOCIETY_RESPONSIBLE');
+                    $userTmp->fetch($object->fk_user_assign);
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'Signatory');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'Responsible');
                 }
 
-                if (getDolGlobalInt($conf->global->DOLISIRH_PRODUCT_SERVICE_SET)) {
+                if (getDolGlobalInt('DOLISIRH_PRODUCT_SERVICE_SET')) {
                     require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
-                    $product    = new Product($this->db);
-                    $objectline = new TimeSheetLine($this->db);
+                    $product       = new Product($this->db);
+                    $timeSheetLine = new TimeSheetLine($this->db);
 
-                    $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('MealTicket')))));
-                    $objectline->date_creation  = $object->db->idate($now);
-                    $objectline->qty            = 0;
-                    $objectline->rang           = 1;
-                    $objectline->fk_timesheet   = $object->id;
-                    $objectline->fk_parent_line = 0;
-                    $objectline->fk_product     = $product->id;
-                    $objectline->product_type   = 0;
-                    $objectline->create($user);
+                    $i = 1;
 
-                    $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('JourneySubscription')))));
-                    $objectline->date_creation  = $object->db->idate($now);
-                    $objectline->qty            = 0;
-                    $objectline->rang           = 2;
-                    $objectline->fk_timesheet   = $object->id;
-                    $objectline->fk_parent_line = 0;
-                    $objectline->fk_product     = $product->id;
-                    $objectline->product_type   = 1;
-                    $objectline->create($user);
+                    $timesheetProductAndServices = get_timesheet_product_service();
 
-                    $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('13thMonthBonus')))));
-                    $objectline->date_creation  = $object->db->idate($now);
-                    $objectline->qty            = 0;
-                    $objectline->rang           = 3;
-                    $objectline->fk_timesheet   = $object->id;
-                    $objectline->fk_parent_line = 0;
-                    $objectline->fk_product     = $product->id;
-                    $objectline->product_type   = 1;
-                    $objectline->create($user);
-
-                    $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities('SpecialBonus')))));
-                    $objectline->date_creation  = $object->db->idate($now);
-                    $objectline->qty            = 0;
-                    $objectline->rang           = 4;
-                    $objectline->fk_timesheet   = $object->id;
-                    $objectline->fk_parent_line = 0;
-                    $objectline->fk_product     = $product->id;
-                    $objectline->product_type   = 1;
-                    $objectline->create($user);
+                    foreach ($timesheetProductAndServices as $timesheetProductAndService) {
+                        $product->fetch($conf->global->$timesheetProductAndService['code']);
+                        $timeSheetLine->date_creation  = $object->db->idate($now);
+                        $timeSheetLine->qty            = 0;
+                        $timeSheetLine->rang           = $i++;
+                        $timeSheetLine->fk_timesheet   = $object->id;
+                        $timeSheetLine->fk_parent_line = 0;
+                        $timeSheetLine->fk_product     = $product->id;
+                        $timeSheetLine->product_type   = $timesheetProductAndService['type'];
+                        $timeSheetLine->create($user);
+                    }
                   }
 
                   $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
@@ -305,12 +286,12 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 if (!empty($object->fk_user_assign)) {
                     require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
 
-                    $signatory = new SaturneSignature($this->db, 'dolisirh');
+                    $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
                     $userTmp   = new User($this->db);
 
                     $userTmp->fetch($object->fk_user_assign);
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'CERTIFICATE_SOCIETY_ATTENDANT');
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'CERTIFICATE_SOCIETY_RESPONSIBLE');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'Signatory');
+                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'Responsible');
                 }
 
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
@@ -336,6 +317,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // VALIDATE
             case 'TIMESHEET_VALIDATE' :
+            case 'CERTIFICATE_VALIDATE' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_VALIDATE';
                 $actioncomm->label = $langs->trans('ObjectValidateTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
@@ -343,6 +325,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // UNVALIDATE
             case 'TIMESHEET_UNVALIDATE' :
+            case 'CERTIFICATE_UNVALIDATE' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_UNVALIDATE';
                 $actioncomm->label = $langs->trans('ObjectUnValidateTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
@@ -350,6 +333,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // LOCK
             case 'TIMESHEET_LOCK' :
+            case 'CERTIFICATE_LOCK' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_LOCK';
                 $actioncomm->label = $langs->trans('ObjectLockedTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
@@ -357,13 +341,22 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             // ARCHIVE
             case 'TIMESHEET_ARCHIVE' :
+            case 'CERTIFICATE_ARCHIVE' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_ARCHIVE';
                 $actioncomm->label = $langs->trans('ObjectArchivedTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
                 break;
 
+            // EXPIRE
+            case 'CERTIFICATE_EXPIRE' :
+                $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_EXPIRE';
+                $actioncomm->label = $langs->trans('ObjectExpiredTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
+                $actioncomm->create($user);
+                break;
+
             // SENTBYMAIL
             case 'TIMESHEET_SENTBYMAIL' :
+            case 'CERTIFICATE_SENTBYMAIL' :
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_SENTBYMAIL';
                 $actioncomm->label = $langs->trans('ObjectSentByMailTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);

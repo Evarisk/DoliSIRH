@@ -388,7 +388,7 @@ class TimeSheetLine extends SaturneObject
      * @var int Does this object support multicompany module ?
      * 0 = No test on entity, 1 = Test with field entity, 'field@table' = Test with link by field@table.
      */
-    public int $ismultientitymanaged = 1;
+    public int $ismultientitymanaged = 0;
 
     /**
      * @var int Does object support extrafields ? 0 = No, 1 = Yes.
@@ -438,6 +438,7 @@ class TimeSheetLine extends SaturneObject
      */
     public array $fields = [
         'rowid'          => ['type' => 'integer',  'label' => 'TechnicalID',  'enabled' => 1, 'position' => 1,  'notnull' => 1, 'visible' => 0, 'noteditable' => 1, 'index' => 1, 'css' => 'left', 'comment' => 'Id'],
+        'entity'         => ['type' => 'integer',  'label' => 'Entity',       'enabled' => 1, 'position' => 5,  'notnull' => 1, 'visible' => 0],
         'date_creation'  => ['type' => 'datetime', 'label' => 'DateCreation', 'enabled' => 1, 'position' => 10, 'notnull' => 1, 'visible' => 0],
         'qty'            => ['type' => 'real',     'label' => 'Quantity',     'enabled' => 1, 'position' => 20, 'notnull' => 0, 'visible' => 0],
         'rang'           => ['type' => 'integer',  'label' => 'Order',        'enabled' => 1, 'position' => 30, 'notnull' => 0, 'visible' => 0, 'default' => 0],
@@ -454,14 +455,19 @@ class TimeSheetLine extends SaturneObject
     public int $rowid;
 
     /**
+     * @var int Entity.
+     */
+    public $entity;
+
+    /**
      * @var int|string Creation date.
      */
     public $date_creation;
 
     /**
-     * @var float Quantity.
+     * @var float|null Quantity.
      */
-    public float $qty;
+    public ?float $qty;
 
     /**
      * @var int Rang.
@@ -471,7 +477,7 @@ class TimeSheetLine extends SaturneObject
     /**
      * @var string Description.
      */
-    public string $description;
+    public string $description = '';
 
     /**
      * @var int|null Product type.
@@ -501,44 +507,5 @@ class TimeSheetLine extends SaturneObject
     public function __construct(DoliDB $db)
     {
         parent::__construct($db, $this->module, $this->element);
-    }
-
-    /**
-     * Load object in memory from the database.
-     *
-     * @param  int|string  $id        ID object.
-     * @param  string|null $ref       Ref.
-     * @param  string      $morewhere More SQL filters (' AND ...').
-     * @return int                    0 < if KO, 0 if not found, > 0 if OK.
-     */
-    public function fetch($id, string $ref = null, string $morewhere = ''): int
-    {
-        $sql  = 'SELECT tsd.rowid, tsd.date_creation, tsd.qty, tsd.rang, tsd.description, tsd.product_type,';
-        $sql .= ' tsd.fk_timesheet, tsd.fk_product, tsd.fk_parent_line';
-        $sql .= ' FROM ' . MAIN_DB_PREFIX . 'dolisirh_timesheetdet as tsd';
-        $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON tsd.fk_product = p.rowid';
-        $sql .= ' WHERE tsd.rowid = ' . $id;
-
-        $result = $this->db->query($sql);
-        if ($result) {
-            $objp = $this->db->fetch_object($result);
-
-            $this->id             = $objp->rowid;
-            $this->date_creation  = $objp->date_creation;
-            $this->qty            = $objp->qty;
-            $this->rang           = $objp->rang;
-            $this->description    = $objp->description;
-            $this->product_type   = $objp->product_type;
-            $this->fk_timesheet   = $objp->fk_timesheet;
-            $this->fk_product     = $objp->fk_product;
-            $this->fk_parent_line = $objp->fk_parent_line;
-
-            $this->db->free($result);
-
-            return $this->id;
-        } else {
-            $this->error = $this->db->lasterror();
-            return -1;
-        }
     }
 }

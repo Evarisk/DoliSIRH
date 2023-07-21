@@ -138,13 +138,13 @@ function get_task_progress_color_class(float $progress): string
  * Function to return number of days between two dates (date must be UTC date !).
  * Example: 2012-01-01 2012-01-02 => 1 if lastday = 0, 2 if lastday = 1.
  *
- * @param   int $timestampStart  Timestamp start UTC.
- * @param   int $timestampEnd    Timestamp end UTC.
- * @param   int $lastDay         Last day is included, 0: no, 1:yes.
- * @return  int $daysNumber      Number of days.
- * @seealso num_public_holiday()
+ * @param   int $timestampStart Timestamp start UTC.
+ * @param   int $timestampEnd   Timestamp end UTC.
+ * @param   int $lastDay        Last day is included, 0: no, 1:yes.
+ * @return  int $daysNumber     Number of days.
+ * @seealso num_between_day(), num_public_holiday()
  */
-function dolisirh_num_between_day(int $timestampStart, int$timestampEnd, int $lastDay = 0): int
+function dolisirh_num_between_days(int $timestampStart, int $timestampEnd, int $lastDay = 0): int
 {
     $daysNumber = 0;
     if ($timestampStart <= $timestampEnd) {
@@ -152,4 +152,101 @@ function dolisirh_num_between_day(int $timestampStart, int$timestampEnd, int $la
     }
 
     return $daysNumber;
+}
+
+/**
+ * Get all HR project tasks info.
+ *
+ * @return array
+ */
+function get_hr_project_tasks(): array
+{
+    return [
+        [
+            'name'     => 'Holidays',
+            'code'     => 'DOLISIRH_HOLIDAYS_TASK',
+            'position' => 1
+        ],
+        [
+            'name'     => 'PaidHolidays',
+            'code'     => 'DOLISIRH_PAID_HOLIDAYS_TASK',
+            'position' => 10
+        ],
+        [
+            'name'     => 'SickLeave',
+            'code'     => 'DOLISIRH_SICK_LEAVE_TASK',
+            'position' => 40
+        ],
+        [
+            'name'     => 'PublicHoliday',
+            'code'     => 'DOLISIRH_PUBLIC_HOLIDAY_TASK',
+            'position' => 30
+        ],
+        [
+            'name'     => 'RTT',
+            'code'     => 'DOLISIRH_RTT_TASK',
+            'position' => 20
+        ],
+        [
+            'name' => 'InternalMeeting',
+            'code' => 'DOLISIRH_INTERNAL_MEETING_TASK'
+        ],
+        [
+            'name' => 'InternalTraining',
+            'code' => 'DOLISIRH_INTERNAL_TRAINING_TASK'
+        ],
+        [
+            'name' => 'ExternalTraining',
+            'code' => 'DOLISIRH_EXTERNAL_TRAINING_TASK'
+        ],
+        [
+            'name' => 'AutomaticTimeSpending',
+            'code' => 'DOLISIRH_AUTOMATIC_TIMESPENDING_TASK'
+        ],
+        [
+            'name' => 'Miscellaneous',
+            'code' => 'DOLISIRH_MISCELLANEOUS_TASK'
+        ]
+    ];
+}
+
+/**
+ * Get all product or service for timesheet line.
+ *
+ * @return array
+ */
+function get_timesheet_product_service(): array
+{
+    return [
+        [
+            'name' => 'MealTicket',
+            'code' => 'DOLISIRH_MEAL_TICKET',
+            'type' => 0
+        ],
+        [
+            'name' => 'JourneySubscription',
+            'code' => 'DOLISIRH_JOURNEY_SUBSCRIPTION',
+            'type' => 1
+        ],
+        [
+            'name' => '13thMonthBonus',
+            'code' => 'DOLISIRH_13TH_MONTH_BONUS',
+            'type' => 1
+        ],
+        [
+            'name' => 'SpecialBonus',
+            'code' => 'DOLISIRH_SPECIAL_BONUS',
+            'type' => 1
+        ],
+        [
+            'name' => 'MealBaskets',
+            'code' => 'DOLISIRH_MEAL_BASKETS',
+            'type' => 1
+        ],
+        [
+            'name' => 'TeleworkingPackage',
+            'code' => 'DOLISIRH_TELEWORKING_PACKAGE',
+            'type' => 1
+        ]
+    ];
 }
