@@ -255,38 +255,47 @@ class modDoliSIRH extends DolibarrModules
             'langs' => 'dolisirh@dolisirh',
             // List of tables we want to see into dictionary editor.
             'tabname' => [
-                MAIN_DB_PREFIX . 'c_timesheet_attendants_role'
+                MAIN_DB_PREFIX . 'c_timesheet_attendants_role',
+                MAIN_DB_PREFIX . 'c_certificate_attendants_role'
             ],
             // Label of tables.
             'tablib' => [
                 'Timesheet',
+                'Certificate'
             ],
             // Request to select fields.
             'tabsql' => [
+                'SELECT f.rowid as rowid, f.ref, f.label, f.description, f.position, f.active FROM ' . MAIN_DB_PREFIX . 'c_timesheet_attendants_role as f',
                 'SELECT f.rowid as rowid, f.ref, f.label, f.description, f.position, f.active FROM ' . MAIN_DB_PREFIX . 'c_timesheet_attendants_role as f'
             ],
             // Sort order.
             'tabsqlsort' => [
-                'label ASC'
+                'position ASC',
+                'position ASC'
             ],
             // List of fields (result of select to show dictionary).
             'tabfield' => [
+                'ref,label,description,position',
                 'ref,label,description,position'
             ],
             // List of fields (list of fields to edit a record).
             'tabfieldvalue' => [
+                'ref,label,description,position',
                 'ref,label,description,position'
             ],
             // List of fields (list of fields for insert).
             'tabfieldinsert' => [
+                'ref,label,description,position',
                 'ref,label,description,position'
             ],
             // Name of columns with primary key (try to always name it 'rowid').
             'tabrowid' => [
+                'rowid',
                 'rowid'
             ],
             // Condition to show each dictionary.
             'tabcond' => [
+                $conf->dolisirh->enabled,
                 $conf->dolisirh->enabled
             ]
         ];
