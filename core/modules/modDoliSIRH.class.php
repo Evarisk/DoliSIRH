@@ -159,7 +159,7 @@ class modDoliSIRH extends DolibarrModules
         $this->hidden = false;
 
         // List of module class names as string that must be enabled if this module is enabled. Example: array('always1'=>'modModuleToEnable1','always2'=>'modModuleToEnable2', 'FR1'=>'modModuleToEnableFR'...).
-        $this->depends      = ['modProjet', 'modBookmark', 'modHoliday', 'modFckeditor', 'modSalaries', 'modProduct', 'modService', 'modSociete', 'modECM', 'modCategorie', 'modSaturne'];
+        $this->depends      = ['modProjet', 'modBookmark', 'modHoliday', 'modFckeditor', 'modSalaries', 'modProduct', 'modService', 'modSociete', 'modECM', 'modCategorie', 'modSaturne', 'modCron'];
         $this->requiredby   = []; // List of module class names as string to disable if this one is disabled. Example: array('modModuleToDisable1', ...).
         $this->conflictwith = []; // List of module class names as string this module is in conflict with. Example: array('modModuleToDisable1', ...).
 
@@ -294,7 +294,23 @@ class modDoliSIRH extends DolibarrModules
         $this->boxes = [];
 
         // Cronjobs (List of cron jobs entries to add when module is enabled).
-        $this->boxes = [];
+        // unit_frequency must be 60 for minute, 3600 for hour, 86400 for day, 604800 for week.
+        $this->cronjobs = [
+            0 => [
+                'label'         => $langs->transnoentities('checkDateEndJob'),
+                'jobtype'       => 'method',
+                'class'         => '/saturne/class/saturnecertificate.class.php',
+                'objectname'    => 'SaturneCertificate',
+                'method'        => 'checkDateEnd',
+                'parameters'    => 'certificate',
+                'comment'       => $langs->transnoentities('checkDateEndJobComment'),
+                'frequency'     => 1,
+                'unitfrequency' => 86400,
+                'status'        => 1,
+                'test'          => '$conf->saturne->enabled && $conf->dolisirh->enabled',
+                'priority'      => 50
+            ]
+        ];
 
         // Permissions provided by this module.
         $this->rights = [];
