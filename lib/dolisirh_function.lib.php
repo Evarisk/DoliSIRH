@@ -163,24 +163,29 @@ function get_hr_project_tasks(): array
 {
     return [
         [
-            'name' => 'Holidays',
-            'code' => 'DOLISIRH_HOLIDAYS_TASK'
+            'name'     => 'Holidays',
+            'code'     => 'DOLISIRH_HOLIDAYS_TASK',
+            'position' => 1
         ],
         [
-            'name' => 'PaidHolidays',
-            'code' => 'DOLISIRH_PAID_HOLIDAYS_TASK'
+            'name'     => 'PaidHolidays',
+            'code'     => 'DOLISIRH_PAID_HOLIDAYS_TASK',
+            'position' => 10
         ],
         [
-            'name' => 'SickLeave',
-            'code' => 'DOLISIRH_SICK_LEAVE_TASK'
+            'name'     => 'SickLeave',
+            'code'     => 'DOLISIRH_SICK_LEAVE_TASK',
+            'position' => 40
         ],
         [
-            'name' => 'PublicHoliday',
-            'code' => 'DOLISIRH_PUBLIC_HOLIDAY_TASK'
+            'name'     => 'PublicHoliday',
+            'code'     => 'DOLISIRH_PUBLIC_HOLIDAY_TASK',
+            'position' => 30
         ],
         [
-            'name' => 'RTT',
-            'code' => 'DOLISIRH_RTT_TASK'
+            'name'     => 'RTT',
+            'code'     => 'DOLISIRH_RTT_TASK',
+            'position' => 20
         ],
         [
             'name' => 'InternalMeeting',
