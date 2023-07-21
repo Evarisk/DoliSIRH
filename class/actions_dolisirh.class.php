@@ -999,7 +999,7 @@ class ActionsDoliSIRH
      */
     public function constructCategory(array $parameters)
     {
-        if (in_array($parameters['currentcontext'], ['category', 'invoicecard', 'invoicereccard', 'timesheetcard', 'invoicelist', 'invoicereclist'])) {
+        if (in_array($parameters['currentcontext'], ['category', 'invoicecard', 'invoicereccard', 'timesheetcard', 'certificatecard', 'invoicelist', 'invoicereclist'])) {
             $tags = [
                 'facture' => [
                     'id' => 436370001,
@@ -1018,12 +1018,18 @@ class ActionsDoliSIRH
                     'code' => 'timesheet',
                     'obj_class' => 'TimeSheet',
                     'obj_table' => 'dolisirh_timesheet',
+                ],
+                'certificate' => [
+                    'id' => 436370003,
+                    'code' => 'certificate',
+                    'obj_class' => 'Certificate',
+                    'obj_table' => 'saturne_object_certificate',
                 ]
             ];
 
-            $this->results = $tags;
-        }
-    }
+			$this->results = $tags;
+		}
+	}
 
 	/**
 	 * Overloading the formObjectOptions function : replacing the parent's function with the one below

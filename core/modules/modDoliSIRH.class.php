@@ -65,10 +65,10 @@ class modDoliSIRH extends DolibarrModules
 
         // Gives the possibility for the module, to provide his own family info and position of this family (Overwrite $this->family and $this->module_position. Avoid this)
         $this->familyinfo = ['Evarisk' => ['position' => '01', 'label' => $langs->trans('Evarisk')]];
-        // Module label (no space allowed), used if translation string 'ModuleDoliSMQName' not found (DoliSMQ is name of module).
+        // Module label (no space allowed), used if translation string 'ModuleDoliSIRHName' not found (DoliSIRH is name of module).
         $this->name = preg_replace('/^mod/i', '', get_class($this));
 
-        // Module description, used if translation string 'ModuleDoliSMQDesc' not found (DoliSMQ is name of module).
+        // Module description, used if translation string 'ModuleDoliSIRHDesc' not found (DoliSIRH is name of module).
         $this->description = $langs->trans('DoliSIRHDescription');
         // Used only if file README.md and README-LL.md not found.
         $this->descriptionlong = $langs->trans('DoliSIRHDescriptionLong');
@@ -83,7 +83,7 @@ class modDoliSIRH extends DolibarrModules
         // Url to the file with your last numberversion of this module.
         //$this->url_last_version = 'http://www.example.com/versionmodule.txt';
 
-        // Key used in llx_const table to save module status enabled/disabled (where DOLISMQ is value of property name of module in uppercase).
+        // Key used in llx_const table to save module status enabled/disabled (where DoliSIRH is value of property name of module in uppercase).
         $this->const_name  = 'MAIN_MODULE_' . strtoupper($this->name);
 
         // Name of image file used for this module.
@@ -178,8 +178,8 @@ class modDoliSIRH extends DolibarrModules
 
         // Constants.
         // List of particular constants to add when module is enabled (key, 'chaine', value, desc, visible, 'current' or 'allentities', deleteonunactive).
-        // Example: $this->const=array(1 => array('DOLISMQ_MYNEWCONST1', 'chaine', 'myvalue', 'This is a constant to add', 1),
-        //                             2 => array('DOLISMQ_MYNEWCONST2', 'chaine', 'myvalue', 'This is another constant to add', 0, 'current', 1)
+        // Example: $this->const=array(1 => array('DoliSIRH_MYNEWCONST1', 'chaine', 'myvalue', 'This is a constant to add', 1),
+        //                             2 => array('DoliSIRH_MYNEWCONST2', 'chaine', 'myvalue', 'This is another constant to add', 0, 'current', 1)
         // );
         $i = 0;
         $this->const = [
@@ -244,7 +244,7 @@ class modDoliSIRH extends DolibarrModules
 
         // Array to add new pages in new tabs.
         // Example:
-        // $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@dolimeet:$user->rights->othermodule->read:/dolimeet/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
+        // $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@dolisirh:$user->rights->othermodule->read:/dolisirh/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
         // $this->tabs[] = array('data'=>'objecttype:-tabname:NU:conditiontoremove');
         $this->tabs   = [];
         $pictoPath    = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
@@ -302,7 +302,7 @@ class modDoliSIRH extends DolibarrModules
         ];
 
         // Boxes/Widgets
-        // Add here list of php file(s) stored in dolismq/core/boxes that contains a class to show a widget.
+        // Add here list of php file(s) stored in dolisirh/core/boxes that contains a class to show a widget.
         $this->boxes = [];
 
         // Cronjobs (List of cron jobs entries to add when module is enabled).
@@ -439,6 +439,37 @@ class modDoliSIRH extends DolibarrModules
             'position' => 1000 + $r,
             'enabled'  => '$conf->dolisirh->enabled && $conf->categorie->enabled',
             'perms'    => '$user->rights->dolisirh->lire && $user->rights->dolisirh->timesheet->read && $user->rights->categorie->lire',
+            'target'   => '',
+            'user'     => 0,
+        ];
+
+        $this->menu[$r++] = [
+            'fk_menu'  => 'fk_mainmenu=dolisirh',
+            'type'     => 'left',
+            'titre'    => $langs->trans('Certificate'),
+            'prefix'   => '<i class="fas fa-user-graduate pictofixedwidth"></i>',
+            'mainmenu' => 'dolisirh',
+            'leftmenu' => 'certificate',
+            'url'      => '/dolisirh/view/certificate/certificate_list.php',
+            'langs'    => 'dolisirh@dolisirh',
+            'position' => 1000 + $r,
+            'enabled'  => '$conf->dolisirh->enabled',
+            'perms'    => '$user->rights->dolisirh->certificate->read',
+            'target'   => '',
+            'user'     => 0,
+        ];
+
+        $this->menu[$r++] = [
+            'fk_menu'  => 'fk_mainmenu=dolisirh,fk_leftmenu=certificate',
+            'type'     => 'left',
+            'titre'    => '<i class="fas fa-tags pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('Categories'),
+            'mainmenu' => 'dolisirh',
+            'leftmenu' => 'certificatetags',
+            'url'      => '/categories/index.php?type=certificate',
+            'langs'    => 'dolisirh@dolisirh',
+            'position' => 1000 + $r,
+            'enabled'  => '$conf->dolisirh->enabled && $conf->categorie->enabled',
+            'perms'    => '$user->rights->dolisirh->lire && $user->rights->dolisirh->certificate->read && $user->rights->categorie->lire',
             'target'   => '',
             'user'     => 0,
         ];

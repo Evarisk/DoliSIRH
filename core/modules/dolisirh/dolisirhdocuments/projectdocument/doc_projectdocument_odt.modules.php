@@ -35,7 +35,7 @@ require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 require_once __DIR__ . '/../../../../../../saturne/class/saturnesignature.class.php';
 require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
 
-// Load DoliSMQ libraries.
+// Load DoliSIRH libraries.
 require_once __DIR__ . '/mod_projectdocument_standard.php';
 
 /**
