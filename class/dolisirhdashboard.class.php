@@ -177,10 +177,11 @@ class DolisirhDashboard
         $array['picto'] = 'clock';
 
         // Graph parameters
-        $array['width']   = 800;
-        $array['height']  = 400;
-        $array['type']    = 'bars';
-        $array['dataset'] = 2;
+        $array['width']      = '100%';
+        $array['height']     = 400;
+        $array['type']       = 'bars';
+        $array['showlegend'] = 1;
+        $array['dataset']    = 2;
 
         $array['labels'] = [
             0 => [
@@ -263,7 +264,7 @@ class DolisirhDashboard
         $array['picto'] = 'projecttask';
 
         // Graph parameters
-        $array['width']   = 800;
+        $array['width']   = '100%';
         $array['height']  = 400;
         $array['type']    = 'pie';
         $array['dataset'] = 2;
