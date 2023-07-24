@@ -685,11 +685,7 @@ class modDoliSIRH extends DolibarrModules
 
             foreach ($timesheetProductAndServices as $timesheetProductAndService) {
                 $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities($timesheetProductAndService['name'])))));
-                if (isModEnabled('barcode')) {
-                    $product->barcode = -1;
-                }
-                $productID = $product->create($user);
-                dolibarr_set_const($this->db, $timesheetProductAndService['code'], $productID, 'integer', 0, '', $conf->entity);
+                dolibarr_set_const($this->db, $timesheetProductAndService['code'], $product->id, 'integer', 0, '', $conf->entity);
             }
 
             dolibarr_set_const($this->db, 'DOLISIRH_BACKWARD_COMPATIBILITY_PRODUCT_SERVICE', 1, 'integer', 0, '', $conf->entity);
