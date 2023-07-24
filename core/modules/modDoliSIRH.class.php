@@ -162,7 +162,7 @@ class modDoliSIRH extends DolibarrModules
         $this->hidden = false;
 
         // List of module class names as string that must be enabled if this module is enabled. Example: array('always1'=>'modModuleToEnable1','always2'=>'modModuleToEnable2', 'FR1'=>'modModuleToEnableFR'...).
-        $this->depends      = ['modProjet', 'modBookmark', 'modHoliday', 'modFckeditor', 'modSalaries', 'modProduct', 'modService', 'modSociete', 'modECM', 'modCategorie', 'modSaturne', 'modCron', 'modAgenda'];
+        $this->depends      = ['modProjet', 'modBookmark', 'modHoliday', 'modFckeditor', 'modSalaries', 'modProduct', 'modService', 'modSociete', 'modECM', 'modCategorie', 'modSaturne', 'modCron'];
         $this->requiredby   = []; // List of module class names as string to disable if this one is disabled. Example: array('modModuleToDisable1', ...).
         $this->conflictwith = []; // List of module class names as string this module is in conflict with. Example: array('modModuleToDisable1', ...).
 
@@ -685,6 +685,9 @@ class modDoliSIRH extends DolibarrModules
 
             foreach ($timesheetProductAndServices as $timesheetProductAndService) {
                 $product->fetch('', dol_sanitizeFileName(dol_string_nospecial(trim($langs->transnoentities($timesheetProductAndService['name'])))));
+                if (isModEnabled('barcode')) {
+                    $product->barcode = -1;
+                }
                 $productID = $product->create($user);
                 dolibarr_set_const($this->db, $timesheetProductAndService['code'], $productID, 'integer', 0, '', $conf->entity);
             }

@@ -170,7 +170,10 @@ if (GETPOST('create_timesheet_product_service', 'alpha')) {
             $product->ref   = $langs->transnoentities($timesheetProductAndService['name']);
             $product->label = $langs->transnoentities($timesheetProductAndService['name']);
             $product->type  = $timesheetProductAndService['type'];
-            $productID      = $product->create($user);
+            if (isModEnabled('barcode')) {
+                $product->barcode = -1;
+            }
+            $productID = $product->create($user);
             dolibarr_set_const($db, $timesheetProductAndService['code'], $productID, 'integer', 0, '', $conf->entity);
         }
 
