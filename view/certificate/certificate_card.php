@@ -181,22 +181,9 @@ if ($action == 'create') {
     }
     if (isModEnabled('product')) {
         $object->fields['element_type']['arrayofkeyval']['product'] = $langs->trans('Product');
-    } ?>
+    }
 
-    <script>
-    $(document).ready(function(){
-        $('#element_type').on('change', function(){
-            let value = $(this).val();
-            let url = new URL(document.URL)
-            let search_params = url.searchParams;
-            search_params.set('element_type', value);
-            url.search = search_params.toString();
-            location.href = url.toString()
-        });
-    });
-    </script>
-
-    <?php switch (GETPOST('element_type')) {
+    switch (GETPOST('element_type')) {
         case 'user' :
             $object->fields['fk_element']['type']    = 'integer:User:user/class/user.class.php';
             $object->fields['fk_element']['picto']   = 'user';
@@ -258,22 +245,9 @@ if (($id || $ref) && $action == 'edit') {
     }
     if (isModEnabled('product')) {
         $object->fields['element_type']['arrayofkeyval']['product'] = $langs->trans('Product');
-    } ?>
+    }
 
-    <script>
-        $(document).ready(function(){
-            $('#element_type').on('change', function(){
-                let value = $(this).val();
-                let url = new URL(document.URL)
-                let search_params = url.searchParams;
-                search_params.set('element_type', value);
-                url.search = search_params.toString();
-                location.href = url.toString()
-            });
-        });
-    </script>
-
-    <?php switch (GETPOST('element_type')) {
+    switch (GETPOST('element_type')) {
         case 'user' :
             $object->fields['fk_element']['type']    = 'integer:User:user/class/user.class.php';
             $object->fields['fk_element']['picto']   = 'user';
@@ -421,7 +395,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // Modify.
             $displayButton = $onPhone ? '<i class="fas fa-edit fa-2x"></i>' : '<i class="fas fa-edit"></i>' . ' ' . $langs->trans('Modify');
             if ($object->status == SaturneCertificate::STATUS_DRAFT) {
-                print '<a class="butAction" id="actionButtonEdit" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=edit' . '">' . $displayButton . '</a>';
+                print '<a class="butAction" id="actionButtonEdit" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . ((dol_strlen($object->element_type) > 0) ? '&element_type=' . $object->element_type : '') . '&action=edit' . '">' . $displayButton . '</a>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
