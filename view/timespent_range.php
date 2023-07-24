@@ -242,19 +242,12 @@ if (empty($resHook)) {
         $action = '';
     }
 
-    if ($action == 'add_time' && $permissiontoRead && GETPOST('assigntask')) {
+    if ($action == 'add_time' && $permissiontoRead && GETPOST('assigned_task_id') > 0) {
         $action = 'assign_task';
         $error  = 0;
 
-        if ($taskID > 0) {
-            $result = $task->fetch($taskID);
-            if ($result < 0) {
-                $error++;
-            }
-        } else {
-            setEventMessages($langs->transnoentitiesnoconv('ErrorFieldRequired', $langs->transnoentitiesnoconv('Task')), [], 'errors');
-            $error++;
-        }
+        $task->fetch(GETPOST('assigned_task_id'));
+
         if (!GETPOST('type')) {
             setEventMessages($langs->transnoentitiesnoconv('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), [], 'errors');
             $error++;
@@ -462,7 +455,7 @@ if ($userTmp->id != $user->id) {
 }
 print '<div class="taskiddiv inline-block">';
 print img_picto('', 'projecttask', 'class="pictofixedwidth"');
-$formProject->selectTasks(-1, $taskID, 'task_id', 32, 0, '-- ' . $langs->trans('ChooseANotYetAssignedTask') . ' --', 1, 0, 0, '', '', 'all', $userTmp);
+$formProject->selectTasks(-1, $taskID, 'assigned_task_id', 32, 0, '-- ' . $langs->trans('ChooseANotYetAssignedTask') . ' --', 1, 0, 0, '', '', 'all', $userTmp);
 print '</div>';
 print ' ' . $formCompany->selectTypeContact($task, 46, 'type', 'internal', 'rowid', 0, 'maxwidth150onsmartphone');
 print '<input type="submit" class="button valignmiddle smallonsmartphone" name="assigntask" value="' . dol_escape_htmltag($titleAssignTask) . '">';
