@@ -127,13 +127,16 @@ class doc_certificatedocument_odt extends SaturneDocumentModel
         }
 
         $signatory = $signatory->fetchSignatory('Responsible', $object->id, $object->element);
+        if (is_array($signatory) && !empty($signatory)) {
+            $signatory = array_shift($signatory);
+        }
         if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
             if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
                 $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
                 $encodedImage = explode(',', $signatory->signature)[1];
                 $decodedImage = base64_decode($encodedImage);
-                file_put_contents($tempDir . 'signature.png', $decodedImage);
-                $tmpArray['responsible_signature'] = $tempDir . 'signature.png';
+                file_put_contents($tempDir . 'signature2.png', $decodedImage);
+                $tmpArray['responsible_signature'] = $tempDir . 'signature2.png';
             } else {
                 $tmpArray['responsible_signature'] = '';
             }
