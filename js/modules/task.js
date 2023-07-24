@@ -17,7 +17,7 @@
  */
 
 /**
- * \file    js/dolisirh.js
+ * \file    js/task.js
  * \ingroup dolisirh
  * \brief   JavaScript task file for module DoliSIRH.
  */
