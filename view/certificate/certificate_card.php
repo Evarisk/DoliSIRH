@@ -50,7 +50,7 @@ $ref                 = GETPOST('ref', 'alpha');
 $action              = GETPOST('action', 'aZ09');
 $confirm             = GETPOST('confirm', 'alpha');
 $cancel              = GETPOST('cancel', 'aZ09');
-$contextpage         = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'certificatecard'; // To manage different context of search
+$contextPage         = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'certificatecard'; // To manage different context of search.
 $backtopage          = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 
@@ -58,7 +58,7 @@ $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $object      = new Certificate($db);
 $signatory   = new SaturneSignature($db, 'dolisirh', $object->element);
 $document    = new CertificateDocument($db);
-$extrafields = new ExtraFields($db);
+$extraFields = new ExtraFields($db);
 
 // Initialize view objects.
 $form = new Form($db);
@@ -66,16 +66,16 @@ $form = new Form($db);
 $hookmanager->initHooks(['certificatecard', 'globalcard']); // Note that conf->hooks_modules contains array.
 
 // Fetch optionals attributes and labels.
-$extrafields->fetch_name_optionals_label($object->table_element);
+$extraFields->fetch_name_optionals_label($object->table_element);
 
-$search_array_options = $extrafields->getOptionalsFromPost($object->table_element, '', 'search_');
+$search_array_options = $extraFields->getOptionalsFromPost($object->table_element, '', 'search_');
 
 // Initialize array of search criterias.
-$search_all = GETPOST('search_all', 'alpha');
-$search     = [];
+$searchAll = GETPOST('search_all', 'alpha');
+$search    = [];
 foreach ($object->fields as $key => $val) {
-    if (GETPOST('search_'.$key, 'alpha')) {
-        $search[$key] = GETPOST('search_'.$key, 'alpha');
+    if (GETPOST('search_' . $key, 'alpha')) {
+        $search[$key] = GETPOST('search_' . $key, 'alpha');
     }
 }
 
@@ -83,19 +83,19 @@ if (empty($action) && empty($id) && empty($ref)) {
     $action = 'view';
 }
 
-// Load object
+// Load object.
 include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be included, not include_once.
 
 $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
 
-// Security check - Protection if external user
-$permissiontoread   = $user->rights->dolisirh->certificate->read;
+// Security check - Protection if external user.
+$permissionToRead   = $user->rights->dolisirh->certificate->read;
 $permissiontoadd    = $user->rights->dolisirh->certificate->write;
 $permissiontodelete = $user->rights->dolisirh->certificate->delete || ($permissiontoadd && isset($object->status) && $object->status == SaturneCertificate::STATUS_DRAFT);
-saturne_check_access($permissiontoread);
+saturne_check_access($permissionToRead);
 
 /*
- * Actions
+ * Actions.
  */
 
 $parameters = [];
@@ -124,7 +124,7 @@ if (empty($reshook)) {
     include DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
 
     // Actions save_project.
-    include __DIR__ . '/../../../saturne/core/tpl/actions/edit_project_action.tpl.php';
+    require_once __DIR__ . '/../../../saturne/core/tpl/actions/edit_project_action.tpl.php';
 
     // Actions builddoc, forcebuilddoc, remove_file.
     require_once __DIR__ . '/../../../saturne/core/tpl/documents/documents_action.tpl.php';
@@ -139,11 +139,11 @@ if (empty($reshook)) {
     $triggersendname = strtoupper($object->element) . '_SENTBYMAIL';
     $autocopy        = 'MAIN_MAIL_AUTOCOPY_' . strtoupper($object->element) . '_TO';
     $trackid         = $object->element . $object->id;
-    include DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
+    require_once DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
 }
 
 /*
- * View
+ * View.
  */
 
 $title    = $langs->trans(ucfirst($object->element));
@@ -211,11 +211,19 @@ if ($action == 'create') {
             break;
     }
 
-    // Common attributes
-    include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
+    // Common attributes.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
 
-    // Other attributes
-    include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_add.tpl.php';
+    // Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
+        $cateArbo = $form->select_all_categories($object->element, '', 'parent', 64, 0, 1);
+        print img_picto('', 'category') . $form::multiselectarray('categories', $cateArbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx');
+        print '</td></tr>';
+    }
+
+    // Other attributes.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_add.tpl.php';
 
     print '</table>';
 
@@ -281,10 +289,26 @@ if (($id || $ref) && $action == 'edit') {
     }
 
     // Common attributes.
-    include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
+
+    // Tags-Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
+        $cateArbo      = $form->select_all_categories($object->element, '', 'parent', 64, 0, 1);
+        $categorie     = new Categorie($db);
+        $cats          = $categorie->containing($object->id, $object->element);
+        $arraySelected = [];
+        if (is_array($cats)) {
+            foreach ($cats as $cat) {
+                $arraySelected[] = $cat->id;
+            }
+        }
+        print img_picto('', 'category') . $form::multiselectarray('categories', $cateArbo, $arraySelected, '', 0, 'quatrevingtpercent widthcentpercentminusx');
+        print '</td></tr>';
+    }
 
     // Other attributes.
-    include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
 
     print '</table>';
 
@@ -302,43 +326,51 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     saturne_get_fiche_head($object, 'card', $title);
     saturne_banner_tab($object);
 
-    $formconfirm = '';
+    $formConfirm = '';
 
-    // setDraft confirmation.
+    // Draft confirmation.
     if (($action == 'draft' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
-        $formconfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&object_type=' . $object->element, $langs->trans('ReOpenObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmReOpenObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_setdraft', '', 'yes', 'actionButtonInProgress', 350, 600);
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ReOpenObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmReOpenObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_setdraft', '', 'yes', 'actionButtonInProgress', 350, 600);
     }
-
-    // setPendingSignature confirmation.
+    // Pending signature confirmation.
     if (($action == 'pending_signature' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
-        $formconfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&object_type=' . $object->element, $langs->trans('ValidateObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmValidateObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_validate', '', 'yes', 'actionButtonPendingSignature', 350, 600);
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ValidateObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmValidateObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_validate', '', 'yes', 'actionButtonPendingSignature', 350, 600);
     }
-
-    // Confirmation to delete.
+    // Lock confirmation
+    if (($action == 'lock' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('LockObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmLockObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_lock', '', 'yes', 'actionButtonLock', 350, 600);
+    }
+    // Delete confirmation.
     if ($action == 'delete') {
-        $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('DeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmDeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_delete', '', 'yes', 1);
+        $formConfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('DeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmDeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_delete', '', 'yes', 1);
     }
 
     // Call Hook formConfirm.
-    $parameters = ['formConfirm' => $formconfirm];
+    $parameters = ['formConfirm' => $formConfirm];
     $reshook    = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
     if (empty($reshook)) {
-        $formconfirm .= $hookmanager->resPrint;
+        $formConfirm .= $hookmanager->resPrint;
     } elseif ($reshook > 0) {
-        $formconfirm = $hookmanager->resPrint;
+        $formConfirm = $hookmanager->resPrint;
     }
 
     // Print form confirm.
-    print $formconfirm;
+    print $formConfirm;
+
+    if ($conf->browser->layout == 'phone') {
+        $onPhone = 1;
+    } else {
+        $onPhone = 0;
+    }
 
     print '<div class="fichecenter">';
     print '<div class="fichehalfleft">';
     print '<table class="border centpercent tableforfield">';
 
-    unset($object->fields['label']);        // Hide field already shown in banner
-    unset($object->fields['fk_soc']);       // Hide field already shown in banner
-    unset($object->fields['fk_project']);   // Hide field already shown in banner
-    unset($object->fields['element_type']); // Unwanted
+    unset($object->fields['label']);        // Hide field already shown in banner.
+    unset($object->fields['fk_soc']);       // Hide field already shown in banner.
+    unset($object->fields['fk_project']);   // Hide field already shown in banner.
+    unset($object->fields['element_type']); // Unwanted.
 
     switch ($object->element_type) {
         case 'user' :
@@ -356,10 +388,17 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     }
 
     // Common attributes.
-    include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+
+    // Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td class="valignmiddle">' . $langs->trans('Categories') . '</td><td>';
+        print $form->showCategories($object->id, $object->element, 1);
+        print '</td></tr>';
+    }
 
     // Other attributes. Fields from hook formObjectOptions and Extrafields.
-    include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
 
     print '</table>';
     print '</div>';
@@ -373,109 +412,118 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     if ($action != 'presend' ) {
         print '<div class="tabsAction">';
         $parameters = [];
-        $reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
+        $reshook    = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
         if ($reshook < 0) {
             setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
         }
 
         if (empty($reshook) && $permissiontoadd) {
-            // Modify
+            // Modify.
+            $displayButton = $onPhone ? '<i class="fas fa-edit fa-2x"></i>' : '<i class="fas fa-edit"></i>' . ' ' . $langs->trans('Modify');
             if ($object->status == SaturneCertificate::STATUS_DRAFT) {
-                print '<a class="butAction" id="actionButtonEdit" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=edit' . '"><i class="fas fa-edit"></i> ' . $langs->trans('Modify') . '</a>';
+                print '<a class="butAction" id="actionButtonEdit" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=edit' . '">' . $displayButton . '</a>';
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-edit"></i> ' . $langs->trans('Modify') . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
 
-            // Validate
+            // Validate.
+            $displayButton = $onPhone ? '<i class="fas fa-check fa-2x"></i>' : '<i class="fas fa-check"></i>' . ' ' . $langs->trans('Validate');
             if ($object->status == SaturneCertificate::STATUS_DRAFT) {
-                print '<span class="butAction" id="actionButtonPendingSignature"><i class="fas fa-check"></i> ' . $langs->trans('Validate') . '</span>';
+                print '<span class="butAction" id="actionButtonPendingSignature">' . $displayButton . '</span>';
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-check"></i> ' . $langs->trans('Validate') . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
 
-            // ReOpen
+            // ReOpen.
+            $displayButton = $onPhone ? '<i class="fas fa-lock-open fa-2x"></i>' : '<i class="fas fa-lock-open"></i>' . ' ' . $langs->trans('ReOpenDoli');
             if ($object->status == SaturneCertificate::STATUS_VALIDATED) {
-                print '<span class="butAction" id="actionButtonInProgress"><i class="fas fa-lock-open"></i> ' . $langs->trans('ReOpenDoli') . '</span>';
+                print '<span class="butAction" id="actionButtonInProgress">' . $displayButton . '</span>';
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidated', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-lock-open"></i> ' . $langs->trans('ReOpenDoli') . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidated', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
 
-            // Send mail
+            // Sign.
+            $displayButton = $onPhone ? '<i class="fas fa-signature fa-2x"></i>' : '<i class="fas fa-signature"></i>' . ' ' . $langs->trans('Sign');
+            if ($object->status == SaturneCertificate::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
+                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element . '&document_type=CertificateDocument&attendant_table_mode=simple', 3) . '">' . $displayButton . '</a>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
+            }
+
+            // Lock.
+            $displayButton = $onPhone ? '<i class="fas fa-lock fa-2x"></i>' : '<i class="fas fa-lock"></i>' . ' ' . $langs->trans('Lock');
+            if ($object->status == SaturneCertificate::STATUS_VALIDATED && $signatory->checkSignatoriesSignatures($object->id, $object->element)) {
+                print '<span class="butAction" id="actionButtonLock">' . $displayButton . '</span>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('AllSignatoriesMustHaveSigned', $langs->transnoentities('The' . ucfirst($object->element)))) . '">' . $displayButton . '</span>';
+            }
+
+            // Send email.
+            $displayButton = $onPhone ? '<i class="fas fa-paper-plane fa-2x"></i>' : '<i class="fas fa-paper-plane"></i>' . ' ' . $langs->trans('SendMail') . ' ';
             if ($object->status >= SaturneCertificate::STATUS_VALIDATED) {
-                $fileparams = dol_most_recent_file($upload_dir . '/' . $object->element . 'document' . '/' . $object->ref);
-                $file       = $fileparams['fullname'];
-                if (file_exists($file) && !preg_match('/specimen/', $fileparams['name'])) {
+                $fileParams = dol_most_recent_file($upload_dir . '/' . $object->element . 'document' . '/' . $object->ref);
+                $file       = $fileParams['fullname'];
+                if (file_exists($file) && !strstr($fileParams['name'], 'specimen')) {
                     $forcebuilddoc = 0;
                 } else {
                     $forcebuilddoc = 1;
                 }
-                print '<a class="butAction" id="actionButtonSign" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=presend&forcebuilddoc=' . $forcebuilddoc . '&mode=init#formmailbeforetitle' . '"><i class="fas fa-paper-plane"></i> ' .  $langs->trans('SendMail') . '</a>';
+                print '<a class="butAction" id="actionButtonSign" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=presend&forcebuilddoc=' . $forcebuilddoc . '&mode=init#formmailbeforetitle' . '">' .  $displayButton . '</a>';
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToSendEmail', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-paper-plane"></i> ' . $langs->trans('SendMail') . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToSendEmail', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
 
-            // Archive
+            // Archive.
+            $displayButton = $onPhone ? '<i class="fas fa-archive fa-2x"></i>' : '<i class="fas fa-archive"></i>' . ' ' . $langs->trans('Archive');
             if ($object->status >= SaturneCertificate::STATUS_VALIDATED) {
-                print '<a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=confirm_archive&token=' . newToken() . '"><i class="fas fa-archive"></i> ' . $langs->trans('Archive') . '</a>';
+                print '<a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=confirm_archive&token=' . newToken() . '">' . $displayButton . '</a>';
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToArchive', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-archive"></i> ' . $langs->trans('Archive') . '</span>';
-            }
-
-            // Sign
-            if ($object->status == SaturneCertificate::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
-                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element, 3) . '"><i class="fas fa-signature"></i> ' . $langs->trans('Sign') . '</a>';
-            } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '"><i class="fas fa-signature"></i> ' . $langs->trans('Sign') . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToArchive', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
 
             // Delete (need delete permission, or if draft, just need create/modify permission).
-            print dolGetButtonAction('<i class="fas fa-trash"></i> ' . $langs->trans('Delete'), '', 'delete', $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=delete', '', $permissiontodelete || ($object->status == SaturneCertificate::STATUS_DRAFT));
+            $displayButton = $onPhone ? '<i class="fas fa-trash fa-2x"></i>' : '<i class="fas fa-trash"></i>' . ' ' . $langs->trans('Delete');
+            print dolGetButtonAction($displayButton, '', 'delete', $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=delete&token=' . newToken(), '', $permissiontodelete || ($object->status == SaturneCertificate::STATUS_DRAFT));
         }
         print '</div>';
     }
 
-    // Select mail models is same action as presend
+    // Select mail models is same action as presend.
     if (GETPOST('modelselected')) {
         $action = 'presend';
     }
 
     if ($action != 'presend') {
         print '<div class="fichecenter"><div class="fichehalfleft">';
-        // Documents
+        // Documents.
         $objRef    = dol_sanitizeFileName($object->ref);
         $dirFiles  = $object->element . 'document/' . $objRef;
         $fileDir   = $upload_dir . '/' . $dirFiles;
         $urlSource = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
 
-        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', ($object->status > SaturneCertificate::STATUS_DRAFT), $langs->trans('ObjectMustBeValidatedToGenerate'));
+        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', ($object->status > SaturneCertificate::STATUS_DRAFT), $langs->trans('ObjectMustBeValidatedToGenerate',  ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
 
         print '</div><div class="fichehalfright">';
 
-        $MAXEVENT = 10;
-
-        if ($permissiontoread) {
-            $morehtmlcenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-bars imgforviewmode', dol_buildpath('/saturne/view/saturne_agenda.php', 1) . '?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element);
-        } else {
-            $morehtmlcenter = '';
-        }
+        $moreHtmlCenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-bars imgforviewmode', dol_buildpath('/saturne/view/saturne_agenda.php', 1) . '?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element);
 
         // List of actions on element.
-        include_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
-        $formactions    = new FormActions($db);
-        $somethingshown = $formactions->showactions($object, $object->element . '@' . $object->module, '', 1, '', $MAXEVENT, '', $morehtmlcenter);
+        require_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
+        $formActions    = new FormActions($db);
+        $formActions->showactions($object, $object->element . '@' . $object->module, 0, 1, '', 10, '', $moreHtmlCenter);
 
         print '</div></div>';
     }
 
     // Presend form.
-    $modelmail    = 'certificate';
+    $modelmail    = $object->element;
     $defaulttopic = 'InformationMessage';
     $diroutput    = $conf->dolisirh->dir_output;
-    $trackid      = 'certificate'. $object->id;
+    $trackid      = $object->element . $object->id;
 
-    include DOL_DOCUMENT_ROOT . '/core/tpl/card_presend.tpl.php';
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/card_presend.tpl.php';
 }
 
-// End of page
+// End of page.
 llxFooter();
 $db->close();
