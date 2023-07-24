@@ -483,7 +483,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
         // List of actions on element.
         require_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
-        $formActions    = new FormActions($db);
+        $formActions = new FormActions($db);
         $formActions->showactions($object, $object->element . '@' . $object->module, 0, 1, '', 10, '', $moreHtmlCenter);
 
         print '</div></div>';
