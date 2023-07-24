@@ -170,10 +170,15 @@ class DolisirhDashboard
         $startmonth = $conf->global->SOCIETE_FISCAL_MONTH_START;
 
         $userID = GETPOSTISSET('search_userid') ? GETPOST('search_userid', 'int') : $user->id;
+        $month  = GETPOSTISSET('search_month') ? GETPOST('search_month', 'int') : date('m');
         $year   = GETPOSTISSET('search_year') ? GETPOST('search_year', 'int') : date('Y');
 
+        if ($month < $startmonth) {
+            $year--;
+        }
+
         // Graph Title parameters
-        $array['title'] = $langs->transnoentities('TimeSpentReportByFiscalYear');
+        $array['title'] = $langs->transnoentities('TimeSpentReportByFiscalYear') . ' ' . $year . ' - ' . ($year + 1);
         $array['picto'] = 'clock';
 
         // Graph parameters
@@ -198,7 +203,7 @@ class DolisirhDashboard
         $workingHours = $workinghours->fetchCurrentWorkingHours($userID, 'user');
 
         for ($i = 1; $i < 13; $i++) {
-            $firstdaytoshow = dol_get_first_day($year, $i);
+            $firstdaytoshow = dol_get_first_day((($startmonth <= $i) ? $year : $year + 1), $i);
             $lastdayofmonth = strtotime(date('Y-m-t', $firstdaytoshow));
 
             $currentMonth = date('m', dol_now());
