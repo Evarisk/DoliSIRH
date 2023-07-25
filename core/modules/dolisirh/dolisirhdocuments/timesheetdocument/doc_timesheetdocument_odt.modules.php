@@ -454,7 +454,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
         if (is_array($signatoryResponsible) && !empty($signatoryResponsible)) {
             $signatoryResponsible                           = array_shift($signatoryResponsible);
             $tmpArray['society_responsible_fullname']       = strtoupper($signatoryResponsible->lastname) . ' ' . ucfirst($signatoryResponsible->firstname);
-            $tmpArray['society_responsible_signature_date'] = dol_print_date($signatoryResponsible->signature_date, 'dayhoursec');
+            $tmpArray['society_responsible_signature_date'] = dol_print_date($signatoryResponsible->signature_date, 'dayhoursec', 'tzuser');
         } else {
             $tmpArray['society_responsible_fullname']       = '';
             $tmpArray['society_responsible_signature_date'] = '';
@@ -478,7 +478,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
         if (is_array($signatoryAttendant) && !empty($signatoryAttendant)) {
             $signatoryAttendant                           = array_shift($signatoryAttendant);
             $tmpArray['society_attendant_fullname']       = strtoupper($signatoryAttendant->lastname) . ' ' . ucfirst($signatoryAttendant->firstname);
-            $tmpArray['society_attendant_signature_date'] = dol_print_date($signatoryAttendant->signature_date, 'dayhoursec');
+            $tmpArray['society_attendant_signature_date'] = dol_print_date($signatoryAttendant->signature_date, 'dayhoursec', 'tzuser');
         } else {
             $tmpArray['society_attendant_fullname']       = '';
             $tmpArray['society_attendant_signature_date'] = '';
@@ -489,8 +489,8 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
                 $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
                 $encodedImage = explode(',', $signatoryAttendant->signature)[1];
                 $decodedImage = base64_decode($encodedImage);
-                file_put_contents($tempDir . 'signature.png', $decodedImage);
-                $tmpArray['society_attendant_signature'] = $tempDir . 'signature.png';
+                file_put_contents($tempDir . 'signature2.png', $decodedImage);
+                $tmpArray['society_attendant_signature'] = $tempDir . 'signature2.png';
             } else {
                 $tmpArray['society_attendant_signature'] = '';
             }
