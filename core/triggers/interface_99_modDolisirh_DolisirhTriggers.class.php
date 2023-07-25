@@ -101,8 +101,6 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $now        = dol_now();
         $actioncomm = new ActionComm($this->db);
 
-        $object->fetch($object->id);
-
         $actioncomm->elementtype = $object->element . '@dolisirh';
         $actioncomm->type_code   = 'AC_OTH_AUTO';
         $actioncomm->datep       = $now;
@@ -279,7 +277,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 }
 
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_CREATE';
-                $actioncomm->label = $langs->trans('ObjectCreateTrigger', $langs->transnoentities(ucfirst($object->element)));
+                $actioncomm->label = $langs->trans('ObjectCreateTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
                 $actioncomm->create($user);
                 break;
 

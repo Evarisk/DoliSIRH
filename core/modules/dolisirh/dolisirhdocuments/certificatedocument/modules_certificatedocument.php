@@ -33,11 +33,10 @@ abstract class ModeleODTCertificateDocument extends SaturneDocumentModel
     /**
      * Return list of active generation modules.
      *
-     * @param  DoliDB $db                Database handler.
-     * @param  string $type              Document type.
-     * @param  int    $maxfilenamelength Max length of value to show.
-     *
-     * @return array|int                 0 if no module is activated, or array(key=>label). For modules that need directory scan, key is completed with ":filename".
+     * @param  DoliDB    $db                Database handler.
+     * @param  string    $type              Document type.
+     * @param  int       $maxfilenamelength Max length of value to show.
+     * @return array|int                    0 if no module is activated, or array(key=>label). For modules that need directory scan, key is completed with ":filename".
      * @throws Exception
      */
     public static function liste_modeles(DoliDB $db, string $type, int $maxfilenamelength = 0): array
