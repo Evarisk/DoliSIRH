@@ -341,34 +341,34 @@ class modDoliSIRH extends DolibarrModules
 
         /* TIMESHEET PERMISSIONS */
         $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
-        $this->rights[$r][1] = $langs->transnoentities('ReadObjects',$langs->transnoentities('Timesheet'));
+        $this->rights[$r][1] = $langs->transnoentities('ReadObjects',$langs->transnoentities('Timesheets'));
         $this->rights[$r][4] = 'timesheet';
         $this->rights[$r][5] = 'read';
         $r++;
         $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
-        $this->rights[$r][1] = $langs->transnoentities('CreateObjects', $langs->transnoentities('Timesheet'));
+        $this->rights[$r][1] = $langs->transnoentities('CreateObjects', $langs->transnoentities('Timesheets'));
         $this->rights[$r][4] = 'timesheet';
         $this->rights[$r][5] = 'write';
         $r++;
         $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
-        $this->rights[$r][1] = $langs->transnoentities('DeleteObjects', $langs->transnoentities('Timesheet'));
+        $this->rights[$r][1] = $langs->transnoentities('DeleteObjects', $langs->transnoentities('Timesheets'));
         $this->rights[$r][4] = 'timesheet';
         $this->rights[$r][5] = 'delete';
         $r++;
 
         /* CERTIFICATE PERMISSIONS */
         $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
-        $this->rights[$r][1] = $langs->transnoentities('ReadObjects',$langs->transnoentities('Certificate'));
+        $this->rights[$r][1] = $langs->transnoentities('ReadObjects', $langs->transnoentities('Certificates'));
         $this->rights[$r][4] = 'certificate';
         $this->rights[$r][5] = 'read';
         $r++;
         $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
-        $this->rights[$r][1] = $langs->transnoentities('CreateObjects', $langs->transnoentities('Certificate'));
+        $this->rights[$r][1] = $langs->transnoentities('CreateObjects', $langs->transnoentities('Certificates'));
         $this->rights[$r][4] = 'certificate';
         $this->rights[$r][5] = 'write';
         $r++;
         $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
-        $this->rights[$r][1] = $langs->transnoentities('DeleteObjects', $langs->transnoentities('Certificate'));
+        $this->rights[$r][1] = $langs->transnoentities('DeleteObjects', $langs->transnoentities('Certificates'));
         $this->rights[$r][4] = 'certificate';
         $this->rights[$r][5] = 'delete';
         $r++;
