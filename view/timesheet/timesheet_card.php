@@ -70,7 +70,7 @@ $object       = new TimeSheet($db);
 $objectLine   = new TimeSheetLine($db);
 $signatory    = new SaturneSignature($db, $moduleNameLowerCase, $object->element);
 $document     = new TimeSheetDocument($db);
-$extraFields  = new ExtraFields($db);
+$extrafields  = new ExtraFields($db);
 $product      = new Product($db);
 $workingHours = new Workinghours($db);
 $task         = new Task($db);
@@ -82,9 +82,9 @@ $form = new Form($db);
 $hookmanager->initHooks(['timesheetcard', 'globalcard']); // Note that conf->hooks_modules contains array.
 
 // Fetch optionals attributes and labels
-$extraFields->fetch_name_optionals_label($object->table_element);
+$extrafields->fetch_name_optionals_label($object->table_element);
 
-$search_array_options = $extraFields->getOptionalsFromPost($object->table_element, '', 'search_');
+$search_array_options = $extrafields->getOptionalsFromPost($object->table_element, '', 'search_');
 
 // Initialize array of search criterias
 $searchAll = GETPOST('search_all', 'alpha');
@@ -778,12 +778,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     if ($action != 'presend' && $action != 'editline') {
         print '<div class="tabsAction">';
         $parameters = [];
-        $reshook    = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
-        if ($reshook < 0) {
+        $resHook    = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
+        if ($resHook < 0) {
             setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
         }
 
-        if (empty($reshook) && $permissiontoadd) {
+        if (empty($resHook) && $permissiontoadd) {
             // Modify.
             $displayButton = $onPhone ? '<i class="fas fa-edit fa-2x"></i>' : '<i class="fas fa-edit"></i>' . ' ' . $langs->trans('Modify');
             if ($object->status == TimeSheet::STATUS_DRAFT) {
@@ -795,7 +795,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // Validate.
             $displayButton = $onPhone ? '<i class="fas fa-check fa-2x"></i>' : '<i class="fas fa-check"></i>' . ' ' . $langs->trans('Validate');
             if ($object->status == TimeSheet::STATUS_DRAFT && $plannedWorkingTime['minutes']  != 0) {
-                print '<span class="butAction" id="actionButtonPendingSignature" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=pending_signature' . '">' . $displayButton . '</span>';
+                print '<span class="butAction" id="actionButtonPendingSignature">' . $displayButton . '</span>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
@@ -803,7 +803,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // ReOpen.
             $displayButton = $onPhone ? '<i class="fas fa-lock-open fa-2x"></i>' : '<i class="fas fa-lock-open"></i>' . ' ' . $langs->trans('ReOpenDoli');
             if ($object->status == TimeSheet::STATUS_VALIDATED) {
-                print '<span class="butAction" id="actionButtonInProgress" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=draft' . '">' . $displayButton . '</span>';
+                print '<span class="butAction" id="actionButtonInProgress">' . $displayButton . '</span>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidated', $langs->transnoentities('The' . ucfirst($object->element)))) . '">' . $displayButton . '</span>';
             }

@@ -252,7 +252,7 @@ CertificatesCategoriesArea = Espace des tags/catégories des certificats
 # Data - Donnée
 CertificateDocument     = Document Certificat
 certificatedocument.odt = Certificat ODT
-certificatedocument     = Certificat
+certificatedocument     = certificat
 
 
 

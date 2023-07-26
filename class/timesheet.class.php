@@ -295,7 +295,7 @@ class TimeSheet extends SaturneObject
      */
     public function setDraft(User $user, int $notrigger = 0): int
     {
-        $signatory = new SaturneSignature($this->db, 'dolisirh');
+        $signatory = new SaturneSignature($this->db, 'dolisirh', 'timesheet');
         $signatory->deleteSignatoriesSignatures($this->id, 'timesheet');
 
         return parent::setDraft($user, $notrigger);
