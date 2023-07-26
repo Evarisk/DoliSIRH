@@ -205,6 +205,7 @@ GoToConfigProjectPage                         = Aller sur la page de configurati
 # Data - Donnée
 TimeSheet                          = Navette
 Timesheet                          = Navette
+Timesheets                         = navettes
 TheTimesheet                       = la navette
 NewTimeSheet                       = Nouvelle navette
 NewTimesheet                       = Nouvelle navette
@@ -235,6 +236,7 @@ timesheetdocument     = navette
 
 # Data - Donnée
 Certificate                = Certificat
+Certificates               = certificats
 TheCertificate             = le certificat
 NewCertificate             = Nouveau certificat
 ModifyCertificate          = Modifier le certificat
