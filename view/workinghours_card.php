@@ -253,7 +253,22 @@ print '</tr>' . "\n";
 
 print '</table>';
 
-if (($user->rights->dolisirh->workinghours->myworkinghours && $usertmp->id == $user->id) || ($user->rights->dolisirh->workinghours->allworkinghours && $usertmp->fk_user == $user->id)){
+// Buid current user hierarchy
+if ($usertmp->fk_user > 0) {
+	$usertmphierarchy = array($usertmp->fk_user);
+	$usertmpboss = new User($object->db);
+	$usertmpboss->fetch($usertmp->fk_user);
+	while ($usertmpboss->fk_user > 0) {
+		$usertmphierarchy[] = $usertmpboss->fk_user;
+		$usertmpboss->fetch($usertmpboss->fk_user);
+		// We do not want to loop between two users who would be each other bosses
+		if (in_array($usertmpboss->id, $usertmphierarchy)) {
+			break;
+		}
+	}
+}
+
+if (($user->rights->dolisirh->workinghours->myworkinghours && $usertmp->id == $user->id) || ($user->rights->dolisirh->workinghours->allworkinghours && in_array($user->id, $usertmphierarchy))){
     print '<br><div class="center">';
     print '<input type="submit" class="button" name="save" value="' . $langs->trans("Save") . '">';
     print '</div>';
