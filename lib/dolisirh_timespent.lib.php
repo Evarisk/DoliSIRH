@@ -562,7 +562,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
     global $conf, $db, $langs, $user;
 
     $project    = new Project($db);
-    $task       = new Task($db);
+    $task       = new SaturneTask($db);
     $thirdparty = new Societe($db);
 
     $numLines = count($lines);
