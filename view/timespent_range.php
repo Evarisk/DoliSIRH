@@ -47,6 +47,9 @@ if (isModEnabled('categorie')) {
     require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 }
 
+// Load saturne classes
+require_once __DIR__ . '/../../saturne/class/task/saturnetask.class.php';
+
 // Load DoliSIRH libraries.
 require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 require_once __DIR__ . '/../lib/dolisirh_timespent.lib.php';
@@ -93,7 +96,7 @@ $sortOrder = GETPOST('sortorder', 'aZ09comma');
 // Initialize objects.
 // Technical objets.
 $project      = new Project($db);
-$task         = new Task($db);
+$task         = new SaturneTask($db);
 $workingHours = new Workinghours($db);
 $extraFields  = new ExtraFields($db);
 
