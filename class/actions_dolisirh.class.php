@@ -61,259 +61,84 @@ class ActionsDoliSIRH
 		$this->db = $db;
 	}
 
-	/**
-	 * Overloading the doActions function : replacing the parent's function with the one below
-	 *
-	 * @param  array  $parameters Hook metadata (context, etc...)
-	 * @param  object $object     The object to process
-	 * @param  string $action     Current action (if set). Generally create or edit or null
-	 * @return int                0 < on error, 0 on success, 1 to replace standard code
-	 */
-	public function doActions(array $parameters, $object, string $action): int
-	{
-		require_once DOL_DOCUMENT_ROOT.'/core/modules/project/task/mod_task_simple.php';
+    /**
+     * Overloading the doActions function : replacing the parent's function with the one below
+     *
+     * @param  array  $parameters Hook metadata (context, etc...)
+     * @param  object $object     The object to process
+     * @param  string $action     Current action (if set). Generally create or edit or null
+     * @return int                0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function doActions(array $parameters, $object, string $action): int
+    {
+        global $conf, $langs, $user;
 
-		global $conf, $db, $langs, $user;
+        if ($parameters['currentcontext'] == 'invoicecard') {
+            if ($action == 'task_create') {
+                require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+                require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/mod_task_simple.php';
 
-		$error = 0; // Error counter
+                $product   = new Product($this->db);
+                $task      = new Task($this->db);
+                $project   = new Project($this->db);
+                $categorie = new Categorie($this->db);
+                $modTask   = new mod_task_simple();
 
-		if (in_array($parameters['currentcontext'], array('invoicecard'))) {
-			// Action that will be done after pressing the button
-			if ($action == 'createtask-dolisirh') {
-				// Start
-				// Variable : ref
-				// Description : create the ref of the task
-				$mod = new mod_task_simple();
-				$ref = $mod->getNextValue(0, '');
-				// End
+                $dateStart       = 0;
+                $dateEnd         = 0;
+                $plannedWorkload = 0;
+                if (is_array($object->lines) && !empty($object->lines)) {
+                    foreach ($object->lines as $factureLine) {
+                        $product->fetch($factureLine->fk_product);
 
-				//Start
-				//Variable : label
-				//Description : creation of the label of the task
+                        $dateStart       = $factureLine->date_start;
+                        $dateEnd         = $factureLine->date_end;
+                        $quantity        = $factureLine->qty;
+                        $durationValue   = $product->duration_value;
+                        $durationUnit    = $product->duration_unit;
+                        $plannedWorkload = $quantity * dol_time_plus_duree(0, $durationValue, $durationUnit);
+                    }
 
-				//Contruction de la chaine de caractère sur le modèle AAAAMMJJ-nomprojet-tag
-				//Variable : datef = Date de début de période de facturation
-				$query = 'SELECT datef, ref FROM ' .MAIN_DB_PREFIX. 'facture';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['ref'] == $object->ref) {
-						$datef_invoice[0] = $row['datef'];
-					}
-				}
-				$datef_invoice = explode('-', $datef_invoice[0]);
-				$datef = implode($datef_invoice);
-				//datef
+                    $project->fetch($object->fk_project);
 
-				// Contruction de la chaine de caractère REGEX : AAAAMMJJ-nomprojet-tag
-				// Wording retrieval
-				$fk_projet_fac = $object->fk_project;
-				$query = 'SELECT rowid, title FROM ' .MAIN_DB_PREFIX. 'projet';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['rowid'] == $object->fk_project) {
-						$title[0] = $row['title'];
-					}
-				}
-				$wording = $title[0];
+                    $cats      = $categorie->containing($project->id, $project->element);
+                    $tagsLabel = '';
+                    if (is_array($cats)) {
+                        foreach ($cats as $cat) {
+                            $tagsLabel .= $cat->label . '-';
+                        }
+                        $tagsLabel = rtrim($tagsLabel, '-');
+                    }
 
-				//Tag retrieval
-				//@todo REGEX à construire dans les réglages dans notre cas : DATEDEBUTPERIODE-NOMPROJET-TAGS EX: 20200801-evarisk.fr-ref
-				$query = 'SELECT ref, fk_projet FROM ' .MAIN_DB_PREFIX. 'facture';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['ref'] == $object->ref) {
-						$invoice_fk_projet[0] = $row['fk_projet'];
-					}
-				}
-				$query = 'SELECT fk_project, fk_categorie FROM ' .MAIN_DB_PREFIX. 'categorie_project';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_project'] == $invoice_fk_projet[0]) {
-						$fk_categorie[0] = $row['fk_categorie'];
-					}
-				}
-				$query = 'SELECT rowid, label FROM ' .MAIN_DB_PREFIX. 'categorie';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['rowid'] == $fk_categorie[0]) {
-						$tag[0] = $row['label'];
-					}
-				}
-				//Concatenation of the date, wording and tag to obtain the label
-				$label = $datef . '-' . $wording . '-' . $tag[0];
-				//End
+                    $task->ref                              = $modTask->getNextValue(0, $task);
+                    $task->label                            = dol_print_date($object->date, 'dayxcard') . '-' . $project->title . '-' . $tagsLabel;
+                    $task->fk_project                       = $object->fk_project;
+                    $task->date_start                       = $dateStart;
+                    $task->date_end                         = $dateEnd;
+                    $task->planned_workload                 = $plannedWorkload;
+                    $task->array_options['fk_facture_name'] = $object->id;
 
-				//Start
-				//Variable : fk_projet
-				//Description : take the fk_projet from the invoice
-				$fk_projet = $object->fk_project;
-				//End
+                    $taskID = $task->create($user);
 
-				//Start
-				//Variable : dateo
-				//Decription : retrieval of the start date of the invoice
-				$i = 0;
-				$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-						$date_start[$i] = $row['date_start'];
-					}
-				}
-				$dateo = $date_start[0];
-				//End
+                    $object->array_options['fk_task'] = $taskID;
+                    $object->update($user, false);
 
-				//Start
-				//Variable : datee
-				//Description : retrieval of the end date of the invoice
-				$i = 0;
-				$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-						$date_end[$i] = $row['date_end'];
-						$i += 1;
-					}
-				}
-				$datee = $date_end[0];
-				//End
-
-				//Start
-				//Variable : planned_workload
-				//Description : time calculation of the planned workload
-				//We recover all the products from the invoice
-				$i = 0;
-				//We recover the quantity of all the products
-				$query = 'SELECT fk_facture, fk_product, qty FROM ' .MAIN_DB_PREFIX. 'facturedet';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-						$fk_product[$i] = $row['fk_product'];
-						$fk_quantity[$i] = $row['qty'];
-						$i += 1;
-					}
-				}
-				$i = 0;
-				$j = 0;
-				//We recover the time of each product
-				$query = 'SELECT rowid, duration FROM ' .MAIN_DB_PREFIX. 'product';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					while (isset($fk_product[$i])) {
-						if ($row['rowid'] == $fk_product[$i]) {
-							$duration[$i] = $row['duration'];
-							$i += 1;
-						}
-						$i += 1;
-					}
-					$i = 0;
-				}
-				$i = 0;
-				$j = 0;
-				// We transform time into seconds
-				while (isset($duration[$i])) {
-					while (isset($duration[$i][$j])) {
-						if ($duration[$i][$j] == 's') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 1;
-						} elseif ($duration[$i][$j] == 'i') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 60;
-						} elseif ($duration[$i][$j] == 'h') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 3600;
-						} elseif ($duration[$i][$j] == 'd') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 86400;
-						} elseif ($duration[$i][$j] == 'w') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 604800;
-						} elseif ($duration[$i][$j] == 'm') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 2592000;
-						} elseif ($duration[$i][$j] == 'y') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 31104000;
-						}
-						$j += 1;
-					}
-					$i += 1;
-					$j = 0;
-				}
-				$i = 0;
-				//We multiply the time by the duration
-				while (isset($duration[$i])) {
-					if (is_int($duration[$i])) {
-						$duration[$i] *= intval($fk_quantity[$i]);
-					}
-					$i += 1;
-				}
-				$i = 0;
-				//We add all the time to all the products
-				$planned_workload = 0;
-				while (isset($duration[$i])) {
-					$planned_workload += intval($duration[$i]);
-					$i += 1;
-				}
-				//End
-
-				//Check if the invoice is already linked to the task
-				$error_button = 0;
-				$query = 'SELECT fk_facture_name FROM ' .MAIN_DB_PREFIX. 'projet_task_extrafields';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_facture_name'] == $object->id) {
-						$error_button = 1;
-					}
-				}
-				//Start
-				//Filling of the llx_projet_task table with the variables to create the task
-				if ($error_button == 0) {
-					if (isset($fk_projet) && $planned_workload != 0 && isset($dateo) && isset($datee)) {
-						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'projet_task(ref, fk_projet, label, dateo, datee, planned_workload) VALUES("'.$ref.'", '.intval($fk_projet).', "'.$label.'", "'.$dateo.'", "'.$datee.'", '.intval($planned_workload).')';
-						$this->db->query($req);
-						$query = 'SELECT rowid, ref, fk_projet FROM ' .MAIN_DB_PREFIX. 'projet_task';
-						$result = $this->db->query($query);
-						while ($row = $result->fetch_array()) {
-							if ($row['rowid']) {
-								$rowid_last_task[0] = $row['rowid'];
-							}
-							if ($row['ref']) {
-								$ref_last_task[0] = $row['ref'];
-							}
-						}
-						//Filling of the llx_projet_task_extrafields table
-						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'projet_task_extrafields(fk_object, fk_facture_name) VALUES('.$rowid_last_task[0].', '.$object->lines[0]->fk_facture.')';
-						$this->db->query($req);
-						//Filling of the llx_facture_extrafields table
-						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'facture_extrafields(fk_object, fk_task) VALUES('.$object->lines[0]->fk_facture.', '.$rowid_last_task[0].')';
-						$this->db->query($req);
-						setEventMessages($langs->trans('MessageInfo').' : <a href="'.DOL_URL_ROOT.'/projet/tasks/task.php?id='.$rowid_last_task[0].'">'.$ref.'</a>', null, 'mesgs');
-					} else {
-						//Error messages
-						if (!isset($fk_projet)) {
-							setEventMessages($langs->trans('MessageInfoNoCreateProject'), null, 'errors');
-						}
-						if ($planned_workload == 0) {
-							setEventMessages($langs->trans('MessageInfoNoCreateTime'), null, 'errors');
-						}
-						if (!isset($datee) || !isset($dateo)) {
-							setEventMessages($langs->trans('MessageInfoNoCreatedate'), null, 'errors');
-						}
-					}
-				}
-				//End
-			}
-		}
+                    setEventMessages($langs->trans('MessageInfo').' : <a href="' . DOL_URL_ROOT . '/projet/tasks/task.php?id=' . $taskID . '">' . $task->ref . '</a>', []);
+                    header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $object->id );
+                    exit;
+                }
+            }
+        }
 
         if ($parameters['currentcontext'] == 'userihm') {
             if ($action == 'update') {
                 if (GETPOST('set_timespent_dataset_order') == 'on') {
-                    $tabparam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 1;
+                    $tabParam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 1;
                 } else {
-                    $tabparam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 0;
+                    $tabParam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 0;
                 }
-                dol_set_user_param($db, $conf, $object, $tabparam);
+                dol_set_user_param($this->db, $conf, $object, $tabParam);
             }
         }
 
@@ -321,7 +146,7 @@ class ActionsDoliSIRH
             if ($action == 'builddoc' && strstr(GETPOST('model'), 'projectdocument_odt')) {
                 require_once __DIR__ . '/dolisirhdocuments/projectdocument.class.php';
 
-                $document = new ProjectDocument($db);
+                $document = new ProjectDocument($this->db);
 
                 $moduleNameLowerCase = 'dolisirh';
                 $permissiontoadd     = $user->rights->projet->creer;
@@ -330,8 +155,6 @@ class ActionsDoliSIRH
             }
 
             if ($action == 'pdfGeneration') {
-                global $conf;
-
                 $moduleName          = 'DoliSIRH';
                 $moduleNameLowerCase = strtolower($moduleName);
                 $upload_dir          = $conf->dolisirh->multidir_output[$conf->entity ?? 1];
@@ -339,164 +162,58 @@ class ActionsDoliSIRH
                 // Action to generate pdf from odt file
                 require_once __DIR__ . '/../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
 
-                $urltoredirect = $_SERVER['REQUEST_URI'];
-                $urltoredirect = preg_replace('/#pdfGeneration$/', '', $urltoredirect);
-                $urltoredirect = preg_replace('/action=pdfGeneration&?/', '', $urltoredirect); // To avoid infinite loop
+                $urlToRedirect = $_SERVER['REQUEST_URI'];
+                $urlToRedirect = preg_replace('/#pdfGeneration$/', '', $urlToRedirect);
+                $urlToRedirect = preg_replace('/action=pdfGeneration&?/', '', $urlToRedirect); // To avoid infinite loop
 
-                header('Location: ' . $urltoredirect );
+                header('Location: ' . $urlToRedirect);
                 exit;
             }
         }
 
-		if (!$error) {
-			$this->results = array('myreturn' => 999);
-			$this->resprints = 'A text to show';
-			return 0; // or return 1 to replace standard code
-		} else {
-			$this->errors[] = 'Error message';
-			return -1;
-		}
-	}
+        return 0; // or return 1 to replace standard code
+    }
 
-	/**
-	 * Overloading the addMoreActionsButtons function : replacing the parent's function with the one below
-	 *
-	 * @param  array  $parameters Hook metadata (context, etc...)
-	 * @param  object $object     The object to process
-	 * @return int                0 < on error, 0 on success, 1 to replace standard code
-	 */
-	public function addMoreActionsButtons(array $parameters, $object): int
-	{
-		global $langs, $user;
+    /**
+     * Overloading the addMoreActionsButtons function : replacing the parent's function with the one below
+     *
+     * @param  array  $parameters Hook metadata (context, etc...)
+     * @param  object $object     The object to process
+     * @return int                0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function addMoreActionsButtons(array $parameters, $object): int
+    {
+        global $langs, $user;
 
-		$error = 0; // Error counter
+        if ($parameters['currentcontext'] == 'invoicecard') {
+            $product = new Product($this->db);
+            if (is_array($object->lines) && !empty($object->lines)) {
+                foreach ($object->lines as $factureLine) {
+                    $product->fetch($factureLine->fk_product);
 
-		if (in_array('invoicecard', explode(':', $parameters['context']))) {
-			//Creation of the link that will be sendid
-			if ( isset($_SERVER['HTTPS']) ) {
-				if ( $_SERVER['HTTPS'] == 'on' ) {
-					$server_protocol = 'https';
-				} else {
-					$server_protocol = 'http';
-				}
-			} else {
-				$server_protocol = 'http';
-			}
-			$actual_link = $server_protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-			$actual_link .= '&action=createtask-dolisirh'; //Action
+                    $dateStart       = $factureLine->date_start;
+                    $dateEnd         = $factureLine->date_end;
+                    $quantity        = $factureLine->qty;
+                    $durationValue   = $product->duration_value;
+                    $durationUnit    = $product->duration_unit;
+                    $plannedWorkload = $quantity * dol_time_plus_duree(0, $durationValue, $durationUnit);
+                }
+            }
 
-			//Check if the invoice is already linked to the task
-			$error_button = 0;
-			$query = 'SELECT fk_facture_name FROM ' .MAIN_DB_PREFIX. 'projet_task_extrafields';
-			$result = $this->db->query($query);
-			while ($row = $result->fetch_array()) {
-				if ($row['fk_facture_name'] == $object->id) {
-					$error_button = 1;
-				}
-			}
-			//Check for grey button
-			//Start
-
-			//Check date
-			$i = 0;
-			$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
-			$result = $this->db->query($query);
-			while ($row = $result->fetch_array()) {
-				if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-					$date_end[$i] = $row['date_end'];
-					$date_start[$i] = $row['date_start'];
-					$i += 1;
-				}
-			}
-			$datee = $date_end[0];
-			$dateo = $date_start[0];
-
-			//Check service time
-			$i = 0;
-			$query = 'SELECT fk_facture, fk_product, qty FROM ' .MAIN_DB_PREFIX. 'facturedet';
-			$result = $this->db->query($query);
-			while ($row = $result->fetch_array()) {
-				if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-					$fk_product[$i] = $row['fk_product'];
-					$fk_quantity[$i] = $row['qty'];
-					$i += 1;
-				}
-			}
-			$i = 0;
-			$j = 0;
-			$query = 'SELECT rowid, duration FROM ' .MAIN_DB_PREFIX. 'product';
-			$result = $this->db->query($query);
-			while ($row = $result->fetch_array()) {
-				while (isset($fk_product[$i])) {
-					if ($row['rowid'] == $fk_product[$i]) {
-						$duration[$i] = $row['duration'];
-						$i += 1;
-					}
-					$i += 1;
-				}
-				$i = 0;
-			}
-			$i = 0;
-			$j = 0;
-			while (isset($duration[$i])) {
-				while (isset($duration[$i][$j])) {
-					if ($duration[$i][$j] == 's') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 1;
-					} elseif ($duration[$i][$j] == 'i') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 60;
-					} elseif ($duration[$i][$j] == 'h') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 3600;
-					} elseif ($duration[$i][$j] == 'd') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 86400;
-					} elseif ($duration[$i][$j] == 'w') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 604800;
-					} elseif ($duration[$i][$j] == 'm') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 2592000;
-					} elseif ($duration[$i][$j] == 'y') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 31104000;
-					}
-					$j += 1;
-				}
-				$i += 1;
-				$j = 0;
-			}
-			$i = 0;
-			while (isset($duration[$i])) {
-				if (is_int($duration[$i])) {
-					$duration[$i] *= intval($fk_quantity[$i]);
-				}
-				$i += 1;
-			}
-			$i = 0;
-			$planned_workload = 0;
-			while (isset($duration[$i])) {
-				$planned_workload += intval($duration[$i]);
-				$i += 1;
-			}
-			//End
-
-			//Button
-			if ($error_button == 0) {
-				if (isset($object->fk_project) && isset($dateo) && isset($datee) && $planned_workload != 0) {
-					print '<div class="inline-block divButAction"><a class="butAction" href="'. $actual_link .'">Créer tâche</a></div>';
-				} elseif (!isset($object->fk_project)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorNoProject').'">Créer tâche</a></div>';
-				} elseif (!isset($dateo)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorDateStart').'">Créer tâche</a></div>';
-				} elseif (!isset($datee)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorDateEnd').'">Créer tâche</a></div>';
-				} elseif ($planned_workload == 0) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorServiceTime').'">Créer tâche</a></div>';
-				}
-			}
-		}
+            if (empty($object->array_options['options_fk_task'])) {
+                if (isset($object->fk_project) && !empty($dateStart) && !empty($dateEnd) && (isset($plannedWorkload) && $plannedWorkload != 0)) {
+                    print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['REQUEST_URI'] . '&action=task_create">' . $langs->trans('AddTask') . '</a></div>';
+                } elseif (!isset($object->fk_project)) {
+                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $langs->trans('ErrorNoProject') . '">' . $langs->trans('AddTask') . '</span></div>';
+                } elseif (empty($dateStart)) {
+                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $langs->trans('ErrorDateStart') . '">' . $langs->trans('AddTask') . '</span></div>';
+                } elseif (empty($dateEnd)) {
+                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $langs->trans('ErrorDateEnd') . '">' . $langs->trans('AddTask') . '</span></div>';
+                } elseif (!isset($plannedWorkload)) {
+                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $langs->trans('ErrorServiceTime') . '">' . $langs->trans('AddTask') . '</span></div>';
+                }
+            }
+        }
 
         if (preg_match('/categorycard/', $parameters['context'])) {
             $id        = GETPOST('id');
@@ -546,13 +263,8 @@ class ActionsDoliSIRH
             }
         }
 
-		if (!$error) {
-			return 0; // or return 1 to replace standard code
-		} else {
-			$this->errors[] = 'Error message';
-			return -1;
-		}
-	}
+        return 0; // or return 1 to replace standard code
+    }
 
 	/**
 	 * Overloading the printCommonFooter function : replacing the parent's function with the one below
