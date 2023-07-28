@@ -164,7 +164,7 @@ if ($backtopage) {
 
 print '<table class="noborder centpercent editmode">';
 
-print '<tr class="liste_titre"><th class="titlefield wordbreak">' . $langs->trans("Day") . '</th><th style="width: 300px">' . $langs->trans("Schedule") . '</th><th>'. $langs->trans('WorkingHours(min)') .'</th></tr>' . "\n";
+print '<tr class="liste_titre"><th class="titlefield wordbreak">' . $langs->trans("Day") . '</th><th style="width: 300px">' . $langs->trans("Schedules") . '</th><th>'. $langs->trans('WorkingHours(min)') .'</th></tr>' . "\n";
 
 print '<tr class="oddeven"><td>';
 print $form->textwithpicto($langs->trans("Monday"), '');

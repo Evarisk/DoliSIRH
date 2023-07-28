@@ -121,7 +121,7 @@ CreateMyWorkingHours  = Créer/Modifier ses propres horaires de travail
 WorkingHours            = Horaire de travail
 WorkingHoursFormatDesc  = Renseigner le temps travaillé par jour (en minutes)
 WrongWorkingHoursFormat = Mauvais format pour les heures travaillées : %s
-UserWorkingHoursSaved   = Horaire de travail sauvegardée
+UserWorkingHoursSaved   = Horaires de travail sauvegardées
 WorkingHours(min)       = Temps travaillé (en minutes)
 
 
