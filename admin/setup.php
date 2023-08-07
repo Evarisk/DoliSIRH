@@ -173,7 +173,11 @@ if (GETPOST('create_timesheet_product_service', 'alpha')) {
             if (isModEnabled('barcode')) {
                 $product->barcode = -1;
             }
-            $productID = $product->create($user);
+            if ($conf->global->$timesheetProductAndService['code'] > 0) {
+                $productID = $product->fetch($conf->global->$timesheetProductAndService['code']);
+            } else {
+                $productID = $product->create($user);
+            }
             dolibarr_set_const($db, $timesheetProductAndService['code'], $productID, 'integer', 0, '', $conf->entity);
         }
 
