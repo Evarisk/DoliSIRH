@@ -619,10 +619,10 @@ class ActionsDoliSIRH
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
 			if (GETPOST('action') == 'toggleTaskFavorite') {
-				toggle_task_favorite(GETPOST('id'), $user->id);
+				toggle_task_favorite(GETPOSTINT('id'), $user->id);
 			}
 
-			if (is_task_favorite(GETPOST('id'), $user->id)) {
+			if (is_task_favorite(GETPOSTINT('id'), $user->id)) {
 				$favoriteStar = '<span class="fas fa-star toggleTaskFavorite" onclick="toggleTaskFavorite()"></span>';
 			} else {
 				$favoriteStar = '<span class="far fa-star toggleTaskFavorite" onclick="toggleTaskFavorite()"></span>';
