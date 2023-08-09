@@ -268,7 +268,7 @@ if ($usertmp->fk_user > 0) {
 	}
 }
 
-if (($user->rights->dolisirh->workinghours->myworkinghours && $usertmp->id == $user->id) || ($user->rights->dolisirh->workinghours->allworkinghours && in_array($user->id, $usertmphierarchy))){
+if (($user->rights->dolisirh->workinghours->myworkinghours && $usertmp->id == $user->id) || ($user->rights->dolisirh->workinghours->allworkinghours && in_array($user->id, $usertmphierarchy)) || $user->admin == 1){
     print '<br><div class="center">';
     print '<input type="submit" class="button" name="save" value="' . $langs->trans("Save") . '">';
     print '</div>';
