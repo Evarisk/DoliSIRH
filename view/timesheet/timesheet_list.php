@@ -238,6 +238,7 @@ if ($object->ismultientitymanaged == 1) {
 } else {
     $sql .= ' WHERE 1 = 1';
 }
+$sql .= ' AND t.status >= ' . TimeSheet::STATUS_DRAFT;
 
 foreach ($search as $key => $val) {
     if (array_key_exists($key, $object->fields)) {
