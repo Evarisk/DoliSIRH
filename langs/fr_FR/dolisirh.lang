@@ -86,13 +86,9 @@ ByProject/Task        = Par projet et tâche
 ByTask/Project        = Par tâche et projet
 
 # SetEventMessage - Notice info
-MessageInfo                = Tâche créée avec succès
-MessageInfoNoCreate        = Aucune tâche n'a été créée
-MessageInfoNoCreateProject = Aucune tâche n'a été créée car le projet n'est pas lié
-MessageInfoNoCreateTime    = Aucune tâche n'a été créée car le service n'a pas de temps
-MessageInfoNoCreatedate    = Aucune tâche n'a été créée car le service n'a pas de date
-MessageTimeSpentCreate     = Temps consommé crée
-MessageNoTaskLink          = Pas de tâche affectée, pas de temps passé disponible
+TaskCreate             = Tâche créée avec succès
+MessageTimeSpentCreate = Temps consommé crée
+MessageNoTaskLink      = Pas de tâche affectée, pas de temps passé disponible
 
 # Data - Donnée
 DoliSIRHTimeSpent          = Rapport de temps passé

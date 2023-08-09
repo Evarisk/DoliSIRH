@@ -77,13 +77,20 @@ class ActionsDoliSIRH
             if ($action == 'task_create') {
                 require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
                 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
-                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/mod_task_simple.php';
 
                 $product   = new Product($this->db);
                 $task      = new Task($this->db);
                 $project   = new Project($this->db);
                 $categorie = new Categorie($this->db);
-                $modTask   = new mod_task_simple();
+
+                $taskRefClass = empty($conf->global->PROJECT_TASK_ADDON) ? 'mod_task_simple' : $conf->global->PROJECT_TASK_ADDON;
+
+                if (!empty($taskRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php')) {
+                    require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php';
+                    $modTask = new $taskRefClass();
+                } else {
+                    $modTask = null;
+                }
 
                 $dateStart       = 0;
                 $dateEnd         = 0;
@@ -124,7 +131,7 @@ class ActionsDoliSIRH
                     $object->array_options['fk_task'] = $taskID;
                     $object->update($user, false);
 
-                    setEventMessages($langs->trans('MessageInfo').' : <a href="' . DOL_URL_ROOT . '/projet/tasks/task.php?id=' . $taskID . '">' . $task->ref . '</a>', []);
+                    setEventMessages($langs->trans('TaskCreate') . ' : <a href="' . DOL_URL_ROOT . '/projet/tasks/task.php?id=' . $taskID . '">' . $task->ref . '</a>', []);
                     header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $object->id );
                     exit;
                 }
@@ -203,14 +210,12 @@ class ActionsDoliSIRH
             if (empty($object->array_options['options_fk_task'])) {
                 if (isset($object->fk_project) && !empty($dateStart) && !empty($dateEnd) && (isset($plannedWorkload) && $plannedWorkload != 0)) {
                     print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['REQUEST_URI'] . '&action=task_create">' . $langs->trans('AddTask') . '</a></div>';
-                } elseif (!isset($object->fk_project)) {
-                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $langs->trans('ErrorNoProject') . '">' . $langs->trans('AddTask') . '</span></div>';
-                } elseif (empty($dateStart)) {
-                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $langs->trans('ErrorDateStart') . '">' . $langs->trans('AddTask') . '</span></div>';
-                } elseif (empty($dateEnd)) {
-                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $langs->trans('ErrorDateEnd') . '">' . $langs->trans('AddTask') . '</span></div>';
-                } elseif (!isset($plannedWorkload)) {
-                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $langs->trans('ErrorServiceTime') . '">' . $langs->trans('AddTask') . '</span></div>';
+                } else {
+                    $mesgs  = !isset($object->fk_project) ? $langs->trans('ErrorNoProject') . '<br>' : '';
+                    $mesgs .= empty($dateStart) ? $langs->trans('ErrorDateStart') . '<br>' : '';
+                    $mesgs .= empty($dateEnd) ? $langs->trans('ErrorDateEnd') . '<br>' : '';
+                    $mesgs .= (!isset($plannedWorkload) || $plannedWorkload == 0) ? $langs->trans('ErrorServiceTime') . '<br>' : '';
+                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $mesgs . '">' . $langs->trans('AddTask') . '</span></div>';
                 }
             }
         }
