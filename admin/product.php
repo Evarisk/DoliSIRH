@@ -41,7 +41,7 @@ require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 global $conf, $db, $langs, $user;
 
 // Load translation files required by the page
-saturne_load_langs(['admin']);
+saturne_load_langs(['admin', 'products']);
 
 // Initialize view objects
 $form = new Form($db);
