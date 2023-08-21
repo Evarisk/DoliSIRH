@@ -78,19 +78,19 @@ class ActionsDoliSIRH
                 require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
                 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
+                require_once __DIR__ . '/../../saturne/lib/object.lib.php';
+
                 $product   = new Product($this->db);
                 $task      = new Task($this->db);
                 $project   = new Project($this->db);
                 $categorie = new Categorie($this->db);
 
-                $taskRefClass = empty($conf->global->PROJECT_TASK_ADDON) ? 'mod_task_simple' : $conf->global->PROJECT_TASK_ADDON;
+                $numRefConf = strtoupper($task->element) . '_ADDON';
 
-                if (!empty($taskRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php')) {
-                    require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php';
-                    $modTask = new $taskRefClass();
-                } else {
-                    $modTask = null;
-                }
+                $numberingModuleName = [
+                    'project/task' => $conf->global->$numRefConf,
+                ];
+                $modTask = saturne_require_objects_mod($numberingModuleName);
 
                 $dateStart       = 0;
                 $dateEnd         = 0;
