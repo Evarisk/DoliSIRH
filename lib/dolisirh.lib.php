@@ -43,6 +43,11 @@ function dolisirh_admin_prepare_head(): array
     $head[$h][2] = 'projecttasks';
     $h++;
 
+    $head[$h][0] = dol_buildpath('/dolisirh/admin/product.php', 1);
+    $head[$h][1] = '<i class="fas fa-cube pictofixedwidth"></i>' . $langs->trans('ProductOrService');
+    $head[$h][2] = 'productorservice';
+    $h++;
+
     $head[$h][0] = dol_buildpath('/saturne/admin/object.php', 1) . '?module_name=DoliSIRH&object_type=timesheet';
     $head[$h][1] = '<i class="fas fa-calendar-check pictofixedwidth"></i>' . $langs->trans('TimeSheet');
     $head[$h][2] = 'timesheet';
