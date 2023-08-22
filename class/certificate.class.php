@@ -32,7 +32,7 @@ class Certificate extends SaturneCertificate
     /**
      * @var string Module name.
      */
-    public string $module = 'dolisirh';
+    public $module = 'dolisirh';
 
     /**
      * @var string Element type of object.
