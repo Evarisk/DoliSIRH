@@ -32,7 +32,7 @@ class CertificateDocument extends SaturneDocuments
     /**
      * @var string Module name.
      */
-    public string $module = 'dolisirh';
+    public $module = 'dolisirh';
 
     /**
      * @var string Element type of object.
