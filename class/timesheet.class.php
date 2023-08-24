@@ -233,7 +233,7 @@ class TimeSheet extends SaturneObject
     /**
      * @var string Field with ID of parent key if this object has a parent.
      */
-    public string $fk_element = 'fk_timesheet';
+    public $fk_element = 'fk_timesheet';
 
     /**
      * @var string Name of subtable class that manage subtable lines.
