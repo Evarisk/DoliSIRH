@@ -90,7 +90,7 @@ class ActionsDoliSIRH
                 $numberingModuleName = [
                     'project/task' => $conf->global->$numRefConf,
                 ];
-                $modTask = saturne_require_objects_mod($numberingModuleName);
+                list($modTask) = saturne_require_objects_mod($numberingModuleName);
 
                 $dateStart       = 0;
                 $dateEnd         = 0;
