@@ -98,13 +98,13 @@ saturne_check_access($permissionToRead);
  * Actions.
  */
 
-$parameters = [];
-$reshook    = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks.
-if ($reshook < 0) {
+$parameters = ['id' => $id];
+$resHook    = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks.
+if ($resHook < 0) {
     setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 }
 
-if (empty($reshook)) {
+if (empty($resHook)) {
     $error = 0;
 
     $backurlforlist = dol_buildpath('/dolisirh/view/certificate/certificate_list.php', 1);
@@ -122,8 +122,8 @@ if (empty($reshook)) {
     // Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen.
     include DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
 
-    // Actions save_project.
-    require_once __DIR__ . '/../../../saturne/core/tpl/actions/edit_project_action.tpl.php';
+    // Actions set_thirdparty, set_project
+    require_once __DIR__ . '/../../../saturne/core/tpl/actions/banner_actions.tpl.php';
 
     // Actions builddoc, forcebuilddoc, remove_file.
     require_once __DIR__ . '/../../../saturne/core/tpl/documents/documents_action.tpl.php';
