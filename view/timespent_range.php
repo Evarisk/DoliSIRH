@@ -349,6 +349,7 @@ if (empty($resHook)) {
 
 $title    = $langs->trans('TimeSpent');
 $help_url = 'FR:Module_DoliSIRH';
+$moreJS   = ["/dolisirh/js/includes/jquery.floatThead.min.js"];
 
 if ($id) {
     $project->fetch($id);
@@ -380,7 +381,7 @@ $tasksArray = get_tasks_array(0, 0, ($project->id ?: 0), 0, 0, $searchProjectRef
 $tasksRole    = $task->getUserRolesForProjectsOrTasks(0, $userTmp, ($project->id ?: 0), 0, $onlyOpenedProject);
 $projectsRole = $task->getUserRolesForProjectsOrTasks($userTmp, 0, ($project->id ?: 0), 0, $onlyOpenedProject);
 
-saturne_header(0,'', $title, $help_url);
+saturne_header(0,'', $title, $help_url, '', 0, 0, $moreJS);
 
 $param  = (dol_strlen($viewMode) > 0 ? '&view_mode=' . urlencode($viewMode) : '');
 $param .= ($mode ? '&mode=' . urlencode($mode) : '');
@@ -523,10 +524,9 @@ if (!empty($moreForFilter)) {
     print '</div>';
 }
 
-print '<div class="div-table-responsive">';
-print '<table class="tagtable liste' . ($moreForFilter ? ' listwithfilterbefore' : '') . '" id="tablelines3">';
+print '<div><table class="tagtable liste' . ($moreForFilter ? ' listwithfilterbefore' : '') . '" id="tablelines3">';
 
-print '<tr class="liste_titre_filter">';
+print '<thead><tr class="liste_titre_filter">';
 print '<td class="liste_titre"><input type="text" size="4" name="search_task_label" value="' . dol_escape_htmltag($searchTaskLabel) . '"></td>';
 // TASK fields.
 if (!empty($arrayFields['timeconsumed']['checked'])) {
@@ -619,7 +619,7 @@ if ($conf->use_javascript_ajax) {
         print '<div class="' . $idw . '">' . (($plannedHoursOnDay['minutes'] != 0) ? convertSecondToTime($plannedHoursOnDay['minutes'] * 60, 'allhourmin') : '00:00') . '</div></td>';
     }
     print '<td></td>';
-    print '</tr>';
+    print '</tr></thead>';
 }
 
 // By default, we can edit only tasks we are assigned to.

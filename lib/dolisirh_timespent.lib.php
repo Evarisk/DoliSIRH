@@ -639,8 +639,8 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                     }
 
                     print '<tr class="oddeven trforbreak nobold">';
-                    print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '"' . ($project->status == $project::STATUS_CLOSED ? 'style="background-color: #CBCDCD!important;"' : '') . '>';
-                    print $project->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv('YourRole') . ' : </strong> ' . $projectsRole[$lines[$i]->fk_project]);
+                    print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '"' . ($project->status == $project::STATUS_CLOSED ? 'style="background-color: #CBCDCD!important;' : '') . '>';
+                    print '<span style="position: sticky; left: 0;">' . $project->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv('YourRole') . ' : </strong> ' . $projectsRole[$lines[$i]->fk_project]);
                     if ($thirdparty->id > 0) {
                         print ' - ' . $thirdparty->getNomUrl(1);
                     }
@@ -649,7 +649,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                         print '<span class="secondary" title="' . $project->title . '">' . dol_trunc($project->title, '64') . '</span>';
                     }
                     print ' - ' . $project->getLibStatut(5);
-                    print '</td>';
+                    print '</span></td>';
                     print '</tr>';
                 }
 
@@ -660,7 +660,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 print '<tr class="oddeven" data-task_id="' . $lines[$i]->id . '" >';
 
                 // Ref.
-                print '<td class="nowrap">';
+                print '<td class="nowrap" style="position: sticky; left: 0; background-color: #ffffff;">';
                 print '<!-- Task id = ' . $lines[$i]->id . ' -->';
                 for ($k = 0; $k < $level; $k++) {
                     print '<div class="marginleftonly">';
