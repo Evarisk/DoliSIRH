@@ -640,7 +640,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                     print '<tr class="oddeven trforbreak nobold">';
                     print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '"' . ($project->status == $project::STATUS_CLOSED ? 'style="background-color: #CBCDCD!important;' : '') . '>';
-                    print '<span style="position: sticky; left: 0;">' . $project->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv('YourRole') . ' : </strong> ' . $projectsRole[$lines[$i]->fk_project]);
+                    print '<span style="position: sticky; left: 20px;">' . $project->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv('YourRole') . ' : </strong> ' . $projectsRole[$lines[$i]->fk_project]);
                     if ($thirdparty->id > 0) {
                         print ' - ' . $thirdparty->getNomUrl(1);
                     }
@@ -660,7 +660,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 print '<tr class="oddeven" data-task_id="' . $lines[$i]->id . '" >';
 
                 // Ref.
-                print '<td class="nowrap" style="position: sticky; left: 0; background-color: #ffffff;">';
+                print '<td class="nowrap" style="position: sticky; left: 20px; background-color: #FFFFFF;">';
                 print '<!-- Task id = ' . $lines[$i]->id . ' -->';
                 for ($k = 0; $k < $level; $k++) {
                     print '<div class="marginleftonly">';

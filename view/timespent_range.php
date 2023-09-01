@@ -349,7 +349,6 @@ if (empty($resHook)) {
 
 $title    = $langs->trans('TimeSpent');
 $help_url = 'FR:Module_DoliSIRH';
-$moreJS   = ["/dolisirh/js/includes/jquery.floatThead.min.js"];
 
 if ($id) {
     $project->fetch($id);
@@ -381,7 +380,7 @@ $tasksArray = get_tasks_array(0, 0, ($project->id ?: 0), 0, 0, $searchProjectRef
 $tasksRole    = $task->getUserRolesForProjectsOrTasks(0, $userTmp, ($project->id ?: 0), 0, $onlyOpenedProject);
 $projectsRole = $task->getUserRolesForProjectsOrTasks($userTmp, 0, ($project->id ?: 0), 0, $onlyOpenedProject);
 
-saturne_header(0,'', $title, $help_url, '', 0, 0, $moreJS);
+saturne_header(0,'', $title, $help_url);
 
 $param  = (dol_strlen($viewMode) > 0 ? '&view_mode=' . urlencode($viewMode) : '');
 $param .= ($mode ? '&mode=' . urlencode($mode) : '');
@@ -478,7 +477,7 @@ $isAvailable = [];
 for ($idw = 0; $idw < $daysInRange; $idw++) {
     $dayInLoop =  dol_time_plus_duree($firstDayToShow, $idw, 'd');
     if (is_day_available($dayInLoop, $user->id)) {
-        $isAvailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
+        $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
     } elseif (date('N', $dayInLoop) >= 6) {
         $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
     } else {
@@ -486,47 +485,37 @@ for ($idw = 0; $idw < $daysInRange; $idw++) {
     }
 }
 
-// If the user can view user other than himself.
-$moreForFilter  = '<div class="divsearchfield">';
-$moreForFilter .= '<div class="inline-block hideonsmartphone"></div>';
+print '<div class="' . ($conf->browser->layout == 'phone' ? 'div-table-responsive' : '') . '">';
+print '<table class="tagtable liste" id="tablelines3">';
+print '<thead style="position: sticky; top: 20px; background-color: #FFFFFF; z-index: 1001;">';
 
-$includeOnly = '';
+// If the user can view user other than himself.
+$moreForFilter = '<tr class="liste_titre"><td class="liste_titre" colspan="' . (3 + $daysInRange) . '">';
+$includeOnly   = '';
 if (empty($user->rights->user->user->lire)) {
     $includeOnly = [$user->id];
 }
 
 $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($searchUserID ?: $userTmp->id, 'search_user_id', 0, null, 0, $includeOnly, null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth200', 1);
-$moreForFilter .= '</div>';
 
 if (!getDolGlobalInt('PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT')) {
-    $moreForFilter .= '<div class="divsearchfield">';
-    $moreForFilter .= '<div class="inline-block"></div>';
-    $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('Project'), 'project', 'class="paddingright pictofixedwidth"') . '<input type="text" name="search_project_ref" class="maxwidth100" value="' . dol_escape_htmltag($searchProjectRef) . '">';
-    $moreForFilter .= '</div>';
-
-    $moreForFilter .= '<div class="divsearchfield">';
-    $moreForFilter .= '<div class="inline-block"></div>';
-    $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('ThirdParty'), 'company', 'class="paddingright pictofixedwidth"') . '<input type="text" name="search_thirdparty" class="maxwidth100" value="' . dol_escape_htmltag($searchThirdparty) . '">';
-    $moreForFilter .= '</div>';
+    $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('Project'), 'project', 'class="marginleftonly paddingright pictofixedwidth"') . '<input type="text" name="search_project_ref" class="maxwidth100" value="' . dol_escape_htmltag($searchProjectRef) . '">';
+    $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('ThirdParty'), 'company', 'class="marginleftonly paddingright pictofixedwidth"') . '<input type="text" name="search_thirdparty" class="maxwidth100" value="' . dol_escape_htmltag($searchThirdparty) . '">';
 }
 
 // Filter on categories.
 if (isModEnabled('categorie') && $user->rights->categorie->lire) {
-    $moreForFilter .= $formCategory->getFilterBox(Categorie::TYPE_PROJECT, $searchCategoryArray);
+    $moreForFilter .= '<span class="marginleftonly">' . $formCategory->getFilterBox(Categorie::TYPE_PROJECT, $searchCategoryArray) . '</span>';
 }
 
-if (!empty($moreForFilter)) {
-    print '<div class="liste_titre liste_titre_bydiv centpercent">';
-    print $moreForFilter;
-    $parameters = [];
-    $hookmanager->executeHooks('printFieldPreListTitle', $parameters); // Note that $action and $task may have been modified by hook.
-    print $hookmanager->resPrint;
-    print '</div>';
-}
+$moreForFilter .= '</td></tr>';
 
-print '<div><table class="tagtable liste' . ($moreForFilter ? ' listwithfilterbefore' : '') . '" id="tablelines3">';
+print $moreForFilter;
+$parameters = [];
+$hookmanager->executeHooks('printFieldPreListTitle', $parameters); // Note that $action and $task may have been modified by hook.
+print $hookmanager->resPrint;
 
-print '<thead><tr class="liste_titre_filter">';
+print '<tr class="liste_titre_filter">';
 print '<td class="liste_titre"><input type="text" size="4" name="search_task_label" value="' . dol_escape_htmltag($searchTaskLabel) . '"></td>';
 // TASK fields.
 if (!empty($arrayFields['timeconsumed']['checked'])) {
