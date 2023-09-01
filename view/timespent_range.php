@@ -487,10 +487,10 @@ for ($idw = 0; $idw < $daysInRange; $idw++) {
 
 print '<div class="' . ($conf->browser->layout == 'phone' ? 'div-table-responsive' : '') . '">';
 print '<table class="tagtable liste" id="tablelines3">';
-print '<thead style="position: sticky; top: 20px; background-color: #FFFFFF; z-index: 1001;">';
+print '<thead style="position: sticky; top: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;">';
 
 // If the user can view user other than himself.
-$moreForFilter = '<tr class="liste_titre"><td class="liste_titre" colspan="' . (3 + $daysInRange) . '">';
+$moreForFilter = '<tr class="liste_titre"><td class="liste_titre" style="position: sticky; left: 0; background-color: var(--colorbacktitle1); z-index: 1100;">';
 $includeOnly   = '';
 if (empty($user->rights->user->user->lire)) {
     $includeOnly = [$user->id];
@@ -503,12 +503,14 @@ if (!getDolGlobalInt('PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT')) {
     $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('ThirdParty'), 'company', 'class="marginleftonly paddingright pictofixedwidth"') . '<input type="text" name="search_thirdparty" class="maxwidth100" value="' . dol_escape_htmltag($searchThirdparty) . '">';
 }
 
+$moreForFilter .= '</td>';
+
 // Filter on categories.
 if (isModEnabled('categorie') && $user->rights->categorie->lire) {
-    $moreForFilter .= '<span class="marginleftonly">' . $formCategory->getFilterBox(Categorie::TYPE_PROJECT, $searchCategoryArray) . '</span>';
+    $moreForFilter .= '<td class="liste_titre" colspan="6"><span>' . $formCategory->getFilterBox(Categorie::TYPE_PROJECT, $searchCategoryArray, 'minwidth300 widthcentpercentminusx timespent-list-z-index') . '</span></td>';
 }
 
-$moreForFilter .= '</td></tr>';
+$moreForFilter .= '<td class="liste_titre" colspan="' . (2 + $daysInRange - 6) . '"></td></tr>';
 
 print $moreForFilter;
 $parameters = [];
@@ -516,7 +518,7 @@ $hookmanager->executeHooks('printFieldPreListTitle', $parameters); // Note that 
 print $hookmanager->resPrint;
 
 print '<tr class="liste_titre_filter">';
-print '<td class="liste_titre"><input type="text" size="4" name="search_task_label" value="' . dol_escape_htmltag($searchTaskLabel) . '"></td>';
+print '<td class="liste_titre" style="position: sticky; left: 0; background-color: var(--colorbacktitle1); z-index: 1040;"><input type="text" size="4" name="search_task_label" value="' . dol_escape_htmltag($searchTaskLabel) . '"></td>';
 // TASK fields.
 if (!empty($arrayFields['timeconsumed']['checked'])) {
     print '<td class="liste_titre"></td>';
@@ -531,7 +533,7 @@ print '</td>';
 print '</tr>';
 
 print '<tr class="liste_titre">';
-print '<th>' . $form->textwithpicto($langs->trans('Task'), $tooltipTaskInfo);
+print '<th style="position: sticky; left: 0; background-color: var(--colorbacktitle1); z-index: 1040;>' . $form->textwithpicto($langs->trans('Task'), $tooltipTaskInfo);
 print ' <i class="fas fa-star"></i>';
 print '<input type="checkbox"  class="show-only-favorite-tasks"' . ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('ShowOnlyFavoriteTasks'));
@@ -576,7 +578,7 @@ if ($conf->use_javascript_ajax) {
     $plannedWorkingTime = load_planned_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable);
 
     print '<tr class="liste_total">';
-    print '<td class="liste_total" colspan="' . $colspan . '">';
+    print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040; colspan="' . $colspan . '">';
     print $langs->trans('Total');
     print '<span class="opacitymediumbycolor">  - ';
     if ($viewMode == 'month') {
@@ -624,7 +626,7 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
 
 <!-- TIMESPENT ADD MODAL -->
 <div class="timespent-add-modal">
-    <div class="wpeo-modal modal-timespent" id="timespent">
+    <div class="wpeo-modal modal-timespent" id="timespent" style="z-index: 1200;">
         <div class="modal-container wpeo-modal-event" style="max-width: 400px; max-height: 300px;">
             <!-- Modal-Header -->
             <div class="modal-header">
