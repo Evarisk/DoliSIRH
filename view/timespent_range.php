@@ -315,6 +315,16 @@ if (empty($resHook)) {
         dol_set_user_param($db, $conf, $user, $tabParam);
     }
 
+    if ($action == 'select_logic_operators_mode') {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $selectLogicOperatorsMode = $data['selectLogicOperatorsMode'];
+
+        $tabParam['DOLISIRH_SELECT_LOGIC_OPERATORS_MODE'] = $selectLogicOperatorsMode;
+
+        dol_set_user_param($db, $conf, $user, $tabParam);
+    }
+
     if ($action == 'add_timespent' && $permissiontoAdd) {
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -549,6 +559,9 @@ print $form->textwithpicto('', $langs->trans('ShowOnlyFavoriteTasks'));
 print ' <i class="fas fa-clock"></i>';
 print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('ShowOnlyTasksWithTimeSpent'));
+print ' <i class="fas fa-cogs"></i>';
+print '<input type="checkbox"  class="select-logic-operators-mode"'. ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE ? ' checked' : '') . '>';
+print $form->textwithpicto('', $langs->trans('SelectLogicOperatorsMode'));
 print '</th>';
 // TASK fields.
 if (!empty($arrayFields['timeconsumed']['checked'])) {

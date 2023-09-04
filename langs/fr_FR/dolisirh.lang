@@ -143,6 +143,7 @@ WarningShowOnlyFavoriteTasks           = Attention, quand l'option 'Afficher uni
 ExpectedWorkingHoursWeek               = Heures de travail prévues (%s - %s)
 TimeSpentList                          = Liste des temps consommés
 ShowOnlyTasksWithTimeSpent             = Afficher uniquement les tâches avec du temps consommé sur cette période
+SelectLogicOperatorsMode               = Sélection de l'opérateur logique 'ET/OU' par défaut : ET
 ExpectedWorkingHours                   = Heures de travail prévues
 ConsumedWorkingHours                   = Heures de travail consommées
 TimeSpentReportByFiscalYear            = Rapport du temps consommé sur l'exercice fiscal
