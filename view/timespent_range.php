@@ -325,6 +325,16 @@ if (empty($resHook)) {
         dol_set_user_param($db, $conf, $user, $tabParam);
     }
 
+    if ($action == 'show_closed_projects') {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $showClosedProjects = $data['showClosedProjects'];
+
+        $tabParam['DOLISIRH_SHOW_CLOSED_PROJECTS'] = $showClosedProjects;
+
+        dol_set_user_param($db, $conf, $user, $tabParam);
+    }
+
     if ($action == 'add_timespent' && $permissiontoAdd) {
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -365,7 +375,7 @@ if ($id) {
     $project->fetch_thirdparty();
 }
 
-$onlyOpenedProject = -1; // or -1.
+$onlyOpenedProject = $user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS ? '-1' : '1';
 $moreWhereFilter   = '';
 
 if ($searchProjectRef) {
@@ -562,6 +572,9 @@ print $form->textwithpicto('', $langs->trans('ShowOnlyTasksWithTimeSpent'));
 print ' <i class="fas fa-cogs"></i>';
 print '<input type="checkbox"  class="select-logic-operators-mode"'. ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('SelectLogicOperatorsMode'));
+print ' <i class="fas fa-project-diagram"></i>';
+print '<input type="checkbox"  class="show-closed-projects"'. ($user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS ? ' checked' : '') . '>';
+print $form->textwithpicto('', $langs->trans('ShowClosedProjects'));
 print '</th>';
 // TASK fields.
 if (!empty($arrayFields['timeconsumed']['checked'])) {
