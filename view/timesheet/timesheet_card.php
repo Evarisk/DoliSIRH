@@ -722,14 +722,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
         if (!empty($object->lines)) {
             if ($permissiontoadd) {
-                $user->rights->timesheet        = new stdClass();
-                $user->rights->timesheet->creer = 1;
-                $object->statut                 = TimeSheet::STATUS_DRAFT;
-                if ($object->status >= TimeSheet::STATUS_VALIDATED) {
-                    $disableedit   = 1;
-                    $disableremove = 1;
-                    $disablemove   = 1;
-                }
+                $object->statut = $object->status;
             }
             $object->printObjectLines($action, $mysoc, null, $lineid, 1); ?>
             <script>
