@@ -351,6 +351,11 @@ class modDoliSIRH extends DolibarrModules
         $this->rights[$r][5] = 'write';
         $r++;
         $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
+        $this->rights[$r][1] = $langs->transnoentities('CreateObjects', $langs->transnoentities('Timesheets'));
+        $this->rights[$r][4] = 'timesheet';
+        $this->rights[$r][5] = 'creer';
+        $r++;
+        $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
         $this->rights[$r][1] = $langs->transnoentities('DeleteObjects', $langs->transnoentities('Timesheets'));
         $this->rights[$r][4] = 'timesheet';
         $this->rights[$r][5] = 'delete';
