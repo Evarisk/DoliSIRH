@@ -639,8 +639,8 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                     }
 
                     print '<tr class="oddeven trforbreak nobold">';
-                    print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '"' . ($project->status == $project::STATUS_CLOSED ? 'style="background-color: #CBCDCD!important;"' : '') . '>';
-                    print $project->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv('YourRole') . ' : </strong> ' . $projectsRole[$lines[$i]->fk_project]);
+                    print '<td colspan="' . (2 + $addColSpan + $daysInRange) . '"' . ($project->status == $project::STATUS_CLOSED ? "style='background-color: #CBCDCD!important;'" : '') . '>';
+                    print '<span style="position: sticky; left: 5px;">' . $project->getNomUrl(1, '', 0, '<strong>' . $langs->transnoentitiesnoconv('YourRole') . ' : </strong> ' . $projectsRole[$lines[$i]->fk_project]);
                     if ($thirdparty->id > 0) {
                         print ' - ' . $thirdparty->getNomUrl(1);
                     }
@@ -649,7 +649,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                         print '<span class="secondary" title="' . $project->title . '">' . dol_trunc($project->title, '64') . '</span>';
                     }
                     print ' - ' . $project->getLibStatut(5);
-                    print '</td>';
+                    print '</span></td>';
                     print '</tr>';
                 }
 
@@ -660,7 +660,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 print '<tr class="oddeven" data-task_id="' . $lines[$i]->id . '" >';
 
                 // Ref.
-                print '<td class="nowrap">';
+                print '<td class="nowrap" style="position: sticky; left: 0; background-color: #FFFFFF;">';
                 print '<!-- Task id = ' . $lines[$i]->id . ' -->';
                 for ($k = 0; $k < $level; $k++) {
                     print '<div class="marginleftonly">';
@@ -756,7 +756,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                     $tableCell .= '<div class="modal-open">';
                     $tableCell .= '<input hidden class="modal-options" data-modal-to-open="timespent" data-from-id="' . $lines[$i]->id . '" data-from-module="dolisirh">';
-                    $tableCell .= '<input type="text" alt="' . ($disabledTaskDay ? '' : $altTitle) . '" title="' . ($disabledTaskDay ? '' : $altTitle) . '" ' . ($disabledTaskDay ? 'disabled' : '') . ' class="center smallpadd timespent" size="2" id="timeadded[' . $inc . '][' . $idw.']" name="task[' . $lines[$i]->id . '][' . $idw . ']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $dayInLoop . ' data-date=' . dol_print_date($dayInLoop, 'day') . ' data-cell=' . $idw . ' value="" cols="2"  maxlength="5">';
+                    $tableCell .= '<input type="text" alt="' . ($disabledTaskDay ? '' : $altTitle) . '" title="' . ($disabledTaskDay ? '' : $altTitle) . '" ' . ($disabledTaskDay ? 'disabled' : '') . ' class="center smallpadd timespent" size="2" id="timeadded[' . $inc . '][' . $idw.']" name="task[' . $lines[$i]->id . '][' . $idw . ']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $dayInLoop . ' data-date="' . dol_print_date($dayInLoop, '%a') . ' - ' . dol_print_date($dayInLoop, 'dayreduceformat') . '" data-cell=' . $idw . ' value="" cols="2"  maxlength="5">';
                     $tableCell .= '</div></td>';
                     print $tableCell;
                 }
