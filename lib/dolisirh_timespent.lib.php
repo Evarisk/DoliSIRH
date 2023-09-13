@@ -338,12 +338,11 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
         $sql .= ' WHERE p.entity IN (' . getEntity('project') . ')';
         $sql .= ' AND t.fk_projet = p.rowid';
         if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
-            $sql .= ' AND elel.fk_target = t.rowid';
+            $sql .= ' AND ' . ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? '(' : '') . 'elel.fk_target = t.rowid';
             $sql .= ' AND elel.fk_source = ' . $filterOnProjUser;
         }
-
         if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
-            $sql .= ' AND ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
+            $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
             if ($timeMode == 'month') {
                 $sql .= ' AND MONTH(ptt.task_date) = ' . $timeArray['month'];
             } elseif ($timeMode == 'week') {
@@ -353,6 +352,7 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
             }
             $sql .= ' AND YEAR(ptt.task_date) = ' . $timeArray['year'];
         }
+        $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? '))' : '');
     } elseif ($mode == 1) {
         if ($filterOnProjUser > 0) {
             $sql .= ', ' . MAIN_DB_PREFIX . 'element_contact as ec';

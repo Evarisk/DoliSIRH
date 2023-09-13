@@ -63,6 +63,8 @@ window.dolisirh.task.event = function() {
     $(document).on('click', '.auto-fill-timespent-project', window.dolisirh.task.divideTimeSpent);
     $(document).on('click', '.show-only-favorite-tasks', window.dolisirh.task.showOnlyFavoriteTasks);
     $(document).on('click', '.show-only-tasks-with-timespent', window.dolisirh.task.showOnlyTasksWithTimeSpent);
+    $(document).on('click', '.select-logic-operators-mode', window.dolisirh.task.selectLogicOperatorsMode);
+    $(document).on('click', '.show-closed-projects', window.dolisirh.task.showClosedProjects);
     $(document).on('click', '.timespent-create', window.dolisirh.task.createTimeSpent);
     $(document).on('click', '.toggleTaskFavorite', window.dolisirh.task.toggleTaskFavorite);
     $(document).on('submit', '#addtimeform', window.dolisirh.task.searchForm );
@@ -196,6 +198,78 @@ window.dolisirh.task.showOnlyTasksWithTimeSpent = function() {
         },
         error: function() {}
     });
+};
+
+/**
+ * Select Logic operators mode beetween AND/OR
+ *
+ * @memberof DoliSIRH_Task
+ *
+ * @since   1.4.0
+ * @version 1.4.0
+ *
+ * @return {void}
+ */
+window.dolisirh.task.selectLogicOperatorsMode = function() {
+  let token          = window.saturne.toolbox.getToken();
+  let querySeparator = window.saturne.toolbox.getQuerySeparator(document.URL);
+
+  let selectLogicOperatorsMode;
+  if ($(this).is(':checked')) {
+    selectLogicOperatorsMode = 1;
+  } else {
+    selectLogicOperatorsMode = 0;
+  }
+
+  $.ajax({
+    url: document.URL + querySeparator + "action=select_logic_operators_mode&token=" + token,
+    type: "POST",
+    processData: false,
+    data: JSON.stringify({
+      selectLogicOperatorsMode: selectLogicOperatorsMode
+    }),
+    contentType: false,
+    success: function() {
+      window.location.reload();
+    },
+    error: function() {}
+  });
+};
+
+/**
+ * Enables/disables the configuration to display closed projects
+ *
+ * @memberof DoliSIRH_Task
+ *
+ * @since   1.4.0
+ * @version 1.4.0
+ *
+ * @return {void}
+ */
+window.dolisirh.task.showClosedProjects = function() {
+  let token          = window.saturne.toolbox.getToken();
+  let querySeparator = window.saturne.toolbox.getQuerySeparator(document.URL);
+
+  let showClosedProjects;
+  if ($(this).is(':checked')) {
+    showClosedProjects = 1;
+  } else {
+    showClosedProjects = 0;
+  }
+
+  $.ajax({
+    url: document.URL + querySeparator + "action=show_closed_projects&token=" + token,
+    type: "POST",
+    processData: false,
+    data: JSON.stringify({
+      showClosedProjects: showClosedProjects
+    }),
+    contentType: false,
+    success: function() {
+      window.location.reload();
+    },
+    error: function() {}
+  });
 };
 
 /**
