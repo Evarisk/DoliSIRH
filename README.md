@@ -3,7 +3,7 @@
 ## Informations
 
 - Numéro du module : 436310
-- Dernière mise à jour : 21/07/2023
+- Dernière mise à jour : 13/09/2023
 - Éditeur : [Evarisk](https://evarisk.com)
 - Thème : Eldy Menu
 - Licence : GPLv3
@@ -12,8 +12,8 @@
 ### Version
 
 - Version : 1.4.0
-- Compatibilité : Dolibarr 16.0.0 - 17.0.2
-- Saturne Framework : 1.1.1
+- Compatibilité : Dolibarr 16.0.0 - 17.0.3
+- Saturne Framework : 1.1.2
 
 ## Liens
 
@@ -27,7 +27,7 @@
 ## Fonctionnalités
 
 - Gestion avancée du pointage de temps 
-- Génération de rapports mensuels, hebdomadaires et journaliers du temps passé.
+- Génération de rapports mensuels, hebdomadaires et journaliers du temps passé
 - Gestion des certificats
 
 ## Traduction
@@ -51,3 +51,4 @@
 git clone https://github.com/Evarisk/dolisirh.git
 git clone https://github.com/Evarisk/saturne.git
 ```
+- Activer le module dans la liste des Modules/Applications installés
