@@ -119,7 +119,7 @@ if ($mode == 'customer') {
 		$stats->where .= ' AND cat.fk_categorie IN ('.$db->sanitize(implode(',', $custcats)).')';
 	}
 	if (is_array($invoicereccats) && !empty($invoicereccats)) {
-		$stats->from .= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_invoicerec as catinv ON (fr.rowid = catinv.fk_invoicerec)';
+		$stats->from .= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_facturerec as catinv ON (fr.rowid = catinv.fk_facturerec)';
 		$stats->where .= ' AND catinv.fk_categorie IN ('.$db->sanitize(implode(',', $invoicereccats)).')';
 	}
 }
@@ -330,7 +330,7 @@ if (!empty($conf->category->enabled)) {
 // Category invoice rec
 if (!empty($conf->category->enabled)) {
 	if ($mode == 'customer') {
-		$cat_type = 'invoice';
+		$cat_type = 'facturerec';
 		$cat_label = $langs->trans("Category").' '.lcfirst($langs->trans("RecurringInvoice"));
 	}
 	//  if ($mode == 'supplier') {

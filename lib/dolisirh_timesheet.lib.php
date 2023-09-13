@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,57 +18,23 @@
 /**
  * \file    lib/dolisirh_timesheet.lib.php
  * \ingroup dolisirh
- * \brief   Library files with common functions for TimeSheet
+ * \brief   Library files with common functions for TimeSheet.
  */
+
+// Load Saturne libraries.
+require_once __DIR__ . '/../../saturne/lib/object.lib.php';
 
 /**
- * Prepare array of tabs for TimeSheet
+ * Prepare timesheet pages header.
  *
- * @param  TimeSheet $object TimeSheet
- * @return array             Array of tabs
+ * @param  TimeSheet $object TimeSheet.
+ * @return array     $head   Array of tabs.
+ * @throws Exception
  */
-function timesheetPrepareHead(TimeSheet $object): array
+function timesheet_prepare_head(TimeSheet $object): array
 {
-	global $conf, $langs;
+    $moreParams['documentType']       = 'TimeSheetDocument';
+    $moreParams['attendantTableMode'] = 'simple';
 
-	$langs->load("dolisirh@dolisirh");
-
-	$h = 0;
-	$head = array();
-
-	$head[$h][0] = dol_buildpath("/dolisirh/view/timesheet/timesheet_card.php", 1).'?id='.$object->id;
-	$head[$h][1] = '<i class="fas fa-info-circle pictofixedwidth"></i>' . $langs->trans("Card");
-	$head[$h][2] = 'card';
-	$h++;
-
-	if (isset($object->fields['note_public']) || isset($object->fields['note_private'])) {
-		$nbNote = 0;
-		if (!empty($object->note_private)) {
-			$nbNote++;
-		}
-		if (!empty($object->note_public)) {
-			$nbNote++;
-		}
-		$head[$h][0] = dol_buildpath('/dolisirh/view/timesheet/timesheet_note.php', 1).'?id='.$object->id;
-		$head[$h][1] = '<i class="fas fa-comment pictofixedwidth"></i>' . $langs->trans('Notes');
-		if ($nbNote > 0) {
-			$head[$h][1] .= (empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER) ? '<span class="badge marginleftonlyshort">'.$nbNote.'</span>' : '');
-		}
-		$head[$h][2] = 'note';
-		$h++;
-	}
-
-	$head[$h][0] = dol_buildpath("/dolisirh/view/timesheet/timesheet_agenda.php", 1).'?id='.$object->id;
-	$head[$h][1] = '<i class="fas fa-calendar-alt pictofixedwidth"></i>' . $langs->trans("Events");
-	$head[$h][2] = 'agenda';
-	$h++;
-
-	$head[$h][0] = dol_buildpath("/dolisirh/view/timesheet/timesheet_attendants.php", 1) . '?id=' . $object->id;
-	$head[$h][1] = '<i class="fas fa-file-signature pictofixedwidth"></i>' . $langs->trans("Attendants");
-	$head[$h][2] = 'attendants';
-	$h++;
-
-	complete_head_from_modules($conf, $langs, $object, $head, $h, 'timesheet@dolisirh');
-
-	return $head;
+    return saturne_object_prepare_head($object, [], $moreParams, true);
 }

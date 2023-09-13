@@ -1,4 +1,4 @@
--- Copyright (C) 2023 EVARISK <dev@evarisk.com>
+-- Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -17,4 +17,3 @@ ALTER TABLE llx_dolisirh_timesheetdet ADD INDEX idx_dolisirh_timesheetdet_rowid 
 ALTER TABLE llx_dolisirh_timesheetdet ADD INDEX idx_dolisirh_timesheetdet_fk_timesheet (fk_timesheet);
 ALTER TABLE llx_dolisirh_timesheetdet ADD INDEX idx_dolisirh_timesheetdet_fk_product (fk_product);
 ALTER TABLE llx_dolisirh_timesheetdet ADD CONSTRAINT llx_dolisirh_timesheetdet_fk_timesheet FOREIGN KEY (fk_timesheet) REFERENCES llx_dolisirh_timesheet (rowid);
-

@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,545 +16,487 @@
  */
 
 /**
- *   	\file       view/certificate/certificate_card.php
- *		\ingroup    dolisirh
- *		\brief      Page to create/edit/view certificate
+ * \file    view/certificate/certificate_card.php
+ * \ingroup dolisirh
+ * \brief   Page to create/edit/view certificate.
  */
 
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
-	$res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
-}
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) {
-	$i--; $j--;
-}
-if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) {
-	$res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
-}
-if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) {
-	$res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
-}
-// Try main.inc.php using relative path
-if (!$res && file_exists("../main.inc.php")) {
-	$res = @include "../main.inc.php";
-}
-if (!$res && file_exists("../../main.inc.php")) {
-	$res = @include "../../main.inc.php";
-}
-if (!$res && file_exists("../../../main.inc.php")) {
-	$res = @include "../../../main.inc.php";
-}
-if (!$res && file_exists("../../../../main.inc.php")) {
-	$res = @include "../../../../main.inc.php";
-}
-if (!$res) {
-	die("Include of main fails");
+// Load DoliSIRH environment.
+if (file_exists('../../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../../dolisirh.main.inc.php';
+} elseif (file_exists('../../../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../../../dolisirh.main.inc.php';
+} else {
+    die('Include of dolisirh main fails');
 }
 
-// Libraries
+// Load Saturne libraries.
+require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
+
+// load DoliSIRH libraries.
+require_once __DIR__ . '/../../lib/dolisirh_certificate.lib.php';
 require_once __DIR__ . '/../../class/certificate.class.php';
 require_once __DIR__ . '/../../class/dolisirhdocuments/certificatedocument.class.php';
-require_once __DIR__ . '/../../lib/dolisirh_certificate.lib.php';
-require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 
-// Global variables definitions
+// Global variables definitions.
 global $conf, $db, $hookmanager, $langs, $mysoc, $user;
 
-// Load translation files required by the page
-$langs->loadLangs(array("dolisirh@dolisirh", "other"));
+// Load translation files required by the page.
+saturne_load_langs();
 
-// Get parameters
+// Get parameters.
 $id                  = GETPOST('id', 'int');
 $ref                 = GETPOST('ref', 'alpha');
 $action              = GETPOST('action', 'aZ09');
 $confirm             = GETPOST('confirm', 'alpha');
 $cancel              = GETPOST('cancel', 'aZ09');
-$contextpage         = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'certificatecard'; // To manage different context of search
+$contextPage         = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'certificatecard'; // To manage different context of search.
 $backtopage          = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
-$lineid              = GETPOST('lineid', 'int');
 
-// Initialize technical objects
-$object              = new Certificate($db);
-//$objectline          = new CertificateLine($db);
-$signatory           = new CertificateSignature($db);
-$certificatedocument = new CertificateDocument($db);
-$extrafields         = new ExtraFields($db);
-$project             = new Project($db);
+// Initialize technical objects.
+$object      = new Certificate($db);
+$signatory   = new SaturneSignature($db, 'dolisirh', $object->element);
+$document    = new CertificateDocument($db);
+$extraFields = new ExtraFields($db);
 
-$hookmanager->initHooks(array('certificatecard', 'globalcard')); // Note that conf->hooks_modules contains array
+// Initialize view objects.
+$form = new Form($db);
 
-// Fetch optionals attributes and labels
-$extrafields->fetch_name_optionals_label($object->table_element);
+$hookmanager->initHooks(['certificatecard', 'globalcard']); // Note that conf->hooks_modules contains array.
 
-$search_array_options = $extrafields->getOptionalsFromPost($object->table_element, '', 'search_');
+// Fetch optionals attributes and labels.
+$extraFields->fetch_name_optionals_label($object->table_element);
 
-// Initialize array of search criterias
-$search_all = GETPOST("search_all", 'alpha');
-$search = array();
+$search_array_options = $extraFields->getOptionalsFromPost($object->table_element, '', 'search_');
+
+// Initialize array of search criterias.
+$searchAll = GETPOST('search_all', 'alpha');
+$search    = [];
 foreach ($object->fields as $key => $val) {
-	if (GETPOST('search_'.$key, 'alpha')) {
-		$search[$key] = GETPOST('search_'.$key, 'alpha');
-	}
+    if (GETPOST('search_' . $key, 'alpha')) {
+        $search[$key] = GETPOST('search_' . $key, 'alpha');
+    }
 }
 
 if (empty($action) && empty($id) && empty($ref)) {
-	$action = 'view';
+    $action = 'view';
 }
 
-// Load object
-include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
+// Load object.
+include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be included, not include_once.
 
-// There is several ways to check permission.
-$permissiontoread   = $user->rights->dolisirh->certificate->read;
-$permissiontoadd    = $user->rights->dolisirh->certificate->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-$permissiontodelete = $user->rights->dolisirh->certificate->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-$permissionnote     = $user->rights->dolisirh->certificate->write; // Used by the include of actions_setnotes.inc.php
+$upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
 
-$upload_dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1];
-
-// Security check (enable the most restrictive one)
-if (empty($conf->dolisirh->enabled)) accessforbidden();
-if (!$permissiontoread) accessforbidden();
+// Security check - Protection if external user.
+$permissionToRead   = $user->rights->dolisirh->certificate->read;
+$permissiontoadd    = $user->rights->dolisirh->certificate->write;
+$permissiontodelete = $user->rights->dolisirh->certificate->delete || ($permissiontoadd && isset($object->status) && $object->status == SaturneCertificate::STATUS_DRAFT);
+saturne_check_access($permissionToRead);
 
 /*
- * Actions
+ * Actions.
  */
 
-$parameters = array();
-$reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
-if ($reshook < 0) {
-	setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+$parameters = ['id' => $id];
+$resHook    = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks.
+if ($resHook < 0) {
+    setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 }
 
-if (empty($reshook)) {
-	$error = 0;
+if (empty($resHook)) {
+    $error = 0;
 
-	$backurlforlist = dol_buildpath('/dolisirh/view/certificate/certificate_list.php', 1);
+    $backurlforlist = dol_buildpath('/dolisirh/view/certificate/certificate_list.php', 1);
 
-	if (empty($backtopage) || ($cancel && empty($id))) {
-		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
-			if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
-				$backtopage = $backurlforlist;
-			} else {
-				$backtopage = dol_buildpath('/dolisirh/view/certificate/certificate_card.php', 1).'?id='.((!empty($id) && $id > 0) ? $id : '__ID__');
-			}
-		}
-	}
-
-	$triggermodname = 'CERTIFICATE_MODIFY'; // Name of trigger action code to execute when we modify record
-
-	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
-    $conf->global->MAIN_DISABLE_PDF_AUTOUPDATE = 1;
-	include DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
-
-	// Action to move up and down lines of object
-	//include DOL_DOCUMENT_ROOT.'/core/actions_lineupdown.inc.php';
-
-    // Action to build doc
-    if ($action == 'builddoc' && $permissiontoadd) {
-        $outputlangs = $langs;
-        $newlang     = '';
-
-        if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09')) $newlang = GETPOST('lang_id', 'aZ09');
-        if ( ! empty($newlang)) {
-            $outputlangs = new Translate("", $conf);
-            $outputlangs->setDefaultLang($newlang);
-        }
-
-        // To be sure vars is defined
-        if (empty($hidedetails)) $hidedetails = 0;
-        if (empty($hidedesc)) $hidedesc       = 0;
-        if (empty($hideref)) $hideref         = 0;
-        if (empty($moreparams)) $moreparams   = null;
-
-        $model = GETPOST('model', 'alpha');
-
-        $moreparams['object'] = $object;
-        $moreparams['user']   = $user;
-
-        $result = $certificatedocument->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
-        if ($result <= 0) {
-            setEventMessages($object->error, $object->errors, 'errors');
-            $action = '';
-        } else {
-            if (empty($donotredirect)) {
-                setEventMessages($langs->trans("FileGenerated") . ' - ' . $certificatedocument->last_main_doc, null);
-                $urltoredirect = $_SERVER['REQUEST_URI'];
-                $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
-                $urltoredirect = preg_replace('/action=builddoc&?/', '', $urltoredirect); // To avoid infinite loop
-                header('Location: ' . $urltoredirect . '#builddoc');
-                exit;
-            }
-        }
-    }
-
-    // Delete file in doc form
-    if ($action == 'remove_file' && $permissiontodelete) {
-        if ( ! empty($upload_dir)) {
-            require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
-
-            $langs->load("other");
-            $filetodelete = GETPOST('file', 'alpha');
-            $file         = $upload_dir . '/' . $filetodelete;
-            $ret          = dol_delete_file($file, 0, 0, 0, $object);
-            if ($ret) setEventMessages($langs->trans("FileWasRemoved", $filetodelete), null, 'mesgs');
-            else setEventMessages($langs->trans("ErrorFailToDeleteFile", $filetodelete), null, 'errors');
-
-            // Make a redirect to avoid to keep the remove_file into the url that create side effects
-            $urltoredirect = $_SERVER['REQUEST_URI'];
-            $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
-            $urltoredirect = preg_replace('/action=remove_file&?/', '', $urltoredirect);
-
-            header('Location: ' . $urltoredirect);
-            exit;
-        } else {
-            setEventMessages('BugFoundVarUploaddirnotDefined', null, 'errors');
-        }
-    }
-
-	if ($action == 'set_thirdparty' && $permissiontoadd) {
-		$object->setValueFrom('fk_soc', GETPOST('fk_soc', 'int'), '', '', 'date', '', $user, $triggermodname);
-	}
-	if ($action == 'classin' && $permissiontoadd) {
-		$object->setProject(GETPOST('projectid', 'int'));
-	}
-
-    // Action to set status STATUS_ARCHIVED
-    if ($action == 'setArchived' && $permissiontoadd) {
-        $object->fetch($id);
-        if ( ! $error) {
-            $result = $object->setArchived($user, false);
-            if ($result > 0) {
-                // Set Archived OK
-                $urltogo = str_replace('__ID__', $result, $backtopage);
-                $urltogo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urltogo); // New method to autoselect project after a New on another form object creation
-                header("Location: " . $urltogo);
-                exit;
+    if (empty($backtopage) || ($cancel && empty($id))) {
+        if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
+            if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
+                $backtopage = $backurlforlist;
             } else {
-                // Set Archived KO
-                if ( ! empty($object->errors)) setEventMessages(null, $object->errors, 'errors');
-                else setEventMessages($object->error, null, 'errors');
+                $backtopage = dol_buildpath('/dolisirh/view/certificate/certificate_card.php', 1) . '?id=' . ($id > 0 ? $id : '__ID__');
             }
         }
     }
 
-	// Actions to send emails
-	$triggersendname = 'DOLISIRH_CERTIFICATE_SENTBYMAIL';
-	$autocopy = 'MAIN_MAIL_AUTOCOPY_CERTIFICATE_TO';
-	$trackid = 'certificate'.$object->id;
-	include DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
+    // Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen.
+    include DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
+
+    // Actions set_thirdparty, set_project
+    require_once __DIR__ . '/../../../saturne/core/tpl/actions/banner_actions.tpl.php';
+
+    // Actions builddoc, forcebuilddoc, remove_file.
+    require_once __DIR__ . '/../../../saturne/core/tpl/documents/documents_action.tpl.php';
+
+    // Action to generate pdf from odt file.
+    require_once __DIR__ . '/../../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
+
+    // Action confirm_lock, confirm_archive.
+    require_once __DIR__ . '/../../../saturne/core/tpl/signature/signature_action_workflow.tpl.php';
+
+    // Actions to send emails.
+    $triggersendname = strtoupper($object->element) . '_SENTBYMAIL';
+    $autocopy        = 'MAIN_MAIL_AUTOCOPY_' . strtoupper($object->element) . '_TO';
+    $trackid         = $object->element . $object->id;
+    require_once DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
 }
 
 /*
- * View
+ * View.
  */
 
-// Initialize view objects
-$form = new Form($db);
-
-$title    = $langs->trans("Certificate");
+$title    = $langs->trans(ucfirst($object->element));
 $help_url = 'FR:Module_DoliSIRH';
-$morejs   = array("/dolisirh/js/dolisirh.js");
-$morecss  = array("/dolisirh/css/dolisirh.css");
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
+saturne_header(0, '', $title, $help_url);
 
-// Part to create
+// Part to create.
 if ($action == 'create') {
-	if (empty($permissiontoadd)) {
-		accessforbidden($langs->trans('NotEnoughPermissions'), 0, 1);
-		exit;
-	}
+    if (empty($permissiontoadd)) {
+        accessforbidden($langs->trans('NotEnoughPermissions'), 0);
+        exit;
+    }
 
-	print load_fiche_titre($langs->trans("NewCertificate"), '', 'object_'.$object->picto);
+    print load_fiche_titre($langs->trans('New' . ucfirst($object->element)), '', 'object_' . $object->picto);
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-	print '<input type="hidden" name="token" value="'.newToken().'">';
-	print '<input type="hidden" name="action" value="add">';
-	if ($backtopage) {
-		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
-	}
-	if ($backtopageforcancel) {
-		print '<input type="hidden" name="backtopageforcancel" value="'.$backtopageforcancel.'">';
-	}
+    print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '">';
+    print '<input type="hidden" name="token" value="' . newToken() . '">';
+    print '<input type="hidden" name="action" value="add">';
+    if ($backtopage) {
+        print '<input type="hidden" name="backtopage" value="' . $backtopage . '">';
+    }
+    if ($backtopageforcancel) {
+        print '<input type="hidden" name="backtopageforcancel" value="' . $backtopageforcancel . '">';
+    }
 
-	print dol_get_fiche_head(array(), '');
+    print dol_get_fiche_head();
 
-	// Set some default values
-	//if (! GETPOSTISSET('fieldname')) $_POST['fieldname'] = 'myvalue';
+    print '<table class="border centpercent tableforfieldcreate">';
 
-	print '<table class="border centpercent tableforfieldcreate">'."\n";
+    $object->fields['fk_project']['default'] = $conf->global->DOLISIRH_HR_PROJECT;
 
-	$object->fields['fk_project']['default'] = $conf->global->DOLISIRH_HR_PROJECT;
+    if (isModEnabled('user')) {
+        $object->fields['element_type']['arrayofkeyval']['user'] = $langs->trans('User');
+    }
+    if (isModEnabled('product')) {
+        $object->fields['element_type']['arrayofkeyval']['product'] = $langs->trans('Product');
+    }
 
-	// Common attributes
-	include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
+    switch (GETPOST('element_type')) {
+        case 'user' :
+            $object->fields['fk_element']['type']    = 'integer:User:user/class/user.class.php';
+            $object->fields['fk_element']['picto']   = 'user';
+            $object->fields['fk_element']['label']   = $langs->trans('User');
+            $object->fields['element_type']['picto'] = 'user';
+            break;
+        case 'product' :
+            $object->fields['fk_element']['type']    = 'integer:Product:product/class/product.class.php';
+            $object->fields['fk_element']['picto']   = 'product';
+            $object->fields['fk_element']['label']   = $langs->trans('Product');
+            $object->fields['element_type']['picto'] = 'product';
+            break;
+    }
 
-	// Other attributes
-	include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_add.tpl.php';
+    // Common attributes.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
 
-	print '</table>'."\n";
+    // Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
+        $cateArbo = $form->select_all_categories($object->element, '', 'parent', 64, 0, 1);
+        print img_picto('', 'category') . $form::multiselectarray('categories', $cateArbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx');
+        print '</td></tr>';
+    }
 
-	print dol_get_fiche_end();
+    // Other attributes.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_add.tpl.php';
 
-	print $form->buttonsSaveCancel("Create");
+    print '</table>';
 
-	print '</form>';
+    print dol_get_fiche_end();
 
-	//dol_set_focus('input[name="ref"]');
+    print $form->buttonsSaveCancel('Create');
+
+    print '</form>';
 }
 
-// Part to edit record
+// Part to edit record.
 if (($id || $ref) && $action == 'edit') {
-	print load_fiche_titre($langs->trans("ModifyCertificate"), '', 'object_'.$object->picto);
+    print load_fiche_titre($langs->trans('Modify' . ucfirst($object->element)), '', 'object_' . $object->picto);
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-	print '<input type="hidden" name="token" value="'.newToken().'">';
-	print '<input type="hidden" name="action" value="update">';
-	print '<input type="hidden" name="id" value="'.$object->id.'">';
-	if ($backtopage) {
-		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
-	}
-	if ($backtopageforcancel) {
-		print '<input type="hidden" name="backtopageforcancel" value="'.$backtopageforcancel.'">';
-	}
-
-	print dol_get_fiche_head();
-
-	print '<table class="border centpercent tableforfieldedit">'."\n";
-
-	// Common attributes
-	include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
-
-	// Other attributes
-	include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
-
-	print '</table>';
-
-	print dol_get_fiche_end();
-
-	print $form->buttonsSaveCancel();
-
-	print '</form>';
-}
-
-// Part to show record
-if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create'))) {
-	$res = $object->fetch_optionals();
-
-	$head = certificatePrepareHead($object);
-	print dol_get_fiche_head($head, 'card', $langs->trans("Certificate"), -1, $object->picto);
-
-	$formconfirm = '';
-	// Confirmation to delete
-	if ($action == 'delete') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('DeleteCertificate'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 0, 1);
-	}
-//	// Confirmation to delete line
-//	if ($action == 'deleteline') {
-//		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$lineid, $langs->trans('DeleteLine'), $langs->trans('ConfirmDeleteLine'), 'confirm_deleteline', '', 0, 1);
-//	}
-
-	// Call Hook formConfirm
-	$parameters = array('formConfirm' => $formconfirm, 'lineid' => $lineid);
-	$reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-	if (empty($reshook)) {
-		$formconfirm .= $hookmanager->resPrint;
-	} elseif ($reshook > 0) {
-		$formconfirm = $hookmanager->resPrint;
-	}
-
-	// Print form confirm
-	print $formconfirm;
-
-	// Object card
-	// ------------------------------------------------------------
-	$linkback = '<a href="' . dol_buildpath('/dolisirh/view/certificate/certificate_list.php', 1) . '">' . $langs->trans("BackToList") . '</a>';
-
-	$morehtmlref = '<div class="refidno">';
-    // Thirdparty
-    if (! empty($conf->societe->enabled)) {
-        $object->fetch_thirdparty($object->fk_soc);
-        $morehtmlref .= $langs->trans('ThirdParty') . ' : ' . (is_object($object->thirdparty) ? $object->thirdparty->getNomUrl(1) : '');
+    print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '">';
+    print '<input type="hidden" name="token" value="' . newToken() . '">';
+    print '<input type="hidden" name="action" value="update">';
+    print '<input type="hidden" name="id" value="' . $object->id . '">';
+    if ($backtopage) {
+        print '<input type="hidden" name="backtopage" value="' . $backtopage . '">';
     }
-    // Project
-    if (!empty($conf->projet->enabled)) {
-        $langs->load("projects");
-        $morehtmlref .= '<br>' . $langs->trans('Project') . ' ';
-        if (!empty($object->fk_project)) {
-            $project->fetch($object->fk_project);
-            $morehtmlref .= ': ' . $project->getNomUrl(1, '', 1);
-        } else {
-            $morehtmlref .= '';
+    if ($backtopageforcancel) {
+        print '<input type="hidden" name="backtopageforcancel" value="' . $backtopageforcancel . '">';
+    }
+
+    print dol_get_fiche_head();
+
+    print '<table class="border centpercent tableforfieldedit">';
+
+    if (isModEnabled('user')) {
+        $object->fields['element_type']['arrayofkeyval']['user'] = $langs->trans('User');
+    }
+    if (isModEnabled('product')) {
+        $object->fields['element_type']['arrayofkeyval']['product'] = $langs->trans('Product');
+    }
+
+    switch (GETPOST('element_type')) {
+        case 'user' :
+            $object->fields['fk_element']['type']    = 'integer:User:user/class/user.class.php';
+            $object->fields['fk_element']['picto']   = 'user';
+            $object->fields['fk_element']['label']   = $langs->trans('User');
+            $object->fields['element_type']['picto'] = 'user';
+            break;
+        case 'product' :
+            $object->fields['fk_element']['type']    = 'integer:Product:product/class/product.class.php';
+            $object->fields['fk_element']['picto']   = 'product';
+            $object->fields['fk_element']['label']   = $langs->trans('Product');
+            $object->fields['element_type']['picto'] = 'product';
+            break;
+    }
+
+    // Common attributes.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
+
+    // Tags-Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
+        $cateArbo      = $form->select_all_categories($object->element, '', 'parent', 64, 0, 1);
+        $categorie     = new Categorie($db);
+        $cats          = $categorie->containing($object->id, $object->element);
+        $arraySelected = [];
+        if (is_array($cats)) {
+            foreach ($cats as $cat) {
+                $arraySelected[] = $cat->id;
+            }
         }
+        print img_picto('', 'category') . $form::multiselectarray('categories', $cateArbo, $arraySelected, '', 0, 'quatrevingtpercent widthcentpercentminusx');
+        print '</td></tr>';
     }
-    $morehtmlref .= '</div>';
 
-    $object->picto = 'certificate_small@dolisirh';
-	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
+    // Other attributes.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
 
-	print '<div class="fichecenter">';
-	print '<div class="fichehalfleft">';
-	print '<div class="underbanner clearboth"></div>';
-	print '<table class="border centpercent tableforfield">'."\n";
+    print '</table>';
 
-	// Common attributes
-	//$keyforbreak='fieldkeytoswitchonsecondcolumn';	// We change column just before this field
+    print dol_get_fiche_end();
 
-	unset($object->fields['fk_project']);				// Hide field already shown in banner
-	unset($object->fields['fk_soc']);					// Hide field already shown in banner
+    print $form->buttonsSaveCancel();
 
-	include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
-
-	// Other attributes. Fields from hook formObjectOptions and Extrafields.
-	include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
-
-	print '</table>';
-	print '</div>';
-	print '</div>';
-
-	print '<div class="clearboth"></div>';
-
-	print dol_get_fiche_end();
-
-//	/*
-//	 * Lines
-//	 */
-//
-//	if (!empty($object->table_element_line)) {
-//		// Show object lines
-//		$result = $object->getLinesArray();
-//
-//		print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '' : '#line_'.GETPOST('lineid', 'int')).'" method="POST">
-//		<input type="hidden" name="token" value="' . newToken().'">
-//		<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateline').'">
-//		<input type="hidden" name="mode" value="">
-//		<input type="hidden" name="page_y" value="">
-//		<input type="hidden" name="id" value="' . $object->id.'">
-//		';
-//
-//		if (!empty($conf->use_javascript_ajax) && $object->status == 0) {
-//			include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
-//		}
-//
-//		print '<div class="div-table-responsive-no-min">';
-//		if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
-//			print '<table id="tablelines" class="noborder noshadow" width="100%">';
-//		}
-//
-//		if (!empty($object->lines)) {
-//			$object->printObjectLines($action, $mysoc, null, GETPOST('lineid', 'int'), 1);
-//		}
-//
-//		// Form to add new line
-//		if ($object->status == 0 && $permissiontoadd && $action != 'selectlines') {
-//			if ($action != 'editline') {
-//				// Add products/services form
-//
-//				$parameters = array();
-//				$reshook = $hookmanager->executeHooks('formAddObjectLine', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-//				if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-//				if (empty($reshook))
-//					$object->formAddObjectLine(1, $mysoc, $soc);
-//			}
-//		}
-//
-//		if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
-//			print '</table>';
-//		}
-//		print '</div>';
-//
-//		print "</form>\n";
-//	}
-
-	// Buttons for actions
-	if ($action != 'presend' && $action != 'editline') {
-		print '<div class="tabsAction">'."\n";
-		$parameters = array();
-		$reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-		if ($reshook < 0) {
-			setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-		}
-
-		if (empty($reshook)) {
-            // Modify
-			print '<a class="' . ($object->status == $object::STATUS_DRAFT ? 'butAction' : 'butActionRefused classfortooltip') . '" id="actionButtonEdit" title="' . ($object->status == $object::STATUS_DRAFT ? '' : dol_escape_htmltag($langs->trans("CertificateMustBeDraft"))) . '" href="' . ($object->status == $object::STATUS_DRAFT ? ($_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=edit') : '#') . '">' . $langs->trans("Modify") . '</a>';
-
-            // Validate
-            print '<span class="' . ($object->status == $object::STATUS_DRAFT ? 'butAction' : 'butActionRefused classfortooltip') . '" id="' . ($object->status == $object::STATUS_DRAFT ? 'actionButtonPendingSignature' : '') . '" title="' . ($object->status == $object::STATUS_DRAFT ? '' : dol_escape_htmltag($langs->trans("TimeSheetMustBeDraftToValidate"))) . '" href="' . ($object->status == $object::STATUS_DRAFT ? ($_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=setPendingSignature') : '#') . '">' . $langs->trans("Validate") . '</span>';
-
-            // Send
-            //@TODO changer le send to
-            //print '<a class="' . ($object->status == $object::STATUS_LOCKED ? 'butAction' : 'butActionRefused classfortooltip') . '" id="actionButtonSign" title="' . dol_escape_htmltag($langs->trans("TimeSheetMustBeLockedToSendEmail")) . '" href="' . ($object->status == $object::STATUS_LOCKED ? ($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle&sendto=' . $allLinks['LabourInspectorSociety']->id[0]) : '#') . '">' . $langs->trans('SendMail') . '</a>';
-
-            // Archive
-            print '<a class="' . ($object->status == $object::STATUS_VALIDATED  && !empty(dol_dir_list($upload_dir . '/certificatedocument/' . dol_sanitizeFileName($object->ref))) ? 'butAction' : 'butActionRefused classfortooltip') . '" id="" title="' . ($object->status == $object::STATUS_VALIDATED && !empty(dol_dir_list($upload_dir . '/certificatedocument/' . dol_sanitizeFileName($object->ref))) ? '' : dol_escape_htmltag($langs->trans("CertificateMustBeLockedGenerated"))) . '" href="' . ($object->status == $object::STATUS_VALIDATED && !empty(dol_dir_list($upload_dir . '/certificatedocument/' . dol_sanitizeFileName($object->ref))) ? ($_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=setArchived') : '#') . '">' . $langs->trans("Archive") . '</a>';
-
-			// Clone
-			//print dolGetButtonAction($langs->trans('ToClone'), '', 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.(!empty($object->socid)?'&socid='.$object->socid:'').'&action=clone&token='.newToken(), '', $permissiontoadd);
-
-			// Delete (need delete permission, or if draft, just need create/modify permission)
-			//print dolGetButtonAction($langs->trans('Delete'), '', 'delete', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=delete&token='.newToken(), '', $permissiontodelete || ($object->status == $object::STATUS_DRAFT && $permissiontoadd));
-		}
-		print '</div>'."\n";
-	}
-
-	// Select mail models is same action as presend
-	if (GETPOST('modelselected')) {
-		$action = 'presend';
-	}
-
-	if ($action != 'presend') {
-		print '<div class="fichecenter"><div class="fichehalfleft">';
-		print '<a name="builddoc"></a>'; // ancre
-
-		$includedocgeneration = 1;
-
-		// Documents
-		if ($includedocgeneration) {
-            $objref = dol_sanitizeFileName($object->ref);
-            $dir_files = $object->element . 'document/' . $objref;
-            $filedir = $upload_dir . '/' . $dir_files;
-            $urlsource = $_SERVER["PHP_SELF"]."?id=".$object->id;
-            $genallowed = $permissiontoadd; // If you can read, you can build the PDF to read content
-            $delallowed = $permissiontodelete; // If you can create/edit, you can remove a file on card
-
-            print doliSirhShowDocuments('dolisirh:CertificateDocument', $dir_files, $filedir, $urlsource, $genallowed, $object->status == $object::STATUS_VALIDATED ? $delallowed : 0, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'removefile', $object->status == $object::STATUS_VALIDATED && empty(dol_dir_list($filedir)), $langs->trans('CertificateMustBeLocked'));
-		}
-
-		print '</div><div class="fichehalfright">';
-
-		$MAXEVENT = 10;
-
-		$morehtmlcenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-list-alt imgforviewmode', dol_buildpath('/dolisirh/view/certificate/certificate_agenda.php', 1).'?id='.$object->id);
-
-		// List of actions on element
-		include_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
-		$formactions = new FormActions($db);
-		$somethingshown = $formactions->showactions($object, $object->element.'@'.$object->module, (is_object($object->thirdparty) ? $object->thirdparty->id : 0), 1, '', $MAXEVENT, '', $morehtmlcenter);
-
-		print '</div></div>';
-	}
-
-	//Select mail models is same action as presend
-	if (GETPOST('modelselected')) {
-		$action = 'presend';
-	}
-
-	// Presend form
-	$modelmail = 'certificate';
-	$defaulttopic = 'InformationMessage';
-	$diroutput = $conf->dolisirh->dir_output;
-	$trackid = 'certificate'.$object->id;
-
-	include DOL_DOCUMENT_ROOT . '/core/tpl/card_presend.tpl.php';
+    print '</form>';
 }
 
-// End of page
+// Part to show record.
+if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create'))) {
+    $res = $object->fetch_optionals();
+
+    saturne_get_fiche_head($object, 'card', $title);
+    saturne_banner_tab($object);
+
+    $formConfirm = '';
+
+    // Draft confirmation.
+    if (($action == 'draft' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ReOpenObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmReOpenObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_setdraft', '', 'yes', 'actionButtonInProgress', 350, 600);
+    }
+    // Pending signature confirmation.
+    if (($action == 'pending_signature' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ValidateObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmValidateObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_validate', '', 'yes', 'actionButtonPendingSignature', 350, 600);
+    }
+    // Lock confirmation
+    if (($action == 'lock' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('LockObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmLockObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_lock', '', 'yes', 'actionButtonLock', 350, 600);
+    }
+    // Delete confirmation.
+    if ($action == 'delete') {
+        $formConfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('DeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmDeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_delete', '', 'yes', 1);
+    }
+
+    // Call Hook formConfirm.
+    $parameters = ['formConfirm' => $formConfirm];
+    $reshook    = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
+    if (empty($reshook)) {
+        $formConfirm .= $hookmanager->resPrint;
+    } elseif ($reshook > 0) {
+        $formConfirm = $hookmanager->resPrint;
+    }
+
+    // Print form confirm.
+    print $formConfirm;
+
+    if ($conf->browser->layout == 'phone') {
+        $onPhone = 1;
+    } else {
+        $onPhone = 0;
+    }
+
+    print '<div class="fichecenter">';
+    print '<div class="fichehalfleft">';
+    print '<table class="border centpercent tableforfield">';
+
+    unset($object->fields['label']);        // Hide field already shown in banner.
+    unset($object->fields['fk_soc']);       // Hide field already shown in banner.
+    unset($object->fields['fk_project']);   // Hide field already shown in banner.
+    unset($object->fields['element_type']); // Unwanted.
+
+    switch ($object->element_type) {
+        case 'user' :
+            $object->fields['fk_element']['type'] = 'integer:User:user/class/user.class.php';
+            $object->fields['fk_element']['picto'] = 'user';
+            $object->fields['fk_element']['label'] = $langs->trans('User');
+            $object->fields['element_type']['picto'] = 'user';
+            break;
+        case 'product' :
+            $object->fields['fk_element']['type'] = 'integer:Product:product/class/product.class.php';
+            $object->fields['fk_element']['picto'] = 'product';
+            $object->fields['fk_element']['label'] = $langs->trans('Product');
+            $object->fields['element_type']['picto'] = 'product';
+            break;
+    }
+
+    // Common attributes.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+
+    // Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td class="valignmiddle">' . $langs->trans('Categories') . '</td><td>';
+        print $form->showCategories($object->id, $object->element, 1);
+        print '</td></tr>';
+    }
+
+    // Other attributes. Fields from hook formObjectOptions and Extrafields.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
+
+    print '</table>';
+    print '</div>';
+    print '</div>';
+
+    print '<div class="clearboth"></div>';
+
+    print dol_get_fiche_end();
+
+    // Buttons for actions.
+    if ($action != 'presend' ) {
+        print '<div class="tabsAction">';
+        $parameters = [];
+        $reshook    = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
+        if ($reshook < 0) {
+            setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+        }
+
+        if (empty($reshook) && $permissiontoadd) {
+            // Modify.
+            $displayButton = $onPhone ? '<i class="fas fa-edit fa-2x"></i>' : '<i class="fas fa-edit"></i>' . ' ' . $langs->trans('Modify');
+            if ($object->status == SaturneCertificate::STATUS_DRAFT) {
+                print '<a class="butAction" id="actionButtonEdit" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . ((dol_strlen($object->element_type) > 0) ? '&element_type=' . $object->element_type : '') . '&action=edit' . '">' . $displayButton . '</a>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
+            }
+
+            // Validate.
+            $displayButton = $onPhone ? '<i class="fas fa-check fa-2x"></i>' : '<i class="fas fa-check"></i>' . ' ' . $langs->trans('Validate');
+            if ($object->status == SaturneCertificate::STATUS_DRAFT) {
+                print '<span class="butAction" id="actionButtonPendingSignature">' . $displayButton . '</span>';
+            } elseif ($object->status < SaturneCertificate::STATUS_DRAFT) {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
+            }
+
+            // ReOpen.
+            $displayButton = $onPhone ? '<i class="fas fa-lock-open fa-2x"></i>' : '<i class="fas fa-lock-open"></i>' . ' ' . $langs->trans('ReOpenDoli');
+            if ($object->status == SaturneCertificate::STATUS_VALIDATED) {
+                print '<span class="butAction" id="actionButtonInProgress">' . $displayButton . '</span>';
+            } elseif ($object->status > SaturneCertificate::STATUS_VALIDATED) {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidated', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
+            }
+
+            // Sign.
+            $displayButton = $onPhone ? '<i class="fas fa-signature fa-2x"></i>' : '<i class="fas fa-signature"></i>' . ' ' . $langs->trans('Sign');
+            if ($object->status == SaturneCertificate::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
+                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element . '&document_type=CertificateDocument&attendant_table_mode=simple', 3) . '">' . $displayButton . '</a>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
+            }
+
+            // Lock.
+            $displayButton = $onPhone ? '<i class="fas fa-lock fa-2x"></i>' : '<i class="fas fa-lock"></i>' . ' ' . $langs->trans('Lock');
+            if ($object->status == SaturneCertificate::STATUS_VALIDATED && $signatory->checkSignatoriesSignatures($object->id, $object->element)) {
+                print '<span class="butAction" id="actionButtonLock">' . $displayButton . '</span>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('AllSignatoriesMustHaveSigned', $langs->transnoentities('The' . ucfirst($object->element)))) . '">' . $displayButton . '</span>';
+            }
+
+            // Send email.
+            $displayButton = $onPhone ? '<i class="fas fa-paper-plane fa-2x"></i>' : '<i class="fas fa-paper-plane"></i>' . ' ' . $langs->trans('SendMail') . ' ';
+            if ($object->status >= SaturneCertificate::STATUS_VALIDATED) {
+                $fileParams = dol_most_recent_file($upload_dir . '/' . $object->element . 'document' . '/' . $object->ref);
+                $file       = $fileParams['fullname'];
+                if (file_exists($file) && !strstr($fileParams['name'], 'specimen')) {
+                    $forcebuilddoc = 0;
+                } else {
+                    $forcebuilddoc = 1;
+                }
+                print '<a class="butAction" id="actionButtonSign" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=presend&forcebuilddoc=' . $forcebuilddoc . '&mode=init#formmailbeforetitle' . '">' .  $displayButton . '</a>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToSendEmail', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
+            }
+
+            // Archive.
+            $displayButton = $onPhone ? '<i class="fas fa-archive fa-2x"></i>' : '<i class="fas fa-archive"></i>' . ' ' . $langs->trans('Archive');
+            if ($object->status >= SaturneCertificate::STATUS_VALIDATED) {
+                print '<a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=confirm_archive&token=' . newToken() . '">' . $displayButton . '</a>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToArchive', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
+            }
+
+            // Delete (need delete permission, or if draft, just need create/modify permission).
+            $displayButton = $onPhone ? '<i class="fas fa-trash fa-2x"></i>' : '<i class="fas fa-trash"></i>' . ' ' . $langs->trans('Delete');
+            print dolGetButtonAction($displayButton, '', 'delete', $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=delete&token=' . newToken(), '', $permissiontodelete || ($object->status == SaturneCertificate::STATUS_DRAFT));
+        }
+        print '</div>';
+    }
+
+    // Select mail models is same action as presend.
+    if (GETPOST('modelselected')) {
+        $action = 'presend';
+    }
+
+    if ($action != 'presend') {
+        print '<div class="fichecenter"><div class="fichehalfleft">';
+        // Documents.
+        $objRef    = dol_sanitizeFileName($object->ref);
+        $dirFiles  = $object->element . 'document/' . $objRef;
+        $fileDir   = $upload_dir . '/' . $dirFiles;
+        $urlSource = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
+
+        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', ($object->status > SaturneCertificate::STATUS_DRAFT), $langs->trans('ObjectMustBeValidatedToGenerate',  ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
+
+        print '</div><div class="fichehalfright">';
+
+        $moreHtmlCenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-bars imgforviewmode', dol_buildpath('/saturne/view/saturne_agenda.php', 1) . '?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element);
+
+        // List of actions on element.
+        require_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
+        $formActions = new FormActions($db);
+        $formActions->showactions($object, $object->element . '@' . $object->module, 0, 1, '', 10, '', $moreHtmlCenter);
+
+        print '</div></div>';
+    }
+
+    // Presend form.
+    $modelmail    = $object->element;
+    $defaulttopic = 'InformationMessage';
+    $diroutput    = $conf->dolisirh->dir_output;
+    $trackid      = $object->element . $object->id;
+
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/card_presend.tpl.php';
+}
+
+// End of page.
 llxFooter();
 $db->close();

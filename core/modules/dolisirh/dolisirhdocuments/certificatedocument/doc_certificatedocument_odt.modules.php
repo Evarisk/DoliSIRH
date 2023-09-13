@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,474 +17,139 @@
  */
 
 /**
- *	\file       htdocs/core/modules/dolisirh/dolisirhdocuments/certificatedocument/doc_certificatedocument_odt.modules.php
- *	\ingroup    dolisirh
- *	\brief      File of class to build ODT documents for certificates
+ * \file    htdocs/core/modules/dolisirh/dolisirhdocuments/certificatedocument/doc_certificatedocument_odt.modules.php
+ * \ingroup dolisirh
+ * \brief   File of class to build ODT certificate document.
  */
 
-require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/doc.lib.php';
+// Load Dolibarr libraries.
+require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/images.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/company.lib.php';
 
-require_once __DIR__ . '/modules_certificatedocument.php';
+// Load DoliSIRH Libraries.
+require_once __DIR__ . '/mod_certificatedocument_standard.php';
 
 /**
- *	Class to build documents using ODF templates generator
+ * Class to build documents using ODF templates generator.
  */
-class doc_certificatedocument_odt extends ModeleODTCertificate
+class doc_certificatedocument_odt extends SaturneDocumentModel
 {
-	/**
-	 * Issuer
-	 * @var Societe
-	 */
-	public $emetteur;
+    /**
+     * @var array Minimum version of PHP required by module.
+     * e.g.: PHP ≥ 5.5 = array(5, 5)
+     */
+    public $phpmin = [7, 4];
 
-	/**
-	 * @var array Minimum version of PHP required by module.
-	 * e.g.: PHP ≥ 5.6 = array(5, 6)
-	 */
-	public $phpmin = array(5, 6);
+    /**
+     * @var string Dolibarr version of the loaded document.
+     */
+    public string $version = 'dolibarr';
 
-	/**
-	 * @var string Dolibarr version of the loaded document
-	 */
-	public $version = 'dolibarr';
+    /**
+     * @var string Module.
+     */
+    public string $module = 'dolisirh';
 
-	/**
-	 *	Constructor
-	 *
-	 *  @param		DoliDB		$db      Database handler
-	 */
-	public function __construct($db)
-	{
-		global $conf, $langs, $mysoc;
+    /**
+     * @var string Document type.
+     */
+    public string $document_type = 'certificatedocument';
 
-		// Load translation files required by the page
-		$langs->loadLangs(array("main", "companies"));
+    /**
+     * Constructor.
+     *
+     * @param DoliDB $db Database handler.
+     */
+    public function __construct(DoliDB $db)
+    {
+        parent::__construct($db, $this->module, $this->document_type);
+    }
 
-		$this->db = $db;
-		$this->name = $langs->trans('DoliSIRHCertificateDocumentTemplate');
-		$this->description = $langs->trans("DocumentModelOdt");
-		$this->scandir = 'DOLISIRH_CERTIFICATEDOCUMENT_ADDON_PDF_ODT_PATH'; // Name of constant that is used to save list of directories to scan
+    /**
+     * Return description of a module.
+     *
+     * @param  Translate $langs Lang object to use for output.
+     * @return string           Description.
+     */
+    public function info(Translate $langs): string
+    {
+        return parent::info($langs);
+    }
 
-		// Page size for A4 format
-		$this->type = 'odt';
-		$this->page_largeur = 0;
-		$this->page_hauteur = 0;
-		$this->format = array($this->page_largeur, $this->page_hauteur);
-		$this->marge_gauche = 0;
-		$this->marge_droite = 0;
-		$this->marge_haute = 0;
-		$this->marge_basse = 0;
+    /**
+     * Function to build a document on disk.
+     *
+     * @param  SaturneDocuments $objectDocument  Object source to build document.
+     * @param  Translate        $outputLangs     Lang object to use for output.
+     * @param  string           $srcTemplatePath Full path of source filename for generator using a template file.
+     * @param  int              $hideDetails     Do not show line details.
+     * @param  int              $hideDesc        Do not show desc.
+     * @param  int              $hideRef         Do not show ref.
+     * @param  array            $moreParam       More param (Object/user/etc).
+     * @return int                               1 if OK, <=0 if KO.
+     * @throws Exception
+     */
+    public function write_file(SaturneDocuments $objectDocument, Translate $outputLangs, string $srcTemplatePath, int $hideDetails = 0, int $hideDesc = 0, int $hideRef = 0, array $moreParam): int
+    {
+        global $conf, $langs;
 
-		$this->option_logo = 1; // Display logo
-		$this->option_tva = 0; // Manage the vat option FACTURE_TVAOPTION
-		$this->option_modereg = 0; // Display payment mode
-		$this->option_condreg = 0; // Display payment terms
-		$this->option_codeproduitservice = 0; // Display product-service code
-		$this->option_multilang = 1; // Available in several languages
-		$this->option_escompte = 0; // Displays if there has been a discount
-		$this->option_credit_note = 0; // Support credit notes
-		$this->option_freetext = 1; // Support add of a personalised text
-		$this->option_draft_watermark = 0; // Support add of a watermark on drafts
+        $object = $moreParam['object'];
 
-		// Get source company
-		$this->emetteur = $mysoc;
-		if (!$this->emetteur->country_code) {
-			$this->emetteur->country_code = substr($langs->defaultlang, -2); // By default if not defined
-		}
-	}
+        $signatory = new SaturneSignature($this->db);
 
+        $tmpArray['object_ref']         = $object->ref;
+        $tmpArray['object_description'] = $object->description;
+        $tmpArray['object_date_start']  = dol_print_date($object->date_start, 'day', 'tzuser');
+        $tmpArray['object_date_end']    = dol_print_date($object->date_end, 'day', 'tzuser');
+        $tmpArray['object_public_url']  = $object->public_url;
 
-	/**
-	 *	Return description of a module
-	 *
-	 *	@param	Translate	$langs      Lang object to use for output
-	 *	@return string       			Description
-	 */
-	public function info($langs)
-	{
-		global $conf, $langs;
+        $signatory = $signatory->fetchSignatory('Signatory', $object->id, $object->element);
+        if (is_array($signatory) && !empty($signatory)) {
+            $signatory = array_shift($signatory);
+            $tmpArray['attendant_fullname'] = strtoupper($signatory->lastname) . ' ' . ucfirst($signatory->firstname);
+            if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
+                if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
+                    $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
+                    $encodedImage = explode(',', $signatory->signature)[1];
+                    $decodedImage = base64_decode($encodedImage);
+                    file_put_contents($tempDir . 'signature.png', $decodedImage);
+                    $tmpArray['attendant_signature'] = $tempDir . 'signature.png';
+                } else {
+                    $tmpArray['attendant_signature'] = '';
+                }
+            } else {
+                $tmpArray['attendant_signature'] = '';
+            }
+        } else {
+            $tmpArray['attendant_fullname']  = '';
+            $tmpArray['attendant_signature'] = '';
+        }
 
-		// Load translation files required by the page
-		$langs->loadLangs(array("errors", "companies"));
+        $signatory = $signatory->fetchSignatory('Responsible', $object->id, $object->element);
+        if (is_array($signatory) && !empty($signatory)) {
+            $signatory = array_shift($signatory);
+            if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
+                if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
+                    $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
+                    $encodedImage = explode(',', $signatory->signature)[1];
+                    $decodedImage = base64_decode($encodedImage);
+                    file_put_contents($tempDir . 'signature2.png', $decodedImage);
+                    $tmpArray['responsible_signature'] = $tempDir . 'signature2.png';
+                } else {
+                    $tmpArray['responsible_signature'] = '';
+                }
+            } else {
+                $tmpArray['responsible_signature'] = '';
+            }
+        } else {
+            $tmpArray['responsible_signature'] = '';
+        }
 
-		$texte = $this->description.".<br>";
-		$texte .= '<table class="nobordernopadding centpercent">';
+        $tmpArray['object_document_date_creation'] = dol_print_date(dol_now(), 'dayhour', 'tzuser');
 
-		// List of directories area
-		$texte .= '<tr><td>';
-		$texttitle = $langs->trans("ListOfDirectories");
-		$listofdir = explode(',', preg_replace('/[\r\n]+/', ',', trim($conf->global->DOLISIRH_CERTIFICATEDOCUMENT_ADDON_PDF_ODT_PATH)));
-		$listoffiles = array();
-		foreach ($listofdir as $key => $tmpdir) {
-			$tmpdir = trim($tmpdir);
-			$tmpdir = preg_replace('/DOL_DATA_ROOT/', DOL_DATA_ROOT, $tmpdir);
-			$tmpdir = preg_replace('/DOL_DOCUMENT_ROOT/', DOL_DOCUMENT_ROOT, $tmpdir);
-			if (!$tmpdir) {
-				unset($listofdir[$key]);
-				continue;
-			}
-			if (!is_dir($tmpdir)) {
-				$texttitle .= img_warning($langs->trans("ErrorDirNotFound", $tmpdir), 0);
-			} else {
-				$tmpfiles = dol_dir_list($tmpdir, 'files', 0, '\.(ods|odt)');
-				if (count($tmpfiles)) {
-					$listoffiles = array_merge($listoffiles, $tmpfiles);
-				}
-			}
-		}
+        $moreParam['tmparray'] = $tmpArray;
 
-		// Scan directories
-		$nbofiles = count($listoffiles);
-		if (!empty($conf->global->DOLISIRH_CERTIFICATEDOCUMENT_ADDON_PDF_ODT_PATH)) {
-			$texte .= $langs->trans("DoliSIRHNumberOfModelFilesFound").': <b>';
-			$texte .= count($listoffiles);
-			$texte .= '</b>';
-		}
-
-		if ($nbofiles) {
-			$texte .= '<div id="div_' . get_class($this) . '" class="hidden">';
-			foreach ($listoffiles as $file) {
-				$texte .= $file['name'] . '<br>';
-			}
-			$texte .= '</div>';
-		}
-
-		$texte .= '</td>';
-		$texte .= '</table>';
-		$texte .= '</form>';
-
-		return $texte;
-	}
-
-	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
-	/**
-	 *  Function to build a document on disk using the generic odt module.
-	 *
-	 *	@param		CertificateDocument	$objectDocument	   Object source to build document
-	 *	@param		Translate	        $outputlangs	   Lang output object
-	 * 	@param		string		        $srctemplatepath   Full path of source filename for generator using a template file
-	 *  @param		int			        $hidedetails	   Do not show line details
-	 *  @param		int			        $hidedesc		   Do not show desc
-	 *  @param		int			        $hideref		   Do not show ref
-     *  @param      Certificate         $object            Certificate Object
-	 *	@return		int         					       1 if OK, <=0 if KO
-	 */
-	public function write_file($objectDocument, $outputlangs, $srctemplatepath, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $object)
-	{
-		// phpcs:enable
-        global $action, $conf, $hookmanager, $langs, $mysoc, $user;
-
-		if (empty($srctemplatepath)) {
-			dol_syslog("doc_generic_odt::write_file parameter srctemplatepath empty", LOG_WARNING);
-			return -1;
-		}
-
-		// Add odtgeneration hook
-		if (!is_object($hookmanager)) {
-			include_once DOL_DOCUMENT_ROOT.'/core/class/hookmanager.class.php';
-			$hookmanager = new HookManager($this->db);
-		}
-		$hookmanager->initHooks(array('odtgeneration'));
-
-		if (!is_object($outputlangs)) {
-			$outputlangs = $langs;
-		}
-		$sav_charset_output = $outputlangs->charset_output;
-		$outputlangs->charset_output = 'UTF-8';
-
-		$outputlangs->loadLangs(array("main", "dict", "companies", "bills"));
-
-        $mod = new $conf->global->DOLISIRH_TIMESHEETDOCUMENT_ADDON($this->db);
-        $ref = $mod->getNextValue($objectDocument);
-
-        $objectDocument->ref = $ref;
-        $id          = $objectDocument->create($user, true, $object);
-
-        $objectDocument->fetch($id);
-
-		if ($conf->dolisirh->dir_output) {
-			// If $object is id instead of object
-//			if (!is_object($object)) {
-//				$id = $object;
-//				$object = new Certificate($this->db);
-//				$result = $object->fetch($id);
-//				if ($result < 0) {
-//					dol_print_error($this->db, $object->error);
-//					return -1;
-//				}
-//			}
-
-			//$object->fetch_thirdparty();
-
-			$objectref = dol_sanitizeFileName($object->ref);
-			$dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1] . '/certificatedocument/' . $object->ref;
-//			if (!preg_match('/specimen/i', $objectref)) {
-//				$dir .= "/".$objectref;
-//			}
-			//$file = $dir."/".$objectref.".odt";
-
-			if (!file_exists($dir)) {
-				if (dol_mkdir($dir) < 0) {
-					$this->error = $langs->transnoentities("ErrorCanNotCreateDir", $dir);
-					return -1;
-				}
-			}
-
-			if (file_exists($dir)) {
-				//print "srctemplatepath=".$srctemplatepath;	// Src filename
-				$newfile = basename($srctemplatepath);
-				$newfiletmp = preg_replace('/\.od(t|s)/i', '', $newfile);
-				$newfiletmp = preg_replace('/template_/i', '', $newfiletmp);
-				$newfiletmp = preg_replace('/modele_/i', '', $newfiletmp);
-
-                $date       = dol_print_date(dol_now(), 'dayxcard');
-                $newfiletmp = $objectref . '_' . $date . '_' . $newfiletmp . '_' . $conf->global->MAIN_INFO_SOCIETE_NOM;
-                $newfiletmp = str_replace(' ', '_', $newfiletmp);
-                $newfiletmp = dol_sanitizeFileName($newfiletmp);
-
-                $objectDocument->last_main_doc = $newfiletmp;
-
-                $sql  = "UPDATE " . MAIN_DB_PREFIX . "dolisirh_dolisirhdocuments";
-                $sql .= " SET last_main_doc =" . ( ! empty($newfiletmp) ? "'" . $this->db->escape($newfiletmp) . "'" : 'null');
-                $sql .= " WHERE rowid = " . $objectDocument->id;
-
-                dol_syslog("admin.lib::Insert last main doc", LOG_DEBUG);
-                $this->db->query($sql);
-
-				//$newfiletmp = $objectref.'_'.$newfiletmp;
-				//$file=$dir.'/'.$newfiletmp.'.'.dol_print_date(dol_now(),'%Y%m%d%H%M%S').'.odt';
-				// Get extension (ods or odt)
-				$newfileformat = substr($newfile, strrpos($newfile, '.') + 1);
-				if (!empty($conf->global->MAIN_DOC_USE_TIMING)) {
-					$format = $conf->global->MAIN_DOC_USE_TIMING;
-					if ($format == '1') {
-						$format = '%Y%m%d%H%M%S';
-					}
-					$filename = $newfiletmp.'-'.dol_print_date(dol_now(), $format).'.'.$newfileformat;
-				} else {
-					$filename = $newfiletmp.'.'.$newfileformat;
-				}
-				$file = $dir.'/'.$filename;
-				//print "newdir=".$dir;
-				//print "newfile=".$newfile;
-				//print "file=".$file;
-				//print "conf->societe->dir_temp=".$conf->societe->dir_temp;
-
-				dol_mkdir($conf->dolisirh->dir_temp);
-				if (!is_writable($conf->dolisirh->dir_temp)) {
-					$this->error = "Failed to write in temp directory ".$conf->dolisirh->dir_temp;
-					dol_syslog('Error in write_file: '.$this->error, LOG_ERR);
-					return -1;
-				}
-
-				// If CUSTOMER contact defined on order, we use it
-//				$usecontact = false;
-//				$arrayidcontact = $object->getIdContact('external', 'CUSTOMER');
-//				if (count($arrayidcontact) > 0) {
-//					$usecontact = true;
-//					$result = $object->fetch_contact($arrayidcontact[0]);
-//				}
-
-				// Recipient name
-//				$contactobject = null;
-//				if (!empty($usecontact)) {
-//					// We can use the company of contact instead of thirdparty company
-//					if ($object->contact->socid != $object->thirdparty->id && (!isset($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT) || !empty($conf->global->MAIN_USE_COMPANY_NAME_OF_CONTACT))) {
-//						$object->contact->fetch_thirdparty();
-//						$socobject = $object->contact->thirdparty;
-//						$contactobject = $object->contact;
-//					} else {
-//						$socobject = $object->thirdparty;
-//						// if we have a CUSTOMER contact and we dont use it as thirdparty recipient we store the contact object for later use
-//						$contactobject = $object->contact;
-//					}
-//				} else {
-//					$socobject = $object->thirdparty;
-//				}
-
-				// Make substitution
-				$substitutionarray = array(
-					'__FROM_NAME__' => $this->emetteur->name,
-					'__FROM_EMAIL__' => $this->emetteur->email,
-					'__TOTAL_TTC__' => $object->total_ttc,
-					'__TOTAL_HT__' => $object->total_ht,
-					'__TOTAL_VAT__' => $object->total_tva
-				);
-				complete_substitutions_array($substitutionarray, $langs, $object);
-				// Call the ODTSubstitution hook
-				$parameters = array('file'=>$file, 'object'=>$object, 'outputlangs'=>$outputlangs, 'substitutionarray'=>&$substitutionarray);
-				$reshook = $hookmanager->executeHooks('ODTSubstitution', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
-
-				// Line of free text
-				$newfreetext = '';
-				$paramfreetext = 'ORDER_FREE_TEXT';
-				if (!empty($conf->global->$paramfreetext)) {
-					$newfreetext = make_substitutions($conf->global->$paramfreetext, $substitutionarray);
-				}
-
-				// Open and load template
-				require_once ODTPHP_PATH.'odf.php';
-				try {
-					$odfHandler = new odf(
-						$srctemplatepath,
-						array(
-						'PATH_TO_TMP'	  => $conf->dolisirh->dir_temp,
-						'ZIP_PROXY'		  => 'PclZipProxy', // PhpZipProxy or PclZipProxy. Got "bad compression method" error when using PhpZipProxy.
-						'DELIMITER_LEFT'  => '{',
-						'DELIMITER_RIGHT' => '}'
-						)
-					);
-				} catch (Exception $e) {
-					$this->error = $e->getMessage();
-					dol_syslog($e->getMessage(), LOG_INFO);
-					return -1;
-				}
-				// After construction $odfHandler->contentXml contains content and
-				// [!-- BEGIN row.lines --]*[!-- END row.lines --] has been replaced by
-				// [!-- BEGIN lines --]*[!-- END lines --]
-				//print html_entity_decode($odfHandler->__toString());
-				//print exit;
-
-
-				// Make substitutions into odt of freetext
-				try {
-					$odfHandler->setVars('free_text', $newfreetext, true, 'UTF-8');
-				} catch (OdfException $e) {
-					dol_syslog($e->getMessage(), LOG_INFO);
-				}
-
-				// Define substitution array
-				$substitutionarray = getCommonSubstitutionArray($outputlangs, 0, null, $object);
-				$array_object_from_properties = $this->get_substitutionarray_each_var_object($object, $outputlangs);
-				$array_objet = $this->get_substitutionarray_object($object, $outputlangs);
-				$array_user = $this->get_substitutionarray_user($user, $outputlangs);
-				$array_soc = $this->get_substitutionarray_mysoc($mysoc, $outputlangs);
-				$array_thirdparty = $this->get_substitutionarray_thirdparty($socobject, $outputlangs);
-				$array_other = $this->get_substitutionarray_other($outputlangs);
-				// retrieve contact information for use in object as contact_xxx tags
-				$array_thirdparty_contact = array();
-				if ($usecontact && is_object($contactobject)) {
-					$array_thirdparty_contact = $this->get_substitutionarray_contact($contactobject, $outputlangs, 'contact');
-				}
-
-				$tmparray = array_merge($substitutionarray, $array_object_from_properties, $array_user, $array_soc, $array_thirdparty, $array_objet, $array_other, $array_thirdparty_contact);
-				complete_substitutions_array($tmparray, $outputlangs, $object);
-
-				// Call the ODTSubstitution hook
-				$parameters = array('odfHandler'=>&$odfHandler, 'file'=>$file, 'object'=>$object, 'outputlangs'=>$outputlangs, 'substitutionarray'=>&$tmparray);
-				$reshook = $hookmanager->executeHooks('ODTSubstitution', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
-
-				foreach ($tmparray as $key => $value) {
-					try {
-						if (preg_match('/logo$/', $key)) {
-							// Image
-							if (file_exists($value)) {
-								$odfHandler->setImage($key, $value);
-							} else {
-								$odfHandler->setVars($key, 'ErrorFileNotFound', true, 'UTF-8');
-							}
-						} else {
-							// Text
-							$odfHandler->setVars($key, $value, true, 'UTF-8');
-						}
-					} catch (OdfException $e) {
-						dol_syslog($e->getMessage(), LOG_INFO);
-					}
-				}
-				// Replace tags of lines
-				try {
-					$foundtagforlines = 1;
-					try {
-						$listlines = $odfHandler->setSegment('lines');
-					} catch (OdfException $e) {
-						// We may arrive here if tags for lines not present into template
-						$foundtagforlines = 0;
-						dol_syslog($e->getMessage(), LOG_INFO);
-					}
-					if ($foundtagforlines) {
-						$linenumber = 0;
-						foreach ($object->lines as $line) {
-							$linenumber++;
-							$tmparray = $this->get_substitutionarray_lines($line, $outputlangs, $linenumber);
-							complete_substitutions_array($tmparray, $outputlangs, $object, $line, "completesubstitutionarray_lines");
-							// Call the ODTSubstitutionLine hook
-							$parameters = array('odfHandler'=>&$odfHandler, 'file'=>$file, 'object'=>$object, 'outputlangs'=>$outputlangs, 'substitutionarray'=>&$tmparray, 'line'=>$line);
-							$reshook = $hookmanager->executeHooks('ODTSubstitutionLine', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
-							foreach ($tmparray as $key => $val) {
-								try {
-									$listlines->setVars($key, $val, true, 'UTF-8');
-								} catch (OdfException $e) {
-									dol_syslog($e->getMessage(), LOG_INFO);
-								} catch (SegmentException $e) {
-									dol_syslog($e->getMessage(), LOG_INFO);
-								}
-							}
-							$listlines->merge();
-						}
-						$odfHandler->mergeSegment($listlines);
-					}
-				} catch (OdfException $e) {
-					$this->error = $e->getMessage();
-					dol_syslog($this->error, LOG_WARNING);
-					return -1;
-				}
-
-				// Replace labels translated
-				$tmparray = $outputlangs->get_translations_for_substitutions();
-				foreach ($tmparray as $key => $value) {
-					try {
-						$odfHandler->setVars($key, $value, true, 'UTF-8');
-					} catch (OdfException $e) {
-						dol_syslog($e->getMessage(), LOG_INFO);
-					}
-				}
-
-				// Call the beforeODTSave hook
-
-				$parameters = array('odfHandler'=>&$odfHandler, 'file'=>$file, 'object'=>$object, 'outputlangs'=>$outputlangs, 'substitutionarray'=>&$tmparray);
-				$reshook = $hookmanager->executeHooks('beforeODTSave', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
-
-				// Write new file
-				if (!empty($conf->global->MAIN_ODT_AS_PDF)) {
-					try {
-						$odfHandler->exportAsAttachedPDF($file);
-					} catch (Exception $e) {
-						$this->error = $e->getMessage();
-						dol_syslog($e->getMessage(), LOG_INFO);
-						return -1;
-					}
-				} else {
-					try {
-						$odfHandler->saveToDisk($file);
-					} catch (Exception $e) {
-						$this->error = $e->getMessage();
-						dol_syslog($e->getMessage(), LOG_INFO);
-						return -1;
-					}
-				}
-
-				$parameters = array('odfHandler'=>&$odfHandler, 'file'=>$file, 'object'=>$object, 'outputlangs'=>$outputlangs, 'substitutionarray'=>&$tmparray);
-				$reshook = $hookmanager->executeHooks('afterODTCreation', $parameters, $this, $action); // Note that $action and $object may have been modified by some hooks
-
-				if (!empty($conf->global->MAIN_UMASK)) {
-					@chmod($file, octdec($conf->global->MAIN_UMASK));
-				}
-
-				$odfHandler = null; // Destroy object
-
-				$this->result = array('fullpath'=>$file);
-
-				return 1; // Success
-			} else {
-				$this->error = $langs->transnoentities("ErrorCanNotCreateDir", $dir);
-				return -1;
-			}
-		}
-
-		return -1;
-	}
+        return parent::write_file($objectDocument, $outputLangs, $srcTemplatePath, $hideDetails, $hideDesc, $hideRef, $moreParam);
+    }
 }

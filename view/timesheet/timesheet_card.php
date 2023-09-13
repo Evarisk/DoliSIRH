@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2023 EVARISK <dev@evarisk.com>
+/* Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,91 +16,70 @@
  */
 
 /**
- *   	\file       view/timesheet/timesheet_card.php
- *		\ingroup    dolisirh
- *		\brief      Page to create/edit/view timesheet
+ * \file    view/timesheet/timesheet_card.php
+ * \ingroup dolisirh
+ * \brief   Page to create/edit/view timesheet.
  */
 
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
-	$res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php";
-}
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) {
-	$i--; $j--;
-}
-if (!$res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1))."/main.inc.php")) {
-	$res = @include substr($tmp, 0, ($i + 1))."/main.inc.php";
-}
-if (!$res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php")) {
-	$res = @include dirname(substr($tmp, 0, ($i + 1)))."/main.inc.php";
-}
-// Try main.inc.php using relative path
-if (!$res && file_exists("../main.inc.php")) {
-	$res = @include "../main.inc.php";
-}
-if (!$res && file_exists("../../main.inc.php")) {
-	$res = @include "../../main.inc.php";
-}
-if (!$res && file_exists("../../../main.inc.php")) {
-	$res = @include "../../../main.inc.php";
-}
-if (!$res && file_exists("../../../../main.inc.php")) {
-	$res = @include "../../../../main.inc.php";
-}
-if (!$res) {
-	die("Include of main fails");
+// Load DoliSIRH environment.
+if (file_exists('../../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../../dolisirh.main.inc.php';
+} elseif (file_exists('../../../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../../../dolisirh.main.inc.php';
+} else {
+    die('Include of dolisirh main fails');
 }
 
-// Libraries
-require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
-require_once DOL_DOCUMENT_ROOT.'/holiday/class/holiday.class.php';
+// Load Dolibarr libraries.
+require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
+// Load Saturne libraries.
+require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
+
+// load DoliSIRH libraries.
+require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
+require_once __DIR__ . '/../../lib/dolisirh_timespent.lib.php';
+require_once __DIR__ . '/../../lib/dolisirh_timesheet.lib.php';
 require_once __DIR__ . '/../../class/timesheet.class.php';
 require_once __DIR__ . '/../../class/dolisirhdocuments/timesheetdocument.class.php';
 require_once __DIR__ . '/../../class/workinghours.class.php';
-require_once __DIR__ . '/../../lib/dolisirh_timesheet.lib.php';
-require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
 
-// Global variables definitions
-global $conf, $db, $hookmanager, $langs, $mysoc, $user;
+// Global variables definitions.
+global $conf, $db, $hookmanager, $langs, $moduleNameLowerCase, $mysoc, $user;
 
-// Load translation files required by the page
-$langs->loadLangs(array("dolisirh@dolisirh", "other"));
+// Load translation files required by the page.
+saturne_load_langs();
 
-// Get parameters
+// Get parameters.
 $id                  = GETPOST('id', 'int');
 $ref                 = GETPOST('ref', 'alpha');
 $action              = GETPOST('action', 'aZ09');
 $confirm             = GETPOST('confirm', 'alpha');
 $cancel              = GETPOST('cancel', 'aZ09');
-$contextpage         = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'timesheetcard'; // To manage different context of search
+$contextPage         = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'timesheetcard'; // To manage different context of search.
 $backtopage          = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $lineid              = GETPOST('lineid', 'int');
-$year                = (GETPOST("year", 'int') ? GETPOST("year", "int") : date("Y"));
-$month               = (GETPOST("month", 'int') ? GETPOST("month", "int") : date("m"));
-$day                 = (GETPOST("day", 'int') ? GETPOST("day", "int") : date("d"));
+$year                = (GETPOST('year', 'int') ? GETPOST('year', 'int') : date('Y'));
+$month               = (GETPOST('month', 'int') ? GETPOST('month', 'int') : date('m'));
+$day                 = (GETPOST('day', 'int') ? GETPOST('day', 'int') : date('d'));
 
-// Initialize technical objects
-$object            = new TimeSheet($db);
-$objectline        = new TimeSheetLine($db);
-$signatory         = new TimeSheetSignature($db);
-$timesheetdocument = new TimeSheetDocument($db);
-$extrafields       = new ExtraFields($db);
-$project           = new Project($db);
-$product           = new Product($db);
-$workinghours      = new Workinghours($db);
-$holiday           = new Holiday($db);
-$task              = new Task($db);
-$usertmp           = new User($db);
+// Initialize technical objects.
+$object       = new TimeSheet($db);
+$objectLine   = new TimeSheetLine($db);
+$signatory    = new SaturneSignature($db, $moduleNameLowerCase, $object->element);
+$document     = new TimeSheetDocument($db);
+$extrafields  = new ExtraFields($db);
+$product      = new Product($db);
+$workingHours = new Workinghours($db);
+$task         = new Task($db);
+$userTmp      = new User($db);
 
-$hookmanager->initHooks(array('timesheetcard', 'globalcard')); // Note that conf->hooks_modules contains array
+// Initialize view objects
+$form = new Form($db);
+
+$hookmanager->initHooks(['timesheetcard', 'globalcard']); // Note that conf->hooks_modules contains array.
 
 // Fetch optionals attributes and labels
 $extrafields->fetch_name_optionals_label($object->table_element);
@@ -108,444 +87,357 @@ $extrafields->fetch_name_optionals_label($object->table_element);
 $search_array_options = $extrafields->getOptionalsFromPost($object->table_element, '', 'search_');
 
 // Initialize array of search criterias
-$search_all = GETPOST("search_all", 'alpha');
-$search = array();
+$searchAll = GETPOST('search_all', 'alpha');
+$search    = [];
 foreach ($object->fields as $key => $val) {
-	if (GETPOST('search_'.$key, 'alpha')) {
-		$search[$key] = GETPOST('search_'.$key, 'alpha');
-	}
+    if (GETPOST('search_' . $key, 'alpha')) {
+        $search[$key] = GETPOST('search_' . $key, 'alpha');
+    }
 }
 
 if (empty($action) && empty($id) && empty($ref)) {
-	$action = 'view';
+    $action = 'view';
 }
 
 // Load object
-include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be include, not include_once.
+require_once DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be included, not include_once.
 
-// There is several ways to check permission.
-$permissiontoread   = $user->rights->dolisirh->timesheet->read;
-$permissiontoadd    = $user->rights->dolisirh->timesheet->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-$permissiontodelete = $user->rights->dolisirh->timesheet->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-$permissionnote     = $user->rights->dolisirh->timesheet->write; // Used by the include of actions_setnotes.inc.php
+$upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
 
-$upload_dir = $conf->dolisirh->multidir_output[isset($object->entity) ? $object->entity : 1];
+$now = dol_now();
 
-// Security check (enable the most restrictive one)
-if (empty($conf->dolisirh->enabled)) accessforbidden();
-if (!$permissiontoread) accessforbidden();
+// Security check - Protection if external user
+$permissionToRead   = $user->rights->dolisirh->timesheet->read;
+$permissiontoadd    = $user->rights->dolisirh->timesheet->write;
+$permissiontodelete = $user->rights->dolisirh->timesheet->delete || ($permissiontoadd && isset($object->status) && $object->status == TimeSheet::STATUS_DRAFT);
+saturne_check_access($permissionToRead);
 
 /*
- * Actions
+ * Actions.
  */
 
-$parameters = array();
-$reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
-if ($reshook < 0) {
-	setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+$parameters = ['id' => $id];
+$resHook    = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks.
+if ($resHook < 0) {
+    setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 }
 
-if (empty($reshook)) {
-	$error = 0;
+if (empty($resHook)) {
+    $error = 0;
 
-	$backurlforlist = dol_buildpath('/dolisirh/view/timesheet/timesheet_list.php', 1);
+    $backurlforlist = dol_buildpath('/dolisirh/view/timesheet/timesheet_list.php', 1);
 
-	if (empty($backtopage) || ($cancel && empty($id))) {
-		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
-			if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
-				$backtopage = $backurlforlist;
-			} else {
-				$backtopage = dol_buildpath('/dolisirh/view/timesheet/timesheet_card.php', 1).'?id='.((!empty($id) && $id > 0) ? $id : '__ID__');
-			}
-		}
-	}
-
-	$triggermodname = 'TIMESHEET_MODIFY'; // Name of trigger action code to execute when we modify record
-
-	if (($action == 'add' || $action == 'update') && $permissiontoadd && !$cancel) {
-		$usertmp->fetch(GETPOST('fk_user_assign'));
-		$date_start = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
-		$date_end   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
-		$filter = ' AND ptt.task_date BETWEEN ' . "'" .dol_print_date($date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($date_end, 'dayrfc'). "'";
-		$alltimespent = $task->fetchAllTimeSpent($usertmp, $filter);
-		foreach ($alltimespent as $timespent) {
-			$task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
-			if (isset($task->linkedObjects['dolisirh_timesheet'])) {
-				$error++;
-			}
-		}
-
-		if ($date_start > $date_end) {
-			setEventMessages($langs->trans('ErrorDateTimeSheet', dol_print_date($date_start, 'dayreduceformat'), dol_print_date($date_end, 'dayreduceformat')), null, 'errors');
-			if ($action == 'add') {
-				$action = 'create';
-			} elseif ($action == 'update') {
-				$action = 'edit';
-			}
-		}
-
-		if ($conf->global->DOLISIRH_TIMESHEET_CHECK_DATE_END > 0) {
-			if ($date_end > dol_now()) {
-				setEventMessages($langs->trans('ErrorDateEndTimeSheet', dol_print_date($date_end, 'dayreduceformat'), dol_print_date(dol_now(), 'dayreduceformat')), null, 'errors');
-				if ($action == 'add') {
-					$action = 'create';
-				} elseif ($action == 'update') {
-					$action = 'edit';
-				}
-			}
-		}
-
-		if ($error > 0) {
-			setEventMessages($langs->trans('ErrorLinkedElementTimeSheetTimeSpent', $usertmp->getFullName($langs), dol_print_date($date_start, 'dayreduceformat'), dol_print_date($date_end, 'dayreduceformat')), null, 'errors');
-			if ($action == 'add') {
-				$action = 'create';
-			} elseif ($action == 'update') {
-				$action = 'edit';
-			}
-		}
-	}
-
-	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
-	$conf->global->MAIN_DISABLE_PDF_AUTOUPDATE = 1;
-	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
-
-    // Action to build doc
-    if ($action == 'builddoc' && $permissiontoadd) {
-        $outputlangs = $langs;
-        $newlang     = '';
-
-        if ($conf->global->MAIN_MULTILANGS && empty($newlang) && GETPOST('lang_id', 'aZ09')) $newlang = GETPOST('lang_id', 'aZ09');
-        if ( ! empty($newlang)) {
-            $outputlangs = new Translate("", $conf);
-            $outputlangs->setDefaultLang($newlang);
-        }
-
-        // To be sure vars is defined
-        if (empty($hidedetails)) $hidedetails = 0;
-        if (empty($hidedesc)) $hidedesc       = 0;
-        if (empty($hideref)) $hideref         = 0;
-        if (empty($moreparams)) $moreparams   = null;
-
-        $model = GETPOST('model', 'alpha');
-
-        $moreparams['object'] = $object;
-        $moreparams['user']   = $user;
-
-        $result = $timesheetdocument->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref, $moreparams);
-        if ($result <= 0) {
-            setEventMessages($object->error, $object->errors, 'errors');
-            $action = '';
-        } else {
-            if (empty($donotredirect)) {
-                setEventMessages($langs->trans("FileGenerated") . ' - ' . $timesheetdocument->last_main_doc, null);
-                $urltoredirect = $_SERVER['REQUEST_URI'];
-                $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
-                $urltoredirect = preg_replace('/action=builddoc&?/', '', $urltoredirect); // To avoid infinite loop
-                header('Location: ' . $urltoredirect . '#builddoc');
-                exit;
+    if (empty($backtopage) || ($cancel && empty($id))) {
+        if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
+            if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
+                $backtopage = $backurlforlist;
+            } else {
+                $backtopage = dol_buildpath('/dolisirh/view/timesheet/timesheet_card.php', 1) . '?id=' . ((!empty($id) && $id > 0) ? $id : '__ID__');
             }
         }
     }
 
-    // Delete file in doc form
-    if ($action == 'remove_file' && $permissiontodelete) {
-        if ( ! empty($upload_dir)) {
-            require_once DOL_DOCUMENT_ROOT . '/core/lib/files.lib.php';
+    if (($action == 'add' || $action == 'update') && $permissiontoadd && !$cancel) {
+        $userTmp->fetch(GETPOST('fk_user_assign'));
+        $dateStart  = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
+        $dateEnd    = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
+        $filter     = ' AND ptt.task_date BETWEEN ' . "'"  . dol_print_date($dateStart, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($dateEnd, 'dayrfc') . "'";
+        $timeSpents = $task->fetchAllTimeSpent($userTmp, $filter);
+        foreach ($timeSpents as $timespent) {
+            $task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
+            if (isset($task->linkedObjects['dolisirh_timesheet'])) {
+                $error++;
+            }
+        }
 
-            $langs->load("other");
-            $filetodelete = GETPOST('file', 'alpha');
-            $file         = $upload_dir . '/' . $filetodelete;
-            $ret          = dol_delete_file($file, 0, 0, 0, $object);
-            if ($ret) setEventMessages($langs->trans("FileWasRemoved", $filetodelete), null, 'mesgs');
-            else setEventMessages($langs->trans("ErrorFailToDeleteFile", $filetodelete), null, 'errors');
+        if ($dateStart > $dateEnd) {
+            setEventMessages($langs->trans('ErrorDateTimeSheet', dol_print_date($dateStart, 'dayreduceformat'), dol_print_date($dateEnd, 'dayreduceformat')), [], 'errors');
+            if ($action == 'add') {
+                $action = 'create';
+            } elseif ($action == 'update') {
+                $action = 'edit';
+            }
+        }
 
-            // Make a redirect to avoid to keep the remove_file into the url that create side effects
-            $urltoredirect = $_SERVER['REQUEST_URI'];
-            $urltoredirect = preg_replace('/#builddoc$/', '', $urltoredirect);
-            $urltoredirect = preg_replace('/action=remove_file&?/', '', $urltoredirect);
+        if (getDolGlobalInt('DOLISIRH_TIMESHEET_CHECK_DATE_END')) {
+            if ($dateEnd > $now) {
+                setEventMessages($langs->trans('ErrorDateEndTimeSheet', dol_print_date($dateEnd, 'dayreduceformat'), dol_print_date($now, 'dayreduceformat')), [], 'errors');
+                if ($action == 'add') {
+                    $action = 'create';
+                } elseif ($action == 'update') {
+                    $action = 'edit';
+                }
+            }
+        }
 
-            header('Location: ' . $urltoredirect);
-            exit;
-        } else {
-            setEventMessages('BugFoundVarUploaddirnotDefined', null, 'errors');
+        if ($error > 0) {
+            setEventMessages($langs->trans('ErrorLinkedElementTimeSheetTimeSpent', $userTmp->getFullName($langs), dol_print_date($dateStart, 'dayreduceformat'), dol_print_date($dateEnd, 'dayreduceformat')), [], 'errors');
+            if ($action == 'add') {
+                $action = 'create';
+            } elseif ($action == 'update') {
+                $action = 'edit';
+            }
         }
     }
 
-	if ($action == 'set_thirdparty' && $permissiontoadd) {
-		$object->setValueFrom('fk_soc', GETPOST('fk_soc', 'int'), '', '', 'date', '', $user, $triggermodname);
-	}
+    // Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen.
+    $triggermodname = 'TIMESHEET_MODIFY'; // Name of trigger action code to execute when we modify record.
+    require_once DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
 
-	if ($action == 'classin' && $permissiontoadd) {
-		$object->setProject(GETPOST('projectid', 'int'));
-	}
+    // Actions set_thirdparty, set_project
+    require_once __DIR__ . '/../../../saturne/core/tpl/actions/banner_actions.tpl.php';
 
-	// Action to add line
-	if ($action == 'addline' && $permissiontoadd) {
-		// Get parameters
-		$qty             = GETPOST('qty');
-		$prod_entry_mode = GETPOST('prod_entry_mode');
+    // Actions builddoc, forcebuilddoc, remove_file.
+    require_once __DIR__ . '/../../../saturne/core/tpl/documents/documents_action.tpl.php';
 
-		$now = dol_now();
+    // Action to generate pdf from odt file.
+    require_once __DIR__ . '/../../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
 
-		if ($prod_entry_mode == 'free') {
-			$product_type = GETPOST('type');
-			$description  = GETPOST('dp_desc', 'restricthtml');
+    // Action to add line.
+    if ($action == 'addline' && $permissiontoadd) {
+        // Get parameters.
+        $qty           = GETPOST('qty');
+        $prodEntryMode = GETPOST('prod_entry_mode');
 
-			// Check parameters
-			if ($product_type < 0) {
-				setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), null, 'errors');
-				$error++;
-			}
-			if (empty($description)) {
-				setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), null, 'errors');
-				$error++;
-			}
+        if ($prodEntryMode == 'free') {
+            $productType = GETPOST('type');
+            $description = GETPOST('dp_desc', 'restricthtml');
 
-			$objectline->description  = $description;
-			$objectline->product_type = $product_type;
-		} elseif ($prod_entry_mode == 'predef') {
-			$product_id = GETPOST('idprod');
-			if ($product_id > 0) {
-				$product->fetch($product_id);
-				$objectline->fk_product   = $product_id;
-				$objectline->product_type = 0;
-			} else {
-				$error++;
-			}
-		} else {
-			$error++;
-		}
+            // Check parameters.
+            if ($productType < 0) {
+                setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), [], 'errors');
+                $error++;
+            }
+            if (dol_strlen($description) < 0) {
+                setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), [], 'errors');
+                $error++;
+            }
 
-		// Initialize object timesheet line
-		$objectline->date_creation   = $object->db->idate($now);
-		$objectline->qty             = $qty;
-		$objectline->rang            = 0;
-		$objectline->fk_timesheet    = $id;
-		$objectline->fk_parent_line  = 0;
+            $objectLine->description  = $description;
+            $objectLine->product_type = $productType;
+        } elseif ($prodEntryMode == 'predef') {
+            $productID = GETPOST('idprod');
+            if ($productID > 0) {
+                $product->fetch($productID);
+                $objectLine->fk_product   = $productID;
+                $objectLine->product_type = 0;
+            } else {
+                $error++;
+            }
+        } else {
+            $error++;
+        }
 
-		if ( ! $error) {
-			$result = $objectline->insert($user, false);
-			if ($result > 0) {
-				// Creation timesheet line OK
-				$urltogo = str_replace('__ID__', $result, $backtopage);
-				$urltogo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urltogo); // New method to autoselect project after a New on another form object creation
-				header("Location: " . $urltogo);
-				exit;
-			} else {
-				// Creation timesheet line KO
-				if ( ! empty($objectline->errors)) setEventMessages(null, $objectline->errors, 'errors');
-				else setEventMessages($objectline->error, null, 'errors');
-			}
-		}
-	}
+        // Initialize object timesheet line.
+        $objectLine->date_creation   = $object->db->idate($now);
+        $objectLine->qty             = $qty;
+        $objectLine->rang            = 0;
+        $objectLine->fk_timesheet    = $id;
+        $objectLine->fk_parent_line  = 0;
 
-	// Action to edit line
-	if ($action == 'updateline' && $permissiontoadd) {
-		// Get parameters
-		$qty          = GETPOST('qty');
-		$description  = GETPOST('product_desc', 'restricthtml');
+        if (!$error) {
+            $result = $objectLine->create($user);
+            if ($result > 0) {
+                // Creation timesheet line OK.
+                $urlToGo = str_replace('__ID__', $result, $backtopage);
+                $urlToGo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urlToGo); // New method to autoselect project after a New on another form object creation.
+                header('Location: ' . $urlToGo);
+                exit;
+            } elseif (!empty($objectLine->errors)) {
+                // Creation timesheet line KO.
+                setEventMessages('', $objectLine->errors, 'errors');
+            } else {
+                setEventMessages($objectLine->error, [], 'errors');
+            }
+        }
+    }
 
-		$objectline->fetch($lineid);
+    // Action to edit line.
+    if ($action == 'updateline' && $permissiontoadd) {
+        // Get parameters.
+        $qty          = GETPOST('qty');
+        $description  = GETPOST('product_desc', 'restricthtml');
 
-		// Initialize object timesheet line
-		$objectline->qty         = $qty;
-		$objectline->description = $description;
+        $objectLine->fetch($lineid);
 
-		if ( ! $error) {
-			$result = $objectline->update($user, false);
-			if ($result > 0) {
-				// Update timesheet line OK
-				$urltogo = str_replace('__ID__', $result, $backtopage);
-				$urltogo = preg_replace('/--IDFORBACKTOPAGE--/', $parent_id, $urltogo); // New method to autoselect project after a New on another form object creation
-				header("Location: " . $urltogo);
-				exit;
-			} else {
-				// Update timesheet line KO
-				if ( ! empty($objectline->errors)) setEventMessages(null, $objectline->errors, 'errors');
-				else setEventMessages($objectline->error, null, 'errors');
-			}
-		}
-	}
+        // Initialize object timesheet line.
+        $objectLine->qty         = $qty;
+        $objectLine->description = $description;
 
-	// Action to set status STATUS_LOCKED
-	if ($action == 'confirm_setLocked' && $permissiontoadd) {
-		$errorlinked = 0;
-		$object->fetch($id);
-		if ( ! $error) {
-			$usertmp->fetch($object->fk_user_assign);
-			$filter = ' AND ptt.task_date BETWEEN ' . "'" .dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc'). "'";
-			$alltimespent = $task->fetchAllTimeSpent($usertmp, $filter);
-			foreach ($alltimespent as $timespent) {
-				$task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
-				if (!isset($task->linkedObjects['dolisirh_timesheet'])) {
-					$task->id = $timespent->timespent_id;
-					$task->element = 'project_task_time';
-					$task->add_object_linked('dolisirh_timesheet', $object->id);
-				} else {
-					$errorlinked++;
-				}
-			}
-			if ($errorlinked == 0) {
-				$object->setLocked($user, false);
-				// Set locked OK
-				$urltogo = str_replace('__ID__', $result, $backtopage);
-				$urltogo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urltogo); // New method to autoselect project after a New on another form object creation
-				header("Location: " . $urltogo);
-				exit;
-			}
-		} else {
-			// Set locked KO
-			if ( ! empty($object->errors)) setEventMessages(null, $object->errors, 'errors');
-			else setEventMessages($object->error, null, 'errors');
-		}
+        if (!$error) {
+            $result = $objectLine->update($user);
+            if ($result > 0) {
+                // Update timesheet line OK.
+                $urlToGo = str_replace('__ID__', $result, $backtopage);
+                $urlToGo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urlToGo); // New method to autoselect project after a New on another form object creation.
+                header('Location: ' . $urlToGo);
+                exit;
+            } elseif (!empty($objectLine->errors)) {
+                // Update timesheet line KO.
+                setEventMessages('', $objectLine->errors, 'errors');
+            } else {
+                setEventMessages($objectLine->error, [], 'errors');
+            }
+        }
+    }
 
-		if ($errorlinked > 0) {
-			setEventMessages($langs->trans('ErrorLinkedElementTimeSheetTimeSpent', $usertmp->getFullName($langs), dol_print_date($object->date_start, 'dayreduceformat'), dol_print_date($object->date_end, 'dayreduceformat')), null, 'errors');
-		}
-	}
+    // Action to set status STATUS_LOCKED.
+    if ($action == 'confirm_set_Lock' && $permissiontoadd) {
+        $errorLinked = 0;
+        $object->fetch($id);
+        if (!$error) {
+            $userTmp->fetch($object->fk_user_assign);
+            $filter     = ' AND ptt.task_date BETWEEN ' . "'"  . dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc') . "'";
+            $timeSpents = $task->fetchAllTimeSpent($userTmp, $filter);
+            foreach ($timeSpents as $timespent) {
+                $task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
+                if (!isset($task->linkedObjects['dolisirh_timesheet'])) {
+                    $task->id      = $timespent->timespent_id;
+                    $task->element = 'project_task_time';
+                    $task->add_object_linked('dolisirh_timesheet', $object->id);
+                } else {
+                    $errorLinked++;
+                }
+            }
+            if ($errorLinked == 0) {
+                $object->setLocked($user, false);
+                // Set locked OK
+                $urlToGo = str_replace('__ID__', $id, $backtopage);
+                $urlToGo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urlToGo); // New method to autoselect project after a New on another form object creation.
+                header('Location: ' . $urlToGo);
+                exit;
+            }
+        } elseif (!empty($object->errors)) {
+            // Set locked KO.
+            setEventMessages('', $object->errors, 'errors');
+        } else {
+            setEventMessages($object->error, [], 'errors');
+        }
 
-	// Action to set status STATUS_ARCHIVED
-	if ($action == 'setArchived' && $permissiontoadd) {
-		$object->fetch($id);
-		if ( ! $error) {
-			$result = $object->setArchived($user, false);
-			if ($result > 0) {
-				// Set Archived OK
-				$urltogo = str_replace('__ID__', $result, $backtopage);
-				$urltogo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urltogo); // New method to autoselect project after a New on another form object creation
-				header("Location: " . $urltogo);
-				exit;
-			} else {
-				// Set Archived KO
-				if ( ! empty($object->errors)) setEventMessages(null, $object->errors, 'errors');
-				else setEventMessages($object->error, null, 'errors');
-			}
-		}
-	}
+        if ($errorLinked > 0) {
+            setEventMessages($langs->trans('ErrorLinkedElementTimeSheetTimeSpent', $userTmp->getFullName($langs), dol_print_date($object->date_start, 'dayreduceformat'), dol_print_date($object->date_end, 'dayreduceformat')), [], 'errors');
+        }
+    }
 
-	// Actions to send emails
-	$triggersendname = 'DOLISIRH_TIMESHEET_SENTBYMAIL';
-	$autocopy = 'MAIN_MAIL_AUTOCOPY_TIMESHEET_TO';
-	$trackid = 'timesheet'.$object->id;
-	include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
+    // Action confirm_archive.
+    require_once __DIR__ . '/../../../saturne/core/tpl/signature/signature_action_workflow.tpl.php';
+
+    // Actions to send emails.
+    $triggersendname = strtoupper($object->element) . '_SENTBYMAIL';
+    $autocopy        = 'MAIN_MAIL_AUTOCOPY_' . strtoupper($object->element) . '_TO';
+    require_once DOL_DOCUMENT_ROOT . '/core/actions_sendmails.inc.php';
 }
 
 /*
- * View
+ * View.
  */
 
-// Initialize view objects
-$form = new Form($db);
-
-$title    = $langs->trans("TimeSheet");
+$title    = $langs->trans(ucfirst($object->element));
 $help_url = 'FR:Module_DoliSIRH';
-$morejs   = array("/dolisirh/js/dolisirh.js");
-$morecss  = array("/dolisirh/css/dolisirh.css");
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss);
+saturne_header(0, '', $title, $help_url);
 
-// Part to create
+// Part to create;
 if ($action == 'create') {
-	if (empty($permissiontoadd)) {
-		accessforbidden($langs->trans('NotEnoughPermissions'), 0, 1);
-		exit;
-	}
+    if (empty($permissiontoadd)) {
+        accessforbidden($langs->trans('NotEnoughPermissions'), 0);
+        exit;
+    }
 
-	print load_fiche_titre($langs->trans("NewTimeSheet"), '', 'object_'.$object->picto);
+    print load_fiche_titre($langs->trans('New' . ucfirst($object->element)), '', 'object_' . $object->picto);
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-	print '<input type="hidden" name="token" value="'.newToken().'">';
-	print '<input type="hidden" name="action" value="add">';
-	if ($backtopage) {
-		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
-	}
-	if ($backtopageforcancel) {
-		print '<input type="hidden" name="backtopageforcancel" value="'.$backtopageforcancel.'">';
-	}
+    print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '">';
+    print '<input type="hidden" name="token" value="' . newToken() . '">';
+    print '<input type="hidden" name="action" value="add">';
+    if ($backtopage) {
+        print '<input type="hidden" name="backtopage" value="' . $backtopage . '">';
+    }
+    if ($backtopageforcancel) {
+        print '<input type="hidden" name="backtopageforcancel" value="'. $backtopageforcancel . '">';
+    }
 
-	print dol_get_fiche_head(array(), '');
+    print dol_get_fiche_head();
 
-	print '<table class="border centpercent tableforfieldcreate">';
+    print '<table class="border centpercent tableforfieldcreate">';
 
-    if ($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) {
+    $specialCaseMonth = 0;
+    if (getDolGlobalInt('DOLISIRH_TIMESHEET_PREFILL_DATE')) {
         if ($month == 01) {
             $specialCaseMonth = 12;
             $year--;
         }
     }
 
-	$object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, (!empty($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) ? (($month != 01) ? $month - 1 : $specialCaseMonth) : $month), $day, $year), "%B %Y") . ' ' . $user->getFullName($langs, 0, 0);
-	$object->fields['fk_project']['default']     = $conf->global->DOLISIRH_HR_PROJECT;
-	$object->fields['fk_user_assign']['default'] = $user->id;
+    $object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, (!empty($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) ? (($month != 01) ? $month - 1 : $specialCaseMonth) : $month), $day, $year), '%B %Y') . ' ' . $user->getFullName($langs, 0, 0);
+    $object->fields['fk_project']['default']     = $conf->global->DOLISIRH_HR_PROJECT;
+    $object->fields['fk_user_assign']['default'] = $user->id;
 
-	$date_start = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
-	$date_end   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
+    $dateStart = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
+    $dateEnd   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
 
-	$_POST['date_start'] = $date_start;
-	$_POST['date_end']   = $date_end;
+    $_POST['date_start'] = $dateStart;
+    $_POST['date_end']   = $dateEnd;
 
-	if ($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE && empty($_POST['date_start']) && empty($_POST['date_end'])) {
-		$firstday = dol_get_first_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
-		$firstday = dol_getdate($firstday);
+    if (getDolGlobalInt('DOLISIRH_TIMESHEET_PREFILL_DATE') && empty($_POST['date_start']) && empty($_POST['date_end'])) {
+        $firstDay = dol_get_first_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
+        $firstDay = dol_getdate($firstDay);
 
-		$_POST['date_startday'] = $firstday['mday'];
-		$_POST['date_startmonth'] = $firstday['mon'];
-		$_POST['date_startyear'] = $firstday['year'];
+        $_POST['date_startday']   = $firstDay['mday'];
+        $_POST['date_startmonth'] = $firstDay['mon'];
+        $_POST['date_startyear']  = $firstDay['year'];
 
-		$lastday = dol_get_last_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
-		$lastday = dol_getdate($lastday);
+        $lastDay = dol_get_last_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
+        $lastDay = dol_getdate($lastDay);
 
-		$_POST['date_endday'] = $lastday['mday'];
-		$_POST['date_endmonth'] = $lastday['mon'];
-		$_POST['date_endyear'] = $lastday['year'];
-	}
+        $_POST['date_endday']   = $lastDay['mday'];
+        $_POST['date_endmonth'] = $lastDay['mon'];
+        $_POST['date_endyear']  = $lastDay['year'];
+    }
 
-	// Common attributes
-	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_add.tpl.php';
+    // Common attributes.
+    require_once DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_add.tpl.php';
 
-	// Categories
-	if (!empty($conf->categorie->enabled)) {
-		print '<tr><td>'.$langs->trans("Categories").'</td><td>';
-		$cate_arbo = $form->select_all_categories('timesheet', '', 'parent', 64, 0, 1);
-		print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
-		print "</td></tr>";
-	}
+    // Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
+        $cateArbo = $form->select_all_categories($object->element, '', 'parent', 64, 0, 1);
+        print img_picto('', 'category') . $form::multiselectarray('categories', $cateArbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx');
+        print '</td></tr>';
+    }
 
-	// Other attributes
-	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_add.tpl.php';
+    // Other attributes.
+    include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_add.tpl.php';
 
-	print '</table>';
+    print '</table>';
 
-	print dol_get_fiche_end();
+    print dol_get_fiche_end();
 
-	print $form->buttonsSaveCancel("Create");
+    print $form->buttonsSaveCancel('Create');
 
-	print '</form>';
-
-	//dol_set_focus('input[name="ref"]');
+    print '</form>';
 }
 
-// Part to edit record
+// Part to edit record.
 if (($id || $ref) && $action == 'edit') {
-	print load_fiche_titre($langs->trans("ModifyTimeSheet"), '', 'object_'.$object->picto);
+    print load_fiche_titre($langs->trans('Modify' . ucfirst($object->element)), '', 'object_' . $object->picto);
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-	print '<input type="hidden" name="token" value="'.newToken().'">';
-	print '<input type="hidden" name="action" value="update">';
-	print '<input type="hidden" name="id" value="'.$object->id.'">';
-	if ($backtopage) {
-		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
-	}
-	if ($backtopageforcancel) {
-		print '<input type="hidden" name="backtopageforcancel" value="'.$backtopageforcancel.'">';
-	}
+    print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '">';
+    print '<input type="hidden" name="token" value="' . newToken() . '">';
+    print '<input type="hidden" name="action" value="update">';
+    print '<input type="hidden" name="id" value="' . $object->id . '">';
+    if ($backtopage) {
+        print '<input type="hidden" name="backtopage" value="' . $backtopage . '">';
+    }
+    if ($backtopageforcancel) {
+        print '<input type="hidden" name="backtopageforcancel" value="' . $backtopageforcancel . '">';
+    }
 
-	print dol_get_fiche_head();
+    print dol_get_fiche_head();
 
-	print '<table class="border centpercent tableforfieldedit">';
+    print '<table class="border centpercent tableforfieldedit">';
 
-	$dateStart = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
-	$dateEnd   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
+    $dateStart = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
+    $dateEnd   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
 
     $dateStart = (!empty($dateStart) ? $dateStart : $object->date_start);
     $dateEnd   = (!empty($dateEnd) ? $dateEnd : $object->date_end);
@@ -561,460 +453,441 @@ if (($id || $ref) && $action == 'edit') {
     $_POST['date_endmonth'] = $dateEnd['mon'];
     $_POST['date_endyear']  = $dateEnd['year'];
 
-	$object->fields['note_public']['visible']  = 1;
-	$object->fields['note_private']['visible'] = 1;
+    // Common attributes.
+    require_once DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_edit.tpl.php';
 
-	// Common attributes
-	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_edit.tpl.php';
+    // Tags-Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
+        $cate_arbo     = $form->select_all_categories($object->element, '', 'parent', 64, 0, 1);
+        $categorie     = new Categorie($db);
+        $cats          = $categorie->containing($object->id, $object->element);
+        $arraySelected = [];
+        if (is_array($cats)) {
+            foreach ($cats as $cat) {
+                $arraySelected[] = $cat->id;
+            }
+        }
+        print img_picto('', 'category') . $form::multiselectarray('categories', $cate_arbo, $arraySelected, '', 0, 'quatrevingtpercent widthcentpercentminusx');
+        print '</td></tr>';
+    }
 
-	// Tags-Categories
-	if ($conf->categorie->enabled) {
-		print '<tr><td>'.$langs->trans("Categories").'</td><td>';
-		$cate_arbo = $form->select_all_categories('timesheet', '', 'parent', 64, 0, 1);
-		$c = new Categorie($db);
-		$cats = $c->containing($object->id, 'timesheet');
-		$arrayselected = array();
-		if (is_array($cats)) {
-			foreach ($cats as $cat) {
-				$arrayselected[] = $cat->id;
-			}
-		}
-		print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
-		print "</td></tr>";
-	}
+    // Other attributes.
+    require_once DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_edit.tpl.php';
 
-	// Other attributes
-	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_edit.tpl.php';
+    print '</table>';
 
-	print '</table>';
+    print dol_get_fiche_end();
 
-	print dol_get_fiche_end();
+    print $form->buttonsSaveCancel();
 
-	print $form->buttonsSaveCancel();
-
-	print '</form>';
+    print '</form>';
 }
 
-// Part to show record
+// Part to show record.
 if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create'))) {
-	$res = $object->fetch_optionals();
+    $object->fetch_optionals();
 
-	$head = timesheetPrepareHead($object);
-	print dol_get_fiche_head($head, 'card', $langs->trans("TimeSheet"), -1, $object->picto);
+    saturne_get_fiche_head($object, 'card', $title);
+    saturne_banner_tab($object);
 
-	$formconfirm = '';
-	// setDraft confirmation
-	if (($action == 'setDraft' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile)))        // Output when action = clone if jmobile or no js
-		|| (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {                            // Always output when not jmobile nor js
-		$formconfirm .= $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('ReOpenTimeSheet'), $langs->trans('ConfirmReOpenTimeSheet', $object->ref), 'confirm_setdraft', '', 'yes', 'actionButtonInProgress', 350, 600);
-	}
-	// setPendingSignature confirmation
-	if (($action == 'setPendingSignature' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile)))        // Output when action = clone if jmobile or no js
-		|| (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {                            // Always output when not jmobile nor js
-		$formconfirm .= $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('ValidateTimeSheet'), $langs->trans('ConfirmValidateTimeSheet', $object->ref), 'confirm_validate', '', 'yes', 'actionButtonPendingSignature', 350, 600);
-	}
-	// setLocked confirmation
-	if (($action == 'setLocked' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile)))        // Output when action = clone if jmobile or no js
-		|| (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {                            // Always output when not jmobile nor js
-		$formconfirm .= $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('LockTimeSheet'), $langs->trans('ConfirmLockTimeSheet', $object->ref), 'confirm_setLocked', '', 'yes', 'actionButtonLock', 350, 600);
-	}
-	// Confirmation to delete
-	if ($action == 'delete') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id, $langs->trans('DeleteTimeSheet'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 'yes', 1);
-	}
-	// Confirmation to delete line
-	if ($action == 'ask_deleteline') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id . '&lineid=' . $lineid, $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 0, 1);
-	}
-	// Confirmation remove file
-	if ($action == 'removefile') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?id=' . $object->id . '&file=' . GETPOST('file') . '&entity=' . $conf->entity, $langs->trans('RemoveFileTimeSheet'), $langs->trans('ConfirmRemoveFileTimeSheet'), 'remove_file', '', 'yes', 1, 350, 600);
-	}
+    $formConfirm = '';
 
-	// Call Hook formConfirm
-	$parameters = array('formConfirm' => $formconfirm, 'lineid' => $lineid);
-	$reshook = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-	if (empty($reshook)) {
-		$formconfirm .= $hookmanager->resPrint;
-	} elseif ($reshook > 0) {
-		$formconfirm = $hookmanager->resPrint;
-	}
+    // Draft confirmation
+    if (($action == 'draft' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ReOpenObject', $langs->transnoentities('The' . ucfirst($object->element))),  $langs->trans('ConfirmReOpenObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_setdraft', '', 'yes', 'actionButtonInProgress', 350, 600);
+    }
+    // Pending signature confirmation
+    if (($action == 'pending_signature' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('ValidateObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmValidateObject', $langs->transnoentities('The' . ucfirst($object->element)), $langs->transnoentities('The' . ucfirst($object->element))) . $langs->trans('ConfirmValidateTimeSheet'), 'confirm_validate', '', 'yes', 'actionButtonPendingSignature', 350, 600);
+    }
+    // Lock confirmation
+    if (($action == 'lock' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('LockObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmLockObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_set_Lock', '', 'yes', 'actionButtonLock', 350, 600);
+    }
+    // Delete confirmation
+    if ($action == 'delete') {
+        $formConfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('DeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmDeleteObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_delete', '', 'yes', 1);
+    }
+    // Delete line confirmation
+    if ($action == 'ask_deleteline') {
+        $formConfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&lineid=' . $lineid, $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 0, 1);
+    }
+    // Remove file confirmation
+    if ($action == 'removefile') {
+        $formConfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&file=' . GETPOST('file') . '&entity=' . $conf->entity, $langs->trans('RemoveFileTimeSheet'), $langs->trans('ConfirmRemoveFileTimeSheet'), 'remove_file', '', 'yes', 1, 350, 600);
+    }
 
-	// Print form confirm
-	print $formconfirm;
+    // Call Hook formConfirm.
+    $parameters = ['formConfirm' => $formConfirm, 'lineid' => $lineid];
+    $reshook    = $hookmanager->executeHooks('formConfirm', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
+    if (empty($reshook)) {
+        $formConfirm .= $hookmanager->resPrint;
+    } elseif ($reshook > 0) {
+        $formConfirm = $hookmanager->resPrint;
+    }
 
-	// Object card
-	// ------------------------------------------------------------
-	$linkback = '<a href="' . dol_buildpath('/dolisirh/view/timesheet/timesheet_list.php', 1) . '">' . $langs->trans("BackToList") . '</a>';
+    // Print form confirm.
+    print $formConfirm;
 
-	$morehtmlref = '<div class="refidno">';
-	// Thirdparty
-	if (!empty($conf->societe->enabled)) {
-		$object->fetch_thirdparty();
-		$morehtmlref .= $langs->trans('ThirdParty') . ' : ' . (is_object($object->thirdparty) ? $object->thirdparty->getNomUrl(1) : '');
-	}
-	// Project
-	if (!empty($conf->projet->enabled)) {
-		$langs->load("projects");
-		$morehtmlref .= '<br>' . $langs->trans('Project') . ' ';
-		if (!empty($object->fk_project)) {
-			$project->fetch($object->fk_project);
-			$morehtmlref .= ': ' . $project->getNomUrl(1, '', 1);
-		} else {
-			$morehtmlref .= '';
-		}
-	}
-	$morehtmlref .= '</div>';
+    if ($conf->browser->layout == 'phone') {
+        $onPhone = 1;
+    } else {
+        $onPhone = 0;
+    }
 
-    $object->picto = 'timesheet_small@dolisirh';
-	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
+    print '<div class="fichecenter">';
+    print '<div class="fichehalfleft">';
+    print '<table class="border centpercent tableforfield">';
 
-	print '<div class="fichecenter">';
-	print '<div class="fichehalfleft">';
-	print '<div class="underbanner clearboth"></div>';
-	print '<table class="border centpercent tableforfield">' . "\n";
+    // Common attributes
+    unset($object->fields['label']);      // Hide field already shown in banner
+    unset($object->fields['fk_project']); // Hide field already shown in banner
+    unset($object->fields['fk_soc']);     // Hide field already shown in banner
 
-	// Common attributes
-	unset($object->fields['fk_project']);                // Hide field already shown in banner
-	unset($object->fields['fk_soc']);                    // Hide field already shown in banner
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
 
-	include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+    // Categories.
+    if (isModEnabled('categorie')) {
+        print '<tr><td class="valignmiddle">' . $langs->trans('Categories') . '</td><td>';
+        print $form->showCategories($object->id, $object->element, 1);
+        print '</td></tr>';
+    }
 
-	// Categories
-	if ($conf->categorie->enabled) {
-		print '<tr><td class="valignmiddle">' . $langs->trans("Categories") . '</td><td>';
-		print $form->showCategories($object->id, 'timesheet', 1);
-		print "</td></tr>";
-	}
+    $dateStart = dol_getdate($object->date_start, false, 'Europe/Paris');
 
-	$now = dol_now();
-	$datestart = dol_getdate($object->date_start, false, 'Europe/Paris');
+    // Due to Dolibarr issue in common field add we do substract 12 hours in timestamp.
+    $firstDayToShow = $object->date_start - 12 * 3600;
+    $lastDayToShow  = $object->date_end - 12 * 3600;
 
-	// Due to Dolibarr issue in common field add we do substract 12 hours in timestamp
-	$firstdaytoshow = $object->date_start - 12 * 3600;
-	$lastdaytoshow = $object->date_end - 12 * 3600;
+    $startDate = dol_print_date($firstDayToShow, 'dayreduceformat');
+    $endDate   = dol_print_date($lastDayToShow, 'dayreduceformat');
 
-	$start_date = dol_print_date($firstdaytoshow, "dayreduceformat");
-	$end_date = dol_print_date($lastdaytoshow, "dayreduceformat");
+    $daysInRange = dolisirh_num_between_days($firstDayToShow, $lastDayToShow, 1);
 
-	$daysInRange = dolisirh_num_between_day($firstdaytoshow, $lastdaytoshow, 1);
+    $isAvailable = [];
+    for ($idw = 0; $idw < $daysInRange; $idw++) {
+        $dayInLoop = dol_time_plus_duree($firstDayToShow, $idw, 'd');
+        if (is_day_available($dayInLoop, $user->id)) {
+            $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
+        } elseif (date('N', $dayInLoop) >= 6) {
+            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
+        } else {
+            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
+        }
+    }
 
-	$isavailable = array();
-	for ($idw = 0; $idw < $daysInRange; $idw++) {
-		$dayInLoop =  dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-		if (isDayAvailable($dayInLoop, $user->id)) {
-			$isavailable[$dayInLoop] = array('morning'=>1, 'afternoon'=>1);
-		} else if (date('N', $dayInLoop) >= 6) {
-			$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end');
-		} else {
-			$isavailable[$dayInLoop] = array('morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday');
-		}
-	}
+    $workingHours = $workingHours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
 
-	$workingHours = $workinghours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
+    $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dol_time_plus_duree($lastDayToShow, 1, 'd'), $workingHours, $isAvailable, $object->fk_user_assign);
 
-	$timeSpendingInfos = loadTimeSpendingInfosWithinRange($firstdaytoshow, dol_time_plus_duree($lastdaytoshow, 1, 'd'), $workingHours, $isavailable, $object->fk_user_assign);
+    // Planned working time.
+    $plannedWorkingTime = $timeSpendingInfos['planned'];
 
-	// Planned working time
-	$planned_working_time = $timeSpendingInfos['planned'];
+    print '<tr class="liste_total"><td class="liste_total">';
+    print $langs->trans('Total');
+    print '<span class="opacitymediumbycolor">  - ';
+    print $langs->trans('ExpectedWorkingHoursMonthTimeSheet', $startDate, $endDate);
+    print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '" target="_blank">';
+    print (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong>';
+    print '<span>' . ' - ' . $langs->trans('ExpectedWorkingDayMonth') . ' <strong>' . $plannedWorkingTime['days'] . '</strong></span>';
+    print '</span>';
+    print '</td></tr>';
 
-	print '<tr class="liste_total"><td class="liste_total">';
-	print $langs->trans("Total");
-	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("ExpectedWorkingHoursMonthTimeSheet", $start_date, $end_date);
-	print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '" target="_blank">';
-	print (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong>';
-	print '<span>' . ' - ' . $langs->trans("ExpectedWorkingDayMonth") . ' <strong>' . $planned_working_time['days'] . '</strong></span>';
-	print '</span>';
-	print '</td></tr>';
+    // Hours passed.
+    $passedWorkingTime = $timeSpendingInfos['passed'];
 
-	// Hours passed
-	$passed_working_time = $timeSpendingInfos['passed'];
+    print '<tr class="liste_total"><td class="liste_total">';
+    print $langs->trans('Total');
+    print '<span class="opacitymediumbycolor">  - ';
+    print $langs->trans('SpentWorkingHoursMonth', $startDate, $endDate);
+    print ' : <strong>' . (($passedWorkingTime['minutes'] != 0) ? convertSecondToTime($passedWorkingTime['minutes'] * 60, 'allhourmin') : '00:00') . '</strong></span>';
+    print '</td></tr>';
 
-	print '<tr class="liste_total"><td class="liste_total">';
-	print $langs->trans("Total");
-	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("SpentWorkingHoursMonth", $start_date, $end_date);
-	print ' : <strong>' . (($passed_working_time['minutes'] != 0) ? convertSecondToTime($passed_working_time['minutes'] * 60, 'allhourmin') : '00:00') . '</strong></span>';
-	print '</td></tr>';
+    // Difference between passed and working hours.
+    $diffTotalTime = $timeSpendingInfos['difference'];
 
-	//Difference between passed and working hours
-	$difftotaltime = $timeSpendingInfos['difference'];
+    if ($diffTotalTime < 0) {
+        $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+        $moreCssNotice = 'error';
+        $noticeTitle   = $langs->trans('TimeSpentDiff', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayToShow, 'dayreduceformat'), dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y'));
+    } elseif ($diffTotalTime > 0) {
+        $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+        $moreCssNotice = 'warning';
+        $noticeTitle   = $langs->trans('TimeSpentMustBeCompleted', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayToShow, 'dayreduceformat'), dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y'));
+    } elseif ($diffTotalTime == 0) {
+        $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+        $moreCssNotice = 'success';
+        $noticeTitle   = $langs->trans('TimeSpentPerfect');
+    } else {
+        $moreCssHours  = '';
+        $moreCssNotice = '';
+        $noticeTitle   = '';
+    }
 
-	if ($difftotaltime < 0) {
-		$morecssHours = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-		$morecssnotice = 'error';
-		$noticetitle = $langs->trans('TimeSpentDiff', dol_print_date($firstdaytoshow, "dayreduceformat"), dol_print_date($lastdaytoshow, "dayreduceformat"), dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y"));
-	} elseif ($difftotaltime > 0) {
-		$morecssHours = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-		$morecssnotice = 'warning';
-		$noticetitle = $langs->trans('TimeSpentMustBeCompleted', dol_print_date($firstdaytoshow, "dayreduceformat"), dol_print_date($lastdaytoshow, "dayreduceformat"), dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y"));
-	} elseif ($difftotaltime == 0) {
-		$morecssHours = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
-		$morecssnotice = 'success';
-		$noticetitle = $langs->trans('TimeSpentPerfect');
-	}
+    // Working hours.
+    $workingTime = $timeSpendingInfos['spent'];
+    if ($plannedWorkingTime['days'] > $workingTime['days']) {
+        $morecssDays = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+    } elseif ($plannedWorkingTime['days'] < $workingTime['days']){
+        $morecssDays = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+    } else {
+        $morecssDays = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+    }
 
-	//Working hours
-	$working_time = $timeSpendingInfos['spent'];
+    print '<tr class="liste_total"><td class="liste_total">';
+    print $langs->trans('Total');
+    print '<span class="opacitymediumbycolor"> - ';
+    print $langs->trans('ConsumedWorkingHoursMonth', $startDate, $endDate);
+    print ' : <strong>' . convertSecondToTime($workingTime['total'], 'allhourmin') . '</strong>';
+    print '<span>' . ' - ' . $langs->trans('ConsumedWorkingDayMonth') . ' <strong style="color:' . 'rgb(' . $morecssDays[0] . ',' . $morecssDays[1] . ',' . $morecssDays[2] . ');' . '">';
+    print $workingTime['days'] . '</strong></span>';
+    print '</span>';
+    print '</td></tr>';
 
-	if ($planned_working_time['days'] > $working_time['days']) {
-		$morecssDays = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-	} else if ($planned_working_time['days'] < $working_time['days']){
-		$morecssDays = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-	} else {
-		$morecssDays = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
-	}
+    // Difference between working hours & planned working hours.
+    print '<tr class="liste_total"><td class="liste_total">';
+    print $langs->trans('Total');
+    print '<span class="opacitymediumbycolor">  - ';
+    print $langs->trans('DiffSpentAndConsumedWorkingHoursMonth', $startDate, $endDate);
+    print ' : <strong style="color:' . 'rgb(' . $moreCssHours[0] . ',' . $moreCssHours[1] . ',' . $moreCssHours[2] . ');' . '">';
+    print (($diffTotalTime != 0) ? convertSecondToTime(abs($diffTotalTime * 60), 'allhourmin') : '00:00') . '</strong>';
+    print '</span>';
+    print '</td></tr>';
 
-	print '<tr class="liste_total"><td class="liste_total">';
-	print $langs->trans("Total");
-	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("ConsumedWorkingHoursMonth", $start_date, $end_date);
-	print ' : <strong>'.convertSecondToTime($working_time['total'], 'allhourmin').'</strong>';
-	print '<span>' . ' - ' . $langs->trans("ConsumedWorkingDayMonth") . ' <strong style="color:'.'rgb('.$morecssDays[0].','.$morecssDays[1].','.$morecssDays[2].')'.'">';
-	print $working_time['days'] . '</strong></span>';
-	print '</span>';
-	print '</td></tr>';
+    // Other attributes. Fields from hook formObjectOptions and Extrafields.
+    require_once DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
 
-	//Difference between working hours & planned working hours
-	print '<tr class="liste_total"><td class="liste_total">';
-	print $langs->trans("Total");
-	print '<span class="opacitymediumbycolor">  - ';
-	print $langs->trans("DiffSpentAndConsumedWorkingHoursMonth", $start_date, $end_date);
-	print ' : <strong style="color:'.'rgb('.$morecssHours[0].','.$morecssHours[1].','.$morecssHours[2].')'.'">';
-	print (($difftotaltime != 0) ? convertSecondToTime(abs($difftotaltime * 60), 'allhourmin') : '00:00').'</strong>';
-	print '</span>';
-	print '</td></tr>';
+    print '</table>';
+    print '</div>';
+    print '</div>';
 
-	// Other attributes. Fields from hook formObjectOptions and Extrafields.
-	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_view.tpl.php';
+    $userTmp->fetch($object->fk_user_assign);
 
-	print '</table>';
-	print '</div>';
-	print '</div>';
+    print '<div class="clearboth"></div>'; ?>
 
-	$usertmp->fetch($object->fk_user_assign);
-
-	print '<div class="clearboth"></div>'; ?>
-
-	<?php if ($planned_working_time['minutes'] == 0) : ?>
-		<div class="wpeo-notice notice-error">
-			<div class="notice-content">
-				<div class="notice-title"><?php echo $langs->trans('ErrorConfigWorkingHours') ?></div>
-			</div>
-			<a class="butAction" style="width = 100%;margin-right:0" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans("GoToWorkingHours", $usertmp->getFullName($langs)) ?></a>
-		</div>
-	<?php else : ?>
-		<div class="wpeo-notice notice-<?php echo $morecssnotice ?>">
-			<div class="notice-content">
-				<div class="notice-title"><?php echo $noticetitle ?></div>
-			</div>
-			<a class="butAction" style="width = 100%;margin-right:0" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/timespent_month.php?year='.$datestart['year'].'&month='.$datestart['mon'].'&day='.$datestart['mday'].'&search_usertoprocessid='.$object->fk_user_assign . '&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans("GoToTimeSpent", dol_print_date(dol_mktime(0, 0, 0, $datestart['mon'], $datestart['mday'], $datestart['year']), "%B %Y")) ?></a>
-		</div>
-	<?php endif; ?>
+    <?php if ($plannedWorkingTime['minutes'] == 0) : ?>
+        <div class="wpeo-notice notice-error">
+            <div class="notice-content">
+                <div class="notice-title"><?php echo $langs->trans('ErrorConfigWorkingHours') ?></div>
+            </div>
+            <a class="butAction" style="width = 100%; margin-right : 0;" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans('GoToWorkingHours', $userTmp->getFullName($langs)) ?></a>
+        </div>
+    <?php else : ?>
+        <div class="wpeo-notice notice-<?php echo $moreCssNotice ?>">
+            <div class="notice-content">
+                <div class="notice-title"><?php echo $noticeTitle ?></div>
+            </div>
+            <a class="butAction" style="width = 100% ; margin-right : 0;" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?year=' . $dateStart['year'] . '&month=' . $dateStart['mon'] . '&day=' . $dateStart['mday'] . '&search_user_id=' . $object->fk_user_assign . '&view_mode=month&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans('GoToTimeSpent', dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y')) ?></a>
+        </div>
+    <?php endif; ?>
 
     <?php if (empty($conf->global->DOLISIRH_HR_PROJECT) || empty($conf->global->DOLISIRH_HOLIDAYS_TASK) || empty($conf->global->DOLISIRH_PAID_HOLIDAYS_TASK) || empty($conf->global->DOLISIRH_PAID_HOLIDAYS_TASK) || empty($conf->global->DOLISIRH_PAID_HOLIDAYS_TASK)
-            || empty($conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK) || empty($conf->global-> DOLISIRH_RTT_TASK) || empty($conf->global->DOLISIRH_INTERNAL_MEETING_TASK) || empty($conf->global->DOLISIRH_INTERNAL_TRAINING_TASK) || empty($conf->global->DOLISIRH_EXTERNAL_TRAINING_TASK)
-            || empty($conf->global->DOLISIRH_AUTOMATIC_TIMESPENDING_TASK) || empty($conf->global->DOLISIRH_MISCELLANEOUS_TASK)) : ?>
+        || empty($conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK) || empty($conf->global-> DOLISIRH_RTT_TASK) || empty($conf->global->DOLISIRH_INTERNAL_MEETING_TASK) || empty($conf->global->DOLISIRH_INTERNAL_TRAINING_TASK) || empty($conf->global->DOLISIRH_EXTERNAL_TRAINING_TASK)
+        || empty($conf->global->DOLISIRH_AUTOMATIC_TIMESPENDING_TASK) || empty($conf->global->DOLISIRH_MISCELLANEOUS_TASK)) : ?>
         <div class="wpeo-notice notice-error">
             <div class="notice-content">
                 <div class="notice-title"><?php echo $langs->trans('ErrorConfigProjectPage') ?></div>
             </div>
-            <a class="butAction" style="width = 100%;margin-right:0" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/admin/project.php'; ?>"><?php echo $langs->trans('GoToConfigProjectPage') ?></a>
+            <a class="butAction" style="width = 100%; margin-right : 0;" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/admin/project.php'; ?>"><?php echo $langs->trans('GoToConfigProjectPage') ?></a>
         </div>
     <?php endif; ?>
 
-	<?php print dol_get_fiche_end();
+    <?php print dol_get_fiche_end();
 
-	/*
-	 * Lines
-	 */
+    /*
+     * Lines.
+     */
 
-	if (!empty($object->table_element_line)) {
-		// Show object lines
-		$result = $object->getLinesArray();
+    if (!empty($object->table_element_line)) {
+        // Show object lines.
+        $result = $object->getLinesArray();
 
-		print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '' : '#line_'.GETPOST('lineid', 'int')).'" method="POST">
-		<input type="hidden" name="token" value="' . newToken().'">
-		<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateline').'">
-		<input type="hidden" name="mode" value="">
-		<input type="hidden" name="page_y" value="">
-		<input type="hidden" name="id" value="' . $object->id.'">
-		';
+        print '	<form name="addproduct" id="addproduct" action="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . (($action != 'editline') ? '' : '#line_' . $lineid) . '" method="POST">
+        <input type="hidden" name="token" value="' . newToken() . '">
+        <input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateline') . '">
+        <input type="hidden" name="mode" value="">
+        <input type="hidden" name="page_y" value="">
+        <input type="hidden" name="id" value="' . $object->id . '">
+        ';
 
-		if (!empty($conf->use_javascript_ajax) && $object->status == 0) {
-			include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
-		}
+        if (!empty($conf->use_javascript_ajax) && $object->status == 0) {
+            include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
+        }
 
-		print '<div class="div-table-responsive-no-min">';
-		if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
-			print '<table id="tablelines" class="noborder noshadow" width="100%">';
-		}
+        print '<div class="div-table-responsive-no-min">';
+        if (!empty($object->lines) || ($object->status == TimeSheet::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
+            print '<table id="tablelines" class="noborder noshadow">';
+        }
 
-		if (!empty($object->lines)) {
-			if ($permissiontoadd) {
-				$user->rights->timesheet = new stdClass();
-				$user->rights->timesheet->creer = 1;
-				$object->statut = $object::STATUS_DRAFT;
-				if ($object->status >= $object::STATUS_VALIDATED) {
-					$disableedit = 1;
-					$disableremove = 1;
-					$disablemove = 1;
-				}
-			}
-			$object->printObjectLines($action, $mysoc, null, GETPOST('lineid', 'int'), 1); ?>
-			<script>
-				jQuery('.linecolvat').remove();
-				jQuery('.linecoluht').remove();
-				jQuery('.linecoldiscount').remove();
-				jQuery('.linecolht').remove();
-				jQuery('.tredited .right #tva_tx').remove();
-				jQuery('.tredited .right #price_ht').remove();
-				jQuery('.tredited .right #remise_percent').remove();
-				jQuery('.tredited .nowrap').remove();
-				jQuery('.treditedlinefordate').remove();
-			</script>
-		<?php }
+        if (!empty($object->lines)) {
+            if ($permissiontoadd) {
+                $object->statut = $object->status;
+            }
+            $object->printObjectLines($action, $mysoc, null, $lineid, 1); ?>
+            <script>
+                jQuery('.linecolvat').remove();
+                jQuery('.linecoluht').remove();
+                jQuery('.linecoldiscount').remove();
+                jQuery('.linecolht').remove();
+                jQuery('.tredited .right #tva_tx').remove();
+                jQuery('.tredited .right #price_ht').remove();
+                jQuery('.tredited .right #remise_percent').remove();
+                jQuery('.tredited .nowrap').remove();
+                jQuery('.treditedlinefordate').remove();
+            </script>
+        <?php }
 
-		// Form to add new line
-		if ($object->status == 0 && $permissiontoadd && $action != 'selectlines') {
-			if ($action != 'editline') {
-				// Add products/services form
-				$object->socid = 0;
-				$parameters = array();
-				$reshook = $hookmanager->executeHooks('formAddObjectLine', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-				if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-				if (empty($reshook)) $object->formAddObjectLine(1, $mysoc, $soc); ?>
-				<script>
-					jQuery('.linecolvat').remove();
-					jQuery('.linecoluht').remove();
-					jQuery('.linecoldiscount').remove();
-					jQuery('#trlinefordates').remove();
-				</script>
-			<?php }
-		}
+        // Form to add new line.
+        if ($object->status == TimeSheet::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines') {
+            if ($action != 'editline') {
+                // Add products/services form.
+                $parameters = [];
+                $reshook    = $hookmanager->executeHooks('formAddObjectLine', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
+                if ($reshook < 0) {
+                    setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+                }
+                if (empty($reshook)) {
+                    $object->formAddObjectLine(1, $mysoc, $mysoc);
+                } ?>
+                <script>
+                    jQuery('.linecolvat').remove();
+                    jQuery('.linecoluht').remove();
+                    jQuery('.linecoldiscount').remove();
+                    jQuery('#trlinefordates').remove();
+                </script>
+            <?php }
+        }
 
-		if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
-			print '</table>';
-		}
-		print '</div>';
+        if (!empty($object->lines) || ($object->status == TimeSheet::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
+            print '</table>';
+        }
+        print '</div>';
 
-		print "</form>\n";
-	}
+        print '</form>';
+    }
 
-	// Buttons for actions
-	if ($action != 'presend' && $action != 'editline') {
-		print '<div class="tabsAction">'."\n";
-		$parameters = array();
-		$reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-		if ($reshook < 0) {
-			setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-		}
+    // Buttons for actions.
+    if ($action != 'presend' && $action != 'editline') {
+        print '<div class="tabsAction">';
+        $parameters = [];
+        $resHook    = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been modified by hook.
+        if ($resHook < 0) {
+            setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+        }
 
-		if (empty($reshook) && $permissiontoadd) {
-			// Modify
-            if ($object->status == $object::STATUS_DRAFT) {
-			    print '<a class="butAction" id="actionButtonEdit" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=edit' . '">' . $langs->trans("Modify") . '</a>';
+        if (empty($resHook) && $permissiontoadd) {
+            // Modify.
+            $displayButton = $onPhone ? '<i class="fas fa-edit fa-2x"></i>' : '<i class="fas fa-edit"></i>' . ' ' . $langs->trans('Modify');
+            if ($object->status == TimeSheet::STATUS_DRAFT) {
+                print '<a class="butAction" id="actionButtonEdit" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=edit' . '">' . $displayButton . '</a>';
             } else {
-			    print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans("TimeSheetMustBeDraft")) . '">' . $langs->trans("Modify") . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
 
-			// Validate
-            if ($object->status == $object::STATUS_DRAFT && $planned_working_time['minutes']  != 0) {
-		    	print '<span class="butAction" id="actionButtonPendingSignature"  href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=setPendingSignature' . '">' . $langs->trans("Validate") . '</span>';
-            } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans("TimeSheetMustBeDraftToValidate")) . '">' . $langs->trans("Validate") . '</span>';
+            // Validate.
+            $displayButton = $onPhone ? '<i class="fas fa-check fa-2x"></i>' : '<i class="fas fa-check"></i>' . ' ' . $langs->trans('Validate');
+            if ($object->status == TimeSheet::STATUS_DRAFT && $plannedWorkingTime['minutes']  != 0) {
+                print '<span class="butAction" id="actionButtonPendingSignature">' . $displayButton . '</span>';
+            } elseif ($object->status < TimeSheet::STATUS_DRAFT) {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeDraft', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
 
-            // ReOpen
-            if ($object->status == $object::STATUS_VALIDATED) {
-                print '<span class="butAction" id="actionButtonInProgress" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=setDraft' . '">' . $langs->trans("ReOpenDoli") . '</span>';
-            } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans("TimeSheetMustBeValidated")) . '">' . $langs->trans("ReOpenDoli") . '</span>';
+            // ReOpen.
+            $displayButton = $onPhone ? '<i class="fas fa-lock-open fa-2x"></i>' : '<i class="fas fa-lock-open"></i>' . ' ' . $langs->trans('ReOpenDoli');
+            if ($object->status == TimeSheet::STATUS_VALIDATED) {
+                print '<span class="butAction" id="actionButtonInProgress">' . $displayButton . '</span>';
+            } elseif ($object->status > TimeSheet::STATUS_VALIDATED) {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidated', $langs->transnoentities('The' . ucfirst($object->element)))) . '">' . $displayButton . '</span>';
             }
 
-			// Sign
-            if ($object->status == $object::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, 'timesheet')) {
-                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/dolisirh/view/timesheet/timesheet_attendants.php?id=' . $object->id, 3) . '">' . $langs->trans("Sign") . '</a>';
+            // Sign.
+            $displayButton = $onPhone ? '<i class="fas fa-signature fa-2x"></i>' : '<i class="fas fa-signature"></i>' . ' ' . $langs->trans('Sign');
+            if ($object->status == TimeSheet::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
+                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?module_name=DoliSIRH&object_type=timesheet&document_type=TimeSheetDocument&attendant_table_mode=simple&id=' . $object->id, 3) . '">' . $displayButton . '</a>';
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans("TimeSheetMustBeValidatedToSign")) . '">' . $langs->trans("Sign") . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', $langs->transnoentities('The' . ucfirst($object->element)))) . '">' . $displayButton . '</span>';
             }
 
-			// Lock
-            if ($object->status == $object::STATUS_VALIDATED && $signatory->checkSignatoriesSignatures($object->id, 'timesheet') && $difftotaltime == 0 && $diffworkinghoursMonth == 0) {
-			    print '<span class="butAction" id="actionButtonLock">' . $langs->trans("Lock") . '</span>';
+            // Lock.
+            $displayButton = $onPhone ? '<i class="fas fa-lock fa-2x"></i>' : '<i class="fas fa-lock"></i>' . ' ' . $langs->trans('Lock');
+            if ($object->status == TimeSheet::STATUS_VALIDATED && $signatory->checkSignatoriesSignatures($object->id, $object->element) && $diffTotalTime == 0) {
+                print '<span class="butAction" id="actionButtonLock">' . $displayButton . '</span>';
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans("AllSignatoriesMustHaveSignedAndDiffTimeSetAt0")) . '">' . $langs->trans("Lock") . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('AllSignatoriesMustHaveSignedAndDiffTimeSetAt0')) . '">' . $displayButton . '</span>';
             }
 
-			// Send
-			//@TODO changer le send to
-			//print '<a class="' . ($object->status == $object::STATUS_LOCKED ? 'butAction' : 'butActionRefused classfortooltip') . '" id="actionButtonSign" title="' . dol_escape_htmltag($langs->trans("TimeSheetMustBeLockedToSendEmail")) . '" href="' . ($object->status == $object::STATUS_LOCKED ? ($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle&sendto=' . $allLinks['LabourInspectorSociety']->id[0]) : '#') . '">' . $langs->trans('SendMail') . '</a>';
-
-			// Archive
-            if ($object->status == $object::STATUS_LOCKED  && !empty(dol_dir_list($upload_dir . '/timesheetdocument/' . dol_sanitizeFileName($object->ref)))) {
-                print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=setArchived' . '">' . $langs->trans("Archive") . '</a>';
+            // Send email.
+            $displayButton = $onPhone ? '<i class="fas fa-paper-plane fa-2x"></i>' : '<i class="fas fa-paper-plane"></i>' . ' ' . $langs->trans('SendMail') . ' ';
+            if ($object->status == TimeSheet::STATUS_LOCKED) {
+                $fileParams = dol_most_recent_file($upload_dir . '/' . $object->element . 'document' . '/' . $object->ref);
+                $file       = $fileParams['fullname'];
+                if (file_exists($file) && !strstr($fileParams['name'], 'specimen')) {
+                    $forcebuilddoc = 0;
+                } else {
+                    $forcebuilddoc = 1;
+                }
+                print dolGetButtonAction($displayButton, '', 'default', $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=presend&forcebuilddoc=' . $forcebuilddoc . '&mode=init#formmailbeforetitle');
             } else {
-                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans("TimeSheetMustBeLockedGenerated")) . '">' . $langs->trans("Archive") . '</span>';
+                print '<span class="butActionRefused classfortooltip" title="'.dol_escape_htmltag($langs->trans('ObjectMustBeLockedToSendEmail', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
 
-            // Delete (need delete permission, or if draft, just need create/modify permission)
-			//print dolGetButtonAction($langs->trans('Delete'), '', 'delete', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=delete&token='.newToken(), '', $permissiontodelete || ($object->status == $object::STATUS_DRAFT && $permissiontoadd));
-		}
-		print '</div>'."\n";
-	}
+            // Archive.
+            $displayButton = $onPhone ?  '<i class="fas fa-archive fa-2x"></i>' : '<i class="fas fa-archive"></i>' . ' ' . $langs->trans('Archive');
+            if ($object->status == TimeSheet::STATUS_LOCKED  && !empty(dol_dir_list($upload_dir . '/timesheetdocument/' . dol_sanitizeFileName($object->ref)))) {
+                print '<a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=confirm_archive&token=' . newToken() . '">' . $displayButton . '</a>';
+            } else {
+                print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToArchive', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
+            }
 
-	// Select mail models is same action as presend
-	if (GETPOST('modelselected')) {
-		$action = 'presend';
-	}
+            // Delete (need delete permission, or if draft, just need create/modify permission).
+            $displayButton = $onPhone ? '<i class="fas fa-trash fa-2x"></i>' : '<i class="fas fa-trash"></i>' . ' ' . $langs->trans('Delete');
+            print dolGetButtonAction($displayButton, '', 'delete', $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=delete&token=' . newToken(), '', $permissiontodelete || ($object->status == TimeSheet::STATUS_DRAFT));
+        }
+        print '</div>';
+    }
 
-	if ($action != 'presend') {
-		print '<div class="fichecenter"><div class="fichehalfleft">';
-		print '<a name="builddoc"></a>'; // ancre
+    // Select mail models is same action as presend.
+    if (GETPOST('modelselected')) {
+        $action = 'presend';
+    }
 
-		$includedocgeneration = 1;
+    if ($action != 'presend') {
+        print '<div class="fichecenter"><div class="fichehalfleft">';
+        // Documents.
+        $objRef    = dol_sanitizeFileName($object->ref);
+        $dirFiles  = $object->element . 'document/' . $objRef;
+        $fileDir   = $upload_dir . '/' . $dirFiles;
+        $urlSource = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
 
-		// Documents
-		if ($includedocgeneration) {
-			$objref = dol_sanitizeFileName($object->ref);
-			$dir_files = $object->element . 'document/' . $objref;
-			$filedir = $upload_dir . '/' . $dir_files;
-			$urlsource = $_SERVER["PHP_SELF"]."?id=".$object->id;
-			$genallowed = $permissiontoadd; // If you can read, you can build the PDF to read content
-			$delallowed = $permissiontodelete; // If you can create/edit, you can remove a file on card
+        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', $object->status == TimeSheet::STATUS_LOCKED && empty(dol_dir_list($fileDir)), $langs->trans('ObjectMustBeLockedToGenerate', ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
 
-			print doliSirhShowDocuments('dolisirh:TimeSheetDocument', $dir_files, $filedir, $urlsource, $genallowed, $object->status == $object::STATUS_LOCKED ? $delallowed : 0, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'removefile', $object->status == $object::STATUS_LOCKED && empty(dol_dir_list($filedir)), $langs->trans('TimeSheetMustBeLocked'));
-		}
+        print '</div><div class="fichehalfright">';
 
-		print '</div><div class="fichehalfright">';
+        $moreHtmlCenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-bars imgforviewmode', dol_buildpath('/saturne/view/saturne_agenda.php', 1) . '?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element);
 
-		$MAXEVENT = 10;
+        // List of actions on element.
+        require_once DOL_DOCUMENT_ROOT . '/core/class/html.formactions.class.php';
+        $formActions = new FormActions($db);
+        $formActions->showactions($object, $object->element . '@' . $object->module, 0, 1, '', 10, '', $moreHtmlCenter);
 
-		$morehtmlcenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-list-alt imgforviewmode', dol_buildpath('/dolisirh/view/timesheet/timesheet_agenda.php', 1).'?id='.$object->id);
+        print '</div></div>';
+    }
 
-		// List of actions on element
-		include_once DOL_DOCUMENT_ROOT.'/core/class/html.formactions.class.php';
-		$formactions = new FormActions($db);
-		$somethingshown = $formactions->showactions($object, $object->element.'@'.$object->module, (is_object($object->thirdparty) ? $object->thirdparty->id : 0), 1, '', $MAXEVENT, '', $morehtmlcenter);
+    //Select mail models is same action as presend.
+    if (GETPOST('modelselected')) {
+        $action = 'presend';
+    }
 
-		print '</div></div>';
-	}
+    // Presend form.
+    $modelmail    = $object->element;
+    $defaulttopic = 'InformationMessage';
+    $diroutput    = $conf->dolisirh->dir_output;
+    $trackid      = $object->element . $object->id;
 
-	//Select mail models is same action as presend
-	if (GETPOST('modelselected')) {
-		$action = 'presend';
-	}
-
-	// Presend form
-	$modelmail = 'timesheet';
-	$defaulttopic = 'InformationMessage';
-	$diroutput = $conf->dolisirh->dir_output;
-	$trackid = 'timesheet'.$object->id;
-
-	include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
+    require_once DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
 }
 
-// End of page
+// End of page.
 llxFooter();
 $db->close();

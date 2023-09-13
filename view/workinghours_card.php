@@ -148,7 +148,7 @@ dol_banner_tab($usertmp, 'socid', $linkback, ($usertmp->socid ? 0 : 1), 'rowid',
 
 print dol_get_fiche_end();
 
-print load_fiche_titre($langs->trans("UserWorkingHours"), '', '');
+print load_fiche_titre($langs->trans('WorkingHours'), '', '');
 
 //Show common fields
 
@@ -164,7 +164,7 @@ if ($backtopage) {
 
 print '<table class="noborder centpercent editmode">';
 
-print '<tr class="liste_titre"><th class="titlefield wordbreak">' . $langs->trans("Day") . '</th><th style="width: 300px">' . $langs->trans("Schedule") . '</th><th>'. $langs->trans('WorkingHours(min)') .'</th></tr>' . "\n";
+print '<tr class="liste_titre"><th class="titlefield wordbreak">' . $langs->trans("Day") . '</th><th style="width: 300px">' . $langs->trans("Schedules") . '</th><th>'. $langs->trans('WorkingHours(min)') .'</th></tr>' . "\n";
 
 print '<tr class="oddeven"><td>';
 print $form->textwithpicto($langs->trans("Monday"), '');
@@ -253,7 +253,22 @@ print '</tr>' . "\n";
 
 print '</table>';
 
-if (($user->rights->dolisirh->workinghours->myworkinghours && $usertmp->id == $user->id) || ($user->rights->dolisirh->workinghours->allworkinghours && $usertmp->fk_user == $user->id)){
+// Buid current user hierarchy
+if ($usertmp->fk_user > 0) {
+	$usertmphierarchy = array($usertmp->fk_user);
+	$usertmpboss = new User($object->db);
+	$usertmpboss->fetch($usertmp->fk_user);
+	while ($usertmpboss->fk_user > 0) {
+		$usertmphierarchy[] = $usertmpboss->fk_user;
+		$usertmpboss->fetch($usertmpboss->fk_user);
+		// We do not want to loop between two users who would be each other bosses
+		if (in_array($usertmpboss->id, $usertmphierarchy)) {
+			break;
+		}
+	}
+}
+
+if (($user->rights->dolisirh->workinghours->myworkinghours && $usertmp->id == $user->id) || ($user->rights->dolisirh->workinghours->allworkinghours && in_array($user->id, $usertmphierarchy)) || $user->admin == 1){
     print '<br><div class="center">';
     print '<input type="submit" class="button" name="save" value="' . $langs->trans("Save") . '">';
     print '</div>';

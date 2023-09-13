@@ -61,419 +61,215 @@ class ActionsDoliSIRH
 		$this->db = $db;
 	}
 
-	/**
-	 * Overloading the doActions function : replacing the parent's function with the one below
-	 *
-	 * @param  array  $parameters Hook metadata (context, etc...)
-	 * @param  object $object     The object to process
-	 * @param  string $action     Current action (if set). Generally create or edit or null
-	 * @return int                0 < on error, 0 on success, 1 to replace standard code
-	 */
-	public function doActions(array $parameters, $object, string $action): int
-	{
-		require_once DOL_DOCUMENT_ROOT.'/core/modules/project/task/mod_task_simple.php';
+    /**
+     * Overloading the doActions function : replacing the parent's function with the one below
+     *
+     * @param  array  $parameters Hook metadata (context, etc...)
+     * @param  object $object     The object to process
+     * @param  string $action     Current action (if set). Generally create or edit or null
+     * @return int                0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function doActions(array $parameters, $object, string $action): int
+    {
+        global $conf, $langs, $user;
 
-		global $conf, $db, $langs;
+        if ($parameters['currentcontext'] == 'invoicecard') {
+            if ($action == 'task_create') {
+                require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+                require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-		$error = 0; // Error counter
+                require_once __DIR__ . '/../../saturne/lib/object.lib.php';
 
-		if (in_array($parameters['currentcontext'], array('invoicecard'))) {
-			// Action that will be done after pressing the button
-			if ($action == 'createtask-dolisirh') {
-				// Start
-				// Variable : ref
-				// Description : create the ref of the task
-				$mod = new mod_task_simple();
-				$ref = $mod->getNextValue(0, '');
-				// End
+                $product   = new Product($this->db);
+                $task      = new Task($this->db);
+                $project   = new Project($this->db);
+                $categorie = new Categorie($this->db);
 
-				//Start
-				//Variable : label
-				//Description : creation of the label of the task
+                $numRefConf = strtoupper($task->element) . '_ADDON';
 
-				//Contruction de la chaine de caractère sur le modèle AAAAMMJJ-nomprojet-tag
-				//Variable : datef = Date de début de période de facturation
-				$query = 'SELECT datef, ref FROM ' .MAIN_DB_PREFIX. 'facture';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['ref'] == $object->ref) {
-						$datef_invoice[0] = $row['datef'];
-					}
-				}
-				$datef_invoice = explode('-', $datef_invoice[0]);
-				$datef = implode($datef_invoice);
-				//datef
+                $numberingModuleName = [
+                    'project/task' => $conf->global->$numRefConf,
+                ];
+                list($modTask) = saturne_require_objects_mod($numberingModuleName);
 
-				// Contruction de la chaine de caractère REGEX : AAAAMMJJ-nomprojet-tag
-				// Wording retrieval
-				$fk_projet_fac = $object->fk_project;
-				$query = 'SELECT rowid, title FROM ' .MAIN_DB_PREFIX. 'projet';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['rowid'] == $object->fk_project) {
-						$title[0] = $row['title'];
-					}
-				}
-				$wording = $title[0];
+                $dateStart       = 0;
+                $dateEnd         = 0;
+                $plannedWorkload = 0;
+                if (is_array($object->lines) && !empty($object->lines)) {
+                    foreach ($object->lines as $factureLine) {
+                        $product->fetch($factureLine->fk_product);
 
-				//Tag retrieval
-				//@todo REGEX à construire dans les réglages dans notre cas : DATEDEBUTPERIODE-NOMPROJET-TAGS EX: 20200801-evarisk.fr-ref
-				$query = 'SELECT ref, fk_projet FROM ' .MAIN_DB_PREFIX. 'facture';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['ref'] == $object->ref) {
-						$invoice_fk_projet[0] = $row['fk_projet'];
-					}
-				}
-				$query = 'SELECT fk_project, fk_categorie FROM ' .MAIN_DB_PREFIX. 'categorie_project';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_project'] == $invoice_fk_projet[0]) {
-						$fk_categorie[0] = $row['fk_categorie'];
-					}
-				}
-				$query = 'SELECT rowid, label FROM ' .MAIN_DB_PREFIX. 'categorie';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['rowid'] == $fk_categorie[0]) {
-						$tag[0] = $row['label'];
-					}
-				}
-				//Concatenation of the date, wording and tag to obtain the label
-				$label = $datef . '-' . $wording . '-' . $tag[0];
-				//End
+                        $dateStart       = $factureLine->date_start;
+                        $dateEnd         = $factureLine->date_end;
+                        $quantity        = $factureLine->qty;
+                        $durationValue   = $product->duration_value;
+                        $durationUnit    = $product->duration_unit;
+                        $plannedWorkload = $quantity * dol_time_plus_duree(0, $durationValue, $durationUnit);
+                    }
 
-				//Start
-				//Variable : fk_projet
-				//Description : take the fk_projet from the invoice
-				$fk_projet = $object->fk_project;
-				//End
+                    $project->fetch($object->fk_project);
 
-				//Start
-				//Variable : dateo
-				//Decription : retrieval of the start date of the invoice
-				$i = 0;
-				$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-						$date_start[$i] = $row['date_start'];
-					}
-				}
-				$dateo = $date_start[0];
-				//End
+                    $cats      = $categorie->containing($project->id, $project->element);
+                    $tagsLabel = '';
+                    if (is_array($cats)) {
+                        foreach ($cats as $cat) {
+                            $tagsLabel .= $cat->label . '-';
+                        }
+                        $tagsLabel = rtrim($tagsLabel, '-');
+                    }
 
-				//Start
-				//Variable : datee
-				//Description : retrieval of the end date of the invoice
-				$i = 0;
-				$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-						$date_end[$i] = $row['date_end'];
-						$i += 1;
-					}
-				}
-				$datee = $date_end[0];
-				//End
+                    $task->ref                              = $modTask->getNextValue(0, $task);
+                    $task->label                            = dol_print_date($object->date, 'dayxcard') . '-' . $project->title . '-' . $tagsLabel;
+                    $task->fk_project                       = $object->fk_project;
+                    $task->date_start                       = $dateStart;
+                    $task->date_end                         = $dateEnd;
+                    $task->planned_workload                 = $plannedWorkload;
+                    $task->array_options['fk_facture_name'] = $object->id;
 
-				//Start
-				//Variable : planned_workload
-				//Description : time calculation of the planned workload
-				//We recover all the products from the invoice
-				$i = 0;
-				//We recover the quantity of all the products
-				$query = 'SELECT fk_facture, fk_product, qty FROM ' .MAIN_DB_PREFIX. 'facturedet';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-						$fk_product[$i] = $row['fk_product'];
-						$fk_quantity[$i] = $row['qty'];
-						$i += 1;
-					}
-				}
-				$i = 0;
-				$j = 0;
-				//We recover the time of each product
-				$query = 'SELECT rowid, duration FROM ' .MAIN_DB_PREFIX. 'product';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					while (isset($fk_product[$i])) {
-						if ($row['rowid'] == $fk_product[$i]) {
-							$duration[$i] = $row['duration'];
-							$i += 1;
-						}
-						$i += 1;
-					}
-					$i = 0;
-				}
-				$i = 0;
-				$j = 0;
-				// We transform time into seconds
-				while (isset($duration[$i])) {
-					while (isset($duration[$i][$j])) {
-						if ($duration[$i][$j] == 's') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 1;
-						} elseif ($duration[$i][$j] == 'i') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 60;
-						} elseif ($duration[$i][$j] == 'h') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 3600;
-						} elseif ($duration[$i][$j] == 'd') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 86400;
-						} elseif ($duration[$i][$j] == 'w') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 604800;
-						} elseif ($duration[$i][$j] == 'm') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 2592000;
-						} elseif ($duration[$i][$j] == 'y') {
-							$duration[$i] = substr($duration[$i], 0, -1);
-							$duration[$i] *= 31104000;
-						}
-						$j += 1;
-					}
-					$i += 1;
-					$j = 0;
-				}
-				$i = 0;
-				//We multiply the time by the duration
-				while (isset($duration[$i])) {
-					if (is_int($duration[$i])) {
-						$duration[$i] *= intval($fk_quantity[$i]);
-					}
-					$i += 1;
-				}
-				$i = 0;
-				//We add all the time to all the products
-				$planned_workload = 0;
-				while (isset($duration[$i])) {
-					$planned_workload += intval($duration[$i]);
-					$i += 1;
-				}
-				//End
+                    $taskID = $task->create($user);
 
-				//Check if the invoice is already linked to the task
-				$error_button = 0;
-				$query = 'SELECT fk_facture_name FROM ' .MAIN_DB_PREFIX. 'projet_task_extrafields';
-				$result = $this->db->query($query);
-				while ($row = $result->fetch_array()) {
-					if ($row['fk_facture_name'] == $object->id) {
-						$error_button = 1;
-					}
-				}
-				//Start
-				//Filling of the llx_projet_task table with the variables to create the task
-				if ($error_button == 0) {
-					if (isset($fk_projet) && $planned_workload != 0 && isset($dateo) && isset($datee)) {
-						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'projet_task(ref, fk_projet, label, dateo, datee, planned_workload) VALUES("'.$ref.'", '.intval($fk_projet).', "'.$label.'", "'.$dateo.'", "'.$datee.'", '.intval($planned_workload).')';
-						$this->db->query($req);
-						$query = 'SELECT rowid, ref, fk_projet FROM ' .MAIN_DB_PREFIX. 'projet_task';
-						$result = $this->db->query($query);
-						while ($row = $result->fetch_array()) {
-							if ($row['rowid']) {
-								$rowid_last_task[0] = $row['rowid'];
-							}
-							if ($row['ref']) {
-								$ref_last_task[0] = $row['ref'];
-							}
-						}
-						//Filling of the llx_projet_task_extrafields table
-						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'projet_task_extrafields(fk_object, fk_facture_name) VALUES('.$rowid_last_task[0].', '.$object->lines[0]->fk_facture.')';
-						$this->db->query($req);
-						//Filling of the llx_facture_extrafields table
-						$req = 'INSERT INTO '.MAIN_DB_PREFIX.'facture_extrafields(fk_object, fk_task) VALUES('.$object->lines[0]->fk_facture.', '.$rowid_last_task[0].')';
-						$this->db->query($req);
-						setEventMessages($langs->trans('MessageInfo').' : <a href="'.DOL_URL_ROOT.'/projet/tasks/task.php?id='.$rowid_last_task[0].'">'.$ref.'</a>', null, 'mesgs');
-					} else {
-						//Error messages
-						if (!isset($fk_projet)) {
-							setEventMessages($langs->trans('MessageInfoNoCreateProject'), null, 'errors');
-						}
-						if ($planned_workload == 0) {
-							setEventMessages($langs->trans('MessageInfoNoCreateTime'), null, 'errors');
-						}
-						if (!isset($datee) || !isset($dateo)) {
-							setEventMessages($langs->trans('MessageInfoNoCreatedate'), null, 'errors');
-						}
-					}
-				}
-				//End
-			}
-		}
+                    $object->array_options['fk_task'] = $taskID;
+                    $object->update($user, false);
+
+                    setEventMessages($langs->trans('TaskCreate') . ' : <a href="' . DOL_URL_ROOT . '/projet/tasks/task.php?id=' . $taskID . '">' . $task->ref . '</a>', []);
+                    header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $object->id );
+                    exit;
+                }
+            }
+        }
 
         if ($parameters['currentcontext'] == 'userihm') {
             if ($action == 'update') {
                 if (GETPOST('set_timespent_dataset_order') == 'on') {
-                    $tabparam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 1;
+                    $tabParam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 1;
                 } else {
-                    $tabparam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 0;
+                    $tabParam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 0;
                 }
-                dol_set_user_param($db, $conf, $object, $tabparam);
+                dol_set_user_param($this->db, $conf, $object, $tabParam);
             }
         }
 
-		if (!$error) {
-			$this->results = array('myreturn' => 999);
-			$this->resprints = 'A text to show';
-			return 0; // or return 1 to replace standard code
-		} else {
-			$this->errors[] = 'Error message';
-			return -1;
-		}
-	}
+        if ($parameters['currentcontext'] == 'projectcard') {
+            if ($action == 'builddoc' && strstr(GETPOST('model'), 'projectdocument_odt')) {
+                require_once __DIR__ . '/dolisirhdocuments/projectdocument.class.php';
 
-	/**
-	 * Overloading the addMoreActionsButtons function : replacing the parent's function with the one below
-	 *
-	 * @param  array  $parameters Hook metadata (context, etc...)
-	 * @param  object $object     The object to process
-	 * @return int                0 < on error, 0 on success, 1 to replace standard code
-	 */
-	public function addMoreActionsButtons(array $parameters, $object): int
-	{
-		global $langs;
+                $document = new ProjectDocument($this->db);
 
-		$error = 0; // Error counter
+                $moduleNameLowerCase = 'dolisirh';
+                $permissiontoadd     = $user->rights->projet->creer;
 
-		if (in_array('invoicecard', explode(':', $parameters['context']))) {
-			//Creation of the link that will be sendid
-			if ( isset($_SERVER['HTTPS']) ) {
-				if ( $_SERVER['HTTPS'] == 'on' ) {
-					$server_protocol = 'https';
-				} else {
-					$server_protocol = 'http';
-				}
-			} else {
-				$server_protocol = 'http';
-			}
-			$actual_link = $server_protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-			$actual_link .= '&action=createtask-dolisirh'; //Action
+                require_once __DIR__ . '/../../saturne/core/tpl/documents/documents_action.tpl.php';
+            }
 
-			//Check if the invoice is already linked to the task
-			$error_button = 0;
-			$query = 'SELECT fk_facture_name FROM ' .MAIN_DB_PREFIX. 'projet_task_extrafields';
-			$result = $this->db->query($query);
-			while ($row = $result->fetch_array()) {
-				if ($row['fk_facture_name'] == $object->id) {
-					$error_button = 1;
-				}
-			}
-			//Check for grey button
-			//Start
+            if ($action == 'pdfGeneration') {
+                $moduleName          = 'DoliSIRH';
+                $moduleNameLowerCase = strtolower($moduleName);
+                $upload_dir          = $conf->dolisirh->multidir_output[$conf->entity ?? 1];
 
-			//Check date
-			$i = 0;
-			$query = 'SELECT fk_facture, date_start, date_end FROM ' .MAIN_DB_PREFIX. 'facturedet';
-			$result = $this->db->query($query);
-			while ($row = $result->fetch_array()) {
-				if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-					$date_end[$i] = $row['date_end'];
-					$date_start[$i] = $row['date_start'];
-					$i += 1;
-				}
-			}
-			$datee = $date_end[0];
-			$dateo = $date_start[0];
+                // Action to generate pdf from odt file
+                require_once __DIR__ . '/../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
 
-			//Check service time
-			$i = 0;
-			$query = 'SELECT fk_facture, fk_product, qty FROM ' .MAIN_DB_PREFIX. 'facturedet';
-			$result = $this->db->query($query);
-			while ($row = $result->fetch_array()) {
-				if ($row['fk_facture'] == $object->lines[0]->fk_facture) {
-					$fk_product[$i] = $row['fk_product'];
-					$fk_quantity[$i] = $row['qty'];
-					$i += 1;
-				}
-			}
-			$i = 0;
-			$j = 0;
-			$query = 'SELECT rowid, duration FROM ' .MAIN_DB_PREFIX. 'product';
-			$result = $this->db->query($query);
-			while ($row = $result->fetch_array()) {
-				while (isset($fk_product[$i])) {
-					if ($row['rowid'] == $fk_product[$i]) {
-						$duration[$i] = $row['duration'];
-						$i += 1;
-					}
-					$i += 1;
-				}
-				$i = 0;
-			}
-			$i = 0;
-			$j = 0;
-			while (isset($duration[$i])) {
-				while (isset($duration[$i][$j])) {
-					if ($duration[$i][$j] == 's') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 1;
-					} elseif ($duration[$i][$j] == 'i') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 60;
-					} elseif ($duration[$i][$j] == 'h') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 3600;
-					} elseif ($duration[$i][$j] == 'd') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 86400;
-					} elseif ($duration[$i][$j] == 'w') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 604800;
-					} elseif ($duration[$i][$j] == 'm') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 2592000;
-					} elseif ($duration[$i][$j] == 'y') {
-						$duration[$i] = substr($duration[$i], 0, -1);
-						$duration[$i] *= 31104000;
-					}
-					$j += 1;
-				}
-				$i += 1;
-				$j = 0;
-			}
-			$i = 0;
-			while (isset($duration[$i])) {
-				if (is_int($duration[$i])) {
-					$duration[$i] *= intval($fk_quantity[$i]);
-				}
-				$i += 1;
-			}
-			$i = 0;
-			$planned_workload = 0;
-			while (isset($duration[$i])) {
-				$planned_workload += intval($duration[$i]);
-				$i += 1;
-			}
-			//End
+                $urlToRedirect = $_SERVER['REQUEST_URI'];
+                $urlToRedirect = preg_replace('/#pdfGeneration$/', '', $urlToRedirect);
+                $urlToRedirect = preg_replace('/action=pdfGeneration&?/', '', $urlToRedirect); // To avoid infinite loop
 
-			//Button
-			if ($error_button == 0) {
-				if (isset($object->fk_project) && isset($dateo) && isset($datee) && $planned_workload != 0) {
-					print '<div class="inline-block divButAction"><a class="butAction" href="'. $actual_link .'">Créer tâche</a></div>';
-				} elseif (!isset($object->fk_project)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorNoProject').'">Créer tâche</a></div>';
-				} elseif (!isset($dateo)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorDateStart').'">Créer tâche</a></div>';
-				} elseif (!isset($datee)) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorDateEnd').'">Créer tâche</a></div>';
-				} elseif ($planned_workload == 0) {
-					print '<div class="inline-block divButAction"><a class="butActionRefused classfortooltip" href="#" title="'.$langs->trans('ErrorServiceTime').'">Créer tâche</a></div>';
-				}
-			}
-		}
+                header('Location: ' . $urlToRedirect);
+                exit;
+            }
+        }
 
-		if (!$error) {
-			return 0; // or return 1 to replace standard code
-		} else {
-			$this->errors[] = 'Error message';
-			return -1;
-		}
-	}
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     * Overloading the addMoreActionsButtons function : replacing the parent's function with the one below
+     *
+     * @param  array  $parameters Hook metadata (context, etc...)
+     * @param  object $object     The object to process
+     * @return int                0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function addMoreActionsButtons(array $parameters, $object): int
+    {
+        global $langs, $user;
+
+        if ($parameters['currentcontext'] == 'invoicecard') {
+            $product = new Product($this->db);
+            if (is_array($object->lines) && !empty($object->lines)) {
+                foreach ($object->lines as $factureLine) {
+                    $product->fetch($factureLine->fk_product);
+
+                    $dateStart       = $factureLine->date_start;
+                    $dateEnd         = $factureLine->date_end;
+                    $quantity        = $factureLine->qty;
+                    $durationValue   = $product->duration_value;
+                    $durationUnit    = $product->duration_unit;
+                    $plannedWorkload = $quantity * dol_time_plus_duree(0, $durationValue, $durationUnit);
+                }
+            }
+
+            if (empty($object->array_options['options_fk_task'])) {
+                if (isset($object->fk_project) && !empty($dateStart) && !empty($dateEnd) && (isset($plannedWorkload) && $plannedWorkload != 0)) {
+                    print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['REQUEST_URI'] . '&action=task_create">' . $langs->trans('AddTask') . '</a></div>';
+                } else {
+                    $mesgs  = !isset($object->fk_project) ? $langs->trans('ErrorNoProject') . '<br>' : '';
+                    $mesgs .= empty($dateStart) ? $langs->trans('ErrorDateStart') . '<br>' : '';
+                    $mesgs .= empty($dateEnd) ? $langs->trans('ErrorDateEnd') . '<br>' : '';
+                    $mesgs .= (!isset($plannedWorkload) || $plannedWorkload == 0) ? $langs->trans('ErrorServiceTime') . '<br>' : '';
+                    print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $mesgs . '">' . $langs->trans('AddTask') . '</span></div>';
+                }
+            }
+        }
+
+        if (preg_match('/categorycard/', $parameters['context'])) {
+            $id        = GETPOST('id');
+            $elementId = GETPOST('element_id');
+            $type      = GETPOST('type');
+            if ($id > 0 && $elementId > 0 && ($type == 'timesheet' || $type == 'certificate' || $type == 'facture' || $type == 'facturerec') && ($user->rights->dolisirh->$type->write || $user->rights->facture->creer)) {
+                switch ($type) {
+                    case 'facture' :
+                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
+
+                        $newobject = new Facture($this->db);
+                        break;
+                    case 'facturerec' :
+                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
+
+                        $newobject = new FactureRec($this->db);
+                        break;
+                    default :
+                        require_once __DIR__ . '/' . $type . '.class.php';
+
+                        $classname = ucfirst($type);
+                        $newobject = new $classname($this->db);
+                        break;
+                }
+
+                $newobject->fetch($elementId);
+
+                if (GETPOST('action') == 'addintocategory') {
+                    $result = $object->add_type($newobject, $type);
+                    if ($result >= 0) {
+                        setEventMessages($langs->trans("WasAddedSuccessfully", $newobject->ref), array());
+
+                    } else {
+                        if ($object->error == 'DB_ERROR_RECORD_ALREADY_EXISTS') {
+                            setEventMessages($langs->trans("ObjectAlreadyLinkedToCategory"), array(), 'warnings');
+                        } else {
+                            setEventMessages($object->error, $object->errors, 'errors');
+                        }
+                    }
+                } elseif (GETPOST('action') == 'delintocategory') {
+                    $result = $object->del_type($newobject, $type);
+                    if ($result < 0) {
+                        dol_print_error('', $object->error);
+                    }
+                    $action = '';
+                }
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
 
 	/**
 	 * Overloading the printCommonFooter function : replacing the parent's function with the one below
@@ -484,7 +280,7 @@ class ActionsDoliSIRH
 	 */
 	public function printCommonFooter(array $parameters)
 	{
-		global $conf, $user, $langs;
+		global $conf, $user, $langs, $form;
 		$langs->load('projects');
 		if (in_array('ticketcard', explode(':', $parameters['context']))) {
 			if (GETPOST('action') == 'presend_addmessage') {
@@ -540,10 +336,10 @@ class ActionsDoliSIRH
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
 			if (GETPOST('action') == 'toggleTaskFavorite') {
-				toggleTaskFavorite(GETPOST('id'), $user->id);
+				toggle_task_favorite(GETPOSTINT('id'), $user->id);
 			}
 
-			if (isTaskFavorite(GETPOST('id'), $user->id)) {
+			if (is_task_favorite(GETPOSTINT('id'), $user->id)) {
 				$favoriteStar = '<span class="fas fa-star toggleTaskFavorite" onclick="toggleTaskFavorite()"></span>';
 			} else {
 				$favoriteStar = '<span class="far fa-star toggleTaskFavorite" onclick="toggleTaskFavorite()"></span>';
@@ -587,7 +383,7 @@ class ActionsDoliSIRH
 			$tasksarray = $task->getTasksArray(0, 0, GETPOST('id'));
 			if (is_array($tasksarray) && !empty($tasksarray)) {
 				foreach ($tasksarray as $linked_task) {
-					if (isTaskFavorite($linked_task->id, $user->id)) {
+					if (is_task_favorite($linked_task->id, $user->id)) {
 						$favoriteStar = '<span class="fas fa-star toggleTaskFavorite" id="'. $linked_task->id .'" onclick="toggleTaskFavoriteWithId(this.id)"></span>';
 					} else {
 						$favoriteStar = '<span class="far fa-star toggleTaskFavorite" id="'. $linked_task->id .'" onclick="toggleTaskFavoriteWithId(this.id)"></span>';
@@ -611,7 +407,7 @@ class ActionsDoliSIRH
 
 			if (is_array($tasksarray) && !empty($tasksarray)) {
 				foreach ($tasksarray as $linked_task) {
-					if (isTaskFavorite($linked_task->id, $user->id)) {
+					if (is_task_favorite($linked_task->id, $user->id)) {
 						$favoriteStar = '<span class="fas fa-star toggleTaskFavorite" id="'. $linked_task->id .'" onclick="toggleTaskFavoriteWithId(this.id)"></span>';
 					} else {
 						$favoriteStar = '<span class="far fa-star toggleTaskFavorite" id="'. $linked_task->id .'" onclick="toggleTaskFavoriteWithId(this.id)"></span>';
@@ -636,16 +432,15 @@ class ActionsDoliSIRH
 
 				$form = new Form($this->db);
 
-				$invoice_id = GETPOST('facid');
-
 				// Categories
-				if ($conf->categorie->enabled) {
-					$html = '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
-					$html .= $form->showCategories($invoice_id, 'invoice', 1);
-					$html .= '</td></tr>'; ?>
+                if (!empty($conf->categorie->enabled)) {
+					$html = '<td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
+                    $cate_arbo = $form->select_all_categories('facturerec', '', 'parent', 64, 0, 1);
+					$html .= img_picto('', 'category') . $form::multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx');
+					$html .= '</td>'; ?>
 					<script>
 						jQuery('.fiche').find('.tabBar').find('.border tr:last').first().html(<?php echo json_encode($html) ?>);
-					</script>;
+					</script>
 				<?php }
 			}
 		}
@@ -694,7 +489,7 @@ class ActionsDoliSIRH
 		<?php }
 
         if ($parameters['currentcontext'] == 'userihm') {
-            $pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_red.png', 1);
+            $pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
 			$picto = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoModule');
 
             $out = '<tr class="oddeven"><td>' . $picto . $langs->trans('TimeSpentDatasetOrder') . '</td>';
@@ -715,6 +510,36 @@ class ActionsDoliSIRH
             <?php endif;
         }
 
+        if ($parameters['currentcontext'] == 'projectcard') {
+            if (GETPOST('action') == 'view' || empty(GETPOST('action'))) {
+                global $user;
+
+                print '<link rel="stylesheet" type="text/css" href="../custom/saturne/css/saturne.min.css">';
+
+                $moduleNameLowerCase = 'dolisirh';
+
+                require_once __DIR__ . '/../../saturne/lib/documents.lib.php';
+
+                $object = new Project($this->db);
+                $object->fetch(GETPOST('id'), GETPOST('ref','alpha'));
+
+                $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
+                $objRef     = dol_sanitizeFileName($object->ref);
+                $dirFiles   = $object->element . 'document/' . $objRef;
+                $fileDir    = $upload_dir . '/' . $dirFiles;
+                $urlSource  = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
+
+                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $user->rights->projet->creer, $user->rights->projet->supprimer, '', 1, 0, 0, 0, 0, '', 0, '', empty($soc->default_lang) ? '' : $soc->default_lang, $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
+                ?>
+
+                <script src="../custom/saturne/js/saturne.min.js"></script>
+                <script>
+                    jQuery('.fichehalfleft .div-table-responsive-no-min').append(<?php echo json_encode($html) ; ?>)
+                </script>
+                <?php
+            }
+        }
+
 		if (in_array($parameters['currentcontext'], array('timesheetcard')) && GETPOST('action') == 'create') {
 			?>
 			<script>
@@ -725,9 +550,130 @@ class ActionsDoliSIRH
 
 		if (preg_match('/categoryindex/', $parameters['context'])) {
 			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
-		}
+		} elseif (preg_match('/categorycard/', $parameters['context']) && preg_match('/viewcat.php/', $_SERVER["PHP_SELF"])) {
+            require_once __DIR__ . '/../../saturne/lib/object.lib.php';
+
+            $id = GETPOST('id');
+            $type = GETPOST('type');
+
+            // Load variable for pagination
+            $limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
+            $sortfield = GETPOST('sortfield', 'aZ09comma');
+            $sortorder = GETPOST('sortorder', 'aZ09comma');
+            $page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("page", 'int');
+            if (empty($page) || $page == -1) {
+                $page = 0;
+            }     // If $page is not defined, or '' or -1 or if we click on clear filters or if we select empty mass action
+            $offset = $limit * $page;
+
+            if ($type == 'timesheet' || $type == 'certificate' || $type == 'facture' || $type == 'facturerec') {
+                switch ($type) {
+                    case 'facture' :
+                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
+
+                        $classname = 'Facture';
+                        $object    = new $classname($this->db);
+
+                        $arrayObjects = saturne_fetch_all_object_type($classname);
+                        break;
+                    case 'facturerec' :
+                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
+
+                        $classname = 'FactureRec';
+                        $object    = new $classname($this->db);
+
+                        $arrayObjects = saturne_fetch_all_object_type($classname);
+                        break;
+                    default :
+                        require_once __DIR__ . '/' . $type . '.class.php';
+
+                        $classname = ucfirst($type);
+                        $object    = new $classname($this->db);
+
+                        $arrayObjects = $object->fetchAll();
+                        break;
+                }
+
+                if (is_array($arrayObjects) && !empty($arrayObjects)) {
+                    foreach ($arrayObjects as $objectsingle) {
+                        if ($objectsingle->element == 'facturerec') {
+                            $array[$objectsingle->id] = $objectsingle->titre;
+                        } else {
+                            $array[$objectsingle->id] = $objectsingle->ref;
+                        }
+                    }
+                }
+
+                $category = new Categorie($this->db);
+                $category->fetch($id);
+                $objectsInCateg = $category->getObjectsInCateg($type, 0, $limit, $offset);
+
+                $out = '<br>';
+
+                $out .= '<form method="post" action="' . $_SERVER["PHP_SELF"] . '?id=' . $id . '&type=' . $type . '">';
+                $out .= '<input type="hidden" name="token" value="'.newToken().'">';
+                $out .= '<input type="hidden" name="action" value="addintocategory">';
+
+                $out .= '<table class="noborder centpercent">';
+                $out .= '<tr class="liste_titre"><td>';
+                $out .= $langs->trans('AddObjectIntoCategory') . ' ';
+                $out .= $form::selectarray('element_id', $array, '', 1);
+                $out .= '<input type="submit" class="button buttongen" value="'.$langs->trans("ClassifyInCategory").'"></td>';
+                $out .= '</tr>';
+                $out .= '</table>';
+                $out .= '</form>';
+
+                $out .= '<br>';
+
+                //$param = '&limit=' . $limit . '&id=' . $id . '&type=' . $type;
+                //$num = count($objectsInCateg);
+                //print_barre_liste($langs->trans(ucfirst($type)), $page, $_SERVER["PHP_SELF"], $param, '', '', '', $num, '', 'object_'.$type.'@dolisirh', 0, '', '', $limit);
+
+                $out .= load_fiche_titre($langs->transnoentities($classname), '', 'object_' . $object->picto);
+                $out .= '<table class="noborder centpercent">';
+                $out .= '<tr class="liste_titre"><td colspan="3">'.$langs->trans("Ref").'</td></tr>';
+
+                if (is_array($objectsInCateg) && !empty($objectsInCateg)) {
+                    // Form to add record into a category
+                    if (count($objectsInCateg) > 0) {
+                        $i = 0;
+                        foreach ($objectsInCateg as $element) {
+                            $i++;
+                            if ($i > $limit) break;
+
+                            $out .= '<tr class="oddeven">';
+                            $out .= '<td class="nowrap" valign="top">';
+                            $out .= $element->getNomUrl(1);
+                            $out .= '</td>';
+                            // Link to delete from category
+                            $out .= '<td class="right">';
+                            if ($user->rights->categorie->creer) {
+                                $out .= '<a href="' . $_SERVER["PHP_SELF"] . '?action=delintocategory&id=' . $id . '&type=' . $type . '&element_id=' . $element->id . '&token=' . newToken() . '">';
+                                $out .= $langs->trans("DeleteFromCat");
+                                $out .= img_picto($langs->trans("DeleteFromCat"), 'unlink', '', false, 0, 0, '', 'paddingleft');
+                                $out .= '</a>';
+                            }
+                            $out .= '</td>';
+                            $out .= '</tr>';
+                        }
+                    } else {
+                        $out .= '<tr class="oddeven"><td colspan="2" class="opacitymedium">'.$langs->trans("ThisCategoryHasNoItems").'</td></tr>';
+                    }
+                } else {
+                    $out .= '<tr class="oddeven"><td colspan="2" class="opacitymedium">'.$langs->trans("ThisCategoryHasNoItems").'</td></tr>';
+                }
+
+                $out .= '</table>';
+            } ?>
+
+            <script>
+                jQuery('.fichecenter').last().after(<?php echo json_encode($out) ; ?>)
+            </script>
+            <?php
+        }
+
 		if (GETPOST('action') == 'toggleTaskFavorite') {
-			toggleTaskFavorite(GETPOST('taskId'), $user->id);
+			toggle_task_favorite(GETPOST('taskId'), $user->id);
 		}
 		?>
 		<script>
@@ -762,39 +708,45 @@ class ActionsDoliSIRH
 		<?php
 	}
 
-	/**
-	 * Overloading the constructCategory function : replacing the parent's function with the one below
-	 *
-	 * @param  array $parameters Hook metadata (context, etc...)
-	 * @return void
-	 */
-	public function constructCategory(array $parameters)
-	{
-		if (in_array($parameters['currentcontext'], array('category', 'invoicecard', 'invoicereccard', 'timesheetcard'))) {
-			$tags = array(
-				'invoice' => array(
-					'id' => 436370001,
-					'code' => 'invoice',
-					'obj_class' => 'Facture',
-					'obj_table' => 'facture',
-				),
-				'invoicerec' => array(
-					'id' => 436370002,
-					'code' => 'invoicerec',
-					'obj_class' => 'Facture',
-					'obj_table' => 'facture',
-				),
-				'timesheet' => array(
-					'id' => 436370003,
-					'code' => 'timesheet',
-					'obj_class' => 'TimeSheet',
-					'obj_table' => 'dolisirh_timesheet',
-				)
-			);
+    /**
+     * Overloading the constructCategory function : replacing the parent's function with the one below.
+     *
+     * @param  array $parameters Hook metadata (context, etc...).
+     * @return void
+     */
+    public function constructCategory(array $parameters)
+    {
+        if (in_array($parameters['currentcontext'], ['category', 'invoicecard', 'invoicereccard', 'timesheetcard', 'certificatecard', 'invoicelist', 'invoicereclist'])) {
+            $tags = [
+                'facture' => [
+                    'id'        => 436370001,
+                    'code'      => 'facture',
+                    'obj_class' => 'Facture',
+                    'obj_table' => 'facture',
+                ],
+                'facturerec' => [
+                    'id'        => 436370002,
+                    'code'      => 'facturerec',
+                    'obj_class' => 'FactureRec',
+                    'obj_table' => 'facture_rec',
+                ],
+                'timesheet' => [
+                    'id'        => 436370003,
+                    'code'      => 'timesheet',
+                    'obj_class' => 'TimeSheet',
+                    'obj_table' => 'dolisirh_timesheet',
+                ],
+                'certificate' => [
+                    'id'        => 436370004,
+                    'code'      => 'certificate',
+                    'obj_class' => 'Certificate',
+                    'obj_table' => 'saturne_object_certificate',
+                ]
+            ];
 
-			$this->results = $tags;
-		}
-	}
+            $this->results = $tags;
+        }
+    }
 
 	/**
 	 * Overloading the formObjectOptions function : replacing the parent's function with the one below
@@ -817,31 +769,31 @@ class ActionsDoliSIRH
 				if (!empty($conf->categorie->enabled)) {
 					// Categories
 					print '<tr><td>' . $langs->trans('Categories') . '</td><td>';
-					$cate_arbo = $form->select_all_categories('invoice', '', 'parent', 64, 0, 1);
+					$cate_arbo = $form->select_all_categories('facture', '', 'parent', 64, 0, 1);
 					print img_picto('', 'category') . $form->multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
 					print '</td></tr>';
 				}
 			} elseif ($action == 'edit') {
-				//              // Tags-Categories
-				//              if ($conf->categorie->enabled) {
-				//                  print '<tr><td>'.$langs->trans("Categories").'</td><td>';
-				//                  $cate_arbo = $form->select_all_categories('invoice', '', 'parent', 64, 0, 1);
-				//                  $c = new Categorie($this->db);
-				//                  $cats = $c->containing($object->id, 'invoice');
-				//                  $arrayselected = array();
-				//                  if (is_array($cats)) {
-				//                      foreach ($cats as $cat) {
-				//                          $arrayselected[] = $cat->id;
-				//                      }
-				//                  }
-				//                  print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
-				//                  print "</td></tr>";
-				//              }
+              // Tags-Categories
+              if ($conf->categorie->enabled) {
+                  print '<tr><td>'.$langs->trans("Categories").'</td><td>';
+                  $cate_arbo = $form->select_all_categories('facture', '', 'parent', 64, 0, 1);
+                  $c = new Categorie($this->db);
+                  $cats = $c->containing($object->id, 'facture');
+                  $arrayselected = array();
+                  if (is_array($cats)) {
+                      foreach ($cats as $cat) {
+                          $arrayselected[] = $cat->id;
+                      }
+                  }
+                  print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
+                  print "</td></tr>";
+              }
 			} elseif ($action == '') {
 				// Categories
 				if ($conf->categorie->enabled) {
 					print '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
-					print $form->showCategories($object->id, 'invoice', 1);
+					print $form->showCategories($object->id, 'facture', 1);
 					print '</td></tr>';
 				}
 			}
@@ -855,7 +807,7 @@ class ActionsDoliSIRH
 				// Categories
 				if ($conf->categorie->enabled) {
 					print '<tr><td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
-					print $form->showCategories($object->id, 'invoicerec', 1);
+					print $form->showCategories($object->id, 'facturerec', 1);
 					print '</td></tr>';
 				}
 			}
@@ -877,13 +829,13 @@ class ActionsDoliSIRH
 
 			$cat = new Categorie($this->db);
 
-			$categories = $cat->containing($parameters['facturerec']->id, 'invoicerec');
+			$categories = $cat->containing($parameters['facturerec']->id, 'facturerec');
 			if (is_array($categories) && !empty($categories)) {
 				foreach ($categories as $category) {
 					$categoryArray[] =  $category->id;
 				}
 				if (!empty($categoryArray)) {
-					setCategoriesObject($categoryArray, 'invoice', false, $object);
+                    $object->setCategoriesCommon($categoryArray, 'facture', false);
 				}
 			}
 		}
@@ -922,12 +874,13 @@ class ActionsDoliSIRH
 	 */
 	public function deleteFile(array $parameters, $object)
 	{
-		if ($parameters['currentcontext'] == 'timesheetcard' && !preg_match('/signature/', $parameters['file'])) {
+
+		if ($parameters['currentcontext'] == 'timesheetcard' && !preg_match('/signature|odtaspdf/', $parameters['file'])) {
 			global $user;
 
 			require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 
-			$signatory = new TimeSheetSignature($this->db);
+			$signatory = new SaturneSignature($this->db, 'dolisirh');
 			$usertmp   = new User($this->db);
 			$task      = new Task($this->db);
 
@@ -1035,32 +988,223 @@ class ActionsDoliSIRH
 	}
 
     /**
-     * Overloading the getNomUrl function : replacing the parent's function with the one below
+     *  Overloading the printFieldListSelect function : replacing the parent's function with the one below
      *
-     * @param  array        $parameters Hook metadata (context, etc...)
-     * @param  CommonObject $object     The object to process
-     * @param  string       $action     Current action (if set). Generally create or edit or null
-     * @return int                      0 < on error, 0 on success, 1 to replace standard code
+     * @param  array $parameters Hook metadata (context, etc...).
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
      */
-    public function getNomUrl(array $parameters, CommonObject $object, string $action): int
+    public function printFieldListSelect(array $parameters): int
     {
-        if (in_array('timespentpermonthlist', explode(':', $parameters['context'])) || in_array('timespentperweeklist', explode(':', $parameters['context']))) {
-            $doc = new DOMDocument();
-            $doc->loadHTML($parameters['getnomurl']);
-            $links = $doc->getElementsByTagName('a');
-            foreach ($links as $item) {
-                if (!$item->hasAttribute('target')) {
-                    $item->setAttribute('target','_blank');
-                }
+        global $conf;
+
+        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+            switch ($parameters['currentcontext']) {
+                case 'invoicelist' :
+                    $type = 'facture';
+                    break;
+                case 'invoicereclist' :
+                    $type = 'facturerec';
+                    break;
+                default :
+                    $type = '';
+                    break;
             }
-            $content = $doc->saveHTML();
-            $this->resprints = $content;
+            if (isModEnabled('categorie') && GETPOSTISSET('search_category_' . $type . '_list')) {
+                $conf->global->MAIN_DISABLE_FULL_SCANLIST = 1;
+            }
         }
 
-        if (!empty($this->resprints)) {
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     *  Overloading the printFieldListFrom function : replacing the parent's function with the one below
+     *
+     * @param  array               $parameters Hook metadata (context, etc...).
+     * @param  CommonObject|string $object     The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...).
+     * @return int                             0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldListFrom(array $parameters, $object): int
+    {
+        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+            if (isModEnabled('categorie')) {
+                require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+                $this->resprints = Categorie::getFilterJoinQuery($object->element, 'f.rowid');
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     *  Overloading the printFieldListWhere function : replacing the parent's function with the one below
+     *
+     * @param  array $parameters Hook metadata (context, etc...).
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldListWhere(array $parameters): int
+    {
+        if (in_array($parameters['currentcontext'], ['invoicelist', 'invoicereclist'])) {
+            if (isModEnabled('categorie')) {
+                require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+                switch ($parameters['currentcontext']) {
+                    case 'invoicelist' :
+                        $type = 'facture';
+                        break;
+                    case 'invoicereclist' :
+                        $type = 'facturerec';
+                        break;
+                    default :
+                        $type = '';
+                        break;
+                }
+                $this->resprints = Categorie::getFilterSelectQuery($type, 'f.rowid', GETPOST('search_category_' . $type . '_list', 'array'));
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     *  Overloading the printFieldPreListTitle function : replacing the parent's function with the one below
+     *
+     * @param  array $parameters Hook metadata (context, etc...).
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldPreListTitle(array $parameters): int
+    {
+        global $db, $user;
+
+        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+            // Filter on categories.
+            if (isModEnabled('categorie') && $user->rights->categorie->lire) {
+                require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcategory.class.php';
+                $formCategory = new FormCategory($db);
+                switch ($parameters['currentcontext']) {
+                    case 'invoicelist' :
+                        $type = 'facture';
+                        break;
+                    case 'invoicereclist' :
+                        $type = 'facturerec';
+                        break;
+                    default :
+                        $type = '';
+                        break;
+                }
+                $this->resprints = $formCategory->getFilterBox($type, GETPOST('search_category_' . $type . '_list', 'array'));
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     *  Overloading the printFieldListSearchParam function : replacing the parent's function with the one below
+     *
+     * @param  array               $parameters Hook metadata (context, etc...).
+     * @param  CommonObject|string $object     The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...).
+     * @return int                             0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function printFieldListSearchParam(array $parameters, $object): int
+    {
+        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+            if (isModEnabled('categorie')) {
+                $searchCategoryObjectList = GETPOST('search_category_' . $object->element . '_list', 'array');
+                if (!empty($searchCategoryObjectList)) {
+                    foreach ($searchCategoryObjectList as $searchCategoryObject) {
+                        $this->resprints = '&search_category_' . $object->element . '_list[]=' . urlencode($searchCategoryObject);
+                    }
+                }
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     * Overloading the SaturneAdminObjectConst function : replacing the parent's function with the one below.
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function SaturneAdminObjectConst(array $parameters): int
+    {
+        if ($parameters['currentcontext'] == 'timesheetadmin') {
+            $constArray['dolisirh'] = [
+                'PrefillDate' => [
+                    'name'        => 'PrefillDate',
+                    'description' => 'PrefillDateDescription',
+                    'code'        => 'DOLISIRH_TIMESHEET_PREFILL_DATE',
+                ],
+                'AddAttendantsConf' => [
+                    'name'        => 'AddAttendantsConf',
+                    'description' => 'AddAttendantsDescription',
+                    'code'        => 'DOLISIRH_TIMESHEET_ADD_ATTENDANTS',
+                ],
+                'CheckDateEnd' => [
+                    'name'        => 'CheckDateEnd',
+                    'description' => 'CheckDateEndDescription',
+                    'code'        => 'DOLISIRH_TIMESHEET_CHECK_DATE_END',
+                ],
+                'ShowTasksWithTimespentOnTimeSheet' => [
+                    'name'        => 'ShowTasksWithTimespentOnTimeSheet',
+                    'description' => 'ShowTasksWithTimespentOnTimeSheetDescription',
+                    'code'        => 'DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET',
+                ],
+            ];
+            $this->results = $constArray;
             return 1;
-        } else {
-            return 0;
+        }
+
+        return 0; // or return 1 to replace standard code.
+    }
+
+    /**
+     * Overloading the SaturneAdminDocumentData function : replacing the parent's function with the one below.
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return int               0 < on error, 0 on success, 1 to replace standard code.
+     */
+    public function SaturneAdminDocumentData(array $parameters): int
+    {
+        if ($parameters['currentcontext'] == 'dolisirhadmindocuments') {
+            $types = [
+                'TimeSheetDocument' => [
+                    'documentType' => 'timesheetdocument',
+                    'picto'        => 'fontawesome_fa-calendar-check_fas_#d35968'
+                ],
+                'CertificateDocument' => [
+                    'documentType' => 'certificatedocument',
+                    'picto'        => 'fontawesome_fa-user-graduate_fas_#d35968'
+                ]
+            ];
+            $this->results = $types;
+        }
+
+        return 0; // or return 1 to replace standard code.
+    }
+
+    /**
+     * Overloading the SaturneIndex function : replacing the parent's function with the one below.
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return void
+     */
+    public function SaturneIndex(array $parameters)
+    {
+        global $conf, $langs;
+
+        if ($parameters['currentcontext'] == 'dolisirhindex') {
+            if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) {
+                $out = '<div class="wpeo-notice notice-info">';
+                $out .= '<div class="notice-content">';
+                $out .= '<div class="notice-title"><strong>' . $langs->trans('SetupDefaultDataNotCreated') . '</strong></div>';
+                $out .= '<div class="notice-subtitle"><strong>' . $langs->trans('HowToSetupDefaultData') . ' <a href="admin/setup.php">' . $langs->trans('ConfigDefaultData') . '</a></strong></div>';
+                $out .= '</div>';
+                $out .= '</div>';
+
+                $this->resprints = $out;
+            }
         }
     }
 }

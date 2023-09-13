@@ -148,7 +148,7 @@ class FactureRecStats extends DoliSIRHStats
 		}
 
 		if ($categinvoicerecid) {
-			$this->join .= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_invoicerec as cir ON cir.fk_invoicerec = fr.rowid';
+			$this->join .= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_facturerec as cir ON cir.fk_facturerec = fr.rowid';
 			$this->join .= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie as c ON c.rowid = cir.fk_categorie';
 			$this->where .= ' AND c.rowid = '.($categinvoicerecid);
 		}

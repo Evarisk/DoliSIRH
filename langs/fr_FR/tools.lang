@@ -1,4 +1,4 @@
-# Copyright (C) 2023 EVARISK <dev@evarisk.com>
+# Copyright (C) 2021-2023 EVARISK <technique@evarisk.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 #
 
 # Data - Donnée
-Tools                                  = Outils
 UserStatusTitle                        = Informations sur les statuts des utilisateurs internes/externes - salariés/non salariés
 AllUsers                               = Il y a %s utilisateur(s) au total
 InternalUsersNotEmployee               = Il y a %s utilisateur(s) interne(s) et non salarié(s)
