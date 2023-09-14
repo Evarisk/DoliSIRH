@@ -97,14 +97,16 @@ class ActionsDoliSIRH
                 $plannedWorkload = 0;
                 if (is_array($object->lines) && !empty($object->lines)) {
                     foreach ($object->lines as $factureLine) {
-                        $product->fetch($factureLine->fk_product);
+                        if ($factureLine->fk_product > 0) {
+                            $product->fetch($factureLine->fk_product);
 
-                        $dateStart       = $factureLine->date_start;
-                        $dateEnd         = $factureLine->date_end;
-                        $quantity        = $factureLine->qty;
-                        $durationValue   = $product->duration_value;
-                        $durationUnit    = $product->duration_unit;
-                        $plannedWorkload = $quantity * dol_time_plus_duree(0, $durationValue, $durationUnit);
+                            $dateStart       = $factureLine->date_start;
+                            $dateEnd         = $factureLine->date_end;
+                            $quantity        = $factureLine->qty;
+                            $durationValue   = $product->duration_value;
+                            $durationUnit    = $product->duration_unit;
+                            $plannedWorkload = $quantity * dol_time_plus_duree(0, $durationValue, $durationUnit);
+                        }
                     }
 
                     $project->fetch($object->fk_project);
@@ -196,14 +198,16 @@ class ActionsDoliSIRH
             $product = new Product($this->db);
             if (is_array($object->lines) && !empty($object->lines)) {
                 foreach ($object->lines as $factureLine) {
-                    $product->fetch($factureLine->fk_product);
+                    if ($factureLine->fk_product > 0) {
+                        $product->fetch($factureLine->fk_product);
 
-                    $dateStart       = $factureLine->date_start;
-                    $dateEnd         = $factureLine->date_end;
-                    $quantity        = $factureLine->qty;
-                    $durationValue   = $product->duration_value;
-                    $durationUnit    = $product->duration_unit;
-                    $plannedWorkload = $quantity * dol_time_plus_duree(0, $durationValue, $durationUnit);
+                        $dateStart       = $factureLine->date_start;
+                        $dateEnd         = $factureLine->date_end;
+                        $quantity        = $factureLine->qty;
+                        $durationValue   = $product->duration_value;
+                        $durationUnit    = $product->duration_unit;
+                        $plannedWorkload = $quantity * dol_time_plus_duree(0, $durationValue, $durationUnit);
+                    }
                 }
             }
 
