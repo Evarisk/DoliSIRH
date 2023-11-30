@@ -475,9 +475,9 @@ class TimeSheetLine extends SaturneObject
     public ?int $rang;
 
     /**
-     * @var string Description.
+     * @var string|null Description.
      */
-    public string $description = '';
+    public ?string $description = '';
 
     /**
      * @var int|null Product type.
