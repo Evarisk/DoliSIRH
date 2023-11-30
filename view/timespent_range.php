@@ -335,6 +335,16 @@ if (empty($resHook)) {
         dol_set_user_param($db, $conf, $user, $tabParam);
     }
 
+    if ($action == 'show_sticky_total_timespent_info') {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $showStickyTotalTimeSpentInfo = $data['showStickyTotalTimeSpentInfo'];
+
+        $tabParam['DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO'] = $showStickyTotalTimeSpentInfo;
+
+        dol_set_user_param($db, $conf, $user, $tabParam);
+    }
+
     if ($action == 'add_timespent' && $permissiontoAdd) {
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -566,6 +576,9 @@ print $form->textwithpicto('', $langs->trans('SelectLogicOperatorsMode'));
 print ' <i class="fas fa-project-diagram"></i>';
 print '<input type="checkbox"  class="show-closed-projects"'. ($user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('ShowClosedProjects'));
+print ' <i class="fas fa-user-cog"></i>';
+print '<input type="checkbox"  class="show-sticky-total-timespent-info"'. ($user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO ? ' checked' : '') . '>';
+print $form->textwithpicto('', $langs->trans('ShowStickyTotalTimeSpentInfo'));
 print '</th>';
 // TASK fields.
 if (!empty($arrayFields['timeconsumed']['checked'])) {
@@ -604,7 +617,7 @@ if ($conf->use_javascript_ajax) {
     $plannedWorkingTime = load_planned_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable);
 
     print '<tr class="liste_total">';
-    print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040; colspan="' . $colspan . '">';
+    print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
     print $langs->trans('Total');
     print '<span class="opacitymediumbycolor">  - ';
     if ($viewMode == 'month') {
@@ -635,9 +648,119 @@ if ($conf->use_javascript_ajax) {
         print '<td class="liste_total ' . $idw . ' ' . $cellCSS. '" align="center">';
         print '<div class="' . $idw . '">' . (($plannedHoursOnDay['minutes'] != 0) ? convertSecondToTime($plannedHoursOnDay['minutes'] * 60, 'allhourmin') : '00:00') . '</div></td>';
     }
-    print '<td></td>';
-    print '</tr></thead>';
+    print '<td></td></tr>';
+
+    if ($user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO > 0) {
+        // Passed working hours.
+        $passedWorkingTime = load_passed_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable);
+
+        print '<tr class="liste_total planned-working-hours">';
+        print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
+        print $langs->trans('Total');
+        print '<span class="opacitymediumbycolor">  - ';
+        print $langs->trans('SpentWorkingHoursMonth', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayOfRange, 'dayreduceformat'));
+        print ' : <strong>' . (($passedWorkingTime['minutes'] != 0) ? convertSecondToTime($passedWorkingTime['minutes'] * 60, 'allhourmin') : '00:00') . '</strong></span>';
+        print '</td>';
+        if (!empty($arrayFields['timeconsumed']['checked'])) {
+            print '<td class="liste_total right"></td>';
+        }
+
+        // Fill days data.
+        for ($idw = 0; $idw < $daysInRange; $idw++) {
+            $cellCSS          = '';
+            $dayInLoop        = dol_time_plus_duree($firstDayToShow, $idw, 'd');
+            $passedHoursOnDay = load_passed_time_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $workingHours, $isAvailable);
+            if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
+                if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
+                    $cellCSS = 'onholidayallday';
+                } elseif ($isAvailable[$dayInLoop]['morning_reason'] == 'week_end') {
+                    $cellCSS = 'weekend';
+                }
+            }
+            print '<td class="liste_total ' . $idw . ' ' . $cellCSS . '" align="center">';
+            print (($passedHoursOnDay['minutes'] != 0) ? convertSecondToTime($passedHoursOnDay['minutes'] * 60, 'allhourmin') : '00:00') . '</div></td>';
+        }
+        print '<td></td>';
+
+        // Spent hours within dates range.
+        $timeSpent = load_time_spent_on_tasks_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $isAvailable, $userTmp->id);
+
+        print '<tr class="liste_total spent-hours-in-range">';
+        print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
+        print $langs->trans('Total');
+        $totalConsumedTime = $timeSpent['total'];
+        print '<span class="opacitymediumbycolor">  - ' . $langs->trans('ConsumedWorkingHoursMonth', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayOfRange, 'dayreduceformat')) . ' : <strong>' . convertSecondToTime($totalConsumedTime, 'allhourmin') . '</strong></span>';
+        print '</td>';
+        if (!empty($arrayFields['timeconsumed']['checked'])) {
+            print '<td class="liste_total right"><strong>' . convertSecondToTime($totalConsumedTime, 'allhourmin') . '</strong></td>';
+        }
+
+        for ($idw = 0; $idw < $daysInRange; $idw++) {
+            $cellCSS             = '';
+            $dayInLoop           = dol_time_plus_duree($firstDayToShow, $idw, 'd');
+            $timespentHoursOnDay = load_time_spent_on_tasks_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $isAvailable, $userTmp->id);
+            if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
+                if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
+                    $cellCSS = 'onholidayallday';
+                } elseif ($isAvailable[$dayInLoop]['morning_reason'] == 'week_end') {
+                    $cellCSS = 'weekend';
+                }
+            }
+            print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS . '" align="center">';
+            print '<div class="totalDay' . $idw . '">' . (($timespentHoursOnDay['minutes'] != 0) ? convertSecondToTime($timespentHoursOnDay['minutes'] * 60, 'allhourmin') : '00:00') . '</div></td>';
+        }
+        print '<td></td>';
+
+        //Difference between planned & working hours
+        $timeSpentDiff = load_difference_between_passed_and_spent_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable, $userTmp->id);
+
+        print '<tr class="liste_total planned-working-difference">';
+        print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
+        print $langs->trans('Total');
+        $diffTotalTime = $timeSpentDiff * 60;
+        if ($diffTotalTime < 0) {
+            $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+        } elseif ($diffTotalTime > 0) {
+            $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+        } elseif ($diffTotalTime == 0) {
+            $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+        } else {
+            $morecss = '';
+        }
+        print '<span class="opacitymediumbycolor">  - ' . $langs->trans('DiffSpentAndConsumedWorkingHoursMonth', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayOfRange, 'dayreduceformat')) . ' : <strong style="color:' . 'rgb(' . $morecss[0] . ',' . $morecss[1] . ',' . $morecss[2] . ');' . '">' . (($diffTotalTime != 0) ? convertSecondToTime(abs($diffTotalTime), 'allhourmin') : '00:00') . '</strong></span>';
+        print '</td>';
+        if (!empty($arrayFields['timeconsumed']['checked'])) {
+            print '<td class="liste_total right" style="color:' . 'rgb(' . $morecss[0] . ',' . $morecss[1] . ',' . $morecss[2] . ');' . '"><strong>' . (($diffTotalTime != 0) ? convertSecondToTime(abs($diffTotalTime), 'allhourmin') : '00:00') . '</strong></td>';
+        }
+
+        for ($idw = 0; $idw < $daysInRange; $idw++) {
+            $cellCSS              = '';
+            $dayInLoop            = dol_time_plus_duree($firstDayToShow, $idw, 'd');
+            $timeSpentDiffThisDay = load_difference_between_passed_and_spent_time_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $workingHours, $isAvailable, $userTmp->id);
+            if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
+                if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
+                    $cellCSS = 'onholidayallday';
+                } elseif ($isAvailable[$dayInLoop]['morning_reason'] == 'week_end') {
+                    $cellCSS = 'weekend';
+                }
+            }
+
+            if ($timeSpentDiffThisDay < 0) {
+                $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+            } elseif ($timeSpentDiffThisDay > 0) {
+                $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+            } elseif ($timeSpentDiffThisDay == 0) {
+                $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+            }
+
+            print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS;
+            print '" align="center" style="color:' . 'rgb(' . $morecss[0] . ',' . $morecss[1] . ',' . $morecss[2] . ');' . '"><div class="' . $idw . '">';
+            print (($timeSpentDiffThisDay != 0) ? convertSecondToTime(abs($timeSpentDiffThisDay * 60), 'allhourmin') : '00:00') . '</div></td>';
+        }
+        print '<td></td></tr>';
+    }
 }
+print '</thead>';
 
 // By default, we can edit only tasks we are assigned to.
 $restrictViewForMyTask = ((!isset($conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED)) ? 2 : $conf->global->PROJECT_TIME_SHOW_TASK_NOT_ASSIGNED);
@@ -696,12 +819,14 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
 </div>
 <!-- TIMESPENT ADD MODAL END -->
 
-<?php if ($conf->use_javascript_ajax) {
+<?php if ($conf->use_javascript_ajax && $user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO == 0) {
+    print '<tfoot style="position: sticky; bottom: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;">';
+
     // Passed working hours.
     $passedWorkingTime = load_passed_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable);
 
     print '<tr class="liste_total planned-working-hours">';
-    print '<td class="liste_total" colspan="' . $colspan . '">';
+    print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
     print $langs->trans('Total');
     print '<span class="opacitymediumbycolor">  - ';
     print $langs->trans('SpentWorkingHoursMonth', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayOfRange, 'dayreduceformat'));
@@ -733,7 +858,7 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
     $timeSpent = load_time_spent_on_tasks_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $isAvailable, $userTmp->id);
 
     print '<tr class="liste_total spent-hours-in-range">';
-    print '<td class="liste_total" colspan="' . $colspan . '">';
+    print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
     print $langs->trans('Total');
     $totalConsumedTime = $timeSpent['total'];
     print '<span class="opacitymediumbycolor">  - ' . $langs->trans('ConsumedWorkingHoursMonth', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayOfRange, 'dayreduceformat')) . ' : <strong>' . convertSecondToTime($totalConsumedTime, 'allhourmin') . '</strong></span>';
@@ -763,7 +888,7 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
     $timeSpentDiff = load_difference_between_passed_and_spent_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable, $userTmp->id);
 
     print '<tr class="liste_total planned-working-difference">';
-    print '<td class="liste_total" colspan="' . $colspan . '">';
+    print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
     print $langs->trans('Total');
     $diffTotalTime = $timeSpentDiff * 60;
     if ($diffTotalTime < 0) {
@@ -806,7 +931,7 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
         print (($timeSpentDiffThisDay != 0) ? convertSecondToTime(abs($timeSpentDiffThisDay * 60), 'allhourmin') : '00:00') . '</div></td>';
     }
     print '<td></td>';
-    print '</tr>';
+    print '</tr></tfoot>';
 }
 
 if (count($tasksArray) == 0) {
