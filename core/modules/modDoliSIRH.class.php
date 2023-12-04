@@ -513,20 +513,20 @@ class modDoliSIRH extends DolibarrModules
         ];
 
         // PROJECT MENU.
-        $this->menu[$r++] = [
-            'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent',
-            'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
-            'mainmenu' => 'project',
-            'leftmenu' => 'dolisirh_timespent_list',
-            'url'      => '/dolisirh/view/timespent_list.php',
-            'langs'    => 'dolisirh@dolisirh',
-            'position' => 1000 + $r,
-            'enabled'  => '$conf->dolisirh->enabled && $conf->projet->enabled',
-            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
-            'target'   => '',
-            'user'     => 0,
-        ];
+//        $this->menu[$r++] = [
+//            'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent',
+//            'type'     => 'left',
+//            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
+//            'mainmenu' => 'project',
+//            'leftmenu' => 'dolisirh_timespent_list',
+//            'url'      => '/dolisirh/view/timespent_list.php',
+//            'langs'    => 'dolisirh@dolisirh',
+//            'position' => 1000 + $r,
+//            'enabled'  => '$conf->dolisirh->enabled && $conf->projet->enabled',
+//            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
+//            'target'   => '',
+//            'user'     => 0,
+//        ];
 
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent',
@@ -544,20 +544,20 @@ class modDoliSIRH extends DolibarrModules
         ];
 
         // HRM MENU.
-        $this->menu[$r++] = [
-            'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent',
-            'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
-            'mainmenu' => 'hrm',
-            'leftmenu' => 'dolisirh_timespent_list',
-            'url'      => '/dolisirh/view/timespent_list.php',
-            'langs'    => 'dolisirh@dolisirh',
-            'position' => 1000 + $r,
-            'enabled'  => '$conf->dolisirh->enabled && $conf->salaries->enabled',
-            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
-            'target'   => '',
-            'user'     => 0,
-        ];
+//        $this->menu[$r++] = [
+//            'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent',
+//            'type'     => 'left',
+//            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
+//            'mainmenu' => 'hrm',
+//            'leftmenu' => 'dolisirh_timespent_list',
+//            'url'      => '/dolisirh/view/timespent_list.php',
+//            'langs'    => 'dolisirh@dolisirh',
+//            'position' => 1000 + $r,
+//            'enabled'  => '$conf->dolisirh->enabled && $conf->salaries->enabled',
+//            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
+//            'target'   => '',
+//            'user'     => 0,
+//        ];
 
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent',

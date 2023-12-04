@@ -141,7 +141,15 @@ if (empty($resHook)) {
         $userTmp->fetch(GETPOST('fk_user_assign'));
         $dateStart  = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
         $dateEnd    = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
-        $filter     = ' AND ptt.task_date BETWEEN ' . "'"  . dol_print_date($dateStart, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($dateEnd, 'dayrfc') . "'";
+        $versionEighteenOrMore = 0;
+        if ((float) DOL_VERSION >= 18.0) {
+            $versionEighteenOrMore = 1;
+        }
+        if ($versionEighteenOrMore) {
+            $filter = ' AND ptt.element_date BETWEEN ' . "'"  . dol_print_date($dateStart, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($dateEnd, 'dayrfc') . "'";
+        } else {
+            $filter = ' AND ptt.task_date BETWEEN ' . "'"  . dol_print_date($dateStart, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($dateEnd, 'dayrfc') . "'";
+        }
         $timeSpents = $task->fetchAllTimeSpent($userTmp, $filter);
         foreach ($timeSpents as $timespent) {
             $task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
@@ -287,7 +295,15 @@ if (empty($resHook)) {
         $object->fetch($id);
         if (!$error) {
             $userTmp->fetch($object->fk_user_assign);
-            $filter     = ' AND ptt.task_date BETWEEN ' . "'"  . dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc') . "'";
+            $versionEighteenOrMore = 0;
+            if ((float) DOL_VERSION >= 18.0) {
+                $versionEighteenOrMore = 1;
+            }
+            if ($versionEighteenOrMore) {
+                $filter = ' AND ptt.element_date BETWEEN ' . "'"  . dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc') . "'";
+            } else {
+                $filter = ' AND ptt.task_date BETWEEN ' . "'"  . dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc') . "'";
+            }
             $timeSpents = $task->fetchAllTimeSpent($userTmp, $filter);
             foreach ($timeSpents as $timespent) {
                 $task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');

@@ -436,7 +436,7 @@ class TimeSheetLine extends SaturneObject
     /**
      * @var array Array with all fields and their property. Do not use it as a static var. It may be modified by constructor.
      */
-    public array $fields = [
+    public $fields = [
         'rowid'          => ['type' => 'integer',  'label' => 'TechnicalID',  'enabled' => 1, 'position' => 1,  'notnull' => 1, 'visible' => 0, 'noteditable' => 1, 'index' => 1, 'css' => 'left', 'comment' => 'Id'],
         'entity'         => ['type' => 'integer',  'label' => 'Entity',       'enabled' => 1, 'position' => 5,  'notnull' => 1, 'visible' => 0],
         'date_creation'  => ['type' => 'datetime', 'label' => 'DateCreation', 'enabled' => 1, 'position' => 10, 'notnull' => 1, 'visible' => 0],
