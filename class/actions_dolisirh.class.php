@@ -900,7 +900,15 @@ class ActionsDoliSIRH
 			}
 
 			$usertmp->fetch($object->fk_user_assign);
-			$filter = ' AND ptt.task_date BETWEEN ' . "'" .dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc'). "'";
+            $versionEighteenOrMore = 0;
+            if ((float) DOL_VERSION >= 18.0) {
+                $versionEighteenOrMore = 1;
+            }
+            if ($versionEighteenOrMore) {
+                $filter = ' AND ptt.element_date BETWEEN ' . "'" .dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc'). "'";
+            } else {
+                $filter = ' AND ptt.task_date BETWEEN ' . "'" .dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc'). "'";
+            }
 			$alltimespent = $task->fetchAllTimeSpent($usertmp, $filter);
 			foreach ($alltimespent as $timespent) {
 				$task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
