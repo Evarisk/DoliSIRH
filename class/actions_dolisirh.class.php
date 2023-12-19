@@ -1134,12 +1134,12 @@ class ActionsDoliSIRH
     }
 
     /**
-     * Overloading the SaturneAdminObjectConst function : replacing the parent's function with the one below.
+     * Overloading the saturneAdminObjectConst function : replacing the parent's function with the one below.
      *
      * @param  array $parameters Hook metadata (context, etc...)
      * @return int               0 < on error, 0 on success, 1 to replace standard code.
      */
-    public function SaturneAdminObjectConst(array $parameters): int
+    public function saturneAdminObjectConst(array $parameters): int
     {
         if ($parameters['currentcontext'] == 'timesheetadmin') {
             $constArray['dolisirh'] = [
@@ -1172,12 +1172,12 @@ class ActionsDoliSIRH
     }
 
     /**
-     * Overloading the SaturneAdminDocumentData function : replacing the parent's function with the one below.
+     * Overloading the saturneAdminDocumentData function : replacing the parent's function with the one below.
      *
      * @param  array $parameters Hook metadata (context, etc...)
      * @return int               0 < on error, 0 on success, 1 to replace standard code.
      */
-    public function SaturneAdminDocumentData(array $parameters): int
+    public function saturneAdminDocumentData(array $parameters): int
     {
         if ($parameters['currentcontext'] == 'dolisirhadmindocuments') {
             $types = [
@@ -1197,12 +1197,12 @@ class ActionsDoliSIRH
     }
 
     /**
-     * Overloading the SaturneIndex function : replacing the parent's function with the one below.
+     * Overloading the saturneIndex function : replacing the parent's function with the one below.
      *
      * @param  array $parameters Hook metadata (context, etc...)
      * @return void
      */
-    public function SaturneIndex(array $parameters)
+    public function saturneIndex(array $parameters)
     {
         global $conf, $langs;
 
