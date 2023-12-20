@@ -180,6 +180,13 @@ class ActionsDoliSIRH
             }
         }
 
+        if (preg_match('/categorycard/', $parameters['context'])) {
+            require_once __DIR__ . '/../class/timesheet.class.php';
+            require_once __DIR__ . '/../class/certificate.class.php';
+            require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
+            require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
+        }
+
         return 0; // or return 1 to replace standard code
     }
 
@@ -220,54 +227,6 @@ class ActionsDoliSIRH
                     $mesgs .= empty($dateEnd) ? $langs->trans('ErrorDateEnd') . '<br>' : '';
                     $mesgs .= (!isset($plannedWorkload) || $plannedWorkload == 0) ? $langs->trans('ErrorServiceTime') . '<br>' : '';
                     print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $mesgs . '">' . $langs->trans('AddTask') . '</span></div>';
-                }
-            }
-        }
-
-        if (preg_match('/categorycard/', $parameters['context'])) {
-            $id        = GETPOST('id');
-            $elementId = GETPOST('element_id');
-            $type      = GETPOST('type');
-            if ($id > 0 && $elementId > 0 && ($type == 'timesheet' || $type == 'certificate' || $type == 'facture' || $type == 'facturerec') && ($user->rights->dolisirh->$type->write || $user->rights->facture->creer)) {
-                switch ($type) {
-                    case 'facture' :
-                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
-
-                        $newobject = new Facture($this->db);
-                        break;
-                    case 'facturerec' :
-                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
-
-                        $newobject = new FactureRec($this->db);
-                        break;
-                    default :
-                        require_once __DIR__ . '/' . $type . '.class.php';
-
-                        $classname = ucfirst($type);
-                        $newobject = new $classname($this->db);
-                        break;
-                }
-
-                $newobject->fetch($elementId);
-
-                if (GETPOST('action') == 'addintocategory') {
-                    $result = $object->add_type($newobject, $type);
-                    if ($result >= 0) {
-                        setEventMessages($langs->trans("WasAddedSuccessfully", $newobject->ref), array());
-
-                    } else {
-                        if ($object->error == 'DB_ERROR_RECORD_ALREADY_EXISTS') {
-                            setEventMessages($langs->trans("ObjectAlreadyLinkedToCategory"), array(), 'warnings');
-                        } else {
-                            setEventMessages($object->error, $object->errors, 'errors');
-                        }
-                    }
-                } elseif (GETPOST('action') == 'delintocategory') {
-                    $result = $object->del_type($newobject, $type);
-                    if ($result < 0) {
-                        dol_print_error('', $object->error);
-                    }
-                    $action = '';
                 }
             }
         }
@@ -554,13 +513,7 @@ class ActionsDoliSIRH
 
 		if (preg_match('/categoryindex/', $parameters['context'])) {
 			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
-		} elseif (preg_match('/categorycard/', $parameters['context']) && preg_match('/viewcat.php/', $_SERVER["PHP_SELF"])) {
-            require_once __DIR__ . '/../class/timesheet.class.php';
-            require_once __DIR__ . '/../class/certificate.class.php';
-            require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
-            require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
-        }
-
+		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
 			toggle_task_favorite(GETPOST('taskId'), $user->id);
 		}
