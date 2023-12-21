@@ -180,6 +180,13 @@ class ActionsDoliSIRH
             }
         }
 
+        if (preg_match('/categorycard/', $parameters['context'])) {
+            require_once __DIR__ . '/../class/timesheet.class.php';
+            require_once __DIR__ . '/../class/certificate.class.php';
+            require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
+            require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
+        }
+
         return 0; // or return 1 to replace standard code
     }
 
@@ -220,54 +227,6 @@ class ActionsDoliSIRH
                     $mesgs .= empty($dateEnd) ? $langs->trans('ErrorDateEnd') . '<br>' : '';
                     $mesgs .= (!isset($plannedWorkload) || $plannedWorkload == 0) ? $langs->trans('ErrorServiceTime') . '<br>' : '';
                     print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $mesgs . '">' . $langs->trans('AddTask') . '</span></div>';
-                }
-            }
-        }
-
-        if (preg_match('/categorycard/', $parameters['context'])) {
-            $id        = GETPOST('id');
-            $elementId = GETPOST('element_id');
-            $type      = GETPOST('type');
-            if ($id > 0 && $elementId > 0 && ($type == 'timesheet' || $type == 'certificate' || $type == 'facture' || $type == 'facturerec') && ($user->rights->dolisirh->$type->write || $user->rights->facture->creer)) {
-                switch ($type) {
-                    case 'facture' :
-                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
-
-                        $newobject = new Facture($this->db);
-                        break;
-                    case 'facturerec' :
-                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
-
-                        $newobject = new FactureRec($this->db);
-                        break;
-                    default :
-                        require_once __DIR__ . '/' . $type . '.class.php';
-
-                        $classname = ucfirst($type);
-                        $newobject = new $classname($this->db);
-                        break;
-                }
-
-                $newobject->fetch($elementId);
-
-                if (GETPOST('action') == 'addintocategory') {
-                    $result = $object->add_type($newobject, $type);
-                    if ($result >= 0) {
-                        setEventMessages($langs->trans("WasAddedSuccessfully", $newobject->ref), array());
-
-                    } else {
-                        if ($object->error == 'DB_ERROR_RECORD_ALREADY_EXISTS') {
-                            setEventMessages($langs->trans("ObjectAlreadyLinkedToCategory"), array(), 'warnings');
-                        } else {
-                            setEventMessages($object->error, $object->errors, 'errors');
-                        }
-                    }
-                } elseif (GETPOST('action') == 'delintocategory') {
-                    $result = $object->del_type($newobject, $type);
-                    if ($result < 0) {
-                        dol_print_error('', $object->error);
-                    }
-                    $action = '';
                 }
             }
         }
@@ -554,128 +513,7 @@ class ActionsDoliSIRH
 
 		if (preg_match('/categoryindex/', $parameters['context'])) {
 			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
-		} elseif (preg_match('/categorycard/', $parameters['context']) && preg_match('/viewcat.php/', $_SERVER["PHP_SELF"])) {
-            require_once __DIR__ . '/../../saturne/lib/object.lib.php';
-
-            $id = GETPOST('id');
-            $type = GETPOST('type');
-
-            // Load variable for pagination
-            $limit = GETPOST('limit', 'int') ?GETPOST('limit', 'int') : $conf->liste_limit;
-            $sortfield = GETPOST('sortfield', 'aZ09comma');
-            $sortorder = GETPOST('sortorder', 'aZ09comma');
-            $page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("page", 'int');
-            if (empty($page) || $page == -1) {
-                $page = 0;
-            }     // If $page is not defined, or '' or -1 or if we click on clear filters or if we select empty mass action
-            $offset = $limit * $page;
-
-            if ($type == 'timesheet' || $type == 'certificate' || $type == 'facture' || $type == 'facturerec') {
-                switch ($type) {
-                    case 'facture' :
-                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
-
-                        $classname = 'Facture';
-                        $object    = new $classname($this->db);
-
-                        $arrayObjects = saturne_fetch_all_object_type($classname);
-                        break;
-                    case 'facturerec' :
-                        require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture-rec.class.php';
-
-                        $classname = 'FactureRec';
-                        $object    = new $classname($this->db);
-
-                        $arrayObjects = saturne_fetch_all_object_type($classname);
-                        break;
-                    default :
-                        require_once __DIR__ . '/' . $type . '.class.php';
-
-                        $classname = ucfirst($type);
-                        $object    = new $classname($this->db);
-
-                        $arrayObjects = $object->fetchAll();
-                        break;
-                }
-
-                if (is_array($arrayObjects) && !empty($arrayObjects)) {
-                    foreach ($arrayObjects as $objectsingle) {
-                        if ($objectsingle->element == 'facturerec') {
-                            $array[$objectsingle->id] = $objectsingle->titre;
-                        } else {
-                            $array[$objectsingle->id] = $objectsingle->ref;
-                        }
-                    }
-                }
-
-                $category = new Categorie($this->db);
-                $category->fetch($id);
-                $objectsInCateg = $category->getObjectsInCateg($type, 0, $limit, $offset);
-
-                $out = '<br>';
-
-                $out .= '<form method="post" action="' . $_SERVER["PHP_SELF"] . '?id=' . $id . '&type=' . $type . '">';
-                $out .= '<input type="hidden" name="token" value="'.newToken().'">';
-                $out .= '<input type="hidden" name="action" value="addintocategory">';
-
-                $out .= '<table class="noborder centpercent">';
-                $out .= '<tr class="liste_titre"><td>';
-                $out .= $langs->trans('AddObjectIntoCategory') . ' ';
-                $out .= $form::selectarray('element_id', $array, '', 1);
-                $out .= '<input type="submit" class="button buttongen" value="'.$langs->trans("ClassifyInCategory").'"></td>';
-                $out .= '</tr>';
-                $out .= '</table>';
-                $out .= '</form>';
-
-                $out .= '<br>';
-
-                //$param = '&limit=' . $limit . '&id=' . $id . '&type=' . $type;
-                //$num = count($objectsInCateg);
-                //print_barre_liste($langs->trans(ucfirst($type)), $page, $_SERVER["PHP_SELF"], $param, '', '', '', $num, '', 'object_'.$type.'@dolisirh', 0, '', '', $limit);
-
-                $out .= load_fiche_titre($langs->transnoentities($classname), '', 'object_' . $object->picto);
-                $out .= '<table class="noborder centpercent">';
-                $out .= '<tr class="liste_titre"><td colspan="3">'.$langs->trans("Ref").'</td></tr>';
-
-                if (is_array($objectsInCateg) && !empty($objectsInCateg)) {
-                    // Form to add record into a category
-                    if (count($objectsInCateg) > 0) {
-                        $i = 0;
-                        foreach ($objectsInCateg as $element) {
-                            $i++;
-                            if ($i > $limit) break;
-
-                            $out .= '<tr class="oddeven">';
-                            $out .= '<td class="nowrap" valign="top">';
-                            $out .= $element->getNomUrl(1);
-                            $out .= '</td>';
-                            // Link to delete from category
-                            $out .= '<td class="right">';
-                            if ($user->rights->categorie->creer) {
-                                $out .= '<a href="' . $_SERVER["PHP_SELF"] . '?action=delintocategory&id=' . $id . '&type=' . $type . '&element_id=' . $element->id . '&token=' . newToken() . '">';
-                                $out .= $langs->trans("DeleteFromCat");
-                                $out .= img_picto($langs->trans("DeleteFromCat"), 'unlink', '', false, 0, 0, '', 'paddingleft');
-                                $out .= '</a>';
-                            }
-                            $out .= '</td>';
-                            $out .= '</tr>';
-                        }
-                    } else {
-                        $out .= '<tr class="oddeven"><td colspan="2" class="opacitymedium">'.$langs->trans("ThisCategoryHasNoItems").'</td></tr>';
-                    }
-                } else {
-                    $out .= '<tr class="oddeven"><td colspan="2" class="opacitymedium">'.$langs->trans("ThisCategoryHasNoItems").'</td></tr>';
-                }
-
-                $out .= '</table>';
-            } ?>
-
-            <script>
-                jQuery('.fichecenter').last().after(<?php echo json_encode($out) ; ?>)
-            </script>
-            <?php
-        }
-
+		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
 			toggle_task_favorite(GETPOST('taskId'), $user->id);
 		}
