@@ -628,7 +628,7 @@ class ActionsDoliSIRH
                           $arrayselected[] = $cat->id;
                       }
                   }
-                  print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, $arrayselected, '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
+                  print img_picto('', 'category').$form->multiselectarray('categories', $cate_arbo, (GETPOSTISSET('categories') ? GETPOST('categories', 'array') : $arrayselected), '', 0, 'quatrevingtpercent widthcentpercentminusx', 0, 0);
                   print "</td></tr>";
               }
 			} elseif ($action == '') {
