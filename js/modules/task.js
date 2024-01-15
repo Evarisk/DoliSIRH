@@ -65,6 +65,7 @@ window.dolisirh.task.event = function() {
     $(document).on('click', '.show-only-tasks-with-timespent', window.dolisirh.task.showOnlyTasksWithTimeSpent);
     $(document).on('click', '.select-logic-operators-mode', window.dolisirh.task.selectLogicOperatorsMode);
     $(document).on('click', '.show-closed-projects', window.dolisirh.task.showClosedProjects);
+    $(document).on('click', '.show-sticky-total-timespent-info', window.dolisirh.task.showStickyTotalTimeSpentInfo);
     $(document).on('click', '.timespent-create', window.dolisirh.task.createTimeSpent);
     $(document).on('click', '.toggleTaskFavorite', window.dolisirh.task.toggleTaskFavorite);
     $(document).on('submit', '#addtimeform', window.dolisirh.task.searchForm );
@@ -263,6 +264,42 @@ window.dolisirh.task.showClosedProjects = function() {
     processData: false,
     data: JSON.stringify({
       showClosedProjects: showClosedProjects
+    }),
+    contentType: false,
+    success: function() {
+      window.location.reload();
+    },
+    error: function() {}
+  });
+};
+
+/**
+ * Enables/disables the configuration to display sticky total time spent info in top or bottom
+ *
+ * @memberof DoliSIRH_Task
+ *
+ * @since   1.5.0
+ * @version 1.5.0
+ *
+ * @return {void}
+ */
+window.dolisirh.task.showStickyTotalTimeSpentInfo = function() {
+  let token          = window.saturne.toolbox.getToken();
+  let querySeparator = window.saturne.toolbox.getQuerySeparator(document.URL);
+
+  let showStickyTotalTimeSpentInfo;
+  if ($(this).is(':checked')) {
+    showStickyTotalTimeSpentInfo = 1;
+  } else {
+    showStickyTotalTimeSpentInfo = 0;
+  }
+
+  $.ajax({
+    url: document.URL + querySeparator + "action=show_sticky_total_timespent_info&token=" + token,
+    type: "POST",
+    processData: false,
+    data: JSON.stringify({
+      showStickyTotalTimeSpentInfo: showStickyTotalTimeSpentInfo
     }),
     contentType: false,
     success: function() {

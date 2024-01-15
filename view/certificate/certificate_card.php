@@ -276,7 +276,7 @@ if (($id || $ref) && $action == 'edit') {
                 $arraySelected[] = $cat->id;
             }
         }
-        print img_picto('', 'category') . $form::multiselectarray('categories', $cateArbo, $arraySelected, '', 0, 'quatrevingtpercent widthcentpercentminusx');
+        print img_picto('', 'category') . $form::multiselectarray('categories', $cateArbo, (GETPOSTISSET('categories') ? GETPOST('categories', 'array') : $arraySelected), '', 0, 'quatrevingtpercent widthcentpercentminusx');
         print '</td></tr>';
     }
 

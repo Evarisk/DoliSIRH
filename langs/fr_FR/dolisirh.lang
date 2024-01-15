@@ -145,6 +145,7 @@ TimeSpentList                          = Liste des temps consommés
 ShowOnlyTasksWithTimeSpent             = Afficher uniquement les tâches avec du temps consommé sur cette période
 SelectLogicOperatorsMode               = Sélection de l'opérateur logique 'ET/OU' par défaut : ET
 ShowClosedProjects                     = Afficher les projets clôturés
+ShowStickyTotalTimeSpentInfo           = Option d'affichage permettant de choisir l'endroit où se situent les informations totales du temps consommé 'Bas/Haut' <br> Par défaut : en bas de la page
 ExpectedWorkingHours                   = Heures de travail prévues
 ConsumedWorkingHours                   = Heures de travail consommées
 TimeSpentReportByFiscalYear            = Rapport du temps consommé sur l'exercice fiscal

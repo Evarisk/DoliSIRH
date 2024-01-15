@@ -101,8 +101,18 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
         $userTmp->fetch($userID);
     }
 
+    $versionEighteenOrMore = 0;
+    if ((float) DOL_VERSION >= 18.0) {
+        $versionEighteenOrMore = 1;
+    }
+    if ($versionEighteenOrMore) {
+        $moreWhereFilter = 'AND (ptt.element_date >= "' . $db->idate($timestampStart) . '" AND ptt.element_date < "' . $db->idate($timestampEnd) . '")';
+    } else {
+        $moreWhereFilter = 'AND (ptt.task_date >= "' . $db->idate($timestampStart) . '" AND ptt.task_date < "' . $db->idate($timestampEnd) . '")';
+    }
+
     $timeSpentOnTasks = ['days' => 0, 'hours' => 0, 'minutes' => 0, 'total' => 0];
-    $timeSpentList    = $task->fetchAllTimeSpent($userTmp, 'AND (ptt.task_date >= "' . $db->idate($timestampStart) . '" AND ptt.task_date < "' . $db->idate($timestampEnd) . '")');
+    $timeSpentList    = $task->fetchAllTimeSpent($userTmp, $moreWhereFilter);
     if (is_array($timeSpentList) && !empty($timeSpentList)) {
         $workingDays = [];
         foreach ($timeSpentList as $timeSpent) {
@@ -279,6 +289,11 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
 
     $tasks = [];
 
+    $versionEighteenOrMore = 0;
+    if ((float) DOL_VERSION >= 18.0) {
+        $versionEighteenOrMore = 1;
+    }
+
     // List of tasks (does not care about permissions. Filtering will be done later).
     $sql = 'SELECT ';
     if ($filterOnProjUser > 0 || $filterOnTaskUser > 0) {
@@ -304,11 +319,11 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
     }
 
     if ($includeBillTime) {
-        $sql .= ', SUM(tt.task_duration * ' . $db->ifsql('invoice_id IS NULL', '1', '0') . ') as tobill, SUM(tt.task_duration * ' . $db->ifsql(
-                'invoice_id IS NULL',
-                '0',
-                '1'
-            ) . ') as billed';
+        if ($versionEighteenOrMore) {
+            $sql .= ', SUM(tt.element_duration * ' . $db->ifsql('invoice_id IS NULL', '1', '0') . ') as tobill, SUM(tt.element_duration * ' . $db->ifsql('invoice_id IS NULL', '0', '1') . ') as billed';
+        } else {
+            $sql .= ', SUM(tt.task_duration * ' . $db->ifsql('invoice_id IS NULL', '1', '0') . ') as tobill, SUM(tt.task_duration * ' . $db->ifsql('invoice_id IS NULL', '0', '1') . ') as billed';
+        }
     }
 
     $sql .= ' FROM '  .MAIN_DB_PREFIX . 'projet as p';
@@ -322,7 +337,11 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
         }
         $sql .= ', ' . MAIN_DB_PREFIX . 'projet_task as t';
         if ($includeBillTime) {
-            $sql .= ' LEFT JOIN ' .MAIN_DB_PREFIX. 'projet_task_time as tt ON tt.fk_task = t.rowid';
+            if ($versionEighteenOrMore) {
+                $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as tt ON (tt.fk_element = t.rowid AND tt.elementtype = "task")';
+            } else {
+                $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as tt ON tt.fk_task = t.rowid';
+            }
         }
         if ($filterOnTaskUser > 0) {
             $sql .= ', ' .MAIN_DB_PREFIX. 'element_contact as ec2';
@@ -332,7 +351,11 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
             $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . "element_element as elel ON (t.rowid = elel.fk_target AND elel.targettype='project_task')";
         }
         if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
-            $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as ptt ON (t.rowid = ptt.fk_task)';
+            if ($versionEighteenOrMore) {
+                $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as ptt ON (ptt.fk_element = t.rowid AND ptt.elementtype = "task")';
+            } else {
+                $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as ptt ON (t.rowid = ptt.fk_task)';
+            }
         }
         $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_extrafields as efpt ON (t.rowid = efpt.fk_object)';
         $sql .= ' WHERE p.entity IN (' . getEntity('project') . ')';
@@ -342,15 +365,27 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
             $sql .= ' AND elel.fk_source = ' . $filterOnProjUser;
         }
         if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
-            $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
-            if ($timeMode == 'month') {
-                $sql .= ' AND MONTH(ptt.task_date) = ' . $timeArray['month'];
-            } elseif ($timeMode == 'week') {
-                $sql .= ' AND WEEK(ptt.task_date, 7) = ' . $timeArray['week'];
-            } elseif ($timeMode == 'day') {
-                $sql .= ' AND DAY(ptt.task_date) = ' . $timeArray['day'];
+            if ($versionEighteenOrMore) {
+                $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' OR (' : ' AND ') . '(ptt.fk_element = t.rowid AND ptt.elementtype = "task") AND ptt.fk_user = ' . $filterOnProjUser;
+                if ($timeMode == 'month') {
+                    $sql .= ' AND MONTH(ptt.element_date) = ' . $timeArray['month'];
+                } elseif ($timeMode == 'week') {
+                    $sql .= ' AND WEEK(ptt.element_date, 7) = ' . $timeArray['week'];
+                } elseif ($timeMode == 'day') {
+                    $sql .= ' AND DAY(ptt.element_date) = ' . $timeArray['day'];
+                }
+                $sql .= ' AND YEAR(ptt.element_date) = ' . $timeArray['year'];
+            } else {
+                $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
+                if ($timeMode == 'month') {
+                    $sql .= ' AND MONTH(ptt.task_date) = ' . $timeArray['month'];
+                } elseif ($timeMode == 'week') {
+                    $sql .= ' AND WEEK(ptt.task_date, 7) = ' . $timeArray['week'];
+                } elseif ($timeMode == 'day') {
+                    $sql .= ' AND DAY(ptt.task_date) = ' . $timeArray['day'];
+                }
+                $sql .= ' AND YEAR(ptt.task_date) = ' . $timeArray['year'];
             }
-            $sql .= ' AND YEAR(ptt.task_date) = ' . $timeArray['year'];
         }
         $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? '))' : '');
     } elseif ($mode == 1) {
@@ -361,14 +396,22 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
         if ($filterOnTaskUser > 0) {
             $sql .= ', ' . MAIN_DB_PREFIX . 'projet_task as t';
             if ($includeBillTime) {
-                $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as tt ON tt.fk_task = t.rowid';
+                if ($versionEighteenOrMore) {
+                    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as tt ON (tt.fk_element = t.rowid AND tt.elementtype = "task")';
+                } else {
+                    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as tt ON tt.fk_task = t.rowid';
+                }
             }
             $sql .= ', ' . MAIN_DB_PREFIX . 'element_contact as ec2';
             $sql .= ', ' . MAIN_DB_PREFIX . 'c_type_contact as ctc2';
         } else {
             $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task as t on t.fk_projet = p.rowid';
             if ($includeBillTime) {
-                $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as tt ON tt.fk_task = t.rowid';
+                if ($versionEighteenOrMore) {
+                    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as tt ON (tt.fk_element = t.rowid AND tt.elementtype = "task")';
+                } else {
+                    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as tt ON tt.fk_task = t.rowid';
+                }
             }
         }
         $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_extrafields as efpt ON (t.rowid = efpt.fk_object)';
@@ -696,7 +739,15 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 if (!empty($arrayFields['timeconsumed']['checked'])) {
                     // Time spent by user.
                     print '<td class="right">';
-                    $filter             = ' AND (t.task_date >= "' . $db->idate($timestampStart) . '" AND t.task_date < "' . $db->idate(dol_time_plus_duree($timestampEnd, 1, 'd')) . '")';
+                    $versionEighteenOrMore = 0;
+                    if ((float) DOL_VERSION >= 18.0) {
+                        $versionEighteenOrMore = 1;
+                    }
+                    if ($versionEighteenOrMore) {
+                        $filter = ' AND (t.element_date >= "' . $db->idate($timestampStart) . '" AND t.element_date < "' . $db->idate(dol_time_plus_duree($timestampEnd, 1, 'd')) . '")';
+                    } else {
+                        $filter = ' AND (t.task_date >= "' . $db->idate($timestampStart) . '" AND t.task_date < "' . $db->idate(dol_time_plus_duree($timestampEnd, 1, 'd')) . '")';
+                    }
                     $summaryOfTimeSpent = $task->getSummaryOfTimeSpent($fuser->id, $filter);
                     if ($summaryOfTimeSpent['total_duration']) {
                         print convertSecondToTime($summaryOfTimeSpent['total_duration'], 'allhourmin');

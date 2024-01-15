@@ -78,7 +78,7 @@ class modDoliSIRH extends DolibarrModules
         $this->editor_url  = 'https://evarisk.com';
 
         // Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'.
-        $this->version = '1.4.0';
+        $this->version = '1.5.0';
 
         // Url to the file with your last numberversion of this module.
         //$this->url_last_version = 'http://www.example.com/versionmodule.txt';
@@ -162,7 +162,7 @@ class modDoliSIRH extends DolibarrModules
         $this->hidden = false;
 
         // List of module class names as string that must be enabled if this module is enabled. Example: array('always1'=>'modModuleToEnable1','always2'=>'modModuleToEnable2', 'FR1'=>'modModuleToEnableFR'...).
-        $this->depends      = ['modProjet', 'modBookmark', 'modHoliday', 'modFckeditor', 'modSalaries', 'modProduct', 'modService', 'modSociete', 'modECM', 'modCategorie', 'modSaturne', 'modCron'];
+        $this->depends      = ['modAgenda', 'modProjet', 'modBookmark', 'modHoliday', 'modFckeditor', 'modSalaries', 'modProduct', 'modService', 'modSociete', 'modECM', 'modCategorie', 'modSaturne', 'modCron'];
         $this->requiredby   = []; // List of module class names as string to disable if this one is disabled. Example: array('modModuleToDisable1', ...).
         $this->conflictwith = []; // List of module class names as string this module is in conflict with. Example: array('modModuleToDisable1', ...).
 
@@ -513,20 +513,20 @@ class modDoliSIRH extends DolibarrModules
         ];
 
         // PROJECT MENU.
-        $this->menu[$r++] = [
-            'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent',
-            'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
-            'mainmenu' => 'project',
-            'leftmenu' => 'dolisirh_timespent_list',
-            'url'      => '/dolisirh/view/timespent_list.php',
-            'langs'    => 'dolisirh@dolisirh',
-            'position' => 1000 + $r,
-            'enabled'  => '$conf->dolisirh->enabled && $conf->projet->enabled',
-            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
-            'target'   => '',
-            'user'     => 0,
-        ];
+//        $this->menu[$r++] = [
+//            'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent',
+//            'type'     => 'left',
+//            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
+//            'mainmenu' => 'project',
+//            'leftmenu' => 'dolisirh_timespent_list',
+//            'url'      => '/dolisirh/view/timespent_list.php',
+//            'langs'    => 'dolisirh@dolisirh',
+//            'position' => 1000 + $r,
+//            'enabled'  => '$conf->dolisirh->enabled && $conf->projet->enabled',
+//            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
+//            'target'   => '',
+//            'user'     => 0,
+//        ];
 
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=project,fk_leftmenu=timespent',
@@ -544,20 +544,20 @@ class modDoliSIRH extends DolibarrModules
         ];
 
         // HRM MENU.
-        $this->menu[$r++] = [
-            'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent',
-            'type'     => 'left',
-            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
-            'mainmenu' => 'hrm',
-            'leftmenu' => 'dolisirh_timespent_list',
-            'url'      => '/dolisirh/view/timespent_list.php',
-            'langs'    => 'dolisirh@dolisirh',
-            'position' => 1000 + $r,
-            'enabled'  => '$conf->dolisirh->enabled && $conf->salaries->enabled',
-            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
-            'target'   => '',
-            'user'     => 0,
-        ];
+//        $this->menu[$r++] = [
+//            'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent',
+//            'type'     => 'left',
+//            'titre'    => '<i class="fas fa-id-card pictofixedwidth" style="padding-right: 4px; color: #d35968;"></i>' . $langs->transnoentities('DoliSIRHTimeSpent'),
+//            'mainmenu' => 'hrm',
+//            'leftmenu' => 'dolisirh_timespent_list',
+//            'url'      => '/dolisirh/view/timespent_list.php',
+//            'langs'    => 'dolisirh@dolisirh',
+//            'position' => 1000 + $r,
+//            'enabled'  => '$conf->dolisirh->enabled && $conf->salaries->enabled',
+//            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
+//            'target'   => '',
+//            'user'     => 0,
+//        ];
 
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=hrm,fk_leftmenu=timespent',

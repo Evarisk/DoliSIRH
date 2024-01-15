@@ -115,6 +115,11 @@ class doc_projectdocument_odt extends SaturneDocumentModel
             $contacts = array_merge($contacts, $internalContacts);
         }
 
+        $versionEighteenOrMore = 0;
+        if ((float) DOL_VERSION >= 18.0) {
+            $versionEighteenOrMore = 1;
+        }
+
         // Replace tags of lines.
         try {
             // Get project users.
@@ -138,7 +143,11 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                             if (is_array($allTasks) && !empty($allTasks)) {
                                 $allTimespentUser = 0;
                                 foreach ($allTasks as $task) {
-                                    $filter         = ' AND ptt.fk_task = ' . $task->id . ' AND ptt.fk_user = ' . $contact['id'];
+                                    if ($versionEighteenOrMore) {
+                                        $filter = ' AND fk_element = ' . $task->id . ' AND ptt.elementtype = "task" AND fk_user = ' . $contact['id'];
+                                    } else {
+                                        $filter = ' AND fk_element = ' . $task->id . ' AND fk_user = ' . $contact['id'];
+                                    }
                                     $timeSpentsUser = $saturneTask->fetchAllTimeSpentAllUsers($filter);
                                     foreach ($timeSpentsUser as $timespent) {
                                         $allTimespentUser += $timespent->timespent_duration;
@@ -208,7 +217,11 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                         foreach ($contacts as $contact) {
                             if (is_array($allTasks) && !empty($allTasks)) {
                                 foreach ($allTasks as $task) {
-                                    $filter         = ' AND ptt.fk_task = ' . $task->id . ' AND ptt.fk_user = ' . $contact['id'];
+                                    if ($versionEighteenOrMore) {
+                                        $filter = ' AND fk_element = ' . $task->id . ' AND ptt.elementtype = "task" AND fk_user = ' . $contact['id'];
+                                    } else {
+                                        $filter = ' AND fk_element = ' . $task->id . ' AND fk_user = ' . $contact['id'];
+                                    }
                                     $timeSpentsUser = $saturneTask->fetchAllTimeSpentAllUsers($filter);
                                     foreach ($timeSpentsUser as $timespent) {
                                         $tmpArray['project_task_timespent_date']     = dol_print_date($timespent->timespent_datehour, (($timespent->timespent_withhour > 0) ? 'dayhour' : 'day'));

@@ -108,6 +108,11 @@ $pagenext = $page + 1;
 
 $hookmanager->initHooks(array('timespentlist')); // Note that conf->hooks_modules contains array
 
+$versionEighteenOrMore = 0;
+if ((float) DOL_VERSION >= 18.0) {
+    $versionEighteenOrMore = 1;
+}
+
 $arrayfields = array(
 	'rowid'          => array('tablealias' => 's.', 'fieldalias' => 'socid', 'type' => 'Societe:societe/class/societe.class.php:1:status=1 AND entity IN (__SHARED_ENTITIES__)', 'label' => "Customer", 'checked' => 1, 'position' => 10,  'visible' => 1),
 	'ref'            => array('tablealias' => 'p.', 'fieldalias' => 'projectref', 'type' => 'Project:projet/class/project.class.php:1', 'label' => "Project", 'checked' => 1, 'position' => 20, 'visible' => 1),
@@ -125,7 +130,11 @@ $arrayfields = array(
 
 // Default sort order (if not yet defined by previous GETPOST)
 if (!$sortfield) {
-	$sortfield = 'ptt.task_date'; // Set here default search field. By default 1st field in definition.
+    if ($versionEighteenOrMore) {
+        $sortfield = 'ptt.element_date'; // Set here default search field. By default 1st field in definition.
+    } else {
+        $sortfield = 'ptt.task_date'; // Set here default search field. By default 1st field in definition.
+    }
 }
 if (!$sortorder) {
 	$sortorder = "ASC";
@@ -238,7 +247,11 @@ $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_extrafields as extra ON p.rowid
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'c_lead_status as cls ON p.fk_opp_status = cls.rowid';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task as pt ON p.rowid = pt.fk_projet';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_extrafields as ef ON pt.rowid = ef.fk_object';
-$sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as ptt ON pt.rowid = ptt.fk_task';
+if ($versionEighteenOrMore) {
+    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as ptt ON (ptt.fk_element = t.rowid AND ptt.elementtype = "task")';
+} else {
+    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as ptt ON pt.rowid = ptt.fk_task';
+}
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'societe as s ON p.fk_soc = s.rowid';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'facture as f ON ptt.invoice_id = f.rowid';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_element as ee on ( ee.sourcetype = "dolisirh_timesheet" AND ee.targettype = "project_task_time" AND ee.fk_target = ptt.rowid)';
@@ -253,15 +266,27 @@ if ($object->ismultientitymanaged == 1) {
 } else {
 	$sql .= " WHERE 1 = 1";
 }
-$sql .= ' AND ptt.task_duration IS NOT NULL';
+if ($versionEighteenOrMore) {
+    $sql .= ' AND ptt.element_duration IS NOT NULL';
+} else {
+    $sql .= ' AND ptt.task_duration IS NOT NULL';
+}
 
 foreach ($search as $key => $val) {
 	if (preg_match('/(_dtstart|_dtend)$/', $key) && $search[$key] != '') {
 		if (preg_match('/_dtstart$/', $key)) {
-			$sql .= " AND ptt.task_date >= '" . $db->idate($search[$key]) . "'";
+            if ($versionEighteenOrMore) {
+                $sql .= " AND ptt.element_date >= '" . $db->idate($search[$key]) . "'";
+            } else {
+                $sql .= " AND ptt.task_date >= '" . $db->idate($search[$key]) . "'";
+            }
 		}
 		if (preg_match('/_dtend$/', $key)) {
-			$sql .= " AND ptt.task_date <= '" . $db->idate($search[$key]) . "'";
+            if ($versionEighteenOrMore) {
+                $sql .= " AND ptt.element_date <= '" . $db->idate($search[$key]) . "'";
+            } else {
+                $sql .= " AND ptt.task_date <= '" . $db->idate($search[$key]) . "'";
+            }
 		}
 	}
 	if ($key == 'socid' && !empty($val)) $sql .= ' AND s.rowid=' . (int) $val;
