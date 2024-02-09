@@ -344,9 +344,10 @@ class doc_projectdocument_odt extends SaturneDocumentModel
         if (is_array($tasksArray) && !empty($tasksArray)) {
             $nbTasks = count($tasksArray);
             foreach ($tasksArray as $task) {
+                $task->getSummaryOfTimeSpent();
                 $totalProgress        += $task->progress;
                 $totalPlannedWorkload += $task->planned_workload;
-                $totalConsumedTime    += $task->duration_effective;
+                $totalConsumedTime    += $task->timespent_total_duration;
             }
             $tmpArray['project_progress']         = (($totalProgress) ? price2num($totalProgress / $nbTasks, 2) . ' %' : '0 %');
             $tmpArray['project_status']           = $object->getLibStatut();
