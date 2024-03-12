@@ -474,7 +474,7 @@ class ActionsDoliSIRH
         }
 
         if ($parameters['currentcontext'] == 'projectcard') {
-            if (GETPOST('action') == 'view' || empty(GETPOST('action'))) {
+            if (GETPOST('action') != 'create') {
                 global $user;
 
                 print '<link rel="stylesheet" type="text/css" href="../custom/saturne/css/saturne.min.css">';
