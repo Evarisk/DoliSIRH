@@ -254,6 +254,7 @@ print '</tr>' . "\n";
 print '</table>';
 
 // Buid current user hierarchy
+$usertmphierarchy = [];
 if ($usertmp->fk_user > 0) {
 	$usertmphierarchy = array($usertmp->fk_user);
 	$usertmpboss = new User($object->db);
