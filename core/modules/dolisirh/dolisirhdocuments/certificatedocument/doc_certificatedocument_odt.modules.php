@@ -88,6 +88,7 @@ class doc_certificatedocument_odt extends SaturneDocumentModel
         $signatory = new SaturneSignature($this->db);
 
         $tmpArray['object_ref']         = $object->ref;
+        $tmpArray['object_label']       = $object->label;
         $tmpArray['object_description'] = $object->description;
         $tmpArray['object_date_start']  = dol_print_date($object->date_start, 'day', 'tzuser');
         $tmpArray['object_date_end']    = dol_print_date($object->date_end, 'day', 'tzuser');
@@ -118,6 +119,8 @@ class doc_certificatedocument_odt extends SaturneDocumentModel
         $signatory = $signatory->fetchSignatory('Responsible', $object->id, $object->element);
         if (is_array($signatory) && !empty($signatory)) {
             $signatory = array_shift($signatory);
+            $tmpArray['responsible_fullname'] = strtoupper($signatory->lastname) . ' ' . ucfirst($signatory->firstname);
+            $tmpArray['responsible_job']      = $signatory->job;
             if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
                 if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
                     $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
@@ -132,6 +135,8 @@ class doc_certificatedocument_odt extends SaturneDocumentModel
                 $tmpArray['responsible_signature'] = '';
             }
         } else {
+            $tmpArray['responsible_fullname']  = '';
+            $tmpArray['responsible_job']       = '';
             $tmpArray['responsible_signature'] = '';
         }
 
