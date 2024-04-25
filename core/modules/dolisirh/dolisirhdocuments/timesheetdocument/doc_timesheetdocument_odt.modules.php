@@ -42,17 +42,6 @@ require_once __DIR__ . '/mod_timesheetdocument_standard.php';
 class doc_timesheetdocument_odt extends SaturneDocumentModel
 {
     /**
-     * @var array Minimum version of PHP required by module.
-     * e.g.: PHP ≥ 5.5 = array(5, 5)
-     */
-    public $phpmin = [7, 4];
-
-    /**
-     * @var string Dolibarr version of the loaded document.
-     */
-    public string $version = 'dolibarr';
-
-    /**
      * @var string Module.
      */
     public string $module = 'dolisirh';
@@ -137,7 +126,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('days');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 $listLines = '';
@@ -163,7 +152,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('times');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 $listLines = '';
@@ -218,7 +207,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
                     $foundTagForLines = 1;
                     try {
                         $listLines = $odfHandler->setSegment($segment[0][$i]);
-                    } catch (OdfException $e) {
+                    } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                         // We may arrive here if tags for lines not present into template.
                         $foundTagForLines = 0;
                         dol_syslog($e->getMessage());
@@ -246,7 +235,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('totalrhs');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 dol_syslog($e->getMessage());
@@ -270,7 +259,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('totaltimes');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 dol_syslog($e->getMessage());
@@ -295,7 +284,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('totaltpss');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 dol_syslog($e->getMessage());
@@ -321,7 +310,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('tas');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 dol_syslog($e->getMessage());
@@ -347,7 +336,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('diffs');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 dol_syslog($e->getMessage());
@@ -372,7 +361,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('timesheetdet');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 dol_syslog($e->getMessage());
