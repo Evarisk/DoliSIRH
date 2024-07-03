@@ -46,10 +46,10 @@ class ActionsDoliSIRH
 	 */
 	public $results = array();
 
-	/**
-	 * @var string String displayed by executeHook() immediately after return
-	 */
-	public $resprints;
+    /**
+     * @var string|null String displayed by executeHook() immediately after return
+     */
+    public ?string $resprints;
 
 	/**
 	 * Constructor
