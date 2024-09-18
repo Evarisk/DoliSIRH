@@ -98,9 +98,6 @@ ErrorNoProject             = Projet non lié
 ErrorDateStart             = Pas de date de début
 ErrorDateEnd               = Pas de date de fin
 ErrorServiceTime           = Le temps du(des) service(s) est nul
-SetupDefaultDataNotCreated = Vous n'avez pas créé les données par défaut de DOLISIRH
-HowToSetupDefaultData      = Pour configurer les données par défaut de DOLISIRH, veuillez cliquer sur ce lien :
-ConfigDefaultData          = Configuration des données par défaut de DOLISIRH
 EnableDolisirh             = Veuillez activer le module DoliSIRH pour accéder à cette page
 
 
@@ -130,7 +127,7 @@ WorkingHours(min)       = Temps travaillé (en minutes)
 DayWorkTime                            = Temps du jour
 NonConsumedTime                        = Temps non pointé
 TooMuchTimeSpent                       = Vous avez pointé plus de temps que le temps non pointé disponible
-TimeSpending                           = Pointage de temps
+TimeSpending                           = Suivi temps
 DoliSIRHNewTimeSpent                   = Temps consommé (en minutes)
 DivideTimeIntoTasks                    = Répartir entre les tâches du projet
 ShowOnlyFavoriteTasks                  = Afficher uniquement les tâches favorites

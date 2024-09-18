@@ -1035,26 +1035,28 @@ class ActionsDoliSIRH
     }
 
     /**
-     * Overloading the saturneIndex function : replacing the parent's function with the one below.
+     * Overloading the saturneIndex function : replacing the parent's function with the one below
      *
      * @param  array $parameters Hook metadata (context, etc...)
-     * @return void
+     * @return int               0 < on error, 0 on success, 1 to replace standard code
      */
-    public function saturneIndex(array $parameters)
+    public function saturneIndex(array $parameters): int
     {
-        global $conf, $langs;
+        global $conf, $langs, $moduleName;
 
-        if ($parameters['currentcontext'] == 'dolisirhindex') {
-            if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) {
-                $out = '<div class="wpeo-notice notice-info">';
+        if (strpos($parameters['context'], 'dolisirhindex') !== false) {
+            if (getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') == 0) {
+                $out  = '<div class="wpeo-notice notice-info">';
                 $out .= '<div class="notice-content">';
-                $out .= '<div class="notice-title"><strong>' . $langs->trans('SetupDefaultDataNotCreated') . '</strong></div>';
-                $out .= '<div class="notice-subtitle"><strong>' . $langs->trans('HowToSetupDefaultData') . ' <a href="admin/setup.php">' . $langs->trans('ConfigDefaultData') . '</a></strong></div>';
+                $out .= '<div class="notice-title"><strong>' . $langs->trans('SetupDefaultDataNotCreated', $moduleName) . '</strong></div>';
+                $out .= '<div class="notice-subtitle"><strong>' . $langs->trans('HowToSetupDefaultData', $moduleName) . ' <a href="admin/setup.php">' . $langs->trans('ConfigDefaultData', $moduleName) . '</a></strong></div>';
                 $out .= '</div>';
                 $out .= '</div>';
 
                 $this->resprints = $out;
             }
         }
+
+        return 0; // or return 1 to replace standard code
     }
 }
