@@ -133,7 +133,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                                 $allTimespentUser = 0;
                                 foreach ($allTasks as $task) {
                                     if ($versionEighteenOrMore) {
-                                        $filter = ' AND fk_element = ' . $task->id . ' AND ptt.elementtype = "task" AND fk_user = ' . $contact['id'];
+                                        $filter = ' AND fk_element = ' . $task->id . ' AND elementtype = "task" AND fk_user = ' . $contact['id'];
                                     } else {
                                         $filter = ' AND fk_element = ' . $task->id . ' AND fk_user = ' . $contact['id'];
                                     }
@@ -207,7 +207,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                             if (is_array($allTasks) && !empty($allTasks)) {
                                 foreach ($allTasks as $task) {
                                     if ($versionEighteenOrMore) {
-                                        $filter = ' AND fk_element = ' . $task->id . ' AND ptt.elementtype = "task" AND fk_user = ' . $contact['id'];
+                                        $filter = ' AND fk_element = ' . $task->id . ' AND elementtype = "task" AND fk_user = ' . $contact['id'];
                                     } else {
                                         $filter = ' AND fk_element = ' . $task->id . ' AND fk_user = ' . $contact['id'];
                                     }
@@ -333,9 +333,10 @@ class doc_projectdocument_odt extends SaturneDocumentModel
         if (is_array($tasksArray) && !empty($tasksArray)) {
             $nbTasks = count($tasksArray);
             foreach ($tasksArray as $task) {
+                $task->getSummaryOfTimeSpent();
                 $totalProgress        += $task->progress;
                 $totalPlannedWorkload += $task->planned_workload;
-                $totalConsumedTime    += $task->duration;
+                $totalConsumedTime    += $task->timespent_total_duration;
             }
             $tmpArray['project_progress']         = (($totalProgress) ? price2num($totalProgress / $nbTasks, 2) . ' %' : '0 %');
             $tmpArray['project_status']           = $object->getLibStatut();
