@@ -336,7 +336,7 @@ if (empty($resHook)) {
     }
 
     // Action confirm_archive.
-    require_once __DIR__ . '/../../../saturne/core/tpl/signature/signature_action_workflow.tpl.php';
+    require_once __DIR__ . '/../../../saturne/core/tpl/actions/object_workflow_actions.tpl.php';
 
     // Actions to send emails.
     $triggersendname = strtoupper($object->element) . '_SENTBYMAIL';
@@ -520,6 +520,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     // Lock confirmation
     if (($action == 'lock' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
         $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id, $langs->trans('LockObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmLockObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_set_Lock', '', 'yes', 'actionButtonLock', 350, 600);
+    }
+    // Archive confirmation
+    if (($action == 'set_archive' && (empty($conf->use_javascript_ajax) || !empty($conf->dol_use_jmobile))) || (!empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile))) {
+        $formConfirm .= $form->formconfirm($_SERVER['PHP_SELF'] . '?id=' . $object->id . '&forcebuilddoc=true', $langs->trans('ArchiveObject', $langs->transnoentities('The' . ucfirst($object->element))), $langs->trans('ConfirmArchiveObject', $langs->transnoentities('The' . ucfirst($object->element))), 'confirm_archive', '', 'yes', 'actionButtonArchive', 350, 600);
     }
     // Delete confirmation
     if ($action == 'delete') {
@@ -850,8 +854,8 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
             // Archive.
             $displayButton = $onPhone ?  '<i class="fas fa-archive fa-2x"></i>' : '<i class="fas fa-archive"></i>' . ' ' . $langs->trans('Archive');
-            if ($object->status == TimeSheet::STATUS_LOCKED  && !empty(dol_dir_list($upload_dir . '/timesheetdocument/' . dol_sanitizeFileName($object->ref)))) {
-                print '<a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=confirm_archive&token=' . newToken() . '">' . $displayButton . '</a>';
+            if ($object->status == TimeSheet::STATUS_LOCKED ) {
+                print '<span class="butAction" id="actionButtonArchive" href="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '&action=confirm_archive&forcebuilddoc=true&token=' . newToken() . '">' . $displayButton . '</span>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeLockedToArchive', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
@@ -876,7 +880,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
         $fileDir   = $upload_dir . '/' . $dirFiles;
         $urlSource = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
 
-        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', $object->status == TimeSheet::STATUS_LOCKED && empty(dol_dir_list($fileDir)), $langs->trans('ObjectMustBeLockedToGenerate', ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
+        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', $object->status > TimeSheet::STATUS_DRAFT && $object->status != TimeSheet::STATUS_ARCHIVED, $langs->trans('ObjectMustBeLockedToGenerate', ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
 
         print '</div><div class="fichehalfright">';
 

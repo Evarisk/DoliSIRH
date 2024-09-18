@@ -44,17 +44,6 @@ require_once __DIR__ . '/mod_projectdocument_standard.php';
 class doc_projectdocument_odt extends SaturneDocumentModel
 {
     /**
-     * @var array Minimum version of PHP required by module.
-     * e.g.: PHP ≥ 5.5 = array(5, 5)
-     */
-    public $phpmin = [7, 4];
-
-    /**
-     * @var string Dolibarr version of the loaded document.
-     */
-    public string $version = 'dolibarr';
-
-    /**
      * @var string Module.
      */
     public string $module = 'dolisirh';
@@ -126,7 +115,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('projectUsers');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 $listLines = '';
@@ -144,7 +133,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                                 $allTimespentUser = 0;
                                 foreach ($allTasks as $task) {
                                     if ($versionEighteenOrMore) {
-                                        $filter = ' AND fk_element = ' . $task->id . ' AND ptt.elementtype = "task" AND fk_user = ' . $contact['id'];
+                                        $filter = ' AND fk_element = ' . $task->id . ' AND elementtype = "task" AND fk_user = ' . $contact['id'];
                                     } else {
                                         $filter = ' AND fk_element = ' . $task->id . ' AND fk_user = ' . $contact['id'];
                                     }
@@ -172,7 +161,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('projectTasks');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 $listLines = '';
@@ -204,7 +193,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('projectTaskTimespents');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 $listLines = '';
@@ -218,7 +207,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
                             if (is_array($allTasks) && !empty($allTasks)) {
                                 foreach ($allTasks as $task) {
                                     if ($versionEighteenOrMore) {
-                                        $filter = ' AND fk_element = ' . $task->id . ' AND ptt.elementtype = "task" AND fk_user = ' . $contact['id'];
+                                        $filter = ' AND fk_element = ' . $task->id . ' AND elementtype = "task" AND fk_user = ' . $contact['id'];
                                     } else {
                                         $filter = ' AND fk_element = ' . $task->id . ' AND fk_user = ' . $contact['id'];
                                     }
@@ -250,7 +239,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
             $foundTagForLines = 1;
             try {
                 $listLines = $odfHandler->setSegment('projectExtrafields');
-            } catch (OdfException $e) {
+            } catch (OdfException|OdfExceptionSegmentNotFound $e) {
                 // We may arrive here if tags for lines not present into template.
                 $foundTagForLines = 0;
                 $listLines = '';
@@ -344,9 +333,10 @@ class doc_projectdocument_odt extends SaturneDocumentModel
         if (is_array($tasksArray) && !empty($tasksArray)) {
             $nbTasks = count($tasksArray);
             foreach ($tasksArray as $task) {
+                $task->getSummaryOfTimeSpent();
                 $totalProgress        += $task->progress;
                 $totalPlannedWorkload += $task->planned_workload;
-                $totalConsumedTime    += $task->duration;
+                $totalConsumedTime    += $task->timespent_total_duration;
             }
             $tmpArray['project_progress']         = (($totalProgress) ? price2num($totalProgress / $nbTasks, 2) . ' %' : '0 %');
             $tmpArray['project_status']           = $object->getLibStatut();

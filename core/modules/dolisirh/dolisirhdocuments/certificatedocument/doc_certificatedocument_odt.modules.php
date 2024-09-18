@@ -36,17 +36,6 @@ require_once __DIR__ . '/mod_certificatedocument_standard.php';
 class doc_certificatedocument_odt extends SaturneDocumentModel
 {
     /**
-     * @var array Minimum version of PHP required by module.
-     * e.g.: PHP ≥ 5.5 = array(5, 5)
-     */
-    public $phpmin = [7, 4];
-
-    /**
-     * @var string Dolibarr version of the loaded document.
-     */
-    public string $version = 'dolibarr';
-
-    /**
      * @var string Module.
      */
     public string $module = 'dolisirh';
@@ -104,9 +93,9 @@ class doc_certificatedocument_odt extends SaturneDocumentModel
         $tmpArray['object_date_end']    = dol_print_date($object->date_end, 'day', 'tzuser');
         $tmpArray['object_public_url']  = $object->public_url;
 
-        $signatory = $signatory->fetchSignatory('Signatory', $object->id, $object->element);
-        if (is_array($signatory) && !empty($signatory)) {
-            $signatory = array_shift($signatory);
+        $signatories = $signatory->fetchSignatory('Signatory', $object->id, $object->element);
+        if (is_array($signatories) && !empty($signatories)) {
+            $signatory = array_shift($signatories);
             $tmpArray['attendant_fullname'] = strtoupper($signatory->lastname) . ' ' . ucfirst($signatory->firstname);
             if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
                 if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
@@ -126,9 +115,9 @@ class doc_certificatedocument_odt extends SaturneDocumentModel
             $tmpArray['attendant_signature'] = '';
         }
 
-        $signatory = $signatory->fetchSignatory('Responsible', $object->id, $object->element);
-        if (is_array($signatory) && !empty($signatory)) {
-            $signatory = array_shift($signatory);
+        $signatories = $signatory->fetchSignatory('Responsible', $object->id, $object->element);
+        if (is_array($signatories) && !empty($signatories)) {
+            $signatory = array_shift($signatories);
             if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
                 if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
                     $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
