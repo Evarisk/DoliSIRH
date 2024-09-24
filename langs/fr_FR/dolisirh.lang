@@ -197,6 +197,7 @@ ErrorConfigWorkingHours                       = Erreur : configuration des heure
 GoToWorkingHours                              = Aller sur la page Horaire de travail de l'utilisateur %s
 ErrorConfigProjectPage                        = Erreur : configuration des projets et tâches ressources humaines manquantes. <br> Impossible de génerer la navette.
 GoToConfigProjectPage                         = Aller sur la page de configuration du projet Ressources Humaines
+ErrorQtyProductServiceTimeSheet               = Erreur : quantité de produit ou service nulle/incorrecte
 
 # Data - Donnée
 TimeSheet                          = Navette
