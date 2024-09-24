@@ -515,7 +515,7 @@ class ActionsDoliSIRH
 			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
 		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
-			toggle_task_favorite(GETPOST('taskId'), $user->id);
+            toggle_task_favorite(GETPOSTINT('taskId'), $user->id);
 		}
 		?>
 		<script>
@@ -526,7 +526,7 @@ class ActionsDoliSIRH
 				document.URL.match(/\?/) ? querySeparator = '&' : 1
 
 				$.ajax({
-					url: document.URL + querySeparator + 'action=toggleTaskFavorite&taskId='+ taskId +'&token='+token,
+					url: document.URL + querySeparator + 'action=toggleTaskFavorite&taskId='+ parseInt(taskId) +'&token='+token,
 					type: "POST",
 					processData: false,
 					contentType: false,
