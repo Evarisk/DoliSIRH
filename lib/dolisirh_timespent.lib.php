@@ -710,7 +710,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 }
                 print $task->getNomUrl(1, 'withproject', 'time');
                 if (GETPOST('action') == 'toggleTaskFavorite') {
-                    toggle_task_favorite((int) GETPOST('taskid', 'int'), $fuser->id);
+                    toggle_task_favorite(GETPOSTINT('taskId'), $fuser->id);
                 }
                 if (is_task_favorite($task->id, $fuser->id)) {
                     print '<span class="fas fa-star toggleTaskFavorite" style="margin-left: 5px;" id="' . $task->id . '" value="' . $task->id . '"></span>';
