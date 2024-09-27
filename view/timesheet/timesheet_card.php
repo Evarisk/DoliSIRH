@@ -138,7 +138,7 @@ if (empty($resHook)) {
     }
 
     if (($action == 'add' || $action == 'update') && $permissiontoadd && !$cancel) {
-        $userTmp->fetch(GETPOST('fk_user_assign'));
+        $userTmp->fetch(GETPOST('fk_user_assign', 'int'));
         $dateStart  = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
         $dateEnd    = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
         $versionEighteenOrMore = 0;
@@ -204,9 +204,13 @@ if (empty($resHook)) {
     // Action to add line.
     if ($action == 'addline' && $permissiontoadd) {
         // Get parameters.
-        $qty           = GETPOST('qty');
-        $prodEntryMode = GETPOST('prod_entry_mode');
+        $qty = GETPOST('qty', 'int');
+        if ($qty === null || $qty === '' || $qty < 0) {
+            setEventMessages($langs->trans('ErrorQtyProductServiceTimeSheet'), [], 'errors');
+            $error++;
+        }
 
+        $prodEntryMode = GETPOST('prod_entry_mode');
         if ($prodEntryMode == 'free') {
             $productType = GETPOST('type');
             $description = GETPOST('dp_desc', 'restricthtml');
@@ -236,14 +240,14 @@ if (empty($resHook)) {
             $error++;
         }
 
-        // Initialize object timesheet line.
-        $objectLine->date_creation   = $object->db->idate($now);
-        $objectLine->qty             = $qty;
-        $objectLine->rang            = 0;
-        $objectLine->fk_timesheet    = $id;
-        $objectLine->fk_parent_line  = 0;
-
         if (!$error) {
+            // Initialize object timesheet line.
+            $objectLine->date_creation   = $object->db->idate($now);
+            $objectLine->qty             = $qty;
+            $objectLine->rang            = 0;
+            $objectLine->fk_timesheet    = $id;
+            $objectLine->fk_parent_line  = 0;
+
             $result = $objectLine->create($user);
             if ($result > 0) {
                 // Creation timesheet line OK.
@@ -263,16 +267,21 @@ if (empty($resHook)) {
     // Action to edit line.
     if ($action == 'updateline' && $permissiontoadd) {
         // Get parameters.
-        $qty          = GETPOST('qty');
-        $description  = GETPOST('product_desc', 'restricthtml');
+        $qty = GETPOST('qty', 'int');
+        if ($qty === null || $qty === '' || $qty < 0) {
+            setEventMessages($langs->trans('ErrorQtyProductServiceTimeSheet'), [], 'errors');
+            $error++;
+        }
+
+        $description = GETPOST('product_desc', 'restricthtml');
 
         $objectLine->fetch($lineid);
 
-        // Initialize object timesheet line.
-        $objectLine->qty         = $qty;
-        $objectLine->description = $description;
-
         if (!$error) {
+            // Initialize object timesheet line.
+            $objectLine->qty         = $qty;
+            $objectLine->description = $description;
+
             $result = $objectLine->update($user);
             if ($result > 0) {
                 // Update timesheet line OK.
