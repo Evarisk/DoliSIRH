@@ -21,42 +21,43 @@
  *		\brief      Page to view Working Hours
  */
 
-// Load Dolibarr environment
-$res = 0;
-// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
-if ( ! $res && ! empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) $res = @include $_SERVER["CONTEXT_DOCUMENT_ROOT"] . "/main.inc.php";
-// Try main.inc.php into web root detected using web root calculated from SCRIPT_FILENAME
-$tmp = empty($_SERVER['SCRIPT_FILENAME']) ? '' : $_SERVER['SCRIPT_FILENAME']; $tmp2 = realpath(__FILE__); $i = strlen($tmp) - 1; $j = strlen($tmp2) - 1;
-while ($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i] == $tmp2[$j]) { $i--; $j--; }
-if ( ! $res && $i > 0 && file_exists(substr($tmp, 0, ($i + 1)) . "/main.inc.php")) $res          = @include substr($tmp, 0, ($i + 1)) . "/main.inc.php";
-if ( ! $res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i + 1))) . "/main.inc.php")) $res = @include dirname(substr($tmp, 0, ($i + 1))) . "/main.inc.php";
-// Try main.inc.php using relative path
-if ( ! $res && file_exists("../../main.inc.php")) $res    = @include "../../main.inc.php";
-if ( ! $res && file_exists("../../../main.inc.php")) $res = @include "../../../main.inc.php";
-if ( ! $res) die("Include of main fails");
+// Load DoliSIRH environment.
+if (file_exists('../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../dolisirh.main.inc.php';
+} elseif (file_exists('../../dolisirh.main.inc.php')) {
+    require_once __DIR__ . '/../../dolisirh.main.inc.php';
+} else {
+    die('Include of dolisirh main fails');
+}
 
 // Libraries
-require_once DOL_DOCUMENT_ROOT . '/core/lib/company.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/usergroups.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/images.lib.php';
 
-require_once './../class/workinghours.class.php';
+require_once __DIR__ . '/../class/workinghours.class.php';
 
 // Global variables definitions
 global $db, $hookmanager, $langs, $user;
 
 // Load translation files required by the page
-$langs->loadLangs(array("dolisirh@dolisirh"));
+saturne_load_langs();
 
 // Parameters
-$action     = (GETPOST('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view');
+$action     = (GETPOSTISSET('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view');
 $backtopage = GETPOST('backtopage', 'alpha');
+$socid      = GETPOST('socid', 'int') ? GETPOST('socid', 'int') : GETPOST('id', 'int');
 
-$socid                                          = GETPOST('socid', 'int') ? GETPOST('socid', 'int') : GETPOST('id', 'int');
-if ($usertmp->socid) $socid                        = $usertmp->socid;
-if (empty($socid) && $action == 'view') $action = 'create';
-
+// Initialize technical objects.
+$object  = new Workinghours($db);
 $usertmp = new User($db);
+$form    = new Form($db);
+
+if ($usertmp->socid > 0) {
+    $socid = $usertmp->socid;
+}
+if (empty($socid) && $action == 'view') {
+    $action = 'create';
+}
 
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('userworkinghours', 'globalcard'));
@@ -68,37 +69,38 @@ if ($action == 'view' && $usertmp->fetch($socid) <= 0) {
 }
 
 // Security check
-$permissiontoadd = $usertmp->rights->societe->creer;
+$permissiontoadd = $user->rights->societe->creer;
+saturne_check_access($permissiontoadd);
 
 /*
  * Actions
  */
 
-$parameters = array();
+$parameters = [];
 $reshook    = $hookmanager->executeHooks('doActions', $parameters, $usertmp, $action); // Note that $action and $usertmp may have been modified by some hooks
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
 if (($action == 'update' && ! GETPOST("cancel", 'alpha')) || ($action == 'updateedit')) {
-	$object               = new Workinghours($db);
 	$object->element_type = $usertmp->element;
 	$object->element_id   = GETPOST('id');
 	$object->status       = 1;
-	$object->fk_user_creat       = $user->id;
-	$object->schedule_monday       = GETPOST('schedule_monday', 'string');
-	$object->schedule_tuesday      = GETPOST('schedule_tuesday', 'string');
-	$object->schedule_wednesday    = GETPOST('schedule_wednesday', 'string');
-	$object->schedule_thursday     = GETPOST('schedule_thursday', 'string');
-	$object->schedule_friday       = GETPOST('schedule_friday', 'string');
-	$object->schedule_saturday     = GETPOST('schedule_saturday', 'string');
-	$object->schedule_sunday       = GETPOST('schedule_sunday', 'string');
 
-	$object->workinghours_monday       = GETPOST('workinghours_monday', 'integer');
-	$object->workinghours_tuesday      = GETPOST('workinghours_tuesday', 'integer');
-	$object->workinghours_wednesday    = GETPOST('workinghours_wednesday', 'integer');
-	$object->workinghours_thursday     = GETPOST('workinghours_thursday', 'integer');
-	$object->workinghours_friday       = GETPOST('workinghours_friday', 'integer');
-	$object->workinghours_saturday     = GETPOST('workinghours_saturday', 'integer');
-	$object->workinghours_sunday       = GETPOST('workinghours_sunday', 'integer');
+	$object->fk_user_creat      = $user->id;
+	$object->schedule_monday    = GETPOST('schedule_monday', 'string');
+	$object->schedule_tuesday   = GETPOST('schedule_tuesday', 'string');
+	$object->schedule_wednesday = GETPOST('schedule_wednesday', 'string');
+	$object->schedule_thursday  = GETPOST('schedule_thursday', 'string');
+	$object->schedule_friday    = GETPOST('schedule_friday', 'string');
+	$object->schedule_saturday  = GETPOST('schedule_saturday', 'string');
+	$object->schedule_sunday    = GETPOST('schedule_sunday', 'string');
+
+	$object->workinghours_monday    = GETPOST('workinghours_monday', 'integer');
+	$object->workinghours_tuesday   = GETPOST('workinghours_tuesday', 'integer');
+	$object->workinghours_wednesday = GETPOST('workinghours_wednesday', 'integer');
+	$object->workinghours_thursday  = GETPOST('workinghours_thursday', 'integer');
+	$object->workinghours_friday    = GETPOST('workinghours_friday', 'integer');
+	$object->workinghours_saturday  = GETPOST('workinghours_saturday', 'integer');
+	$object->workinghours_sunday    = GETPOST('workinghours_sunday', 'integer');
 	$result = $object->create($usertmp);
 	if ($result > 0) {
 		setEventMessages($langs->trans('UserWorkingHoursSaved'), null, 'mesgs');
@@ -114,12 +116,9 @@ if (($action == 'update' && ! GETPOST("cancel", 'alpha')) || ($action == 'update
  *  View
  */
 
-$object = new Workinghours($db);
-
 $morewhere  = ' AND element_id = ' . GETPOST('id');
 $morewhere .= ' AND element_type = ' . "'" . $usertmp->element . "'";
 $morewhere .= ' AND status = 1';
-
 $object->fetch(0, '', $morewhere);
 
 if ($socid > 0 && empty($usertmp->id)) {
@@ -127,23 +126,22 @@ if ($socid > 0 && empty($usertmp->id)) {
 	if ($result <= 0) dol_print_error('', $usertmp->error);
 }
 
-$title = $langs->trans("User");
-if ( ! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/', $conf->global->MAIN_HTML_TITLE) && $usertmp->name) $title = $usertmp->name . " - " . $langs->trans('WorkingHours');
-$help_url = 'FR:Module_DoliSIRH';
+$title   = $langs->trans("User");
+$helpUrl = 'FR:Module_DoliSIRH';
+if (!empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/', $conf->global->MAIN_HTML_TITLE) && $usertmp->name) {
+    $title = $usertmp->name . " - " . $langs->trans('WorkingHours');
+}
 
-$morecss = array("/dolisirh/css/dolisirh.css");
+if (!empty($usertmp->id)) {
+    $res = $usertmp->fetch_optionals();
+}
 
-llxHeader('', $title, $help_url, '', '', '', array(), $morecss);
+saturne_header(0, '', $title, $helpUrl);
 
-if ( ! empty($usertmp->id)) $res = $usertmp->fetch_optionals();
-
-// Object card
-// ------------------------------------------------------------
-$morehtmlref  = '<div class="refidno">';
-$morehtmlref .= '</div>';
 $head = user_prepare_head($usertmp);
-print dol_get_fiche_head($head, 'workinghours', $langs->trans("User"), 0, 'company');
-$linkback = '<a href="' . DOL_URL_ROOT . '/societe/list.php?restore_lastsearch_values=1">' . $langs->trans("BackToList") . '</a>';
+print dol_get_fiche_head($head, 'workinghours', $langs->trans('User'), 0, 'user');
+
+$linkback = '<a href="' . DOL_URL_ROOT . '/user/list.php?restore_lastsearch_values=1">' . $langs->trans("BackToList") . '</a>';
 dol_banner_tab($usertmp, 'socid', $linkback, ($usertmp->socid ? 0 : 1), 'rowid', 'nom');
 
 print dol_get_fiche_end();
@@ -151,9 +149,6 @@ print dol_get_fiche_end();
 print load_fiche_titre($langs->trans('WorkingHours'), '', '');
 
 //Show common fields
-
-if ( ! is_object($form)) $form = new Form($db);
-
 print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '?id=' . GETPOST('id') . '" >';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="update">';
