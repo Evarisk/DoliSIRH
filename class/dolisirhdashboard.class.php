@@ -64,15 +64,17 @@ class DolisirhDashboard
      */
     public function load_dashboard(): array
     {
-        global $langs;
+        global $langs, $user;
+
+        $confName        = 'DOLISIRH_DASHBOARD_CONFIG';
+        $dashboardConfig = json_decode($user->conf->$confName);
+        $array = ['timesheet' => ['graphs' => [], 'lists' => [], 'disabledGraphs' => []]];
 
         $timeSpendingInfos                      = self::getTimeSpendingInfos();
-        $timeSpentReport                        = self::getTimeSpentReport();
-        $timeSpentCurrentMonthByTaskAndProject  = self::getTimeSpentCurrentMonthByTaskAndProject();
-        $globalTimeCurrentMonthByTaskAndProject = self::getTimeSpentCurrentMonthByTaskAndProject(1);
 
         $array['timesheet']['widgets'] = [
             0 => [
+                'title'      => $langs->transnoentities('TimeSpent'),
                 'label'      => [$timeSpendingInfos['planned']['label'], $timeSpendingInfos['passed']['label'], $timeSpendingInfos['spent']['label'], $timeSpendingInfos['difference']['label']],
                 'content'    => [$timeSpendingInfos['planned']['content'], $timeSpendingInfos['passed']['content'], $timeSpendingInfos['spent']['content'], $timeSpendingInfos['difference']['content']],
                 'picto'      => 'fas fa-clock',
@@ -80,7 +82,21 @@ class DolisirhDashboard
             ],
         ];
 
-        $array['timesheet']['graphs'] = [$timeSpentReport, $timeSpentCurrentMonthByTaskAndProject, $globalTimeCurrentMonthByTaskAndProject];
+        if (empty($dashboardConfig->graphs->TimeSpentReportByFiscalYear->hide)) {
+            $array['timesheet']['graphs'][] = self::getTimeSpentReport();
+        } else {
+            $array['timesheet']['disabledGraphs']['TimeSpentReportByFiscalYear'] = $langs->transnoentities('TimeSpentReportByFiscalYear');
+        }
+        if (empty($dashboardConfig->graphs->GlobalTimeCurrentMonthByTaskAndProject->hide)) {
+            $array['timesheet']['graphs'][] = self::getTimeSpentCurrentMonthByTaskAndProject();
+        } else {
+            $array['timesheet']['disabledGraphs']['GlobalTimeCurrentMonthByTaskAndProject'] = $langs->transnoentities('GlobalTimeCurrentMonthByTaskAndProject');
+        }
+        if (empty($dashboardConfig->graphs->TimeSpentCurrentMonthByTaskAndProject->hide)) {
+            $array['timesheet']['graphs'][] = self::getTimeSpentCurrentMonthByTaskAndProject(1);
+        } else {
+            $array['timesheet']['disabledGraphs']['TimeSpentCurrentMonthByTaskAndProject'] = $langs->transnoentities('TimeSpentCurrentMonthByTaskAndProject');
+        }
 
         return $array;
     }
@@ -179,6 +195,7 @@ class DolisirhDashboard
 
         // Graph Title parameters
         $array['title'] = $langs->transnoentities('TimeSpentReportByFiscalYear') . ' ' . $year . ' - ' . ($year + 1);
+        $array['name']  = 'TimeSpentReportByFiscalYear';
         $array['picto'] = 'clock';
 
         // Graph parameters
@@ -266,6 +283,7 @@ class DolisirhDashboard
 
         // Graph Title parameters
         $array['title'] = $langs->transnoentities(($showNotConsumedWorkingHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), $year), '%B %Y'));
+        $array['name']  = ($showNotConsumedWorkingHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject');
         $array['picto'] = 'projecttask';
 
         // Graph parameters
