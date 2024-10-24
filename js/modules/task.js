@@ -68,7 +68,6 @@ window.dolisirh.task.event = function() {
     $(document).on('click', '.show-sticky-total-timespent-info', window.dolisirh.task.showStickyTotalTimeSpentInfo);
     $(document).on('click', '.timespent-create', window.dolisirh.task.createTimeSpent);
     $(document).on('click', '.toggleTaskFavorite', window.dolisirh.task.toggleTaskFavorite);
-    $(document).on('submit', '#addtimeform', window.dolisirh.task.searchForm );
 };
 
 /**
@@ -421,46 +420,3 @@ window.saturne.modal.addMoreOpenModalData = function(modalToOpen, elementFrom) {
     $('.timespent-create').attr('value', taskID);
     $('.timespent-date').html(date);
 };
-
-/**
- * Submit form dynamically to avoid 406 errors.
- *
- * @memberof DoliSIRH_Task
- *
- * @since   1.4.0
- * @version 1.4.0
- *
- * @return {void}
- */
-window.dolisirh.task.searchForm = function(event) {
-  event.preventDefault()
-
-  var addTimeForm = document.getElementById('addtimeform');
-  var formData    = new FormData(addTimeForm);
-  let newFormData = new FormData();
-
-  for (const pair of formData.entries()) {
-    if (pair[1] != '') {
-      newFormData.append(pair[0], pair[1])
-    }
-  }
-  window.saturne.loader.display($('#addtimeform'));
-
-  let url = new URL(document.URL);
-  url.searchParams.set('search_user_id', newFormData.get('search_user_id'));
-
-  // rewrite url without reload
-  window.history.pushState({}, '', url.href);
-
-  $.ajax({
-    url: url.href,
-    type: "POST",
-    data: newFormData,
-    processData: false,
-    contentType: false,
-    success: function (resp) {
-      $('.wpeo-loader').removeClass('wpeo-loader');
-      $('#addtimeform').html($(resp).find('#addtimeform').children())
-    },
-  });
-}
