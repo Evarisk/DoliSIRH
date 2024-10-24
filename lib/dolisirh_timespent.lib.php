@@ -807,7 +807,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                     $tableCell .= '<div class="modal-open">';
                     $tableCell .= '<input hidden class="modal-options" data-modal-to-open="timespent" data-from-id="' . $lines[$i]->id . '" data-from-module="dolisirh">';
-                    $tableCell .= '<input type="text" alt="' . ($disabledTaskDay ? '' : $altTitle) . '" title="' . ($disabledTaskDay ? '' : $altTitle) . '" ' . ($disabledTaskDay ? 'disabled' : '') . ' class="center smallpadd timespent" size="2" id="timeadded[' . $inc . '][' . $idw.']" name="task[' . $lines[$i]->id . '][' . $idw . ']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $dayInLoop . ' data-date="' . dol_print_date($dayInLoop, '%a') . ' - ' . dol_print_date($dayInLoop, 'dayreduceformat') . '" data-cell=' . $idw . ' value="" cols="2"  maxlength="5">';
+                    $tableCell .= '<input type="text" alt="' . ($disabledTaskDay ? '' : $altTitle) . '" title="' . ($disabledTaskDay ? '' : $altTitle) . '" ' . ($disabledTaskDay ? 'disabled' : '') . ' class="center smallpadd timespent" size="2" id="timeadded[' . $inc . '][' . $idw.']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $dayInLoop . ' data-date="' . dol_print_date($dayInLoop, '%a') . ' - ' . dol_print_date($dayInLoop, 'dayreduceformat') . '" data-cell=' . $idw . ' value="" cols="2"  maxlength="5">';
                     $tableCell .= '</div></td>';
                     print $tableCell;
                 }
