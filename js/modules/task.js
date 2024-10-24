@@ -446,8 +446,14 @@ window.dolisirh.task.searchForm = function(event) {
   }
   window.saturne.loader.display($('#addtimeform'));
 
+  let url = new URL(document.URL);
+  url.searchParams.set('search_user_id', newFormData.get('search_user_id'));
+
+  // rewrite url without reload
+  window.history.pushState({}, '', url.href);
+
   $.ajax({
-    url: document.URL,
+    url: url.href,
     type: "POST",
     data: newFormData,
     processData: false,
