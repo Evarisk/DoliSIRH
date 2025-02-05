@@ -600,7 +600,7 @@ class ActionsDoliSIRH
 	 */
 	public function formObjectOptions(array $parameters, $object, string $action)
 	{
-		global $conf, $langs;
+		global $conf, $extrafields, $langs;
 
 		if ($parameters['currentcontext'] == 'invoicecard') {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
@@ -654,7 +654,67 @@ class ActionsDoliSIRH
 				}
 			}
 		}
-	}
+
+        if ($parameters['currentcontext'] == 'ticketcard') {
+
+            $project = GETPOSTISSET('projectid') ? GETPOST('projectid') : 0;
+
+            if (GETPOSTISSET('id')) {
+                $object->fetch(GETPOST('id'));
+                $project = $object->fk_project;
+            }
+
+            if (!empty($project)) {
+
+                require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+
+                $objectCard = 'ticket';
+
+                $task     = new Task($this->db);
+                $taskList = $task->getTasksArray(0, 0, $project);
+                $taskList = array_column($taskList, 'label', 'id');
+
+                $out2  = '<tr id="fk_task_container">';
+                $out2 .= '<td class="titlefieldmax45 wordbreak">';
+                $out2 .= $extrafields->attributes[$objectCard]['label']['fk_task'];
+                $out2 .= '</td><td class="valuefieldcreate ' . $objectCard . '_extras_fk_task">';
+                $out2 .= Form::selectarray('options_fk_task', $taskList, $object->array_options['options_fk_task'], -1, 0, 0, '', '', 0, 0, '', 'minwidth100imp maxwidth500 widthcentpercentminusxx');
+                $out2 .= '</td>';
+                $out2 .= '</tr>';
+
+                echo $out2;
+
+            } else {
+                ?>
+                <script>
+                    $(document).ready(function() {
+                        $('#options_fk_task').closest('tr').hide();
+                    });
+                </script>
+                <?php
+            }
+
+            ?>
+            <script>
+                $('#projectid').on('change', function() {
+                    var value = $(this).val();
+                    if (value > 0) {
+                        $.ajax({
+                            url: document.URL + window.saturne.toolbox.getQuerySeparator(document.URL) + 'projectid=' + $(this).val(),
+                            type: 'GET',
+                            success: function(data) {
+                                $('#options_fk_task').closest('tr').html($(data).find('#fk_task_container').html());
+                                $('#options_fk_task').closest('tr').show();
+                            }
+                        })
+                    } else {
+                        $('#options_fk_task').closest('tr').hide();
+                    }
+                });
+            </script>
+            <?php
+        }
+    }
 
 	/**
 	 * Overloading the afterCreationOfRecurringInvoice function : replacing the parent's function with the one below
