@@ -50,14 +50,16 @@ NotExceededTimeSpentColor           = Couleur temps consommés pas dépassés ou
 PerfectTimeSpentColor               = Couleur temps consommés parfait
 
 # Timesheet - Navette
-PrefillDate                                  = Préremplir la date de début et de fin de la navette
-PrefillDateDescription                       = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
-AddAttendantsConf                            = Ajouter des signataires
-AddAttendantsDescription                     = Pouvoir ajouter des signataires pendant la réalisation de la navette <br> (par défaut il y a deux signataires, l'utilisateur assigné et son responsable hiérarchique s'il est configuré dans son profil utilisateur)
-CheckDateEnd                                 = Vérifier la date fin de navette
-CheckDateEndDescription                      = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
-ShowTasksWithTimespentOnTimeSheet            = Afficher les tâches avec du temps consommé
-ShowTasksWithTimespentOnTimeSheetDescription = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
+PrefillDate                                            = Préremplir la date de début et de fin de la navette
+PrefillDateDescription                                 = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
+AddAttendantsConf                                      = Ajouter des signataires
+AddAttendantsDescription                               = Pouvoir ajouter des signataires pendant la réalisation de la navette <br> (par défaut il y a deux signataires, l'utilisateur assigné et son responsable hiérarchique s'il est configuré dans son profil utilisateur)
+CheckDateEnd                                           = Vérifier la date fin de navette
+CheckDateEndDescription                                = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
+ShowTasksWithTimespentOnTimeSheet                      = Afficher les tâches avec du temps consommé
+ShowTasksWithTimespentOnTimeSheetDescription           = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
+AllowDifferenceBetweenPassedAndWorkingHours            = Autoriser la différence entre les heures travaillées et les heures consommées
+AllowDifferenceBetweenPassedAndWorkingHoursDescription = Autoriser la différence entre les heures travaillées et les heures consommées <br> (si non coché, les heures consommées ne pourront pas dépasser les heures travaillées)
 
 # Setup - Réglages
 SetupDefaultData                      = Gestion des données par défaut de DoliSIRH
@@ -112,6 +114,7 @@ CreateMyWorkingHours  = Créer/Modifier ses propres horaires de travail
 
 # Data - Donnée
 WorkingHours            = Horaire de travail
+Workinghours            = Horaire de travail
 WorkingHoursFormatDesc  = Renseigner le temps travaillé par jour (en minutes)
 WrongWorkingHoursFormat = Mauvais format pour les heures travaillées : %s
 UserWorkingHoursSaved   = Horaires de travail sauvegardés

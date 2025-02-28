@@ -1001,6 +1001,11 @@ class ActionsDoliSIRH
                     'description' => 'ShowTasksWithTimespentOnTimeSheetDescription',
                     'code'        => 'DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET',
                 ],
+                'AllowDifferenceBetweenPassedAndWorkingHours' => [
+                    'name'        => 'AllowDifferenceBetweenPassedAndWorkingHours',
+                    'description' => 'AllowDifferenceBetweenPassedAndWorkingHoursDescription',
+                    'code'        => 'DOLISIRH_ALLOW_DIFFERENCE_BETWEEN_PASSED_AND_WORKING_HOURS',
+                ]
             ];
             $this->results = $constArray;
             return 1;
