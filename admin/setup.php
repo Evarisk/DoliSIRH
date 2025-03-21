@@ -106,7 +106,7 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
 
         if ($projectID > 0 && $error == 0) {
             dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT', $projectID, 'integer', 0, '', $conf->entity);
-            $users = $userTmp->get_full_tree(0, 'u.employee = 1 AND u.fk_soc IS NULL AND u.statut = 1');
+            $users = $userTmp->get_full_tree(0, '((u.employee:=:1) AND (u.fk_soc:is:NULL) AND (u.statut:=:1))');
             if (!empty($users) && is_array($users)) {
                 foreach ($users as $userSingle) {
                     $project->add_contact($userSingle['id'], 'PROJECTCONTRIBUTOR', 'internal');
@@ -304,7 +304,7 @@ print '<tr class="oddeven"><td>' . $langs->trans('CertificateUserResponsible') .
 print '<td>';
 print $langs->transnoentities('CertificateUserResponsibleDescription');
 print '</td><td>';
-print img_picto('', 'user', 'class="pictofixedwidth"') . $form->select_dolusers($conf->global->DOLISIRH_CERTIFICATE_USER_RESPONSIBLE, 'certificateUserResponsible', 1, null, 0, '', '', $conf->entity, 0, 0, 'AND u.statut = 1', 0, '', 'minwidth300');
+print img_picto('', 'user', 'class="pictofixedwidth"') . $form->select_dolusers($conf->global->DOLISIRH_CERTIFICATE_USER_RESPONSIBLE, 'certificateUserResponsible', 1, null, 0, '', '', $conf->entity, 0, 0, '(u.statut:=:1)', 0, '', 'minwidth300');
 print '<a href="' . DOL_URL_ROOT . '/user/card.php?action=create&backtopage=' . urlencode($_SERVER["PHP_SELF"]) . '"><span class="fa fa-plus-circle valignmiddle paddingleft" title="' . $langs->trans('AddUser') . '"></span></a>';
 print '</td></tr>';
 
