@@ -97,7 +97,7 @@ class doc_certificatedocument_odt extends SaturneDocumentModel
         $signatories = $signatory->fetchSignatory('Signatory', $object->id, $object->element);
         if (is_array($signatories) && !empty($signatories)) {
             $signatory = array_shift($signatories);
-            $tmpArray['attendant_fullname'] = strtoupper($signatory->lastname) . ' ' . ucfirst($signatory->firstname);
+            $tmpArray['attendant_fullname'] = dol_strtoupper($signatory->lastname) . ' ' . ucfirst($signatory->firstname);
             if (dol_strlen($signatory->signature) > 0 && $signatory->signature != $langs->transnoentities('FileGenerated')) {
                 if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
                     $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
