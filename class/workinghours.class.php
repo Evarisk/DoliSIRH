@@ -57,7 +57,7 @@ class Workinghours extends CommonObject
 	/**
 	 * @var string String with name of icon for workinghours. Must be the part after the 'object_' into object_workinghours.png
 	 */
-	public $picto = 'workinghours@dolisirh';
+	public $picto = 'fontawesome_fa-clock_fas_#d35968';
 
 	/**
 	 * @var array  Array with all fields and their property. Do not use it as a static var. It may be modified by constructor.
