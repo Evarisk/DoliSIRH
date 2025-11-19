@@ -243,7 +243,8 @@ class ActionsDoliSIRH
 	 */
 	public function printCommonFooter(array $parameters)
 	{
-		global $conf, $user, $langs, $form;
+        global $conf, $form, $langs, $object, $user;
+
 		$langs->load('projects');
 		if (in_array('ticketcard', explode(':', $parameters['context']))) {
 			if (GETPOST('action') == 'presend_addmessage') {
@@ -274,25 +275,27 @@ class ActionsDoliSIRH
 				dol_htmloutput_events();
 			}
             if (((GETPOST('action') != 'edit_extras') || (GETPOST('action') == 'edit_extras') && GETPOST('attribute') != 'fk_task') && GETPOST('action') != 'create') {
-				require_once __DIR__ . '/../../../projet/class/task.class.php';
+                if (!empty($object->id)) {
+                    require_once __DIR__ . '/../../../projet/class/task.class.php';
 
-				$task   = new Task($this->db);
-				$ticket = new Ticket($this->db);
+                    $task   = new Task($this->db);
+                    $ticket = new Ticket($this->db);
 
-				$ticket->fetch(!empty(GETPOST('id')) ? (GETPOST('id')) : '', !empty(GETPOST('ref')) ? GETPOST('ref') : '', !empty(GETPOST('track_id')) ? GETPOST('track_id') : '');
-				$ticket->fetch_optionals();
+                    $ticket->fetch(!empty(GETPOST('id')) ? (GETPOST('id')) : 0, !empty(GETPOST('ref')) ? GETPOST('ref') : '', !empty(GETPOST('track_id')) ? GETPOST('track_id') : '');
+                    $ticket->fetch_optionals();
 
-				$task_id = $ticket->array_options['options_fk_task'];
+                    $task_id = $ticket->array_options['options_fk_task'];
 
-				$task->fetch($task_id);
+                    $task->fetch($task_id);
 
-                $out = $task->getNomUrl(1, 'blank', 'task', 1);
+                    $out = $task->getNomUrl(1, 'blank', 'task', 1);
 
-				if (!empty($task_id) && $task_id > 0) { ?>
-					<script>
-						  jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($out) ?>);
-					</script>
-				<?php }
+                    if (!empty($task_id) && $task_id > 0) { ?>
+                        <script>
+                              jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($out) ?>);
+                        </script>
+                    <?php }
+                }
 			}
 		}
 		if (in_array($parameters['currentcontext'], array('projecttaskcard', 'projecttasktime'))) {
