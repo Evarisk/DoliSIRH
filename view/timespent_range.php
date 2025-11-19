@@ -349,9 +349,9 @@ if (empty($resHook)) {
         $data = json_decode(file_get_contents('php://input'), true);
 
         $taskID    = $data['taskID'];
-        $timestamp = $data['timestamp'];
-        $dateHour  = $data['datehour'];
-        $dateMin   = $data['datemin'];
+        $timestamp = (int) $data['timestamp'];
+        $dateHour  = (int) $data['datehour'];
+        $dateMin   = (int) $data['datemin'];
         $comment   = $data['comment'];
         $hour      = (int) $data['hour'];
         $min       = (int) $data['min'];
