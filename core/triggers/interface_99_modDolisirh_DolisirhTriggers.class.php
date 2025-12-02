@@ -102,7 +102,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $actioncomm->elementtype = $object->element . '@dolisirh';
         $actioncomm->type_code   = 'AC_OTH_AUTO';
         $actioncomm->datep       = $now;
-        $actioncomm->fk_element  = $object->id;
+        $actioncomm->elementid   = $object->id;
         $actioncomm->userownerid = $user->id;
         $actioncomm->percentage  = -1;
 

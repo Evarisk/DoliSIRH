@@ -126,6 +126,7 @@ class ActionsDoliSIRH
                     $task->date_start                       = $dateStart;
                     $task->date_end                         = $dateEnd;
                     $task->planned_workload                 = $plannedWorkload;
+                    $task->status                           = Task::STATUS_VALIDATED;
                     $task->array_options['fk_facture_name'] = $object->id;
 
                     $taskID = $task->create($user);
