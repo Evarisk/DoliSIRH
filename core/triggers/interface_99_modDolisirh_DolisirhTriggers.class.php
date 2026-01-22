@@ -147,7 +147,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                         return -1;
                     }
                 }
-                if ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && $object->fk_element > 0 && $object->elementtype == 'task' && !empty($object->datef)) {
+                if ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && $object->fk_element > 0 && $object->elementtype == 'task' && !empty($object->datef)) {
                     require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
                     $task   = new Task($this->db);
                     $result = $task->fetch($object->fk_element);
@@ -184,10 +184,10 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                         setEventMessages($task->error, $task->errors, 'errors');
                         return -1;
                     }
-                } elseif ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && $object->elementtype != 'task') {
+                } elseif ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && $object->elementtype != 'task') {
                     setEventMessages('MissingTaskWithTimeSpentOption', $object->errors, 'errors');
                     return -1;
-                } elseif ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && empty($object->datef)) {
+                } elseif ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && empty($object->datef)) {
                     setEventMessages('MissingEndDateWithTimeSpentOption', $object->errors, 'errors');
                     return -1;
                 }
