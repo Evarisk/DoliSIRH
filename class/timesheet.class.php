@@ -286,19 +286,18 @@ class TimeSheet extends SaturneObject
     }
 
     /**
-     * Set draft status.
+     * Set draft status
      *
-     * @param  User      $user      Object user that modify.
-     * @param  int       $notrigger 1 = Does not execute triggers, 0 = Execute triggers.
-     * @return int                  0 < if KO, >0 if OK.
-     * @throws Exception
+     * @param  User      $user      Object user that modify
+     * @param  int<0,1>  $noTrigger 0 = launch triggers after, 1 = disable triggers
+     * @return int<-1,1>            Return integer 0 < if KO, > 0 if OK
      */
-    public function setDraft(User $user, int $notrigger = 0): int
+    public function setDraft(User $user, int $noTrigger = 0): int
     {
         $signatory = new SaturneSignature($this->db, 'dolisirh', 'timesheet');
         $signatory->deleteSignatoriesSignatures($this->id, 'timesheet');
 
-        return parent::setDraft($user, $notrigger);
+        return parent::setDraft($user, $noTrigger);
     }
 
     /**
