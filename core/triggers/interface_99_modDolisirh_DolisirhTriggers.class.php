@@ -106,8 +106,10 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $actioncomm->userownerid = $user->id;
         $actioncomm->percentage  = -1;
 
-        if (getDolGlobalInt('DOLISIRH_ADVANCED_TRIGGER') && !empty($object->fields)) {
-            $actioncomm->note_private = method_exists($object, 'getTriggerDescription') ? $object->getTriggerDescription($object) : '';
+        if (getDolGlobalInt('DOLISIRH_ADVANCED_TRIGGER') === 1 &&
+            method_exists($object, 'getTriggerDescription') &&
+            !empty($object->fields)) {
+            $actioncomm->note_private = $object->getTriggerDescription();
         }
 
         switch ($action) {
