@@ -488,7 +488,7 @@ class ActionsDoliSIRH
                 require_once __DIR__ . '/../../saturne/lib/documents.lib.php';
 
                 $object = new Project($this->db);
-                $object->fetch(GETPOST('id'), GETPOST('ref','alpha'));
+                $object->fetch(GETPOSTINT('id'), GETPOST('ref','alpha'));
 
                 $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
                 $objRef     = dol_sanitizeFileName($object->ref);

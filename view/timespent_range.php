@@ -249,7 +249,7 @@ if (empty($resHook)) {
         $action = 'assign_task';
         $error  = 0;
 
-        $task->fetch(GETPOST('assigned_task_id'));
+        $task->fetch(GETPOSTINT('assigned_task_id'));
 
         if (!GETPOST('type')) {
             setEventMessages($langs->transnoentitiesnoconv('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), [], 'errors');

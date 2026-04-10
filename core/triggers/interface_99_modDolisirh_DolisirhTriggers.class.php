@@ -209,7 +209,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 $categories = GETPOST('categories', 'array:int');
                 $object->setCategoriesCommon($categories, 'facturerec', false);
 
-                $facture->fetch(GETPOST('facid'));
+                $facture->fetch(GETPOSTINT('facid'));
 
                 $categories = $categorie->containing($facture->id, 'facture');
                 if (is_array($categories) && !empty($categories)) {
