@@ -49,7 +49,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $this->name        = preg_replace('/^Interface/i', '', get_class($this));
         $this->family      = 'demo';
         $this->description = 'DoliSIRH triggers.';
-        $this->version     = '1.5.1';
+        $this->version     = '23.0.0';
         $this->picto       = 'dolisirh@dolisirh';
     }
 
@@ -92,8 +92,6 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
             return 0; // If module is not enabled, we do nothing.
         }
 
-        saturne_load_langs();
-
         // Data and type of action are stored into $object and $action.
         dol_syslog("Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . '. id=' . $object->id);
 
@@ -104,12 +102,14 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $actioncomm->elementtype = $object->element . '@dolisirh';
         $actioncomm->type_code   = 'AC_OTH_AUTO';
         $actioncomm->datep       = $now;
-        $actioncomm->fk_element  = $object->id;
+        $actioncomm->elementid   = $object->id;
         $actioncomm->userownerid = $user->id;
         $actioncomm->percentage  = -1;
 
-        if (getDolGlobalInt('DOLISIRH_ADVANCED_TRIGGER') && !empty($object->fields)) {
-            $actioncomm->note_private = method_exists($object, 'getTriggerDescription') ? $object->getTriggerDescription($object) : '';
+        if (getDolGlobalInt('DOLISIRH_ADVANCED_TRIGGER') === 1 &&
+            method_exists($object, 'getTriggerDescription') &&
+            !empty($object->fields)) {
+            $actioncomm->note_private = $object->getTriggerDescription();
         }
 
         switch ($action) {
@@ -149,7 +149,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                         return -1;
                     }
                 }
-                if ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && $object->fk_element > 0 && $object->elementtype == 'task' && !empty($object->datef)) {
+                if ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && $object->fk_element > 0 && $object->elementtype == 'task' && !empty($object->datef)) {
                     require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
                     $task   = new Task($this->db);
                     $result = $task->fetch($object->fk_element);
@@ -186,10 +186,10 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                         setEventMessages($task->error, $task->errors, 'errors');
                         return -1;
                     }
-                } elseif ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && $object->elementtype != 'task') {
+                } elseif ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && $object->elementtype != 'task') {
                     setEventMessages('MissingTaskWithTimeSpentOption', $object->errors, 'errors');
                     return -1;
-                } elseif ($object->element == 'action' && $object->array_options['options_timespent'] == 1 && empty($object->datef)) {
+                } elseif ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && empty($object->datef)) {
                     setEventMessages('MissingEndDateWithTimeSpentOption', $object->errors, 'errors');
                     return -1;
                 }
@@ -209,7 +209,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                 $categories = GETPOST('categories', 'array:int');
                 $object->setCategoriesCommon($categories, 'facturerec', false);
 
-                $facture->fetch(GETPOST('facid'));
+                $facture->fetch(GETPOSTINT('facid'));
 
                 $categories = $categorie->containing($facture->id, 'facture');
                 if (is_array($categories) && !empty($categories)) {

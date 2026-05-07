@@ -126,6 +126,7 @@ class ActionsDoliSIRH
                     $task->date_start                       = $dateStart;
                     $task->date_end                         = $dateEnd;
                     $task->planned_workload                 = $plannedWorkload;
+                    $task->status                           = Task::STATUS_VALIDATED;
                     $task->array_options['fk_facture_name'] = $object->id;
 
                     $taskID = $task->create($user);
@@ -243,7 +244,8 @@ class ActionsDoliSIRH
 	 */
 	public function printCommonFooter(array $parameters)
 	{
-		global $conf, $user, $langs, $form;
+        global $conf, $form, $langs, $object, $user;
+
 		$langs->load('projects');
 		if (in_array('ticketcard', explode(':', $parameters['context']))) {
 			if (GETPOST('action') == 'presend_addmessage') {
@@ -274,25 +276,27 @@ class ActionsDoliSIRH
 				dol_htmloutput_events();
 			}
             if (((GETPOST('action') != 'edit_extras') || (GETPOST('action') == 'edit_extras') && GETPOST('attribute') != 'fk_task') && GETPOST('action') != 'create') {
-				require_once __DIR__ . '/../../../projet/class/task.class.php';
+                if (!empty($object->id)) {
+                    require_once __DIR__ . '/../../../projet/class/task.class.php';
 
-				$task   = new Task($this->db);
-				$ticket = new Ticket($this->db);
+                    $task   = new Task($this->db);
+                    $ticket = new Ticket($this->db);
 
-				$ticket->fetch(!empty(GETPOST('id')) ? (GETPOST('id')) : '', !empty(GETPOST('ref')) ? GETPOST('ref') : '', !empty(GETPOST('track_id')) ? GETPOST('track_id') : '');
-				$ticket->fetch_optionals();
+                    $ticket->fetch(!empty(GETPOST('id')) ? (GETPOST('id')) : 0, !empty(GETPOST('ref')) ? GETPOST('ref') : '', !empty(GETPOST('track_id')) ? GETPOST('track_id') : '');
+                    $ticket->fetch_optionals();
 
-				$task_id = $ticket->array_options['options_fk_task'];
+                    $task_id = $ticket->array_options['options_fk_task'];
 
-				$task->fetch($task_id);
+                    $task->fetch($task_id);
 
-                $out = $task->getNomUrl(1, 'blank', 'task', 1);
+                    $out = $task->getNomUrl(1, 'blank', 'task', 1);
 
-				if (!empty($task_id) && $task_id > 0) { ?>
-					<script>
-						  jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($out) ?>);
-					</script>
-				<?php }
+                    if (!empty($task_id) && $task_id > 0) { ?>
+                        <script>
+                              jQuery('#ticket_extras_fk_task_<?php echo $ticket->id ?>').html(<?php echo json_encode($out) ?>);
+                        </script>
+                    <?php }
+                }
 			}
 		}
 		if (in_array($parameters['currentcontext'], array('projecttaskcard', 'projecttasktime'))) {
@@ -484,7 +488,7 @@ class ActionsDoliSIRH
                 require_once __DIR__ . '/../../saturne/lib/documents.lib.php';
 
                 $object = new Project($this->db);
-                $object->fetch(GETPOST('id'), GETPOST('ref','alpha'));
+                $object->fetch(GETPOSTINT('id'), GETPOST('ref','alpha'));
 
                 $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
                 $objRef     = dol_sanitizeFileName($object->ref);
@@ -492,7 +496,10 @@ class ActionsDoliSIRH
                 $fileDir    = $upload_dir . '/' . $dirFiles;
                 $urlSource  = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
 
-                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $user->rights->projet->creer, $user->rights->projet->supprimer, '', 1, 0, 0, 0, 0, '', 0, '', empty($soc->default_lang) ? '' : $soc->default_lang, $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
+                $permissionToAdd    = $user->hasRight('projet', 'creer');
+                $permissionToDelete = $user->hasRight('projet', 'supprimer');
+
+                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', empty($soc->default_lang) ? '' : $soc->default_lang, $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
                 ?>
 
                 <script src="../custom/saturne/js/saturne.min.js"></script>
@@ -515,7 +522,7 @@ class ActionsDoliSIRH
 			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
 		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
-			toggle_task_favorite(GETPOST('taskId'), $user->id);
+            toggle_task_favorite(GETPOSTINT('taskId'), $user->id);
 		}
 		?>
 		<script>
@@ -526,7 +533,7 @@ class ActionsDoliSIRH
 				document.URL.match(/\?/) ? querySeparator = '&' : 1
 
 				$.ajax({
-					url: document.URL + querySeparator + 'action=toggleTaskFavorite&taskId='+ taskId +'&token='+token,
+					url: document.URL + querySeparator + 'action=toggleTaskFavorite&taskId='+ parseInt(taskId) +'&token='+token,
 					type: "POST",
 					processData: false,
 					contentType: false,
@@ -1001,6 +1008,11 @@ class ActionsDoliSIRH
                     'description' => 'ShowTasksWithTimespentOnTimeSheetDescription',
                     'code'        => 'DOLISIRH_SHOW_TASKS_WITH_TIMESPENT_ON_TIMESHEET',
                 ],
+                'AllowDifferenceBetweenPassedAndWorkingHours' => [
+                    'name'        => 'AllowDifferenceBetweenPassedAndWorkingHours',
+                    'description' => 'AllowDifferenceBetweenPassedAndWorkingHoursDescription',
+                    'code'        => 'DOLISIRH_ALLOW_DIFFERENCE_BETWEEN_PASSED_AND_WORKING_HOURS',
+                ]
             ];
             $this->results = $constArray;
             return 1;

@@ -729,7 +729,7 @@ abstract class DoliSIRHStats
         // Graph parameters
         $array['width']   = 800;
         $array['height']  = 400;
-        $array['type']    = 'bars';
+        $array['type']    = 'bar';
         $array['dataset'] = 2;
 
         $array['labels'] = [

@@ -123,11 +123,11 @@ class TimeSheet extends SaturneObject
         'description'    => ['type' => 'html',         'label' => 'Description',      'enabled' => 1, 'position' => 130, 'notnull' => 0, 'visible' => 3, 'validate' => 1],
         'note_public'    => ['type' => 'html',         'label' => 'NotePublic',       'enabled' => 1, 'position' => 140, 'notnull' => 0, 'visible' => 0, 'cssview' => 'wordbreak', 'validate' => 1],
         'note_private'   => ['type' => 'html',         'label' => 'NotePrivate',      'enabled' => 1, 'position' => 150, 'notnull' => 0, 'visible' => 0, 'cssview' => 'wordbreak', 'validate' => 1],
-        'fk_user_creat'  => ['type' => 'integer:User:user/class/user.class.php',                                                          'label' => 'UserAuthor', 'picto' => 'user',    'enabled' => 1,                         'position' => 160, 'notnull' => 1, 'visible' => 0, 'foreignkey' => 'user.rowid'],
-        'fk_user_modif'  => ['type' => 'integer:User:user/class/user.class.php',                                                          'label' => 'UserModif',  'picto' => 'user',    'enabled' => 1,                         'position' => 170, 'notnull' => 0, 'visible' => 0, 'foreignkey' => 'user.rowid'],
-        'fk_user_assign' => ['type' => 'integer:User:user/class/user.class.php:1:(t.employee:=:1:AND:t.fk_soc:IS:NULL:AND:t.statut:=:1)', 'label' => 'UserAssign', 'picto' => 'user',    'enabled' => 1,                         'position' => 90,  'notnull' => 1, 'visible' => 1, 'index' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'user.rowid'],
-        'fk_project'     => ['type' => 'integer:Project:projet/class/project.class.php:1',                                                'label' => 'Project',    'picto' => 'project', 'enabled' => '$conf->project->enabled', 'position' => 80,  'notnull' => 0, 'visible' => 1, 'index' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'projet.rowid'],
-        'fk_soc'         => ['type' => 'integer:Societe:societe/class/societe.class.php:1',                                               'label' => 'ThirdParty', 'picto' => 'company', 'enabled' => '$conf->societe->enabled', 'position' => 120, 'notnull' => 0, 'visible' => 1, 'index' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'societe.rowid'],
+        'fk_user_creat'  => ['type' => 'integer:User:user/class/user.class.php',                                                              'label' => 'UserAuthor', 'picto' => 'user',    'enabled' => 1,                         'position' => 160, 'notnull' => 1, 'visible' => 0, 'foreignkey' => 'user.rowid'],
+        'fk_user_modif'  => ['type' => 'integer:User:user/class/user.class.php',                                                              'label' => 'UserModif',  'picto' => 'user',    'enabled' => 1,                         'position' => 170, 'notnull' => 0, 'visible' => 0, 'foreignkey' => 'user.rowid'],
+        'fk_user_assign' => ['type' => 'integer:User:user/class/user.class.php:1:(t.employee:=:1) AND (t.fk_soc:is:null) AND (t.statut:=:1)', 'label' => 'UserAssign', 'picto' => 'user',    'enabled' => 1,                         'position' => 90,  'notnull' => 1, 'visible' => 1, 'index' => 1, 'required' => 1, 'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'user.rowid'],
+        'fk_project'     => ['type' => 'integer:Project:projet/class/project.class.php:1',                                                    'label' => 'Project',    'picto' => 'project', 'enabled' => '$conf->project->enabled', 'position' => 80,  'notnull' => 0, 'visible' => 1, 'index' => 1,                  'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'projet.rowid'],
+        'fk_soc'         => ['type' => 'integer:Societe:societe/class/societe.class.php:1',                                                   'label' => 'ThirdParty', 'picto' => 'company', 'enabled' => '$conf->societe->enabled', 'position' => 120, 'notnull' => 0, 'visible' => 1, 'index' => 1,                  'css' => 'maxwidth500 widthcentpercentminusxx', 'validate' => 1, 'foreignkey' => 'societe.rowid'],
     ];
 
     /**
@@ -260,7 +260,7 @@ class TimeSheet extends SaturneObject
     /**
      * Constructor.
      *
-     * @param DoliDb $db Database handler.
+     * @param DoliDB $db Database handler.
      */
     public function __construct(DoliDB $db)
     {
@@ -286,19 +286,18 @@ class TimeSheet extends SaturneObject
     }
 
     /**
-     * Set draft status.
+     * Set draft status
      *
-     * @param  User      $user      Object user that modify.
-     * @param  int       $notrigger 1 = Does not execute triggers, 0 = Execute triggers.
-     * @return int                  0 < if KO, >0 if OK.
-     * @throws Exception
+     * @param  User      $user      Object user that modify
+     * @param  int<0,1>  $noTrigger 0 = launch triggers after, 1 = disable triggers
+     * @return int<-1,1>            Return integer 0 < if KO, > 0 if OK
      */
-    public function setDraft(User $user, int $notrigger = 0): int
+    public function setDraft(User $user, int $noTrigger = 0): int
     {
         $signatory = new SaturneSignature($this->db, 'dolisirh', 'timesheet');
         $signatory->deleteSignatoriesSignatures($this->id, 'timesheet');
 
-        return parent::setDraft($user, $notrigger);
+        return parent::setDraft($user, $noTrigger);
     }
 
     /**
@@ -502,10 +501,21 @@ class TimeSheetLine extends SaturneObject
     /**
      * Constructor.
      *
-     * @param DoliDb $db Database handler.
+     * @param DoliDB $db Database handler.
      */
     public function __construct(DoliDB $db)
     {
         parent::__construct($db, $this->module, $this->element);
+    }
+
+    /**
+     * Get the label of unit. Needed is conf PRODUCT_USE_UNITS is set to 1
+     *
+     * @param  string $type Label type ('long', 'short' or 'code'). This can be a translation key
+     * @return string       Empty string
+     */
+    public function getLabelOfUnit($type = 'long'): string
+    {
+        return '';
     }
 }

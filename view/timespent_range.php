@@ -249,7 +249,7 @@ if (empty($resHook)) {
         $action = 'assign_task';
         $error  = 0;
 
-        $task->fetch(GETPOST('assigned_task_id'));
+        $task->fetch(GETPOSTINT('assigned_task_id'));
 
         if (!GETPOST('type')) {
             setEventMessages($langs->transnoentitiesnoconv('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), [], 'errors');
@@ -349,9 +349,9 @@ if (empty($resHook)) {
         $data = json_decode(file_get_contents('php://input'), true);
 
         $taskID    = $data['taskID'];
-        $timestamp = $data['timestamp'];
-        $dateHour  = $data['datehour'];
-        $dateMin   = $data['datemin'];
+        $timestamp = (int) $data['timestamp'];
+        $dateHour  = (int) $data['datehour'];
+        $dateMin   = (int) $data['datemin'];
         $comment   = $data['comment'];
         $hour      = (int) $data['hour'];
         $min       = (int) $data['min'];
@@ -526,7 +526,7 @@ if (empty($user->rights->user->user->lire)) {
     $includeOnly = [$user->id];
 }
 
-$moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($searchUserID ?: $userTmp->id, 'search_user_id', 0, null, 0, $includeOnly, null, 0, 0, 0, ' AND u.employee = 1', 0, '', 'maxwidth200', 1);
+$moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('User'), 'user', 'class="paddingright pictofixedwidth"') . $form->select_dolusers($searchUserID ?: $userTmp->id, 'search_user_id', 0, null, 0, $includeOnly, null, 0, 0, 0, 'u.employee:=:1', 0, '', 'maxwidth200', 1);
 
 if (!getDolGlobalInt('PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT')) {
     $moreForFilter .= img_picto($langs->trans('Filter') . ' ' . $langs->trans('Project'), 'project', 'class="marginleftonly paddingright pictofixedwidth"') . '<input type="text" name="search_project_ref" class="maxwidth100" value="' . dol_escape_htmltag($searchProjectRef) . '">';

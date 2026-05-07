@@ -710,7 +710,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 }
                 print $task->getNomUrl(1, 'withproject', 'time');
                 if (GETPOST('action') == 'toggleTaskFavorite') {
-                    toggle_task_favorite((int) GETPOST('taskid', 'int'), $fuser->id);
+                    toggle_task_favorite(GETPOSTINT('taskId'), $fuser->id);
                 }
                 if (is_task_favorite($task->id, $fuser->id)) {
                     print '<span class="fas fa-star toggleTaskFavorite" style="margin-left: 5px;" id="' . $task->id . '" value="' . $task->id . '"></span>';
@@ -807,7 +807,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                     $tableCell .= '<div class="modal-open">';
                     $tableCell .= '<input hidden class="modal-options" data-modal-to-open="timespent" data-from-id="' . $lines[$i]->id . '" data-from-module="dolisirh">';
-                    $tableCell .= '<input type="text" alt="' . ($disabledTaskDay ? '' : $altTitle) . '" title="' . ($disabledTaskDay ? '' : $altTitle) . '" ' . ($disabledTaskDay ? 'disabled' : '') . ' class="center smallpadd timespent" size="2" id="timeadded[' . $inc . '][' . $idw.']" name="task[' . $lines[$i]->id . '][' . $idw . ']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $dayInLoop . ' data-date="' . dol_print_date($dayInLoop, '%a') . ' - ' . dol_print_date($dayInLoop, 'dayreduceformat') . '" data-cell=' . $idw . ' value="" cols="2"  maxlength="5">';
+                    $tableCell .= '<input type="text" alt="' . ($disabledTaskDay ? '' : $altTitle) . '" title="' . ($disabledTaskDay ? '' : $altTitle) . '" ' . ($disabledTaskDay ? 'disabled' : '') . ' class="center smallpadd timespent" size="2" id="timeadded[' . $inc . '][' . $idw.']" data-task-id=' . $lines[$i]->id . ' data-timestamp=' . $dayInLoop . ' data-date="' . dol_print_date($dayInLoop, '%a') . ' - ' . dol_print_date($dayInLoop, 'dayreduceformat') . '" data-cell=' . $idw . ' value="" cols="2"  maxlength="5">';
                     $tableCell .= '</div></td>';
                     print $tableCell;
                 }

@@ -84,21 +84,21 @@ if (($action == 'update' && ! GETPOST("cancel", 'alpha')) || ($action == 'update
 	$object->element_id   = GETPOST('id');
 	$object->status       = 1;
 	$object->fk_user_creat       = $user->id;
-	$object->schedule_monday       = GETPOST('schedule_monday', 'string');
-	$object->schedule_tuesday      = GETPOST('schedule_tuesday', 'string');
-	$object->schedule_wednesday    = GETPOST('schedule_wednesday', 'string');
-	$object->schedule_thursday     = GETPOST('schedule_thursday', 'string');
-	$object->schedule_friday       = GETPOST('schedule_friday', 'string');
-	$object->schedule_saturday     = GETPOST('schedule_saturday', 'string');
-	$object->schedule_sunday       = GETPOST('schedule_sunday', 'string');
+	$object->schedule_monday       = GETPOST('schedule_monday');
+	$object->schedule_tuesday      = GETPOST('schedule_tuesday');
+	$object->schedule_wednesday    = GETPOST('schedule_wednesday');
+	$object->schedule_thursday     = GETPOST('schedule_thursday');
+	$object->schedule_friday       = GETPOST('schedule_friday');
+	$object->schedule_saturday     = GETPOST('schedule_saturday');
+	$object->schedule_sunday       = GETPOST('schedule_sunday');
 
-	$object->workinghours_monday       = GETPOST('workinghours_monday', 'integer');
-	$object->workinghours_tuesday      = GETPOST('workinghours_tuesday', 'integer');
-	$object->workinghours_wednesday    = GETPOST('workinghours_wednesday', 'integer');
-	$object->workinghours_thursday     = GETPOST('workinghours_thursday', 'integer');
-	$object->workinghours_friday       = GETPOST('workinghours_friday', 'integer');
-	$object->workinghours_saturday     = GETPOST('workinghours_saturday', 'integer');
-	$object->workinghours_sunday       = GETPOST('workinghours_sunday', 'integer');
+	$object->workinghours_monday       = GETPOSTINT('workinghours_monday');
+	$object->workinghours_tuesday      = GETPOST('workinghours_tuesday');
+	$object->workinghours_wednesday    = GETPOST('workinghours_wednesday');
+	$object->workinghours_thursday     = GETPOST('workinghours_thursday');
+	$object->workinghours_friday       = GETPOST('workinghours_friday');
+	$object->workinghours_saturday     = GETPOST('workinghours_saturday');
+	$object->workinghours_sunday       = GETPOST('workinghours_sunday');
 	$result = $object->create($usertmp);
 	if ($result > 0) {
 		setEventMessages($langs->trans('UserWorkingHoursSaved'), null, 'mesgs');

@@ -279,7 +279,7 @@ print dol_get_fiche_head($head, 'byyear', $langs->trans("Statistics"), -1);
 // We use select_thirdparty_list instead of select_company so we can use $filter and share same code for customer and supplier.
 $filter = '';
 if ($mode == 'customer') {
-	$filter = 's.client in (1,2,3)';
+	$filter = '(s.client:IN:1,2,3)';
 }
 //if ($mode == 'supplier') {
 //	$filter = 's.fournisseur = 1';
@@ -297,7 +297,7 @@ print '<tr class="liste_titre"><td class="liste_titre" colspan="2">'.$langs->tra
 // Company
 print '<tr><td>'.$langs->trans("ThirdParty").'</td><td>';
 print img_picto('', 'company', 'class="pictofixedwidth"');
-print $form->select_company($socid, 'socid', $filter, 1, 0, 0, array(), 0, 'widthcentpercentminusx maxwidth300');
+print $form->select_company($socid, 'socid', $filter, 1, 0, 0, [], 0, 'widthcentpercentminusx maxwidth300');
 print '</td></tr>';
 
 // ThirdParty Type
