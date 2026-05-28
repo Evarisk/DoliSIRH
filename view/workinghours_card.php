@@ -143,7 +143,7 @@ $morehtmlref  = '<div class="refidno">';
 $morehtmlref .= '</div>';
 $head = user_prepare_head($usertmp);
 print dol_get_fiche_head($head, 'workinghours', $langs->trans("User"), 0, 'company');
-$linkback = '<a href="' . DOL_URL_ROOT . '/societe/list.php?restore_lastsearch_values=1">' . $langs->trans("BackToList") . '</a>';
+$linkback = '<a href="' . DOL_URL_ROOT . '/user/list.php?restore_lastsearch_values=1">' . $langs->trans("BackToList") . '</a>';
 dol_banner_tab($usertmp, 'socid', $linkback, ($usertmp->socid ? 0 : 1), 'rowid', 'nom');
 
 print dol_get_fiche_end();
