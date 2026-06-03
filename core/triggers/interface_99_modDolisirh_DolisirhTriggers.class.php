@@ -138,14 +138,20 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                                 $name_message = $task->ref;
 
                                 $task->addTimeSpent($user);
-                                setEventMessages($langs->trans('MessageTimeSpentCreate') . ' : ' . '<a href="' . DOL_URL_ROOT . '/projet/tasks/time.php?id=' . $id_message . '">' . $name_message.'</a>', []);
+                                if (!headers_sent()) {
+                                    setEventMessages($langs->trans('MessageTimeSpentCreate') . ' : ' . '<a href="' . DOL_URL_ROOT . '/projet/tasks/time.php?id=' . $id_message . '">' . $name_message . '</a>', []);
+                                }
                             } else {
-                                setEventMessages($task->error, $task->errors, 'errors');
+                                if (!headers_sent()) {
+                                    setEventMessages($task->error, $task->errors, 'errors');
+                                }
                                 return -1;
                             }
                         }
                     } else {
-                        setEventMessages($ticket->error, $ticket->errors, 'errors');
+                        if (!headers_sent()) {
+                            setEventMessages($ticket->error, $ticket->errors, 'errors');
+                        }
                         return -1;
                     }
                 }
@@ -173,24 +179,36 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                             }
 
                             if ($result > 0) {
-                                setEventMessages($langs->trans('MessageTimeSpentCreate') . ' : ' . '<a href="' . DOL_URL_ROOT . '/projet/tasks/time.php?id=' . $idMessage . '">' . $nameMessage . '</a>', []);
+                                if (!headers_sent()) {
+                                    setEventMessages($langs->trans('MessageTimeSpentCreate') . ' : ' . '<a href="' . DOL_URL_ROOT . '/projet/tasks/time.php?id=' . $idMessage . '">' . $nameMessage . '</a>', []);
+                                }
                             } else {
-                                setEventMessages($task->error, $task->errors, 'errors');
+                                if (!headers_sent()) {
+                                    setEventMessages($task->error, $task->errors, 'errors');
+                                }
                                 return -1;
                             }
                         } else {
-                            setEventMessages($langs->trans('ErrorUserNotAssignedToTask'), $task->errors, 'errors');
+                            if (!headers_sent()) {
+                                setEventMessages($langs->trans('ErrorUserNotAssignedToTask'), $task->errors, 'errors');
+                            }
                             return -1;
                         }
                     } else {
-                        setEventMessages($task->error, $task->errors, 'errors');
+                        if (!headers_sent()) {
+                            setEventMessages($task->error, $task->errors, 'errors');
+                        }
                         return -1;
                     }
                 } elseif ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && $object->elementtype != 'task') {
-                    setEventMessages('MissingTaskWithTimeSpentOption', $object->errors, 'errors');
+                    if (!headers_sent()) {
+                        setEventMessages('MissingTaskWithTimeSpentOption', $object->errors, 'errors');
+                    }
                     return -1;
                 } elseif ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && empty($object->datef)) {
-                    setEventMessages('MissingEndDateWithTimeSpentOption', $object->errors, 'errors');
+                    if (!headers_sent()) {
+                        setEventMessages('MissingEndDateWithTimeSpentOption', $object->errors, 'errors');
+                    }
                     return -1;
                 }
                 break;
