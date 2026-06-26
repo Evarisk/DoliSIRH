@@ -563,7 +563,7 @@ print '</td>';
 print '</tr>';
 
 print '<tr class="liste_titre">';
-print '<th style="position: sticky; left: 0; background-color: var(--colorbacktitle1); z-index: 1040;>' . $form->textwithpicto($langs->trans('Task'), $tooltipTaskInfo);
+print '<th style="position: sticky; left: 0; background-color: var(--colorbacktitle1); z-index: 1040;">' . $form->textwithpicto($langs->trans('Task'), $tooltipTaskInfo);
 print ' <i class="fas fa-star"></i>';
 print '<input type="checkbox"  class="show-only-favorite-tasks"' . ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('ShowOnlyFavoriteTasks'));

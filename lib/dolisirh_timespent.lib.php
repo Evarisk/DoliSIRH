@@ -703,7 +703,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 print '<tr class="oddeven" data-task_id="' . $lines[$i]->id . '" >';
 
                 // Ref.
-                print '<td class="nowrap" style="position: sticky; left: 0; background-color: #FFFFFF;">';
+                print '<td class="nowrap" style="position: sticky; left: 0; background-color: #FFFFFF; z-index: 500;">';
                 print '<!-- Task id = ' . $lines[$i]->id . ' -->';
                 for ($k = 0; $k < $level; $k++) {
                     print '<div class="marginleftonly">';
