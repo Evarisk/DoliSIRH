@@ -802,7 +802,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                     $tableCell = '<td class="center ' . $idw . ' ' . $cellCSS . '" data-cell="' . $idw . '">';
                     if ($alreadySpent) {
-                        $tableCell .= '<span class="timesheetalreadyrecorded wpeo-tooltip-event" aria-label="' . $textTooltip . '"><input type="text" class="center smallpadd" size="2" disabled id="timespent[' . $inc . '][' . $idw . ']" name="task[' . $lines[$i]->id . '][' . $idw . ']" value="' . $alreadySpent . '"></span>';
+                        $tableCell .= '<span class="timesheetalreadyrecorded wpeo-tooltip-event" aria-label="' . dol_escape_htmltag($textTooltip) . '"><input type="text" class="center smallpadd" size="2" disabled id="timespent[' . $inc . '][' . $idw . ']" name="task[' . $lines[$i]->id . '][' . $idw . ']" value="' . $alreadySpent . '"></span>';
                     }
 
                     $tableCell .= '<div class="modal-open">';
