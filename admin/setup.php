@@ -106,7 +106,7 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
 
         if ($projectID > 0 && $error == 0) {
             dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT', $projectID, 'integer', 0, '', $conf->entity);
-            $users = $userTmp->get_full_tree(0, '((u.employee:=:1) AND (u.fk_soc:is:NULL) AND (u.statut:=:1))');
+            $users = $userTmp->get_full_tree(0, '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))');
             if (!empty($users) && is_array($users)) {
                 foreach ($users as $userSingle) {
                     $project->add_contact($userSingle['id'], 'PROJECTCONTRIBUTOR', 'internal');
