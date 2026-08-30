@@ -130,7 +130,8 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
                 $timeSpentOnTasks[$timeSpent->fk_task]['task_ref']      = $timeSpent->task_ref;
                 $timeSpentOnTasks[$timeSpent->fk_task]['task_label']    = $timeSpent->task_label;
 
-                $timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
+                $dayStr = dol_print_date($timeSpent->timespent_date, 'day');
+                $timeSpentOnTasks[$timeSpent->fk_task][$dayStr] = ($timeSpentOnTasks[$timeSpent->fk_task][$dayStr] ?? 0) + $timeSpent->timespent_duration;
                 $workingDays[$timeSpent->timespent_date] = 1;
             }
         }
