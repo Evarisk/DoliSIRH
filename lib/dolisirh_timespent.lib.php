@@ -118,7 +118,7 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
         foreach ($timeSpentList as $timeSpent) {
             $hours   = floor($timeSpent->timespent_duration / 3600);
             $minutes = floor($timeSpent->timespent_duration / 60);
-            if ($daysAvailable[$timeSpent->timespent_date]['morning'] && $daysAvailable[$timeSpent->timespent_date]['afternoon']) {
+            if (!empty($daysAvailable[$timeSpent->timespent_date]['morning']) && !empty($daysAvailable[$timeSpent->timespent_date]['afternoon'])) {
                 $timeSpentOnTasks['hours']   += $hours;
                 $timeSpentOnTasks['minutes'] += $minutes;
                 $timeSpentOnTasks['total']   += $timeSpent->timespent_duration;
@@ -770,10 +770,11 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 for ($idw = 0; $idw < $daysInRange; $idw++) {
                     $cellCSS   = '';
                     $dayInLoop = dol_time_plus_duree($timestampStart, $idw, 'd');
-                    if (!$daysAvailable[$dayInLoop]['morning'] && !$daysAvailable[$dayInLoop]['afternoon']) {
-                        if ($daysAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
+                    if (empty($daysAvailable[$dayInLoop]['morning']) && empty($daysAvailable[$dayInLoop]['afternoon'])) {
+                        $reason = !empty($daysAvailable[$dayInLoop]['morning_reason']) ? $daysAvailable[$dayInLoop]['morning_reason'] : '';
+                        if ($reason == 'public_holiday') {
                             $cellCSS = 'onholidayallday';
-                        } elseif ($daysAvailable[$dayInLoop]['morning_reason'] == 'week_end') {
+                        } elseif ($reason == 'week_end') {
                             $cellCSS = 'weekend';
                         }
                     }
