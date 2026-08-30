@@ -385,7 +385,7 @@ if ($id) {
     $project->fetch_thirdparty();
 }
 
-$onlyOpenedProject = $user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS ? '-1' : '1';
+$onlyOpenedProject = (!empty($user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS) ? $user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS : 0) ? '-1' : '1';
 $moreWhereFilter   = '';
 
 if ($searchProjectRef) {
@@ -496,7 +496,7 @@ print '</div>';
 
 print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
 $tooltipTaskInfo .= img_help(1, $langs->trans('KeyEvent')) .  ' ' . $langs->trans('KeyEventTips') . '<br><br>';
-if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
+if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) > 0) {
     $tooltipTaskInfo .= '<div class="opacitymedium"><i class="fas fa-exclamation-triangle"></i>' . ' ' . $langs->trans('WarningShowOnlyFavoriteTasks') . '</div>';
 }
 
@@ -565,19 +565,19 @@ print '</tr>';
 print '<tr class="liste_titre">';
 print '<th style="position: sticky; left: 0; background-color: var(--colorbacktitle1); z-index: 1040;">' . $form->textwithpicto($langs->trans('Task'), $tooltipTaskInfo);
 print ' <i class="fas fa-star"></i>';
-print '<input type="checkbox"  class="show-only-favorite-tasks"' . ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' checked' : '') . '>';
+print '<input type="checkbox"  class="show-only-favorite-tasks"' . ((!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('ShowOnlyFavoriteTasks'));
 print ' <i class="fas fa-clock"></i>';
-print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? ' checked' : '') . '>';
+print '<input type="checkbox"  class="show-only-tasks-with-timespent"'. ((!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('ShowOnlyTasksWithTimeSpent'));
 print ' <i class="fas fa-cogs"></i>';
-print '<input type="checkbox"  class="select-logic-operators-mode"'. ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE ? ' checked' : '') . '>';
+print '<input type="checkbox"  class="select-logic-operators-mode"'. ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('SelectLogicOperatorsMode'));
 print ' <i class="fas fa-project-diagram"></i>';
-print '<input type="checkbox"  class="show-closed-projects"'. ($user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS ? ' checked' : '') . '>';
+print '<input type="checkbox"  class="show-closed-projects"'. ((!empty($user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS) ? $user->conf->DOLISIRH_SHOW_CLOSED_PROJECTS : 0) ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('ShowClosedProjects'));
 print ' <i class="fas fa-user-cog"></i>';
-print '<input type="checkbox"  class="show-sticky-total-timespent-info"'. ($user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO ? ' checked' : '') . '>';
+print '<input type="checkbox"  class="show-sticky-total-timespent-info"'. ((!empty($user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO) ? $user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO : 0) ? ' checked' : '') . '>';
 print $form->textwithpicto('', $langs->trans('ShowStickyTotalTimeSpentInfo'));
 print '</th>';
 // TASK fields.
@@ -650,7 +650,7 @@ if ($conf->use_javascript_ajax) {
     }
     print '<td></td></tr>';
 
-    if ($user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO > 0) {
+    if ((!empty($user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO) ? $user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO : 0) > 0) {
         // Passed working hours.
         $passedWorkingTime = load_passed_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable);
 
@@ -819,7 +819,7 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
 </div>
 <!-- TIMESPENT ADD MODAL END -->
 
-<?php if ($conf->use_javascript_ajax && $user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO == 0) {
+<?php if ($conf->use_javascript_ajax && (!empty($user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO) ? $user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO : 0) == 0) {
     print '<tfoot style="position: sticky; bottom: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;">';
 
     // Passed working hours.

@@ -347,10 +347,10 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
             $sql .= ', ' .MAIN_DB_PREFIX. 'element_contact as ec2';
             $sql .= ', ' .MAIN_DB_PREFIX. 'c_type_contact as ctc2';
         }
-        if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
+        if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) > 0) {
             $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . "element_element as elel ON (t.rowid = elel.fk_target AND elel.targettype='project_task')";
         }
-        if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
+        if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) > 0) {
             if ($versionEighteenOrMore) {
                 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as ptt ON (ptt.fk_element = t.rowid AND ptt.elementtype = "task")';
             } else {
@@ -360,13 +360,13 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
         $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_extrafields as efpt ON (t.rowid = efpt.fk_object)';
         $sql .= ' WHERE p.entity IN (' . getEntity('project') . ')';
         $sql .= ' AND t.fk_projet = p.rowid';
-        if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
-            $sql .= ' AND ' . ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? '(' : '') . 'elel.fk_target = t.rowid';
+        if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) > 0) {
+            $sql .= ' AND ' . ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) ? '(' : '') . 'elel.fk_target = t.rowid';
             $sql .= ' AND elel.fk_source = ' . $filterOnProjUser;
         }
-        if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
+        if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) > 0) {
             if ($versionEighteenOrMore) {
-                $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' OR (' : ' AND ') . '(ptt.fk_element = t.rowid AND ptt.elementtype = "task") AND ptt.fk_user = ' . $filterOnProjUser;
+                $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' OR (' : ' AND ') . '(ptt.fk_element = t.rowid AND ptt.elementtype = "task") AND ptt.fk_user = ' . $filterOnProjUser;
                 if ($timeMode == 'month') {
                     $sql .= ' AND MONTH(ptt.element_date) = ' . $timeArray['month'];
                 } elseif ($timeMode == 'week') {
@@ -376,7 +376,7 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
                 }
                 $sql .= ' AND YEAR(ptt.element_date) = ' . $timeArray['year'];
             } else {
-                $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
+                $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
                 if ($timeMode == 'month') {
                     $sql .= ' AND MONTH(ptt.task_date) = ' . $timeArray['month'];
                 } elseif ($timeMode == 'week') {
@@ -387,7 +387,7 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
                 $sql .= ' AND YEAR(ptt.task_date) = ' . $timeArray['year'];
             }
         }
-        $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? '))' : '');
+        $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) ? '))' : '');
     } elseif ($mode == 1) {
         if ($filterOnProjUser > 0) {
             $sql .= ', ' . MAIN_DB_PREFIX . 'element_contact as ec';
@@ -640,7 +640,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
             $level = 0;
         }
 
-        if ($lines[$i]->fk_task_parent != $parent && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+        if ($lines[$i]->fk_task_parent != $parent && (!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0)) {
             $lines[$i]->fk_task_parent = 0;
         }
 
