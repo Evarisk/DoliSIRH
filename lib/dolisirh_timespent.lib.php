@@ -780,11 +780,11 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                     $tmpArray = dol_getdate($dayInLoop);
 
-                    $totalForEachDay[$dayInLoop] = $timeSpentOnTasks[$lines[$i]->id][dol_print_date($dayInLoop, 'day')];
+                    $totalForEachDay[$dayInLoop] = $timeSpentOnTasks[$lines[$i]->id][dol_print_date($dayInLoop, 'day')] ?? 0;
 
                     $alreadySpent = '';
                     if ($totalForEachDay[$dayInLoop] > 0) {
-                        $timeSpentComments = $timeSpentOnTasks[$lines[$i]->id]['comments'][dol_print_date($dayInLoop, 'day')];
+                        $timeSpentComments = $timeSpentOnTasks[$lines[$i]->id]['comments'][dol_print_date($dayInLoop, 'day')] ?? [];
                         if (is_array($timeSpentComments) && !empty($timeSpentComments)) {
                             $textTooltip = implode('', $timeSpentComments);
                         } else {
