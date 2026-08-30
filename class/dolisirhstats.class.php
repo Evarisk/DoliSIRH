@@ -806,7 +806,7 @@ abstract class DoliSIRHStats
         $year   = GETPOSTISSET('search_year') ? GETPOST('search_year', 'int') : date('Y');
         $month  = GETPOSTISSET('search_month') ? GETPOST('search_month', 'int') : date('m');
 
-        $datasetOrder = $user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER;
+        $datasetOrder = (!empty($user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER) ? $user->conf->DOLISIRH_TIMESPENT_DATASET_ORDER : 0);
 
         // Graph Title parameters
         $array['title'] = $langs->transnoentities(($showNotConsumedWorkingHours > 0 ? 'GlobalTimeCurrentMonthByTaskAndProject' : 'TimeSpentCurrentMonthByTaskAndProject'), dol_print_date(dol_mktime(0, 0, 0, $month, date('d'), $year), '%B %Y'));
