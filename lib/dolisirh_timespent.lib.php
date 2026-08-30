@@ -792,7 +792,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                         }
                         $alreadySpent = convertSecondToTime($totalForEachDay[$dayInLoop], 'allhourmin');
                     }
-                    $altTitle = $langs->trans('AddHereTimeSpentForDay', $tmpArray['day'], $tmpArray['mon']);
+                    $altTitle = $langs->trans('AddHereTimeSpentForDay', $tmpArray['mday'], $tmpArray['mon']);
 
                     $disabledTaskDay = $disabledTask;
 
