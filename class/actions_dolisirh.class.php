@@ -141,6 +141,90 @@ class ActionsDoliSIRH
             }
         }
 
+        if ($parameters['currentcontext'] == 'projecttasktime') {
+            // Assign the edited time spent line to an invoice service line, the native update of the line stores it.
+            if ($action == 'updateline' && !GETPOST('cancel', 'alpha') && GETPOSTISSET('dolisirh_invoice_line_id') && $this->canAssignTimeSpentToInvoice()) {
+                require_once __DIR__ . '/../lib/dolisirh_invoice.lib.php';
+
+                $langs->loadLangs(['bills', 'dolisirh@dolisirh']);
+
+                $timeSpentID   = GETPOSTINT('lineid');
+                $invoiceLineID = GETPOSTINT('dolisirh_invoice_line_id');
+                $timeSpentLine = dolisirh_get_timespent_lines($this->db, [$timeSpentID])[$timeSpentID] ?? [];
+
+                if ($invoiceLineID > 0 && !empty($timeSpentLine) && !empty($timeSpentLine['usage_bill_time'])) {
+                    $durationToAssign = GETPOSTINT('new_durationhour') * 3600 + GETPOSTINT('new_durationmin') * 60;
+                    $invoiceLine      = $timeSpentLine['billable'] == 1 ? dolisirh_get_invoice_line_time_data($this->db, $invoiceLineID, [$timeSpentID]) : [];
+
+                    if ($timeSpentLine['billable'] != 1) {
+                        setEventMessages($langs->trans('TimeSpentNotBillableHelp'), [], 'errors');
+                    } elseif (empty($invoiceLine)) {
+                        setEventMessages($langs->trans('ErrorInvoiceLineWithoutAvailableTime'), [], 'errors');
+                    } elseif ($invoiceLine['available_duration'] < $durationToAssign) {
+                        setEventMessages($langs->trans('ErrorNotEnoughAvailableTimeOnInvoiceLine', convertSecondToTime($durationToAssign, 'allhourmin'), convertSecondToTime($invoiceLine['available_duration'], 'allhourmin')), [], 'errors');
+                    } else {
+                        // The native update of the time spent line reads those two parameters to store the invoice link.
+                        $_POST['invoiceid']     = $invoiceLine['invoice_id'];
+                        $_POST['invoicelineid'] = $invoiceLineID;
+                    }
+                }
+            }
+
+            // Assign the selected time spent lines to an invoice service line still holding available time.
+            if (GETPOST('assign_timespent_invoice', 'alpha') && !GETPOST('cancel', 'alpha')) {
+                if (!$this->canAssignTimeSpentToInvoice()) {
+                    accessforbidden();
+                }
+
+                require_once __DIR__ . '/../lib/dolisirh_invoice.lib.php';
+
+                $langs->loadLangs(['bills', 'dolisirh@dolisirh']);
+
+                $timeSpentIDs   = GETPOST('toselect', 'array:int');
+                $invoiceLineID  = GETPOSTINT('dolisirh_invoice_line_id');
+                $timeSpentLines = dolisirh_get_timespent_lines($this->db, $timeSpentIDs);
+
+                // A time spent line recorded on a task flagged as not billable is never assigned to an invoice.
+                $billableTimeSpentIDs   = dolisirh_get_billable_timespent_ids($timeSpentLines);
+                $nbTimeSpentNotBillable = count($timeSpentLines) - count($billableTimeSpentIDs);
+                $billableTimeSpentLines = array_intersect_key($timeSpentLines, array_flip($billableTimeSpentIDs));
+
+                if (empty($timeSpentIDs)) {
+                    setEventMessages($langs->trans('NoRecordSelected'), [], 'errors');
+                } elseif (!dolisirh_timespent_lines_bill_time($timeSpentLines)) {
+                    accessforbidden();
+                } elseif (empty($billableTimeSpentIDs)) {
+                    setEventMessages($langs->trans('NoBillableTimeSpentSelected'), [], 'errors');
+                } elseif ($invoiceLineID <= 0) {
+                    setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentities('InvoiceLineToConsume')), [], 'errors');
+                } else {
+                    if ($nbTimeSpentNotBillable > 0) {
+                        setEventMessages($langs->trans('NbTimeSpentNotBillableIgnored', $nbTimeSpentNotBillable), [], 'warnings');
+                    }
+
+                    $timeSpentIDs     = $billableTimeSpentIDs;
+                    $durationToAssign = dolisirh_get_timespent_duration($billableTimeSpentLines);
+                    $invoiceLine      = dolisirh_get_invoice_line_time_data($this->db, $invoiceLineID, $timeSpentIDs);
+
+                    if (empty($invoiceLine)) {
+                        setEventMessages($langs->trans('ErrorInvoiceLineWithoutAvailableTime'), [], 'errors');
+                    } elseif ($invoiceLine['available_duration'] < $durationToAssign) {
+                        setEventMessages($langs->trans('ErrorNotEnoughAvailableTimeOnInvoiceLine', convertSecondToTime($durationToAssign, 'allhourmin'), convertSecondToTime($invoiceLine['available_duration'], 'allhourmin')), [], 'errors');
+                    } else {
+                        $nbAssignedTimeSpent = dolisirh_assign_timespent_to_invoice_line($this->db, $timeSpentIDs, $invoiceLineID, $invoiceLine['invoice_id']);
+                        if ($nbAssignedTimeSpent < 0) {
+                            setEventMessages($langs->trans('ErrorAssignTimeSpentToInvoice'), [], 'errors');
+                        } else {
+                            setEventMessages($langs->trans('TimeSpentAssignedToInvoice', $nbAssignedTimeSpent, $invoiceLine['invoice_ref']), []);
+                        }
+                    }
+                }
+
+                header('Location: ' . $this->getTimeSpentListURL());
+                exit;
+            }
+        }
+
         if ($parameters['currentcontext'] == 'userihm') {
             if ($action == 'update') {
                 if (GETPOST('set_timespent_dataset_order') == 'on') {
@@ -230,6 +314,121 @@ class ActionsDoliSIRH
                     print '<div class="inline-block divButAction"><span class="butActionRefused classfortooltip" title="' . $mesgs . '">' . $langs->trans('AddTask') . '</span></div>';
                 }
             }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     * Overloading the addMoreMassActions function : replacing the parent's function with the one below
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return int               0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function addMoreMassActions(array $parameters): int
+    {
+        global $langs;
+
+        if ($parameters['currentcontext'] == 'projecttasktime') {
+            // The mass action is already running, the confirmation form is displayed instead of the selector.
+            if (GETPOST('massaction', 'alpha') == 'dolisirh_assign_invoice') {
+                return 0;
+            }
+
+            if ($this->canAssignTimeSpentToInvoice() && $this->projectBillsTime()) {
+                $langs->load('dolisirh@dolisirh');
+                $this->resprints = '<option value="dolisirh_assign_invoice">' . $langs->trans('AssignTimeSpentToInvoice') . '</option>';
+            }
+        }
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     * Overloading the doPreMassActions function : replacing the parent's function with the one below
+     *
+     * @param  array  $parameters Hook metadata (context, etc...)
+     * @param  object $object     The object to process
+     * @return int                0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function doPreMassActions(array $parameters, $object): int
+    {
+        global $langs, $projectstatic;
+
+        if ($parameters['currentcontext'] != 'projecttasktime' || GETPOST('cancel', 'alpha')) {
+            return 0;
+        }
+        if (!$this->canAssignTimeSpentToInvoice() || !$this->projectBillsTime()) {
+            return 0;
+        }
+
+        require_once __DIR__ . '/../lib/dolisirh_invoice.lib.php';
+
+        $langs->loadLangs(['bills', 'dolisirh@dolisirh']);
+
+        $form = new Form($this->db);
+
+        // The invoices of the project third party are shown first, they are the most likely to hold the sold time.
+        $priorityThirdPartyID = (int) $projectstatic->socid;
+
+        $out = '';
+
+        if (GETPOST('massaction', 'alpha') == 'dolisirh_assign_invoice') {
+            // Confirmation form of the mass action. The lines of a task flagged as not billable are left aside.
+            $timeSpentIDs          = isset($parameters['toselect']) && is_array($parameters['toselect']) ? $parameters['toselect'] : [];
+            $timeSpentLines        = dolisirh_get_timespent_lines($this->db, $timeSpentIDs);
+            $billableTimeSpentIDs  = dolisirh_get_billable_timespent_ids($timeSpentLines);
+            $nbTimeSpentNotBillable = count($timeSpentLines) - count($billableTimeSpentIDs);
+
+            $totalDurationToAssign  = dolisirh_get_timespent_duration(array_intersect_key($timeSpentLines, array_flip($billableTimeSpentIDs)));
+            $assignableInvoiceLines = dolisirh_get_invoice_lines_with_available_time($this->db, $totalDurationToAssign, $billableTimeSpentIDs, $priorityThirdPartyID);
+
+            ob_start();
+            require __DIR__ . '/../core/tpl/timespent_assign_invoice.tpl.php';
+            $out .= ob_get_clean();
+        }
+
+        // Content of the native "Billed" cells, where Dolibarr offers no hook : it is printed hidden inside the
+        // form of the list, then put in place by the JS of the module. It always carries the "not billable"
+        // warning shown on every concerned line of the list, and the selector of the line being edited.
+        $isTimeSpentBillable    = false;
+        $assignableInvoiceLines = [];
+
+        if (GETPOST('action', 'aZ09') == 'editline') {
+            $timeSpentID   = GETPOSTINT('lineid');
+            $timeSpentLine = dolisirh_get_timespent_lines($this->db, [$timeSpentID])[$timeSpentID] ?? [];
+
+            if (!empty($timeSpentLine) && empty($timeSpentLine['invoice_line_id']) && $timeSpentLine['billable'] == 1) {
+                $isTimeSpentBillable    = true;
+                $assignableInvoiceLines = dolisirh_get_invoice_lines_with_available_time($this->db, $timeSpentLine['element_duration'], [$timeSpentID], $priorityThirdPartyID);
+            }
+        }
+
+        ob_start();
+        require __DIR__ . '/../core/tpl/timespent_assign_invoice_cell.tpl.php';
+        $out .= ob_get_clean();
+
+        $this->resprints = $out;
+
+        return 0; // or return 1 to replace standard code
+    }
+
+    /**
+     * Overloading the addHtmlHeader function : replacing the parent's function with the one below
+     *
+     * @param  array $parameters Hook metadata (context, etc...)
+     * @return int               0 < on error, 0 on success, 1 to replace standard code
+     */
+    public function addHtmlHeader(array $parameters): int
+    {
+        if (strpos($parameters['context'], 'projecttasktime') !== false && $this->canAssignTimeSpentToInvoice() && $this->projectBillsTime()) {
+            // Standalone script : the time spent list is a native Dolibarr page, the module bundle is not loaded there.
+            $scriptPath  = '/custom/dolisirh/js/timespent-invoice.js';
+            $scriptFile  = dol_buildpath($scriptPath, 0);
+            $scriptMtime = file_exists($scriptFile) ? filemtime($scriptFile) : 1;
+
+            $this->resprints  = '<!-- Includes JS added by module dolisirh -->';
+            $this->resprints .= '<script src="' . dol_buildpath($scriptPath, 1) . '?v=' . $scriptMtime . '"></script>';
         }
 
         return 0; // or return 1 to replace standard code
@@ -843,6 +1042,59 @@ class ActionsDoliSIRH
 			}
 		}
 	}
+
+    /**
+     * Tell if the current user is allowed to assign time spent lines to an invoice service line. The assignment
+     * takes place in the native "Billed" column of the time spent list, so it is only offered where Dolibarr
+     * displays that column : PROJECT_BILL_TIME_SPENT set and tasks not hidden.
+     *
+     * @return bool True if the user can assign time spent to an invoice.
+     */
+    protected function canAssignTimeSpentToInvoice(): bool
+    {
+        global $user;
+
+        if (getDolGlobalInt('PROJECT_HIDE_TASKS') || !getDolGlobalInt('PROJECT_BILL_TIME_SPENT')) {
+            return false;
+        }
+        if (!isModEnabled('facture') || !$user->hasRight('facture', 'lire')) {
+            return false;
+        }
+
+        return $user->hasRight('projet', 'time') || $user->hasRight('projet', 'all', 'creer');
+    }
+
+    /**
+     * Tell if the project of the displayed list bills its time. The native "Billed" column, hence the invoice
+     * assignment, is only displayed for such a project.
+     *
+     * @return bool True if the project bills its time.
+     */
+    protected function projectBillsTime(): bool
+    {
+        global $projectstatic;
+
+        return is_object($projectstatic) && !empty($projectstatic->usage_bill_time);
+    }
+
+    /**
+     * Get the URL of the time spent list, without any mass action parameter.
+     *
+     * @return string URL of the time spent list.
+     */
+    protected function getTimeSpentListURL(): string
+    {
+        // The mass action form posts on PHP_SELF without any query string, the context is rebuilt from its hidden fields.
+        $urlParameters = [];
+        foreach (['id', 'ref', 'projectid', 'withproject', 'tab', 'contextpage', 'sortfield', 'sortorder', 'limit', 'page'] as $parameterName) {
+            $parameterValue = GETPOST($parameterName, 'alphanohtml');
+            if ($parameterValue !== '' && $parameterValue !== '0') {
+                $urlParameters[$parameterName] = $parameterValue;
+            }
+        }
+
+        return $_SERVER['PHP_SELF'] . (!empty($urlParameters) ? '?' . http_build_query($urlParameters) : '');
+    }
 
     /**
      *  Overloading the printFieldListSelect function : replacing the parent's function with the one below
