@@ -689,11 +689,14 @@ class ActionsDoliSIRH
                 $object = new Project($this->db);
                 $object->fetch(GETPOSTINT('id'), GETPOST('ref','alpha'));
 
-                $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
-                $objRef     = dol_sanitizeFileName($object->ref);
-                $dirFiles   = $object->element . 'document/' . $objRef;
-                $fileDir    = $upload_dir . '/' . $dirFiles;
-                $urlSource  = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
+                // The project can belong to another entity shared with the current one, where DoliSIRH
+                // is not enabled : multidir_output has no key for it, so fall back on the current entity.
+                $objectEntity = (empty($object->entity) ? $conf->entity : $object->entity);
+                $upload_dir   = $conf->dolisirh->multidir_output[$objectEntity] ?? $conf->dolisirh->multidir_output[$conf->entity];
+                $objRef       = dol_sanitizeFileName($object->ref);
+                $dirFiles     = $object->element . 'document/' . $objRef;
+                $fileDir      = $upload_dir . '/' . $dirFiles;
+                $urlSource    = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
 
                 $permissionToAdd    = $user->hasRight('projet', 'creer');
                 $permissionToDelete = $user->hasRight('projet', 'supprimer');
