@@ -1,22 +1,21 @@
+---
 name: Build assets
 
 on:
-    push:
-        branches:
-            - main
-            - develop
+    # Les .min ne sont volontairement pas exclus : en lecture seule, une PR qui ne fait
+    # que rafraichir les assets compiles est justement une PR qu'on veut verifier.
+    pull_request:
         paths:
             - 'css/scss/**'
-            - 'js/**/*.js'
-            # Les .min sont exclus pour que le commit du robot ne redeclenche pas le workflow
-            - '!js/*.min.js'
-            - '!css/*.min.css'
+            - 'js/**'
 
 jobs:
-    build:
-        uses: Evarisk/Saturne/.github/workflows/build-assets-reusable.yml@main
-        with:
-            module: dolisirh
-
-        permissions:
-            contents: write
+    # Le ruleset de ce depot exige une pull request pour toutes les refs : github-actions[bot]
+    # est arrete comme le serait un humain, et le mode commit ne pourrait que rapporter son
+    # propre refus a chaque merge. Ce qui reste est l'essentiel : attraper un .min perime
+    # avant qu'il n'atteigne develop.
+    verify:
+      uses: Evarisk/Saturne/.github/workflows/build-assets-reusable.yml@main
+      with:
+        module: dolisirh
+        mode: verify
