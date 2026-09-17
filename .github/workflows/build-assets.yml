@@ -1,0 +1,22 @@
+name: Build assets
+
+on:
+    push:
+        branches:
+            - main
+            - develop
+        paths:
+            - 'css/scss/**'
+            - 'js/**/*.js'
+            # Les .min sont exclus pour que le commit du robot ne redeclenche pas le workflow
+            - '!js/*.min.js'
+            - '!css/*.min.css'
+
+jobs:
+    build:
+        uses: Evarisk/Saturne/.github/workflows/build-assets-reusable.yml@main
+        with:
+            module: dolisirh
+
+        permissions:
+            contents: write
