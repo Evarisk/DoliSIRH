@@ -118,7 +118,7 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
         foreach ($timeSpentList as $timeSpent) {
             $hours   = floor($timeSpent->timespent_duration / 3600);
             $minutes = floor($timeSpent->timespent_duration / 60);
-            if ($daysAvailable[$timeSpent->timespent_date]['morning'] && $daysAvailable[$timeSpent->timespent_date]['afternoon']) {
+            if (!empty($daysAvailable[$timeSpent->timespent_date]['morning']) && !empty($daysAvailable[$timeSpent->timespent_date]['afternoon'])) {
                 $timeSpentOnTasks['hours']   += $hours;
                 $timeSpentOnTasks['minutes'] += $minutes;
                 $timeSpentOnTasks['total']   += $timeSpent->timespent_duration;
@@ -130,7 +130,8 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
                 $timeSpentOnTasks[$timeSpent->fk_task]['task_ref']      = $timeSpent->task_ref;
                 $timeSpentOnTasks[$timeSpent->fk_task]['task_label']    = $timeSpent->task_label;
 
-                $timeSpentOnTasks[$timeSpent->fk_task][dol_print_date($timeSpent->timespent_date, 'day')] += $timeSpent->timespent_duration;
+                $dayStr = dol_print_date($timeSpent->timespent_date, 'day');
+                $timeSpentOnTasks[$timeSpent->fk_task][$dayStr] = ($timeSpentOnTasks[$timeSpent->fk_task][$dayStr] ?? 0) + $timeSpent->timespent_duration;
                 $workingDays[$timeSpent->timespent_date] = 1;
             }
         }
@@ -138,6 +139,25 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
     }
 
     return $timeSpentOnTasks;
+}
+
+/**
+ * Read the working minutes of one day, whatever the shape of the working hours.
+ *
+ * Les appelants passent tantot l'objet Workinghours, tantot le tableau de ses valeurs :
+ * le lire uniquement en -> ecrivait un avertissement par jour et par iteration.
+ *
+ * @param  Workinghours|array $workingHours Working hours object or array.
+ * @param  string             $dayKey       Key of the day, workinghours_monday and so on.
+ * @return int                              Working minutes of that day, 0 when unknown.
+ */
+function dolisirh_working_hours_of_day($workingHours, string $dayKey): int
+{
+    if (is_array($workingHours)) {
+        return (int) ($workingHours[$dayKey] ?? 0);
+    }
+
+    return is_object($workingHours) ? (int) ($workingHours->$dayKey ?? 0) : 0;
 }
 
 /**
@@ -164,8 +184,12 @@ function load_planned_time_within_range(int $timestampStart, int $timestampEnd, 
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
 
-            $timeToSpend['minutes'] += $workingHours->$currentDay;
-            if ($workingHours->$currentDay / 60 > 0) {
+            // Le parametre est documente Workinghours|array et arrive parfois en tableau :
+            // le lire en -> ecrivait un avertissement par jour et par iteration
+            $minutesOfDay = dolisirh_working_hours_of_day($workingHours, $currentDay);
+
+            $timeToSpend['minutes'] += $minutesOfDay;
+            if ($minutesOfDay / 60 > 0) {
                 $timeToSpend['days']++;
             }
         }
@@ -198,7 +222,7 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
 
-            $passedWorkingTime['minutes'] += $workingHours->$currentDay;
+            $passedWorkingTime['minutes'] += dolisirh_working_hours_of_day($workingHours, $currentDay);
         }
     }
 
@@ -347,10 +371,10 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
             $sql .= ', ' .MAIN_DB_PREFIX. 'element_contact as ec2';
             $sql .= ', ' .MAIN_DB_PREFIX. 'c_type_contact as ctc2';
         }
-        if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
+        if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) > 0) {
             $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . "element_element as elel ON (t.rowid = elel.fk_target AND elel.targettype='project_task')";
         }
-        if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
+        if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) > 0) {
             if ($versionEighteenOrMore) {
                 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as ptt ON (ptt.fk_element = t.rowid AND ptt.elementtype = "task")';
             } else {
@@ -360,13 +384,13 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
         $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_extrafields as efpt ON (t.rowid = efpt.fk_object)';
         $sql .= ' WHERE p.entity IN (' . getEntity('project') . ')';
         $sql .= ' AND t.fk_projet = p.rowid';
-        if ($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS > 0) {
-            $sql .= ' AND ' . ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? '(' : '') . 'elel.fk_target = t.rowid';
+        if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) > 0) {
+            $sql .= ' AND ' . ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) ? '(' : '') . 'elel.fk_target = t.rowid';
             $sql .= ' AND elel.fk_source = ' . $filterOnProjUser;
         }
-        if ($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT > 0) {
+        if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) > 0) {
             if ($versionEighteenOrMore) {
-                $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' OR (' : ' AND ') . '(ptt.fk_element = t.rowid AND ptt.elementtype = "task") AND ptt.fk_user = ' . $filterOnProjUser;
+                $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' OR (' : ' AND ') . '(ptt.fk_element = t.rowid AND ptt.elementtype = "task") AND ptt.fk_user = ' . $filterOnProjUser;
                 if ($timeMode == 'month') {
                     $sql .= ' AND MONTH(ptt.element_date) = ' . $timeArray['month'];
                 } elseif ($timeMode == 'week') {
@@ -376,7 +400,7 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
                 }
                 $sql .= ' AND YEAR(ptt.element_date) = ' . $timeArray['year'];
             } else {
-                $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
+                $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
                 if ($timeMode == 'month') {
                     $sql .= ' AND MONTH(ptt.task_date) = ' . $timeArray['month'];
                 } elseif ($timeMode == 'week') {
@@ -387,7 +411,7 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
                 $sql .= ' AND YEAR(ptt.task_date) = ' . $timeArray['year'];
             }
         }
-        $sql .= ($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE && $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT ? '))' : '');
+        $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) ? '))' : '');
     } elseif ($mode == 1) {
         if ($filterOnProjUser > 0) {
             $sql .= ', ' . MAIN_DB_PREFIX . 'element_contact as ec';
@@ -640,7 +664,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
             $level = 0;
         }
 
-        if ($lines[$i]->fk_task_parent != $parent && $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) {
+        if ($lines[$i]->fk_task_parent != $parent && (!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0)) {
             $lines[$i]->fk_task_parent = 0;
         }
 
@@ -703,7 +727,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 print '<tr class="oddeven" data-task_id="' . $lines[$i]->id . '" >';
 
                 // Ref.
-                print '<td class="nowrap" style="position: sticky; left: 0; background-color: #FFFFFF;">';
+                print '<td class="nowrap" style="position: sticky; left: 0; background-color: #FFFFFF; z-index: 500;">';
                 print '<!-- Task id = ' . $lines[$i]->id . ' -->';
                 for ($k = 0; $k < $level; $k++) {
                     print '<div class="marginleftonly">';
@@ -770,21 +794,22 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 for ($idw = 0; $idw < $daysInRange; $idw++) {
                     $cellCSS   = '';
                     $dayInLoop = dol_time_plus_duree($timestampStart, $idw, 'd');
-                    if (!$daysAvailable[$dayInLoop]['morning'] && !$daysAvailable[$dayInLoop]['afternoon']) {
-                        if ($daysAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
+                    if (empty($daysAvailable[$dayInLoop]['morning']) && empty($daysAvailable[$dayInLoop]['afternoon'])) {
+                        $reason = !empty($daysAvailable[$dayInLoop]['morning_reason']) ? $daysAvailable[$dayInLoop]['morning_reason'] : '';
+                        if ($reason == 'public_holiday') {
                             $cellCSS = 'onholidayallday';
-                        } elseif ($daysAvailable[$dayInLoop]['morning_reason'] == 'week_end') {
+                        } elseif ($reason == 'week_end') {
                             $cellCSS = 'weekend';
                         }
                     }
 
                     $tmpArray = dol_getdate($dayInLoop);
 
-                    $totalForEachDay[$dayInLoop] = $timeSpentOnTasks[$lines[$i]->id][dol_print_date($dayInLoop, 'day')];
+                    $totalForEachDay[$dayInLoop] = $timeSpentOnTasks[$lines[$i]->id][dol_print_date($dayInLoop, 'day')] ?? 0;
 
                     $alreadySpent = '';
                     if ($totalForEachDay[$dayInLoop] > 0) {
-                        $timeSpentComments = $timeSpentOnTasks[$lines[$i]->id]['comments'][dol_print_date($dayInLoop, 'day')];
+                        $timeSpentComments = $timeSpentOnTasks[$lines[$i]->id]['comments'][dol_print_date($dayInLoop, 'day')] ?? [];
                         if (is_array($timeSpentComments) && !empty($timeSpentComments)) {
                             $textTooltip = implode('', $timeSpentComments);
                         } else {
@@ -792,7 +817,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                         }
                         $alreadySpent = convertSecondToTime($totalForEachDay[$dayInLoop], 'allhourmin');
                     }
-                    $altTitle = $langs->trans('AddHereTimeSpentForDay', $tmpArray['day'], $tmpArray['mon']);
+                    $altTitle = $langs->trans('AddHereTimeSpentForDay', $tmpArray['mday'], $tmpArray['mon']);
 
                     $disabledTaskDay = $disabledTask;
 
@@ -802,7 +827,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                     $tableCell = '<td class="center ' . $idw . ' ' . $cellCSS . '" data-cell="' . $idw . '">';
                     if ($alreadySpent) {
-                        $tableCell .= '<span class="timesheetalreadyrecorded wpeo-tooltip-event" aria-label="' . $textTooltip . '"><input type="text" class="center smallpadd" size="2" disabled id="timespent[' . $inc . '][' . $idw . ']" name="task[' . $lines[$i]->id . '][' . $idw . ']" value="' . $alreadySpent . '"></span>';
+                        $tableCell .= '<span class="timesheetalreadyrecorded wpeo-tooltip-event" aria-label="' . dol_escape_htmltag($textTooltip) . '"><input type="text" class="center smallpadd" size="2" disabled id="timespent[' . $inc . '][' . $idw . ']" name="task[' . $lines[$i]->id . '][' . $idw . ']" value="' . $alreadySpent . '"></span>';
                     }
 
                     $tableCell .= '<div class="modal-open">';

@@ -163,6 +163,30 @@ KeyEvent                               = Raccourci clavier
 
 
 #
+# TimeSpent invoice assignment - Affectation du temps consommé sur une facture
+#
+
+# Data - Donnée
+AssignTimeSpentToInvoice                 = Affecter le temps à une facture
+TimeSpentToAssign                        = Temps à affecter
+InvoiceLineToConsume                     = Ligne de service à consommer
+AvailableTimeOnInvoiceLine               = Disponible
+NoAvailableInvoiceLine                   = Aucune facture disponible
+NoInvoiceLineWithEnoughAvailableTime     = Aucune facture ne dispose d'assez de temps non consommé sur ses services pour affecter ce temps
+TimeSpentNotBillable                     = Temps non facturable
+TimeSpentNotBillableHelp                 = La tâche de ce temps consommé est marquée comme non facturable, il ne peut pas être affecté à une facture
+
+# SetEventMessage - Notice info
+TimeSpentAssignedToInvoice               = %s temps consommé(s) affecté(s) à la facture %s
+NbTimeSpentNotBillableIgnored            = %s temps consommé(s) non facturable(s) ignoré(s)
+NoBillableTimeSpentSelected              = Aucun temps consommé facturable dans la sélection
+ErrorInvoiceLineWithoutAvailableTime     = Erreur : cette ligne de service ne dispose plus de temps non consommé
+ErrorNotEnoughAvailableTimeOnInvoiceLine = Erreur : le temps à affecter (%s) dépasse le temps non consommé de la ligne de service (%s)
+ErrorAssignTimeSpentToInvoice            = Erreur lors de l'affectation du temps consommé à la facture
+
+
+
+#
 # Recurring invoice - Facture récurrente
 #
 
