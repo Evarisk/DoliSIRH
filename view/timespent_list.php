@@ -233,7 +233,7 @@ $sql = 'SELECT ';
 $sql .= 'DISTINCT ';
 $sqlfields = array();
 foreach ($arrayfields as $field => $data) {
-	$sqlfields[] = $data['tablealias'] . $field . ((array_key_exists('fieldalias', $data) ? ' as ' . $data['fieldalias'] : ''));
+	$sqlfields[] = ($data['tablealias'] ?? '') . $field . ((array_key_exists('fieldalias', $data) ? ' as ' . $data['fieldalias'] : ''));
 }
 $sql .= implode(',', $sqlfields);
 
@@ -248,7 +248,7 @@ $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'c_lead_status as cls ON p.fk_opp_statu
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task as pt ON p.rowid = pt.fk_projet';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_extrafields as ef ON pt.rowid = ef.fk_object';
 if ($versionEighteenOrMore) {
-    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as ptt ON (ptt.fk_element = t.rowid AND ptt.elementtype = "task")';
+    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as ptt ON (ptt.fk_element = pt.rowid AND ptt.elementtype = "task")';
 } else {
     $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as ptt ON pt.rowid = ptt.fk_task';
 }
@@ -261,7 +261,8 @@ $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'dolisirh_timesheet as ts ON ee.fk_sour
 $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldListFrom', $parameters, $object); // Note that $action and $object may have been modified by hook
 $sql .= $hookmanager->resPrint;
-if ($object->ismultientitymanaged == 1) {
+// $object est nul sur une liste : la lecture directe ecrivait un avertissement
+if (is_object($object) && $object->ismultientitymanaged == 1) {
 	$sql .= " WHERE p.entity IN (" . getEntity($object->element) . ")";
 } else {
 	$sql .= " WHERE 1 = 1";
@@ -498,7 +499,7 @@ foreach ($arrayfields as $key => $val) {
 		$cssforfield .= ($cssforfield ? ' ' : '') . 'right';
 	}
 	if (!empty($arrayfields[$key]['checked'])) {
-		print getTitleFieldOfList($arrayfields[$key]['label'], 0, $_SERVER['PHP_SELF'], $val['tablealias'] . $key, '', $param, ($cssforfield ? 'class="' . $cssforfield . '"' : ''), $sortfield, $sortorder, ($cssforfield ? $cssforfield . ' ' : '')) . "\n";
+		print getTitleFieldOfList($arrayfields[$key]['label'], 0, $_SERVER['PHP_SELF'], ($val['tablealias'] ?? '') . $key, '', $param, ($cssforfield ? 'class="' . $cssforfield . '"' : ''), $sortfield, $sortorder, ($cssforfield ? $cssforfield . ' ' : '')) . "\n";
 	}
 }
 // Extra fields

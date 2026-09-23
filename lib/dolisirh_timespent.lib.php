@@ -142,6 +142,25 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
 }
 
 /**
+ * Read the working minutes of one day, whatever the shape of the working hours.
+ *
+ * Les appelants passent tantot l'objet Workinghours, tantot le tableau de ses valeurs :
+ * le lire uniquement en -> ecrivait un avertissement par jour et par iteration.
+ *
+ * @param  Workinghours|array $workingHours Working hours object or array.
+ * @param  string             $dayKey       Key of the day, workinghours_monday and so on.
+ * @return int                              Working minutes of that day, 0 when unknown.
+ */
+function dolisirh_working_hours_of_day($workingHours, string $dayKey): int
+{
+    if (is_array($workingHours)) {
+        return (int) ($workingHours[$dayKey] ?? 0);
+    }
+
+    return is_object($workingHours) ? (int) ($workingHours->$dayKey ?? 0) : 0;
+}
+
+/**
  * Load time to spend within a time range.
  *
  * @param  int                $timestampStart Timestamp first day.
@@ -165,8 +184,12 @@ function load_planned_time_within_range(int $timestampStart, int $timestampEnd, 
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
 
-            $timeToSpend['minutes'] += $workingHours->$currentDay;
-            if ($workingHours->$currentDay / 60 > 0) {
+            // Le parametre est documente Workinghours|array et arrive parfois en tableau :
+            // le lire en -> ecrivait un avertissement par jour et par iteration
+            $minutesOfDay = dolisirh_working_hours_of_day($workingHours, $currentDay);
+
+            $timeToSpend['minutes'] += $minutesOfDay;
+            if ($minutesOfDay / 60 > 0) {
                 $timeToSpend['days']++;
             }
         }
@@ -199,7 +222,7 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
 
-            $passedWorkingTime['minutes'] += $workingHours->$currentDay;
+            $passedWorkingTime['minutes'] += dolisirh_working_hours_of_day($workingHours, $currentDay);
         }
     }
 
