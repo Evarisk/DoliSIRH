@@ -109,7 +109,9 @@ print load_fiche_titre($title, '', $picto);
 
 dol_mkdir($dir);
 
-$stats = new FactureRecStats($db, (int) $socid, $mode, ($userid > 0 ? $userid : 0), ($typent_id > 0 ? $typent_id : 0), ($categ_id > 0 ? $categ_id : 0),  ($categinvoicerec_id > 0 ? $categinvoicerec_id : 0));
+// Les parametres du coeur sont types int : une valeur venue de la requete est une chaine,
+// et '3' > 0 est vrai, donc la chaine passait telle quelle
+$stats = new FactureRecStats($db, (int) $socid, $mode, (int) max(0, $userid), (int) max(0, $typent_id), (int) max(0, $categ_id), (int) max(0, $categinvoicerec_id));
 if ($mode == 'customer') {
 	if ($object_status != '' && $object_status >= 0) {
 		$stats->where .= ' AND f.suspended IN ('.$db->sanitize($object_status).')';
