@@ -1763,3 +1763,26 @@ parameters:
 			identifier: argument.type
 			count: 6
 			path: view/timespent_range.php
+		-
+			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 4
+			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
+
+		-
+			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 9
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Property DolibarrModules\:\:\$dictionaries \(array\{\}\|array\{langs\: string, tabname\: array\<string\>, tablib\: array\<string\>, tabsql\: array\<string\>, tabsqlsort\: array\<string\>, tabfield\: array\<string\>, tabfieldvalue\: array\<string\>, tabfieldinsert\: array\<string\>, \.\.\.\}\) does not accept array\{langs\: ''dolisirh@dolisirh'', tabname\: array\{''llx_c_timesheet…'', ''llx_c_certificate…''\}, tablib\: array\{''Timesheet'', ''Certificate''\}, tabsql\: array\{''SELECT f\.rowid as…'', ''SELECT f\.rowid as…''\}, tabsqlsort\: array\{''position ASC'', ''position ASC''\}, tabfield\: array\{''ref,label…'', ''ref,label…''\}, tabfieldvalue\: array\{''ref,label…'', ''ref,label…''\}, tabfieldinsert\: array\{''ref,label…'', ''ref,label…''\}, \.\.\.\}\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Property DolibarrModules\:\:\$menu \(1\|array\<array\{commentgroup\?\: string, mainmenu\: string, leftmenu\: string, langs\: string, enabled\: int\|string, target\: string, titre\: string, user\: int, \.\.\.\}\>\) does not accept non\-empty\-array\<array\{commentgroup\?\: string, mainmenu\: string, leftmenu\: string, langs\: string, enabled\: int\|string, target\: string, titre\: string, user\: int, \.\.\.\}\|array\{fk_menu\: ''fk_mainmenu\=dolisirh'', type\: ''top'', titre\: mixed, prefix\: ''\<i class\="fas fa…'', mainmenu\: ''dolisirh'', leftmenu\: '''', url\: ''/dolisirh…'', langs\: ''dolisirh@dolisirh'', \.\.\.\}\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
