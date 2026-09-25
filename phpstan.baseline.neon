@@ -1553,3 +1553,410 @@ parameters:
 			identifier: variable.undefined
 			count: 2
 			path: view/workinghours_card.php
+		-
+			message: '#^Loose comparison using \=\= between ''edit_extras'' and ''edit_extras'' will always evaluate to true\.$#'
+			identifier: equal.alwaysTrue
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#3 \$projectid of method Task\:\:getTasksArray\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#1 \$year of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Cannot access property \$avg on object\|false\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Cannot access property \$nb on object\|false\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Cannot access property \$total on object\|false\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Cannot access property \$year on object\|false\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#1 \$year of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 4
+			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
+
+		-
+			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 9
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Property DolibarrModules\:\:\$dictionaries \(array\{\}\|array\{langs\: string, tabname\: array\<string\>, tablib\: array\<string\>, tabsql\: array\<string\>, tabsqlsort\: array\<string\>, tabfield\: array\<string\>, tabfieldvalue\: array\<string\>, tabfieldinsert\: array\<string\>, \.\.\.\}\) does not accept array\{langs\: ''dolisirh@dolisirh'', tabname\: array\{''llx_c_timesheet…'', ''llx_c_certificate…''\}, tablib\: array\{''Timesheet'', ''Certificate''\}, tabsql\: array\{''SELECT f\.rowid as…'', ''SELECT f\.rowid as…''\}, tabsqlsort\: array\{''position ASC'', ''position ASC''\}, tabfield\: array\{''ref,label…'', ''ref,label…''\}, tabfieldvalue\: array\{''ref,label…'', ''ref,label…''\}, tabfieldinsert\: array\{''ref,label…'', ''ref,label…''\}, \.\.\.\}\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Property DolibarrModules\:\:\$menu \(1\|array\<array\{commentgroup\?\: string, mainmenu\: string, leftmenu\: string, langs\: string, enabled\: int\|string, target\: string, titre\: string, user\: int, \.\.\.\}\>\) does not accept non\-empty\-array\<array\{commentgroup\?\: string, mainmenu\: string, leftmenu\: string, langs\: string, enabled\: int\|string, target\: string, titre\: string, user\: int, \.\.\.\}\|array\{fk_menu\: ''fk_mainmenu\=dolisirh'', type\: ''top'', titre\: mixed, prefix\: ''\<i class\="fas fa…'', mainmenu\: ''dolisirh'', leftmenu\: '''', url\: ''/dolisirh…'', langs\: ''dolisirh@dolisirh'', \.\.\.\}\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#1 \$categories of method CommonObject\:\:setCategoriesCommon\(\) expects array\<int\>\|int, array\<string\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+
+		-
+			message: '#^Parameter \#1 \$array of function uasort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function uasort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Binary operation "\-" between string and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#1 \$endyear of method DoliSIRHStats\:\:getAmountByMonthWithPrevYear\(\) expects int, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#1 \$endyear of method DoliSIRHStats\:\:getAverageByMonthWithPrevYear\(\) expects int, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#1 \$endyear of method DoliSIRHStats\:\:getNbByMonthWithPrevYear\(\) expects int, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#2 \$check of function GETPOST expects ''''\|''alpha''\|''alphanohtml''\|''alphawithlgt''\|''array''\|''array\:alpha''\|''array\:alphanohtml''\|''array\:aZ09''\|''array\:int''\|''array\:intcomma''\|''array\:restricthtml''\|''aZ''\|''aZ09''\|''aZ09arobase''\|''aZ09comma''\|''custom''\|''email''\|''int''\|''intcomma''\|''nohtml''\|''none''\|''password''\|''restricthtml''\|''restricthtmlallowcl…''\|''restricthtmlallowif…''\|''restricthtmlallowli…''\|''restricthtmlallowun…''\|''san_alpha''\|''url'', ''categ_id'' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#1 \$id of method Product\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#1 \$id of method SaturneObject\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#1 \$id of method User\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#4 \$selected of method CommonObject\:\:printObjectLines\(\) expects int\<0, max\>, ''''\|numeric\-string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 7
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheetLine\:\:\$fk_product \(int\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheetLine\:\:\$fk_timesheet \(int\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheetLine\:\:\$product_type \(int\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheetLine\:\:\$qty \(float\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Binary operation "\-" between string and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Binary operation "\-" between string and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#1 \$day of function dol_get_first_day_week expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$day of function dol_get_next_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$day of function dol_get_prev_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$id of method Project\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$id of method User\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$month of function dol_get_next_month expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$month of function dol_get_prev_month expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$year of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_first_day_week expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_next_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_prev_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$year of function dol_get_next_month expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$year of function dol_get_prev_month expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#3 \$year of function dol_get_first_day_week expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#3 \$year of function dol_get_next_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#3 \$year of function dol_get_prev_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timespent_range.php
