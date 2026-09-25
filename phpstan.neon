@@ -27,6 +27,12 @@ parameters:
             # classe introuvable, non ignorable, qui empeche toute baseline.
             # « tests/ » au pluriel, lui, porte de vrais tests et reste analyse.
             - test/ (?)
+            # Le bootstrap PHPUnit de saturne declare des stubs DoliDB, Conf, Translate,
+            # User et HookManager. Scannes, ils gagnent sur les vraies classes du coeur et
+            # chaque appel de methode remonte en « undefined method » - d'ou une bonne part
+            # de la baseline. Saturne exclut deja ce fichier de sa propre analyse, mais
+            # scanDirectories prend ../saturne/ en entier. Issue #691
+            - ../saturne/tests/ (?)
         analyse:
             # Les fragments de template sont inclus au milieu de la portee de leur
             # appelant : leurs variables sont indefinies par construction quand on les
