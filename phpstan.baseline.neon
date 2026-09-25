@@ -7,50 +7,14 @@ parameters:
 			path: admin/project.php
 
 		-
-			message: '#^Access to property \$position on an unknown class Bookmark\.$#'
-			identifier: class.notFound
-			count: 2
-			path: admin/setup.php
-
-		-
-			message: '#^Access to property \$target on an unknown class Bookmark\.$#'
-			identifier: class.notFound
-			count: 2
-			path: admin/setup.php
-
-		-
-			message: '#^Access to property \$title on an unknown class Bookmark\.$#'
-			identifier: class.notFound
-			count: 2
-			path: admin/setup.php
-
-		-
-			message: '#^Access to property \$url on an unknown class Bookmark\.$#'
-			identifier: class.notFound
-			count: 2
-			path: admin/setup.php
-
-		-
 			message: '#^Call to an undefined method User\:\:get_full_tree\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: admin/setup.php
 
 		-
-			message: '#^Call to method create\(\) on an unknown class Bookmark\.$#'
-			identifier: class.notFound
-			count: 1
-			path: admin/setup.php
-
-		-
 			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
 			identifier: arguments.count
-			count: 1
-			path: admin/setup.php
-
-		-
-			message: '#^Instantiated class Bookmark not found\.$#'
-			identifier: class.notFound
 			count: 1
 			path: admin/setup.php
 
@@ -93,6 +57,12 @@ parameters:
 		-
 			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
 			identifier: argument.type
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Property Bookmark\:\:\$target \(string\) does not accept int\.$#'
+			identifier: assign.propertyType
 			count: 1
 			path: admin/setup.php
 
@@ -895,24 +865,6 @@ parameters:
 			path: dolisirhindex.php
 
 		-
-			message: '#^Access to constant STATUS_APPROVED on an unknown class Holiday\.$#'
-			identifier: class.notFound
-			count: 1
-			path: lib/dolisirh_function.lib.php
-
-		-
-			message: '#^Call to method verifDateHolidayForTimestamp\(\) on an unknown class Holiday\.$#'
-			identifier: class.notFound
-			count: 1
-			path: lib/dolisirh_function.lib.php
-
-		-
-			message: '#^Instantiated class Holiday not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: lib/dolisirh_function.lib.php
-
-		-
 			message: '#^Parameter \#1 \$db of function dol_print_error expects DoliDB\|null, string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -920,6 +872,12 @@ parameters:
 
 		-
 			message: '#^Parameter \#3 \$f_user of method CommonObject\:\:add_object_linked\(\) expects User\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/dolisirh_function.lib.php
+
+		-
+			message: '#^Parameter \#3 \$status of method Holiday\:\:verifDateHolidayForTimestamp\(\) expects string, int given\.$#'
 			identifier: argument.type
 			count: 1
 			path: lib/dolisirh_function.lib.php

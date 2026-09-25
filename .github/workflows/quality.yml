@@ -102,7 +102,9 @@ jobs:
                   ref: '23.0.0'
                   path: dolibarr-core
                   sparse-checkout: |
+                      htdocs/ai/class
                       htdocs/api/class
+                      htdocs/bookmarks/class
                       htdocs/core/*.inc.php
                       htdocs/categories/class
                       htdocs/comm/action/class
@@ -111,16 +113,19 @@ jobs:
                       htdocs/compta/facture/class
                       htdocs/contact/class
                       htdocs/contrat/class
+                      htdocs/core/boxes
                       htdocs/core/class
                       htdocs/core/db
                       htdocs/core/lib
                       htdocs/core/modules
                       htdocs/core/tpl
                       htdocs/core/triggers
+                      htdocs/cron/class
                       htdocs/ecm/class
                       htdocs/expedition/class
                       htdocs/fichinter/class
                       htdocs/fourn/class
+                      htdocs/holiday/class
                       htdocs/includes/odtphp
                       htdocs/includes/parsedown
                       htdocs/includes/restler/framework

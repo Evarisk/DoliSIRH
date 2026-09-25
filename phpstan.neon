@@ -50,7 +50,9 @@ parameters:
     # A garder en phase avec le sparse-checkout de .github/workflows/quality.yml.
     scanDirectories:
         - ../saturne/
+        - ../../ai/class/
         - ../../api/class/
+        - ../../bookmarks/class/
         - ../../categories/class/
         - ../../comm/action/class/
         - ../../comm/propal/class/
@@ -65,10 +67,12 @@ parameters:
         - ../../core/modules/
         - ../../core/tpl/
         - ../../core/triggers/
+        - ../../cron/class/
         - ../../ecm/class/
         - ../../expedition/class/
         - ../../fichinter/class/
         - ../../fourn/class/
+        - ../../holiday/class/
         - ../../includes/odtphp/
         - ../../includes/parsedown/
         - ../../includes/restler/framework/
