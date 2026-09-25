@@ -58,6 +58,7 @@ parameters:
         - ../../compta/facture/class/
         - ../../contact/class/
         - ../../contrat/class/
+        - ../../core/boxes/
         - ../../core/class/
         - ../../core/db/
         - ../../core/lib/
