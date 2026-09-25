@@ -1,0 +1,1561 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Parameter \#5 \$arrayofcolors of static method FormOther\:\:selectColor\(\) expects array\<string\>, string given\.$#'
+			identifier: argument.type
+			count: 3
+			path: admin/project.php
+
+		-
+			message: '#^Call to an undefined method User\:\:get_full_tree\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Parameter \#1 \$hour of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Parameter \#1 \$usert of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Parameter \#2 \$minute of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Parameter \#2 \$userp of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Parameter \#3 \$second of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Property Bookmark\:\:\$target \(string\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: admin/setup.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Cannot call method getNomUrl\(\) on CommonObject\|false\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 0\.0 and 18\.0 is always false\.$#'
+			identifier: greaterOrEqual.alwaysFalse
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#1 \$id of method Ticket\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#1 \$usert of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#12 \$param of function saturne_show_documents expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#14 \$buttonlabel of function saturne_show_documents expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#2 \$userp of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#4 \$key_in_label of method Form\:\:multiselectarray\(\) expects int\<0, 1\>, '''' given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#4 \$key_in_label of static method Form\:\:multiselectarray\(\) expects int\<0, 1\>, '''' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<non\-falsy\-string, array\{labels\: non\-empty\-list\<array\{color\: string\}\>, data\: non\-empty\-list\<array\{non\-falsy\-string, \(float\|int\), \(float\|int\)\}\>, timespent_duration_task\: non\-empty\-list\<\(float\|int\)\>\}\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:fetch_row\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:num_rows\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliSIRHStats\:\:getAmountByMonth\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliSIRHStats\:\:getAverageByMonth\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliSIRHStats\:\:getNbByMonth\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<non\-falsy\-string, array\{labels\: non\-empty\-list\<array\{color\: string\}\>, data\: non\-empty\-list\<array\{non\-falsy\-string, \(float\|int\), \(float\|int\)\}\>, timespent_duration_task\: non\-empty\-list\<\(float\|int\)\>\}\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
+			identifier: method.notFound
+			count: 8
+			path: class/facturerecstats.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:order\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: class/facturerecstats.class.php
+
+		-
+			message: '#^Parameter \#1 \$year of function dol_get_last_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: class/facturerecstats.class.php
+
+		-
+			message: '#^PHPDoc type array of property TimeSheet\:\:\$childtables is not covariant with PHPDoc type array\<array\<string\>\|string\> of overridden property CommonObject\:\:\$childtables\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type array of property TimeSheet\:\:\$childtablesoncascade is not covariant with PHPDoc type array\<string\> of overridden property CommonObject\:\:\$childtablesoncascade\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type array of property TimeSheet\:\:\$fields is not covariant with PHPDoc type array\<string, array\{type\: string, label\: string, langfile\?\: string, enabled\: int\<0, 2\>\|string, position\: int, notnull\?\: int, visible\: int\<\-6, 6\>\|string, alwayseditable\?\: int\<0, 1\>\|string, \.\.\.\}\> of overridden property CommonObject\:\:\$fields\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type array of property TimeSheetLine\:\:\$fields is not covariant with PHPDoc type array\<string, array\{type\: string, label\: string, langfile\?\: string, enabled\: int\<0, 2\>\|string, position\: int, notnull\?\: int, visible\: int\<\-6, 6\>\|string, alwayseditable\?\: int\<0, 1\>\|string, \.\.\.\}\> of overridden property CommonObject\:\:\$fields\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type int of property TimeSheet\:\:\$isextrafieldmanaged is not covariant with PHPDoc type int\<0, 1\> of overridden property SaturneObject\:\:\$isextrafieldmanaged\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type int of property TimeSheet\:\:\$ismultientitymanaged is not covariant with PHPDoc type int\<0, 1\>\|string of overridden property SaturneObject\:\:\$ismultientitymanaged\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type int of property TimeSheetLine\:\:\$isextrafieldmanaged is not covariant with PHPDoc type int\<0, 1\> of overridden property SaturneObject\:\:\$isextrafieldmanaged\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type int of property TimeSheetLine\:\:\$ismultientitymanaged is not covariant with PHPDoc type int\<0, 1\>\|string of overridden property SaturneObject\:\:\$ismultientitymanaged\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type int\|string of property TimeSheet\:\:\$date_creation is not covariant with PHPDoc type ''''\|int\|null of overridden property CommonObject\:\:\$date_creation\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type int\|string of property TimeSheet\:\:\$tms is not covariant with PHPDoc type int of overridden property CommonObject\:\:\$tms\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type int\|string of property TimeSheetLine\:\:\$date_creation is not covariant with PHPDoc type ''''\|int\|null of overridden property CommonObject\:\:\$date_creation\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^PHPDoc type int\|string\|null of property TimeSheet\:\:\$fk_project is not covariant with PHPDoc type int\|null of overridden property CommonObject\:\:\$fk_project\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^Parameter \#3 \$notrigger of method CommonObject\:\:deleteLineCommon\(\) expects int, bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^Property TimeSheet\:\:\$lines \(array\<TimeSheetLine\>\) does not accept array\<int, SaturneObject\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: class/timesheet.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:lasterror\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:num_rows\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:order\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:plimit\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: class/workinghours.class.php
+
+		-
+			message: '#^PHPDoc type array of property Workinghours\:\:\$fields is not covariant with PHPDoc type array\<string, array\{type\: string, label\: string, langfile\?\: string, enabled\: int\<0, 2\>\|string, position\: int, notnull\?\: int, visible\: int\<\-6, 6\>\|string, alwayseditable\?\: int\<0, 1\>\|string, \.\.\.\}\> of overridden property CommonObject\:\:\$fields\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^PHPDoc type int of property Workinghours\:\:\$isextrafieldmanaged is not covariant with PHPDoc type int\<0, 1\> of overridden property CommonObject\:\:\$isextrafieldmanaged\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^PHPDoc type int of property Workinghours\:\:\$ismultientitymanaged is not covariant with PHPDoc type int\<0, 1\>\|string\|null of overridden property CommonObject\:\:\$ismultientitymanaged\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Parameter \#2 \$notrigger of method CommonObject\:\:createCommon\(\) expects int\<0, 1\>, bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$element_id has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$element_type has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$rowid has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$schedule_friday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$schedule_monday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$schedule_saturday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$schedule_sunday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$schedule_thursday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$schedule_tuesday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$schedule_wednesday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$workinghours_friday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$workinghours_monday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$workinghours_saturday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$workinghours_sunday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$workinghours_thursday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$workinghours_tuesday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Property Workinghours\:\:\$workinghours_wednesday has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: class/workinghours.class.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 0\.0 and 18\.0 is always false\.$#'
+			identifier: greaterOrEqual.alwaysFalse
+			count: 1
+			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 2
+			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
+
+		-
+			message: '#^Access to an undefined property User\:\:\$firstname\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Access to an undefined property User\:\:\$lastname\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Parameter \#1 \$usert of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Parameter \#2 \$userp of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Variable \$tmpArray might not be defined\.$#'
+			identifier: variable.undefined
+			count: 8
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$boxes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$config_page_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$conflictwith\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$const\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$const_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$cronjobs\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$db\.$#'
+			identifier: property.notFound
+			count: 7
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$depends\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$descriptionlong\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$dictionaries\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$dirs\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$editor_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$error\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$errors\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$family\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$familyinfo\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$hidden\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$langfiles\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$max_dolibarr_version\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$menu\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$module_parts\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$module_position\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$need_dolibarr_version\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$phpmin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$picto\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$requiredby\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$rights\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$rights_class\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$tabs\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$warnings_activation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property modDoliSIRH\:\:\$warnings_activation_ext\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Call to an undefined method modDoliSIRH\:\:_init\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Call to an undefined method modDoliSIRH\:\:_load_tables\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Call to an undefined method modDoliSIRH\:\:_remove\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#1 \$id of method Product\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#11 \$perms of method ExtraFields\:\:update\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#12 \$perms of method ExtraFields\:\:addExtraField\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 3
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#13 \$list of method ExtraFields\:\:addExtraField\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#16 \$entity of method ExtraFields\:\:addExtraField\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#16 \$entity of method ExtraFields\:\:update\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#5 \$size of method ExtraFields\:\:addExtraField\(\) expects string, null given\.$#'
+			identifier: argument.type
+			count: 4
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#8 \$pos of method ExtraFields\:\:update\(\) expects int\<0, 1\>, 100 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Parameter \#9 \$default_value of method ExtraFields\:\:addExtraField\(\) expects string, null given\.$#'
+			identifier: argument.type
+			count: 4
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Access to an undefined property User\:\:\$fk_user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+
+		-
+			message: '#^Property DolibarrTriggers\:\:\$version \(''''\|''development''\|''dolibarr''\|''experimental''\) does not accept ''23\.1\.0''\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+
+		-
+			message: '#^Parameter \#7 \$enableonly of method Form\:\:select_dolusers\(\) expects ''''\|array\<int\>, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: dolisirhindex.php
+
+		-
+			message: '#^Parameter \#8 \$force_entity of method Form\:\:select_dolusers\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: dolisirhindex.php
+
+		-
+			message: '#^Parameter \#1 \$db of function dol_print_error expects DoliDB\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/dolisirh_function.lib.php
+
+		-
+			message: '#^Parameter \#3 \$f_user of method CommonObject\:\:add_object_linked\(\) expects User\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/dolisirh_function.lib.php
+
+		-
+			message: '#^Parameter \#3 \$status of method Holiday\:\:verifDateHolidayForTimestamp\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/dolisirh_function.lib.php
+
+		-
+			message: '#^Parameter \#4 \$notrigger of method CommonObject\:\:add_object_linked\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/dolisirh_function.lib.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:affected_rows\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:lasterror\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Property Product\:\:\$duration_value \(int\|null\) does not accept float\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<1\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 0\.0 and 18\.0 is always false\.$#'
+			identifier: greaterOrEqual.alwaysFalse
+			count: 3
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 8
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Parameter \#1 \$db of function dol_print_error expects DoliDB\|null, string given\.$#'
+			identifier: argument.type
+			count: 5
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Parameter \#1 \$userobj of method Task\:\:getSummaryOfTimeSpent\(\) expects 0\|User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Parameter \#1 \$userp of method Task\:\:getUserRolesForProjectsOrTasks\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Parameter \#2 \$size of function dol_trunc expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Parameter \#2 \$usert of method Task\:\:getUserRolesForProjectsOrTasks\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Variable \$textTooltip might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: lib/dolisirh_timespent.lib.php
+
+		-
+			message: '#^Parameter \#12 \$param of function saturne_show_documents expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/certificate/certificate_card.php
+
+		-
+			message: '#^Parameter \#20 \$active of function saturne_show_documents expects int, bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/certificate/certificate_card.php
+
+		-
+			message: '#^Parameter \#4 \$key_in_label of static method Form\:\:multiselectarray\(\) expects int\<0, 1\>, '''' given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/certificate/certificate_card.php
+
+		-
+			message: '#^Parameter \#6 \$delallowed of function saturne_show_documents expects int, bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/certificate/certificate_card.php
+
+		-
+			message: '#^Property SaturneCertificate\:\:\$entity \(int\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: view/certificate/certificate_card.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: view/certificate/certificate_card.php
+
+		-
+			message: '#^Parameter \#2 \$array of method Form\:\:multiSelectArrayWithCheckbox\(\) expects array\<string, array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\>, array\<non\-falsy\-string, array\{label\: mixed, checked\: 0\|1, enabled\: bool, position\: mixed, help\: mixed\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#3 \$value of method CommonObject\:\:showOutputField\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#4 \$filter of method FormAdmin\:\:select_language\(\) expects array\<string\>, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Access to an undefined property User\:\:\$employee\.$#'
+			identifier: property.notFound
+			count: 1
+			path: view/dolisirhtools.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: view/dolisirhtools.php
+
+		-
+			message: '#^Call to an undefined method User\:\:get_full_tree\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: view/dolisirhtools.php
+
+		-
+			message: '#^Call to an undefined method User\:\:update\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: view/dolisirhtools.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: view/dolisirhtools.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: view/dolisirhtools.php
+
+		-
+			message: '#^Parameter \#5 \$disablejs of function llxHeader expects int\<0, 1\>, '''' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/dolisirhtools.php
+
+		-
+			message: '#^Parameter \#6 \$disablehead of function llxHeader expects int\<0, 1\>, '''' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/dolisirhtools.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: view/inverteddate.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#1 \$legend of method DolGraph\:\:SetLegend\(\) expects array\<string\>, list\<\(float\|int\)\> given\.$#'
+			identifier: argument.type
+			count: 3
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#1 \$min of method DolGraph\:\:SetMinValue\(\) expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#2 \$selected of method Form\:\:select_all_categories\(\) expects ''''\|''auto''\|int, null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#4 \$exclude of method Form\:\:select_dolusers\(\) expects array\<int\>\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#4 \$maxlength of method Form\:\:select_all_categories\(\) expects int, null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#5 \$fromid of method Form\:\:select_all_categories\(\) expects array\<int\>\|int\|string, null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#8 \$force_entity of method Form\:\:select_dolusers\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Variable \$cat_label might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Variable \$cat_type might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Variable \$conf might not be defined\.$#'
+			identifier: variable.undefined
+			count: 5
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Variable \$fileurl_avg might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Variable \$fileurlamount might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Variable \$fileurlnb might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Variable \$type might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Call to an undefined method User\:\:getFullName\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 0\.0 and 18\.0 is always false\.$#'
+			identifier: greaterOrEqual.alwaysFalse
+			count: 2
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 2
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#12 \$param of function saturne_show_documents expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#2 \$noTrigger of method SaturneObject\:\:setLocked\(\) expects int\<0, 1\>, false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#2 \$replace of function str_replace expects array\<string\>\|string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#2 \$replace of function str_replace expects array\<string\>\|string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#20 \$active of function saturne_show_documents expects int, bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#4 \$key_in_label of static method Form\:\:multiselectarray\(\) expects int\<0, 1\>, '''' given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#6 \$delallowed of function saturne_show_documents expects int, bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheet\:\:\$entity \(int\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Class TimeSheet referenced with incorrect case\: Timesheet\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#2 \$array of method Form\:\:multiSelectArrayWithCheckbox\(\) expects array\<string, array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\>, array\<non\-falsy\-string, array\{label\: mixed, checked\: 0\|1, enabled\: bool, position\: mixed, help\: mixed\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#3 \$value of method CommonObject\:\:showOutputField\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#4 \$filter of method FormAdmin\:\:select_language\(\) expects array\<string\>, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Variable \$search_category_array might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\{\}\|array\{predelete\: string\} will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 0\.0 and 18\.0 is always false\.$#'
+			identifier: greaterOrEqual.alwaysFalse
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 5
+			path: view/timespent_list.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''css'' does not exist on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''csslist'' does not exist on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''fieldalias'' does not exist on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''visible'' does not exist on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#12 \$morehtmlright of function print_barre_liste expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#2 \$array of method Form\:\:multiSelectArrayWithCheckbox\(\) expects array\<string, array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\>, array\{rowid\: array\{tablealias\: ''s\.'', fieldalias\: ''socid'', type\: ''Societe\:societe…'', label\: ''Customer'', checked\: 1, position\: 10, visible\: 1\}, ref\: array\{tablealias\: ''p\.'', fieldalias\: ''projectref'', type\: ''Project\:projet…'', label\: ''Project'', checked\: 1, position\: 20, visible\: 1\}, ''p\.rowid''\: array\{fieldalias\: ''projectid'', type\: ''text'', label\: ''ProjectId'', visible\: 0\}, ''pt\.rowid''\: array\{fieldalias\: ''taskid'', type\: ''Task\:projet/class…'', label\: ''Task'', checked\: 1, position\: 30, visible\: 1\}, label\: array\{tablealias\: ''pt\.'', type\: ''text'', label\: ''Label'', checked\: 1, position\: 40, visible\: 1\}, task_date\: array\{tablealias\: ''ptt\.'', type\: ''datetime'', label\: ''Date'', checked\: 1, position\: 50, visible\: 1\}, fk_user\: array\{tablealias\: ''ptt\.'', fieldalias\: ''fk_user'', type\: ''User\:user/class…'', label\: ''User'', checked\: 1, position\: 60, visible\: 1\}, task_duration\: array\{tablealias\: ''ptt\.'', type\: ''duration'', label\: ''Duration'', checked\: 1, position\: 70, visible\: 1, isameasure\: 1\}, \.\.\.\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#7 \$morecss of method Form\:\:selectForForms\(\) expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Variable \$fieldstosearchall might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Variable \$massactionbutton might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Variable \$object might not be defined\.$#'
+			identifier: variable.undefined
+			count: 15
+			path: view/timespent_list.php
+
+		-
+			message: '#^Variable \$search_category_array might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Variable \$value might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: view/timespent_range.php
+
+		-
+			message: '#^Loose comparison using \=\= between 0 and 0 will always evaluate to true\.$#'
+			identifier: equal.alwaysTrue
+			count: 2
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$userp of method Task\:\:getUserRolesForProjectsOrTasks\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$selected of method FormCompany\:\:selectTypeContact\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$usert of method Task\:\:getUserRolesForProjectsOrTasks\(\) expects User\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$week of function dol_get_next_week expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#3 \$projectid of method Task\:\:getUserRolesForProjectsOrTasks\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#5 \$filteronprojstatus of method Task\:\:getUserRolesForProjectsOrTasks\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#7 \$enableonly of method Form\:\:select_dolusers\(\) expects ''''\|array\<int\>, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#8 \$force_entity of method Form\:\:select_dolusers\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 3
+			path: view/timespent_range.php
+
+		-
+			message: '#^Access to an undefined property User\:\:\$element\.$#'
+			identifier: property.notFound
+			count: 2
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Access to an undefined property User\:\:\$error\.$#'
+			identifier: property.notFound
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Access to an undefined property User\:\:\$fk_user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Access to an undefined property User\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Call to an undefined method User\:\:fetch_optionals\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Parameter \#1 \$db of function dol_print_error expects DoliDB\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Parameter \#1 \$object of function dol_banner_tab expects CommonObject, User given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Parameter \#5 \$disablejs of function llxHeader expects int\<0, 1\>, '''' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Parameter \#6 \$disablehead of function llxHeader expects int\<0, 1\>, '''' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Variable \$form might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: view/workinghours_card.php
+
+		-
+			message: '#^Variable \$usertmp might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: view/workinghours_card.php
