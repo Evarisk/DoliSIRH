@@ -123,6 +123,7 @@ jobs:
                       htdocs/cron/class
                       htdocs/ecm/class
                       htdocs/expedition/class
+                      htdocs/expensereport/class
                       htdocs/fichinter/class
                       htdocs/fourn/class
                       htdocs/holiday/class
