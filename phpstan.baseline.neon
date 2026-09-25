@@ -7,18 +7,6 @@ parameters:
 			path: admin/project.php
 
 		-
-			message: '#^Call to an undefined method User\:\:get_full_tree\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: admin/setup.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: admin/setup.php
-
-		-
 			message: '#^Parameter \#1 \$hour of function dol_mktime expects int, string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -67,20 +55,8 @@ parameters:
 			path: admin/setup.php
 
 		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/actions_dolisirh.class.php
-
-		-
 			message: '#^Cannot call method getNomUrl\(\) on CommonObject\|false\.$#'
 			identifier: method.nonObject
-			count: 1
-			path: class/actions_dolisirh.class.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
 			count: 1
 			path: class/actions_dolisirh.class.php
 
@@ -157,12 +133,6 @@ parameters:
 			path: class/dolisirhdashboard.class.php
 
 		-
-			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/dolisirhstats.class.php
-
-		-
 			message: '#^Call to an undefined method DoliDB\:\:fetch_row\(\)\.$#'
 			identifier: method.notFound
 			count: 5
@@ -170,18 +140,6 @@ parameters:
 
 		-
 			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: class/dolisirhstats.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:num_rows\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: class/dolisirhstats.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
 			identifier: method.notFound
 			count: 6
 			path: class/dolisirhstats.class.php
@@ -325,12 +283,6 @@ parameters:
 			path: class/timesheet.class.php
 
 		-
-			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
 			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -338,18 +290,6 @@ parameters:
 
 		-
 			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:lasterror\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:num_rows\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: class/workinghours.class.php
@@ -364,12 +304,6 @@ parameters:
 			message: '#^Call to an undefined method DoliDB\:\:plimit\(\)\.$#'
 			identifier: method.notFound
 			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
-			identifier: method.notFound
-			count: 2
 			path: class/workinghours.class.php
 
 		-
@@ -509,30 +443,6 @@ parameters:
 			identifier: if.alwaysFalse
 			count: 2
 			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$firstname\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$lastname\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
 
 		-
 			message: '#^Parameter \#1 \$usert of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
@@ -823,32 +733,8 @@ parameters:
 			path: core/modules/modDoliSIRH.class.php
 
 		-
-			message: '#^Access to an undefined property User\:\:\$fk_user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
 			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
-			message: '#^Property DolibarrTriggers\:\:\$version \(''''\|''development''\|''dolibarr''\|''experimental''\) does not accept ''23\.1\.0''\.$#'
-			identifier: assign.propertyType
 			count: 1
 			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
 
@@ -895,27 +781,9 @@ parameters:
 			path: lib/dolisirh_invoice.lib.php
 
 		-
-			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: lib/dolisirh_invoice.lib.php
-
-		-
 			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
 			identifier: method.notFound
 			count: 3
-			path: lib/dolisirh_invoice.lib.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:lasterror\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: lib/dolisirh_invoice.lib.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
-			identifier: method.notFound
-			count: 4
 			path: lib/dolisirh_invoice.lib.php
 
 		-
@@ -925,20 +793,8 @@ parameters:
 			path: lib/dolisirh_invoice.lib.php
 
 		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: lib/dolisirh_timespent.lib.php
-
-		-
 			message: '#^Call to function is_array\(\) with array\<1\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: lib/dolisirh_timespent.lib.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
 			count: 1
 			path: lib/dolisirh_timespent.lib.php
 
@@ -1045,36 +901,6 @@ parameters:
 			path: view/certificate/certificate_list.php
 
 		-
-			message: '#^Access to an undefined property User\:\:\$employee\.$#'
-			identifier: property.notFound
-			count: 1
-			path: view/dolisirhtools.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/dolisirhtools.php
-
-		-
-			message: '#^Call to an undefined method User\:\:get_full_tree\(\)\.$#'
-			identifier: method.notFound
-			count: 5
-			path: view/dolisirhtools.php
-
-		-
-			message: '#^Call to an undefined method User\:\:update\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/dolisirhtools.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: view/dolisirhtools.php
-
-		-
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
@@ -1102,12 +928,6 @@ parameters:
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
-			path: view/recurringinvoicestatistics.php
-
-		-
-			message: '#^Parameter \#1 \$legend of method DolGraph\:\:SetLegend\(\) expects array\<string\>, list\<\(float\|int\)\> given\.$#'
-			identifier: argument.type
-			count: 3
 			path: view/recurringinvoicestatistics.php
 
 		-
@@ -1191,24 +1011,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: view/timesheet/timesheet_card.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: view/timesheet/timesheet_card.php
-
-		-
-			message: '#^Call to an undefined method User\:\:getFullName\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: view/timesheet/timesheet_card.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
 			count: 1
 			path: view/timesheet/timesheet_card.php
 
@@ -1405,18 +1207,6 @@ parameters:
 			path: view/timespent_list.php
 
 		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/timespent_range.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 2
-			path: view/timespent_range.php
-
-		-
 			message: '#^Loose comparison using \=\= between 0 and 0 will always evaluate to true\.$#'
 			identifier: equal.alwaysTrue
 			count: 2
@@ -1477,48 +1267,6 @@ parameters:
 			path: view/timespent_range.php
 
 		-
-			message: '#^Access to an undefined property User\:\:\$element\.$#'
-			identifier: property.notFound
-			count: 2
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$error\.$#'
-			identifier: property.notFound
-			count: 1
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$fk_user\.$#'
-			identifier: property.notFound
-			count: 2
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch_optionals\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 2
-			path: view/workinghours_card.php
-
-		-
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
@@ -1526,12 +1274,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$db of function dol_print_error expects DoliDB\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Parameter \#1 \$object of function dol_banner_tab expects CommonObject, User given\.$#'
 			identifier: argument.type
 			count: 1
 			path: view/workinghours_card.php
@@ -1559,3 +1301,465 @@ parameters:
 			identifier: variable.undefined
 			count: 2
 			path: view/workinghours_card.php
+
+		-
+			message: '#^Loose comparison using \=\= between ''edit_extras'' and ''edit_extras'' will always evaluate to true\.$#'
+			identifier: equal.alwaysTrue
+			count: 1
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#3 \$projectid of method Task\:\:getTasksArray\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/actions_dolisirh.class.php
+
+		-
+			message: '#^Parameter \#1 \$year of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhdashboard.class.php
+
+		-
+			message: '#^Cannot access property \$avg on object\|false\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Cannot access property \$nb on object\|false\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Cannot access property \$total on object\|false\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Cannot access property \$year on object\|false\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#1 \$year of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: class/dolisirhstats.class.php
+
+		-
+			message: '#^PHPDoc type string of property InterfaceDoliSIRHTriggers\:\:\$version is not covariant with PHPDoc type ''''\|''development''\|''dolibarr''\|''experimental'' of overridden property DolibarrTriggers\:\:\$version\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+
+		-
+			message: '#^Parameter \#1 \$categories of method CommonObject\:\:setCategoriesCommon\(\) expects array\<int\>\|int, array\<string\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
+
+		-
+			message: '#^Parameter \#1 \$array of function uasort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function uasort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: lib/dolisirh_invoice.lib.php
+
+		-
+			message: '#^Binary operation "\-" between string and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/certificate/certificate_list.php
+
+		-
+			message: '#^Parameter \#1 \$endyear of method DoliSIRHStats\:\:getAmountByMonthWithPrevYear\(\) expects int, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#1 \$endyear of method DoliSIRHStats\:\:getAverageByMonthWithPrevYear\(\) expects int, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#1 \$endyear of method DoliSIRHStats\:\:getNbByMonthWithPrevYear\(\) expects int, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#2 \$check of function GETPOST expects ''''\|''alpha''\|''alphanohtml''\|''alphawithlgt''\|''array''\|''array\:alpha''\|''array\:alphanohtml''\|''array\:aZ09''\|''array\:int''\|''array\:intcomma''\|''array\:restricthtml''\|''aZ''\|''aZ09''\|''aZ09arobase''\|''aZ09comma''\|''custom''\|''email''\|''int''\|''intcomma''\|''nohtml''\|''none''\|''password''\|''restricthtml''\|''restricthtmlallowcl…''\|''restricthtmlallowif…''\|''restricthtmlallowli…''\|''restricthtmlallowun…''\|''san_alpha''\|''url'', ''categ_id'' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/recurringinvoicestatistics.php
+
+		-
+			message: '#^Parameter \#1 \$id of method Product\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#1 \$id of method SaturneObject\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#1 \$id of method User\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#4 \$selected of method CommonObject\:\:printObjectLines\(\) expects int\<0, max\>, ''''\|numeric\-string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 7
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheetLine\:\:\$fk_product \(int\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheetLine\:\:\$fk_timesheet \(int\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheetLine\:\:\$product_type \(int\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Property TimeSheetLine\:\:\$qty \(float\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: view/timesheet/timesheet_card.php
+
+		-
+			message: '#^Binary operation "\-" between string and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timesheet/timesheet_list.php
+
+		-
+			message: '#^Binary operation "\-" between string and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Call to function array_key_exists\(\) with ''fieldalias'' and array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\} will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''arrayofkeyval'' on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 3
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''css'' on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 3
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''csslist'' on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 3
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''isameasure'' on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''tablealias'' on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''totaltask_duration'' does not exist on array\{nbfield\: int\<1, max\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''totalthm'' does not exist on array\{nbfield\: int\<1, max\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset ''val'' on array\{nbfield\: int\<0, max\>, pos\?\: non\-empty\-array\<int\<0, max\>, string\>, type\?\: non\-empty\-array\<int\<0, max\>, ''duration''\>\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Offset string on array\{\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: view/timespent_list.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: view/timespent_list.php
+
+		-
+			message: '#^Ternary operator condition is always false\.$#'
+			identifier: ternary.alwaysFalse
+			count: 10
+			path: view/timespent_list.php
+
+		-
+			message: '#^Parameter \#1 \$day of function dol_get_first_day_week expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$day of function dol_get_next_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$day of function dol_get_prev_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$id of method Project\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$id of method User\:\:fetch\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$month of function dol_get_next_month expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$month of function dol_get_prev_month expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#1 \$year of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_first_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_first_day_week expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_next_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$month of function dol_get_prev_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$year of function dol_get_next_month expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#2 \$year of function dol_get_prev_month expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#3 \$year of function dol_get_first_day_week expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#3 \$year of function dol_get_next_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#3 \$year of function dol_get_prev_day expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#4 \$month of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#5 \$day of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timespent_range.php
+
+		-
+			message: '#^Parameter \#6 \$year of function dol_mktime expects int, string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: view/timespent_range.php
