@@ -126,6 +126,17 @@ parameters:
         - CommonObject
 
     ignoreErrors:
+        # Le PHPDoc du coeur type DolibarrTriggers::$version comme une enumeration
+        # ('development', 'dolibarr', 'experimental'), alors que tous les modules y
+        # mettent leur numero de version. Fige dans la baseline, ce message casse la
+        # CI a chaque bump de version : il est ignore par motif.
+        # Le trigger redeclare $version avec son type, ce qui suffit ; cette regle reste
+        # en filet si la redeclaration saute lors d'un alignement du fichier.
+        - '#^Property DolibarrTriggers\:\:\$version \(.*\) does not accept .*\.$#'
+        # Contrepartie de cette redeclaration : le coeur type la propriete plus
+        # etroitement que string. Ce message-la ne contient aucun numero, il ne
+        # bouge donc pas d'une version a l'autre.
+        - '#^PHPDoc type string of property .*\:\:\$version is not covariant with PHPDoc type .* of overridden property DolibarrTriggers\:\:\$version\.$#'
         # Dolibarr ne documente jamais le type des valeurs d'un tableau (`@return array`),
         # donc cette erreur tomberait sur chaque nouveau fichier sans jamais pouvoir etre
         # resorbee.
