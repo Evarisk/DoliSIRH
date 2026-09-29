@@ -7,18 +7,6 @@ parameters:
 			path: admin/project.php
 
 		-
-			message: '#^Call to an undefined method User\:\:get_full_tree\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: admin/setup.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: admin/setup.php
-
-		-
 			message: '#^Parameter \#1 \$hour of function dol_mktime expects int, string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -67,20 +55,8 @@ parameters:
 			path: admin/setup.php
 
 		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/actions_dolisirh.class.php
-
-		-
 			message: '#^Cannot call method getNomUrl\(\) on CommonObject\|false\.$#'
 			identifier: method.nonObject
-			count: 1
-			path: class/actions_dolisirh.class.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
 			count: 1
 			path: class/actions_dolisirh.class.php
 
@@ -157,36 +133,6 @@ parameters:
 			path: class/dolisirhdashboard.class.php
 
 		-
-			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/dolisirhstats.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:fetch_row\(\)\.$#'
-			identifier: method.notFound
-			count: 5
-			path: class/dolisirhstats.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: class/dolisirhstats.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:num_rows\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: class/dolisirhstats.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: class/dolisirhstats.class.php
-
-		-
 			message: '#^Call to an undefined method DoliSIRHStats\:\:getAmountByMonth\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -221,18 +167,6 @@ parameters:
 			identifier: argument.type
 			count: 2
 			path: class/dolisirhstats.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
-			identifier: method.notFound
-			count: 8
-			path: class/facturerecstats.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:order\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: class/facturerecstats.class.php
 
 		-
 			message: '#^Parameter \#1 \$year of function dol_get_last_day expects int, string given\.$#'
@@ -323,54 +257,6 @@ parameters:
 			identifier: assign.propertyType
 			count: 1
 			path: class/timesheet.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:lasterror\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:num_rows\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:order\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:plimit\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: class/workinghours.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: class/workinghours.class.php
 
 		-
 			message: '#^PHPDoc type array of property Workinghours\:\:\$fields is not covariant with PHPDoc type array\<string, array\{type\: string, label\: string, langfile\?\: string, enabled\: int\<0, 2\>\|string, position\: int, notnull\?\: int, visible\: int\<\-6, 6\>\|string, alwayseditable\?\: int\<0, 1\>\|string, \.\.\.\}\> of overridden property CommonObject\:\:\$fields\.$#'
@@ -511,30 +397,6 @@ parameters:
 			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
 
 		-
-			message: '#^Access to an undefined property User\:\:\$firstname\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$lastname\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
 			message: '#^Parameter \#1 \$usert of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
 			identifier: argument.type
 			count: 1
@@ -551,216 +413,6 @@ parameters:
 			identifier: variable.undefined
 			count: 8
 			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$boxes\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$config_page_url\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$conflictwith\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$const\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$const_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$cronjobs\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$db\.$#'
-			identifier: property.notFound
-			count: 7
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$depends\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$description\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$descriptionlong\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$dictionaries\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$dirs\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$editor_url\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$error\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$errors\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$family\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$familyinfo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$hidden\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$langfiles\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$menu\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$module_parts\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$module_position\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$need_dolibarr_version\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$phpmin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$picto\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$requiredby\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$rights\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$rights_class\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$tabs\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$warnings_activation\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Access to an undefined property modDoliSIRH\:\:\$warnings_activation_ext\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Call to an undefined method modDoliSIRH\:\:_init\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Call to an undefined method modDoliSIRH\:\:_load_tables\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Call to an undefined method modDoliSIRH\:\:_remove\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
 
 		-
 			message: '#^Parameter \#1 \$id of method Product\:\:fetch\(\) expects int, string given\.$#'
@@ -817,36 +469,6 @@ parameters:
 			path: core/modules/modDoliSIRH.class.php
 
 		-
-			message: '#^Access to an undefined property User\:\:\$fk_user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
-			message: '#^Property DolibarrTriggers\:\:\$version \(''''\|''development''\|''dolibarr''\|''experimental''\) does not accept ''23\.1\.0''\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: core/triggers/interface_99_modDolisirh_DolisirhTriggers.class.php
-
-		-
 			message: '#^Parameter \#7 \$enableonly of method Form\:\:select_dolusers\(\) expects ''''\|array\<int\>, null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -883,56 +505,14 @@ parameters:
 			path: lib/dolisirh_function.lib.php
 
 		-
-			message: '#^Call to an undefined method DoliDB\:\:affected_rows\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: lib/dolisirh_invoice.lib.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:fetch_object\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: lib/dolisirh_invoice.lib.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:free\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: lib/dolisirh_invoice.lib.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:lasterror\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: lib/dolisirh_invoice.lib.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:query\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: lib/dolisirh_invoice.lib.php
-
-		-
 			message: '#^Property Product\:\:\$duration_value \(int\|null\) does not accept float\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: lib/dolisirh_invoice.lib.php
 
 		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: lib/dolisirh_timespent.lib.php
-
-		-
 			message: '#^Call to function is_array\(\) with array\<1\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: lib/dolisirh_timespent.lib.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
 			count: 1
 			path: lib/dolisirh_timespent.lib.php
 
@@ -1039,36 +619,6 @@ parameters:
 			path: view/certificate/certificate_list.php
 
 		-
-			message: '#^Access to an undefined property User\:\:\$employee\.$#'
-			identifier: property.notFound
-			count: 1
-			path: view/dolisirhtools.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/dolisirhtools.php
-
-		-
-			message: '#^Call to an undefined method User\:\:get_full_tree\(\)\.$#'
-			identifier: method.notFound
-			count: 5
-			path: view/dolisirhtools.php
-
-		-
-			message: '#^Call to an undefined method User\:\:update\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/dolisirhtools.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: view/dolisirhtools.php
-
-		-
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
@@ -1096,12 +646,6 @@ parameters:
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
-			path: view/recurringinvoicestatistics.php
-
-		-
-			message: '#^Parameter \#1 \$legend of method DolGraph\:\:SetLegend\(\) expects array\<string\>, list\<\(float\|int\)\> given\.$#'
-			identifier: argument.type
-			count: 3
 			path: view/recurringinvoicestatistics.php
 
 		-
@@ -1181,30 +725,6 @@ parameters:
 			identifier: variable.undefined
 			count: 1
 			path: view/recurringinvoicestatistics.php
-
-		-
-			message: '#^Call to an undefined method DoliDB\:\:idate\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/timesheet/timesheet_card.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: view/timesheet/timesheet_card.php
-
-		-
-			message: '#^Call to an undefined method User\:\:getFullName\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: view/timesheet/timesheet_card.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: view/timesheet/timesheet_card.php
 
 		-
 			message: '#^Comparison operation "\>\=" between 0\.0 and 18\.0 is always false\.$#'
@@ -1399,18 +919,6 @@ parameters:
 			path: view/timespent_list.php
 
 		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/timespent_range.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 2
-			path: view/timespent_range.php
-
-		-
 			message: '#^Loose comparison using \=\= between 0 and 0 will always evaluate to true\.$#'
 			identifier: equal.alwaysTrue
 			count: 2
@@ -1471,48 +979,6 @@ parameters:
 			path: view/timespent_range.php
 
 		-
-			message: '#^Access to an undefined property User\:\:\$element\.$#'
-			identifier: property.notFound
-			count: 2
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$error\.$#'
-			identifier: property.notFound
-			count: 1
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$fk_user\.$#'
-			identifier: property.notFound
-			count: 2
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Access to an undefined property User\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Call to an undefined method User\:\:fetch_optionals\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Class User constructor invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 2
-			path: view/workinghours_card.php
-
-		-
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
@@ -1520,12 +986,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$db of function dol_print_error expects DoliDB\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: view/workinghours_card.php
-
-		-
-			message: '#^Parameter \#1 \$object of function dol_banner_tab expects CommonObject, User given\.$#'
 			identifier: argument.type
 			count: 1
 			path: view/workinghours_card.php
