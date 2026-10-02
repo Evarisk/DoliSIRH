@@ -829,18 +829,6 @@ parameters:
 			path: view/timespent_list.php
 
 		-
-			message: '#^Comparison operation "\>\=" between 0\.0 and 18\.0 is always false\.$#'
-			identifier: greaterOrEqual.alwaysFalse
-			count: 1
-			path: view/timespent_list.php
-
-		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 5
-			path: view/timespent_list.php
-
-		-
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
@@ -859,12 +847,6 @@ parameters:
 			path: view/timespent_list.php
 
 		-
-			message: '#^Offset ''fieldalias'' does not exist on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: view/timespent_list.php
-
-		-
 			message: '#^Offset ''visible'' does not exist on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\.$#'
 			identifier: offsetAccess.notFound
 			count: 1
@@ -877,7 +859,7 @@ parameters:
 			path: view/timespent_list.php
 
 		-
-			message: '#^Parameter \#2 \$array of method Form\:\:multiSelectArrayWithCheckbox\(\) expects array\<string, array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\>, array\{rowid\: array\{tablealias\: ''s\.'', fieldalias\: ''socid'', type\: ''Societe\:societe…'', label\: ''Customer'', checked\: 1, position\: 10, visible\: 1\}, ref\: array\{tablealias\: ''p\.'', fieldalias\: ''projectref'', type\: ''Project\:projet…'', label\: ''Project'', checked\: 1, position\: 20, visible\: 1\}, ''p\.rowid''\: array\{fieldalias\: ''projectid'', type\: ''text'', label\: ''ProjectId'', visible\: 0\}, ''pt\.rowid''\: array\{fieldalias\: ''taskid'', type\: ''Task\:projet/class…'', label\: ''Task'', checked\: 1, position\: 30, visible\: 1\}, label\: array\{tablealias\: ''pt\.'', type\: ''text'', label\: ''Label'', checked\: 1, position\: 40, visible\: 1\}, task_date\: array\{tablealias\: ''ptt\.'', type\: ''datetime'', label\: ''Date'', checked\: 1, position\: 50, visible\: 1\}, fk_user\: array\{tablealias\: ''ptt\.'', fieldalias\: ''fk_user'', type\: ''User\:user/class…'', label\: ''User'', checked\: 1, position\: 60, visible\: 1\}, task_duration\: array\{tablealias\: ''ptt\.'', type\: ''duration'', label\: ''Duration'', checked\: 1, position\: 70, visible\: 1, isameasure\: 1\}, \.\.\.\} given\.$#'
+			message: '#^Parameter \#2 \$array of method Form\:\:multiSelectArrayWithCheckbox\(\) expects array\<string, array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\>, array\{rowid\: array\{tablealias\: ''s\.'', fieldalias\: ''socid'', type\: ''Societe\:societe…'', label\: ''Customer'', checked\: 1, position\: 10, visible\: 1\}, ref\: array\{tablealias\: ''p\.'', fieldalias\: ''projectref'', type\: ''Project\:projet…'', label\: ''Project'', checked\: 1, position\: 20, visible\: 1\}, ''p\.rowid''\: array\{fieldalias\: ''projectid'', type\: ''text'', label\: ''ProjectId'', visible\: 0\}, ''pt\.rowid''\: array\{fieldalias\: ''taskid'', type\: ''Task\:projet/class…'', label\: ''Task'', checked\: 1, position\: 30, visible\: 1\}, label\: array\{tablealias\: ''pt\.'', type\: ''text'', label\: ''Label'', checked\: 1, position\: 40, visible\: 1\}, element_date\: array\{tablealias\: ''ptt\.'', type\: ''datetime'', label\: ''Date'', checked\: 1, position\: 50, visible\: 1\}, fk_user\: array\{tablealias\: ''ptt\.'', fieldalias\: ''fk_user'', type\: ''User\:user/class…'', label\: ''User'', checked\: 1, position\: 60, visible\: 1\}, element_duration\: array\{tablealias\: ''ptt\.'', type\: ''duration'', label\: ''Duration'', checked\: 1, position\: 70, visible\: 1, isameasure\: 1\}, \.\.\.\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: view/timespent_list.php
@@ -890,12 +872,6 @@ parameters:
 
 		-
 			message: '#^Variable \$fieldstosearchall might not be defined\.$#'
-			identifier: variable.undefined
-			count: 2
-			path: view/timespent_list.php
-
-		-
-			message: '#^Variable \$massactionbutton might not be defined\.$#'
 			identifier: variable.undefined
 			count: 2
 			path: view/timespent_list.php
@@ -1013,6 +989,7 @@ parameters:
 			identifier: variable.undefined
 			count: 2
 			path: view/workinghours_card.php
+
 		-
 			message: '#^Loose comparison using \=\= between ''edit_extras'' and ''edit_extras'' will always evaluate to true\.$#'
 			identifier: equal.alwaysTrue
@@ -1096,30 +1073,6 @@ parameters:
 			identifier: argument.type
 			count: 2
 			path: class/dolisirhstats.class.php
-
-		-
-			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 4
-			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
-
-		-
-			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 9
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Property DolibarrModules\:\:\$dictionaries \(array\{\}\|array\{langs\: string, tabname\: array\<string\>, tablib\: array\<string\>, tabsql\: array\<string\>, tabsqlsort\: array\<string\>, tabfield\: array\<string\>, tabfieldvalue\: array\<string\>, tabfieldinsert\: array\<string\>, \.\.\.\}\) does not accept array\{langs\: ''dolisirh@dolisirh'', tabname\: array\{''llx_c_timesheet…'', ''llx_c_certificate…''\}, tablib\: array\{''Timesheet'', ''Certificate''\}, tabsql\: array\{''SELECT f\.rowid as…'', ''SELECT f\.rowid as…''\}, tabsqlsort\: array\{''position ASC'', ''position ASC''\}, tabfield\: array\{''ref,label…'', ''ref,label…''\}, tabfieldvalue\: array\{''ref,label…'', ''ref,label…''\}, tabfieldinsert\: array\{''ref,label…'', ''ref,label…''\}, \.\.\.\}\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
-
-		-
-			message: '#^Property DolibarrModules\:\:\$menu \(1\|array\<array\{commentgroup\?\: string, mainmenu\: string, leftmenu\: string, langs\: string, enabled\: int\|string, target\: string, titre\: string, user\: int, \.\.\.\}\>\) does not accept non\-empty\-array\<array\{commentgroup\?\: string, mainmenu\: string, leftmenu\: string, langs\: string, enabled\: int\|string, target\: string, titre\: string, user\: int, \.\.\.\}\|array\{fk_menu\: ''fk_mainmenu\=dolisirh'', type\: ''top'', titre\: mixed, prefix\: ''\<i class\="fas fa…'', mainmenu\: ''dolisirh'', leftmenu\: '''', url\: ''/dolisirh…'', langs\: ''dolisirh@dolisirh'', \.\.\.\}\>\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: core/modules/modDoliSIRH.class.php
 
 		-
 			message: '#^Parameter \#1 \$categories of method CommonObject\:\:setCategoriesCommon\(\) expects array\<int\>\|int, array\<string\> given\.$#'
@@ -1420,3 +1373,26 @@ parameters:
 			identifier: argument.type
 			count: 6
 			path: view/timespent_range.php
+		-
+			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 4
+			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
+
+		-
+			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 9
+			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
+
+		-
+			message: '#^Property DolibarrModules\:\:\$dictionaries \(array\{\}\|array\{langs\: string, tabname\: array\<string\>, tablib\: array\<string\>, tabsql\: array\<string\>, tabsqlsort\: array\<string\>, tabfield\: array\<string\>, tabfieldvalue\: array\<string\>, tabfieldinsert\: array\<string\>, \.\.\.\}\) does not accept array\{langs\: ''dolisirh@dolisirh'', tabname\: array\{''llx_c_timesheet…'', ''llx_c_certificate…''\}, tablib\: array\{''Timesheet'', ''Certificate''\}, tabsql\: array\{''SELECT f\.rowid as…'', ''SELECT f\.rowid as…''\}, tabsqlsort\: array\{''position ASC'', ''position ASC''\}, tabfield\: array\{''ref,label…'', ''ref,label…''\}, tabfieldvalue\: array\{''ref,label…'', ''ref,label…''\}, tabfieldinsert\: array\{''ref,label…'', ''ref,label…''\}, \.\.\.\}\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
+
+		-
+			message: '#^Property DolibarrModules\:\:\$menu \(1\|array\<array\{commentgroup\?\: string, mainmenu\: string, leftmenu\: string, langs\: string, enabled\: int\|string, target\: string, titre\: string, user\: int, \.\.\.\}\>\) does not accept non\-empty\-array\<array\{commentgroup\?\: string, mainmenu\: string, leftmenu\: string, langs\: string, enabled\: int\|string, target\: string, titre\: string, user\: int, \.\.\.\}\|array\{fk_menu\: ''fk_mainmenu\=dolisirh'', type\: ''top'', titre\: mixed, prefix\: ''\<i class\="fas fa…'', mainmenu\: ''dolisirh'', leftmenu\: '''', url\: ''/dolisirh…'', langs\: ''dolisirh@dolisirh'', \.\.\.\}\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: core/modules/modDoliSIRH.class.php
