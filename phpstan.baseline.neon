@@ -829,18 +829,6 @@ parameters:
 			path: view/timespent_list.php
 
 		-
-			message: '#^Comparison operation "\>\=" between 0\.0 and 18\.0 is always false\.$#'
-			identifier: greaterOrEqual.alwaysFalse
-			count: 1
-			path: view/timespent_list.php
-
-		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 5
-			path: view/timespent_list.php
-
-		-
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
@@ -859,12 +847,6 @@ parameters:
 			path: view/timespent_list.php
 
 		-
-			message: '#^Offset ''fieldalias'' does not exist on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: view/timespent_list.php
-
-		-
 			message: '#^Offset ''visible'' does not exist on array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\.$#'
 			identifier: offsetAccess.notFound
 			count: 1
@@ -877,7 +859,7 @@ parameters:
 			path: view/timespent_list.php
 
 		-
-			message: '#^Parameter \#2 \$array of method Form\:\:multiSelectArrayWithCheckbox\(\) expects array\<string, array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\>, array\{rowid\: array\{tablealias\: ''s\.'', fieldalias\: ''socid'', type\: ''Societe\:societe…'', label\: ''Customer'', checked\: 1, position\: 10, visible\: 1\}, ref\: array\{tablealias\: ''p\.'', fieldalias\: ''projectref'', type\: ''Project\:projet…'', label\: ''Project'', checked\: 1, position\: 20, visible\: 1\}, ''p\.rowid''\: array\{fieldalias\: ''projectid'', type\: ''text'', label\: ''ProjectId'', visible\: 0\}, ''pt\.rowid''\: array\{fieldalias\: ''taskid'', type\: ''Task\:projet/class…'', label\: ''Task'', checked\: 1, position\: 30, visible\: 1\}, label\: array\{tablealias\: ''pt\.'', type\: ''text'', label\: ''Label'', checked\: 1, position\: 40, visible\: 1\}, task_date\: array\{tablealias\: ''ptt\.'', type\: ''datetime'', label\: ''Date'', checked\: 1, position\: 50, visible\: 1\}, fk_user\: array\{tablealias\: ''ptt\.'', fieldalias\: ''fk_user'', type\: ''User\:user/class…'', label\: ''User'', checked\: 1, position\: 60, visible\: 1\}, task_duration\: array\{tablealias\: ''ptt\.'', type\: ''duration'', label\: ''Duration'', checked\: 1, position\: 70, visible\: 1, isameasure\: 1\}, \.\.\.\} given\.$#'
+			message: '#^Parameter \#2 \$array of method Form\:\:multiSelectArrayWithCheckbox\(\) expects array\<string, array\{label\: string, checked\?\: string, enabled\?\: string, type\?\: string, langfile\?\: string, position\?\: int, help\?\: string\}\>, array\{rowid\: array\{tablealias\: ''s\.'', fieldalias\: ''socid'', type\: ''Societe\:societe…'', label\: ''Customer'', checked\: 1, position\: 10, visible\: 1\}, ref\: array\{tablealias\: ''p\.'', fieldalias\: ''projectref'', type\: ''Project\:projet…'', label\: ''Project'', checked\: 1, position\: 20, visible\: 1\}, ''p\.rowid''\: array\{fieldalias\: ''projectid'', type\: ''text'', label\: ''ProjectId'', visible\: 0\}, ''pt\.rowid''\: array\{fieldalias\: ''taskid'', type\: ''Task\:projet/class…'', label\: ''Task'', checked\: 1, position\: 30, visible\: 1\}, label\: array\{tablealias\: ''pt\.'', type\: ''text'', label\: ''Label'', checked\: 1, position\: 40, visible\: 1\}, element_date\: array\{tablealias\: ''ptt\.'', type\: ''datetime'', label\: ''Date'', checked\: 1, position\: 50, visible\: 1\}, fk_user\: array\{tablealias\: ''ptt\.'', fieldalias\: ''fk_user'', type\: ''User\:user/class…'', label\: ''User'', checked\: 1, position\: 60, visible\: 1\}, element_duration\: array\{tablealias\: ''ptt\.'', type\: ''duration'', label\: ''Duration'', checked\: 1, position\: 70, visible\: 1, isameasure\: 1\}, \.\.\.\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: view/timespent_list.php
@@ -890,12 +872,6 @@ parameters:
 
 		-
 			message: '#^Variable \$fieldstosearchall might not be defined\.$#'
-			identifier: variable.undefined
-			count: 2
-			path: view/timespent_list.php
-
-		-
-			message: '#^Variable \$massactionbutton might not be defined\.$#'
 			identifier: variable.undefined
 			count: 2
 			path: view/timespent_list.php
