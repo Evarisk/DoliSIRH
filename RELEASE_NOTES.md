@@ -1,10 +1,15 @@
-# [DoliSIRH] [23.1.1] - Compatibilité déclarée et chaîne qualité
+# [DoliSIRH] [23.1.1] - Liste du temps passé rétablie
 
-Description : Version de maintenance. Elle aligne les bornes de compatibilité Dolibarr du module sur la ligne réellement livrée, rend son changelog visible dans la documentation générée, et place le code sous analyse statique à chaque modification.
+Description : Version corrective. Elle rétablit la **liste du temps passé**, inaccessible sur toutes les installations Dolibarr 18 et au-delà, aligne les bornes de compatibilité Dolibarr du module sur la ligne réellement livrée, rend son changelog visible dans la documentation générée, et place le code sous analyse statique à chaque modification.
 
 **Cette version demande Saturne 23.2.1 ou supérieur.**
 
 ## Améliorations & corrections
+
+### Temps passé
+
+* **La liste du temps passé ne s'affichait pas du tout.** La requête demandait les colonnes `task_date` et `task_duration` à la table des temps, qui ne les porte plus depuis Dolibarr 18 : la page s'arrêtait sur une erreur de base de données. Le module tenait compte de ce renommage partout — jointure, filtres, tri — sauf dans la définition des colonnes de la liste, celle qui construit précisément la requête.
+* Trois défauts que cette page masquait, puisqu'elle ne s'affichait jamais, sont corrigés dans le même mouvement : le filtre du sélecteur de client affichait une erreur de syntaxe à la place de sa liste ; **les deux totaux de bas de tableau, durée et valeur, ne s'affichaient jamais** ; et la page écrivait environ 150 avertissements PHP par affichage.
 
 ### Compatibilité
 
@@ -21,6 +26,7 @@ Description : Version de maintenance. Elle aligne les bornes de compatibilité D
 
 ## Comparaison des versions [23.1.0](https://github.com/Evarisk/DoliSIRH/compare/23.1.0...23.1.1) et 23.1.1
 
+* #715 [TimeSpent] fix: liste du temps passé inaccessible, et ses défauts masqués [`c8096f3`](https://github.com/Evarisk/DoliSIRH/commit/c8096f3)
 * #711 [Mod] fix: renommer le changelog en ChangeLog.md [`ae3e736`](https://github.com/Evarisk/DoliSIRH/commit/ae3e736)
 * #708 [CI] rework: élaguer les entrées mortes de la baseline [`b2b0c77`](https://github.com/Evarisk/DoliSIRH/commit/b2b0c77)
 * #705 [CI] rework: scanner le socle par dossier plutôt que l'exclure par morceaux [`5fa45aa`](https://github.com/Evarisk/DoliSIRH/commit/5fa45aa)
