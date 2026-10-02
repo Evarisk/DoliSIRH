@@ -1,0 +1,154 @@
+includes:
+    - phpstan.baseline.neon
+
+parameters:
+    phpVersion: 80100 # PHP 8.1 (CI target)
+    level: 8
+    tmpDir: .github/tmp/phpstan
+
+    bootstrapFiles:
+        - dev/phpstan/bootstrap.php
+
+    paths:
+        - .
+
+    excludePaths:
+        analyseAndScan:
+            - vendor/ (?)
+            - css/ (?)
+            - js/ (?)
+            - documents/ (?)
+            - langs/ (?)
+            - dev/ (?)
+            # « test/ » au singulier est le squelette du gabarit de module Dolibarr : un
+            # harnais Selenium qui etend PHPUnit_Extensions_Selenium2TestCase, extension
+            # retiree de PHPUnit depuis des annees. Ces fichiers ne peuvent plus s'executer
+            # et gagneraient a etre supprimes ; en attendant, les analyser ne rend qu'une
+            # classe introuvable, non ignorable, qui empeche toute baseline.
+            # « tests/ » au pluriel, lui, porte de vrais tests et reste analyse.
+            - test/ (?)
+        analyse:
+            # Les fragments de template sont inclus au milieu de la portee de leur
+            # appelant : leurs variables sont indefinies par construction quand on les
+            # analyse isolement. Toujours scannes, pour que les classes qu'ils utilisent
+            # se resolvent.
+            - core/tpl/ (?)
+
+    # Fichiers isoles du coeur qui portent des fonctions utilisees par le module.
+    scanFiles:
+        # llxHeader()/llxFooter()/top_httphead() vivent dans main.inc.php
+        - ../../main.inc.php
+        # La classe TCPDF elle-meme : sans elle, chaque appel de methode sur un objet
+        # PDF remonte en class.notFound, et le moindre ajout dans un builder PDF fait
+        # sauter les compteurs.
+        - ../../includes/tecnickcom/tcpdf/tcpdf.php
+        - ../../includes/tecnickcom/tcpdf/tcpdf_barcodes_1d.php
+        - ../../includes/tecnickcom/tcpdf/tcpdf_barcodes_2d.php
+
+    # Scanne, sans les analyser, le coeur Dolibarr et le socle Saturne dont ce module
+    # herite (SaturneObject, SaturneSignature, les libs saturne_*).
+    # A garder en phase avec le sparse-checkout de .github/workflows/quality.yml.
+    scanDirectories:
+        # Le socle est scanne par dossier, et non en entier, parce qu il porte des
+        # bouchons de classes du coeur pour ses propres outils : dev/phan/stubs.php
+        # (DolibarrModules, DoliDB, Odf...) et le bootstrap PHPUnit de tests/
+        # (DoliDB, Conf, Translate, User, HookManager). Scannes, ils gagnent contre
+        # les vraies classes et toute la baseline se remplit de faux positifs.
+        #
+        # Cette forme est preferee a une liste d exclusions parce qu une exclusion
+        # s efface par accident lors d un alignement de fichier, et la CI redevient
+        # alors verte a tort. Ici il n y a aucune ligne a defendre.
+        #
+        # Contrepartie assumee : si Saturne place un jour une classe hors de ces trois
+        # dossiers, elle remontera en class.notFound. C est un echec visible, donc
+        # preferable a une CI verte qui ne verifie plus rien.
+        # Releve du 2026-09-28 : 17 classes dans class/, 4 dans core/, aucune ailleurs.
+        # lib/ n en porte aucune mais contient les fonctions saturne_*.
+        - ../saturne/class/
+        - ../saturne/core/
+        - ../saturne/lib/
+        - ../../ai/class/
+        - ../../api/class/
+        - ../../bookmarks/class/
+        - ../../categories/class/
+        - ../../comm/action/class/
+        - ../../comm/propal/class/
+        - ../../commande/class/
+        - ../../compta/facture/class/
+        - ../../contact/class/
+        - ../../contrat/class/
+        - ../../core/boxes/
+        - ../../core/class/
+        - ../../core/db/
+        - ../../core/lib/
+        - ../../core/modules/
+        - ../../core/tpl/
+        - ../../core/triggers/
+        - ../../cron/class/
+        - ../../ecm/class/
+        - ../../expedition/class/
+        - ../../expensereport/class/
+        - ../../fichinter/class/
+        - ../../fourn/class/
+        - ../../holiday/class/
+        - ../../includes/odtphp/
+        - ../../includes/parsedown/
+        - ../../includes/restler/framework/
+        - ../../mrp/class/
+        - ../../product/class/
+        - ../../product/inventory/class/
+        - ../../product/stock/class/
+        - ../../projet/class/
+        - ../../reception/class/
+        - ../../societe/class/
+        - ../../supplier_proposal/class/
+        - ../../ticket/class/
+        - ../../user/class/
+
+    # Performance
+    parallel:
+        processTimeout: 300.0
+        maximumNumberOfProcesses: 2
+
+    # Herite de la configuration de Dolibarr : reduit le bruit sur ses patterns dynamiques.
+    checkNullables: false
+    checkUnionTypes: false
+    polluteScopeWithLoopInitialAssignments: false
+    polluteScopeWithAlwaysIterableForeach: false
+    reportMaybes: false
+    reportMaybesInMethodSignatures: false
+    reportStaticMethodSignatures: false
+    reportMagicMethods: false
+    reportMagicProperties: false
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+
+    universalObjectCratesClasses:
+        - stdClass
+        - SimpleXMLElement
+        # Dolibarr affecte les proprietes d'un objet dynamiquement depuis la ligne SQL.
+        - CommonObject
+
+    ignoreErrors:
+        # Le PHPDoc du coeur type DolibarrTriggers::$version comme une enumeration
+        # ('development', 'dolibarr', 'experimental'), alors que tous les modules y
+        # mettent leur numero de version. Fige dans la baseline, ce message casse la
+        # CI a chaque bump de version : il est ignore par motif.
+        # Le trigger redeclare $version avec son type, ce qui suffit ; cette regle reste
+        # en filet si la redeclaration saute lors d'un alignement du fichier.
+        - '#^Property DolibarrTriggers\:\:\$version \(.*\) does not accept .*\.$#'
+        # Contrepartie de cette redeclaration : le coeur type la propriete plus
+        # etroitement que string. Ce message-la ne contient aucun numero, il ne
+        # bouge donc pas d'une version a l'autre.
+        - '#^PHPDoc type string of property .*\:\:\$version is not covariant with PHPDoc type .* of overridden property DolibarrTriggers\:\:\$version\.$#'
+        # Dolibarr ne documente jamais le type des valeurs d'un tableau (`@return array`),
+        # donc cette erreur tomberait sur chaque nouveau fichier sans jamais pouvoir etre
+        # resorbee.
+        - identifier: missingType.iterableValue
+        - '#.*phan-var#'
+        - '#^Expression "''…" on a separate line does not do anything#'
+        - '#Empty array passed to foreach#'
+        - '#Unable to resolve the template type T#'
+        - '#in empty\(\) always exists and is always falsy#'
+        - '#in empty\(\) always exists and is not falsy#'
+        - '#in isset\(\) is not nullable#'
