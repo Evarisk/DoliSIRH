@@ -108,20 +108,21 @@ $pagenext = $page + 1;
 
 $hookmanager->initHooks(array('timespentlist')); // Note that conf->hooks_modules contains array
 
-$versionEighteenOrMore = 0;
-if ((float) DOL_VERSION >= 18.0) {
-    $versionEighteenOrMore = 1;
-}
-
+// Les colonnes du temps passe sont celles de llx_element_time, qui a remplace
+// llx_projet_task_time en Dolibarr 18 : element_date et element_duration. La bascule qui
+// portait encore les anciens noms est tombee avec le plancher de compatibilite, monte a 23.
 $arrayfields = array(
-	'rowid'          => array('tablealias' => 's.', 'fieldalias' => 'socid', 'type' => 'Societe:societe/class/societe.class.php:1:status=1 AND entity IN (__SHARED_ENTITIES__)', 'label' => "Customer", 'checked' => 1, 'position' => 10,  'visible' => 1),
+	// Le filtre du selecteur de tiers suit la syntaxe des criteres universels, seule
+	// acceptee par forgeSQLFromUniversalSearchCriteria() : sous sa forme libre
+	// « status=1 AND entity IN (...) », la page affichait « Bad syntax of the search string ».
+	'rowid'          => array('tablealias' => 's.', 'fieldalias' => 'socid', 'type' => 'Societe:societe/class/societe.class.php:1:((status:=:1) AND (entity:IN:__SHARED_ENTITIES__))', 'label' => "Customer", 'checked' => 1, 'position' => 10,  'visible' => 1),
 	'ref'            => array('tablealias' => 'p.', 'fieldalias' => 'projectref', 'type' => 'Project:projet/class/project.class.php:1', 'label' => "Project", 'checked' => 1, 'position' => 20, 'visible' => 1),
 	'p.rowid'        => array('fieldalias' => 'projectid', 'type'=> 'text', 'label' => "ProjectId", 'visible' => 0),
 	'pt.rowid'       => array('fieldalias' => 'taskid', 'type' => 'Task:projet/class/task.class.php:1', 'label' => "Task", 'checked' => 1, 'position' => 30, 'visible' => 1),
 	'label'          => array('tablealias' => 'pt.', 'type' => 'text', 'label' => "Label", 'checked' => 1, 'position' => 40, 'visible' => 1),
-	'task_date'      => array('tablealias' => 'ptt.', 'type' => 'datetime', 'label' => "Date", 'checked' => 1, 'position' => 50,  'visible' => 1),
+	'element_date'   => array('tablealias' => 'ptt.', 'type' => 'datetime', 'label' => "Date", 'checked' => 1, 'position' => 50,  'visible' => 1),
 	'fk_user'        => array('tablealias' => 'ptt.', 'fieldalias' => 'fk_user', 'type' => 'User:user/class/user.class.php', 'label' => "User", 'checked' => 1, 'position' => 60, 'visible' => 1),
-	'task_duration'  => array('tablealias' => 'ptt.', 'type' => 'duration', 'label' => "Duration",  'checked' => 1, 'position' => 70, 'visible' => 1, 'isameasure'=>1),
+	'element_duration' => array('tablealias' => 'ptt.', 'type' => 'duration', 'label' => "Duration",  'checked' => 1, 'position' => 70, 'visible' => 1, 'isameasure'=>1),
 	'note'           => array('tablealias' => 'ptt.', 'type' => 'text', 'label' => "Note",  'checked' => 1, 'position' => 80, 'visible' => 1),
 	'thm'            => array('tablealias' => 'ptt.', 'type' => 'price', 'label' => "Value",  'checked' => 1, 'position' => 90, 'visible' => 1, 'isameasure'=>1),
 	'invoice_id'     => array('tablealias' => 'ptt.', 'fieldalias' => 'invoice_id', 'type' => 'Facture:compta/facture/class/facture.class.php:1', 'label' => "Facture", 'checked' => 1, 'position' => 100, 'visible' => 1),
@@ -130,11 +131,7 @@ $arrayfields = array(
 
 // Default sort order (if not yet defined by previous GETPOST)
 if (!$sortfield) {
-    if ($versionEighteenOrMore) {
-        $sortfield = 'ptt.element_date'; // Set here default search field. By default 1st field in definition.
-    } else {
-        $sortfield = 'ptt.task_date'; // Set here default search field. By default 1st field in definition.
-    }
+    $sortfield = 'ptt.element_date'; // Set here default search field. By default 1st field in definition.
 }
 if (!$sortorder) {
 	$sortorder = "ASC";
@@ -247,11 +244,7 @@ $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_extrafields as extra ON p.rowid
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'c_lead_status as cls ON p.fk_opp_status = cls.rowid';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task as pt ON p.rowid = pt.fk_projet';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_extrafields as ef ON pt.rowid = ef.fk_object';
-if ($versionEighteenOrMore) {
-    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as ptt ON (ptt.fk_element = pt.rowid AND ptt.elementtype = "task")';
-} else {
-    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'projet_task_time as ptt ON pt.rowid = ptt.fk_task';
-}
+$sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_time as ptt ON (ptt.fk_element = pt.rowid AND ptt.elementtype = "task")';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'societe as s ON p.fk_soc = s.rowid';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'facture as f ON ptt.invoice_id = f.rowid';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_element as ee on ( ee.sourcetype = "dolisirh_timesheet" AND ee.targettype = "project_task_time" AND ee.fk_target = ptt.rowid)';
@@ -267,27 +260,15 @@ if (is_object($object) && $object->ismultientitymanaged == 1) {
 } else {
 	$sql .= " WHERE 1 = 1";
 }
-if ($versionEighteenOrMore) {
-    $sql .= ' AND ptt.element_duration IS NOT NULL';
-} else {
-    $sql .= ' AND ptt.task_duration IS NOT NULL';
-}
+$sql .= ' AND ptt.element_duration IS NOT NULL';
 
 foreach ($search as $key => $val) {
 	if (preg_match('/(_dtstart|_dtend)$/', $key) && $search[$key] != '') {
 		if (preg_match('/_dtstart$/', $key)) {
-            if ($versionEighteenOrMore) {
-                $sql .= " AND ptt.element_date >= '" . $db->idate($search[$key]) . "'";
-            } else {
-                $sql .= " AND ptt.task_date >= '" . $db->idate($search[$key]) . "'";
-            }
+            $sql .= " AND ptt.element_date >= '" . $db->idate($search[$key]) . "'";
 		}
 		if (preg_match('/_dtend$/', $key)) {
-            if ($versionEighteenOrMore) {
-                $sql .= " AND ptt.element_date <= '" . $db->idate($search[$key]) . "'";
-            } else {
-                $sql .= " AND ptt.task_date <= '" . $db->idate($search[$key]) . "'";
-            }
+            $sql .= " AND ptt.element_date <= '" . $db->idate($search[$key]) . "'";
 		}
 	}
 	if ($key == 'socid' && !empty($val)) $sql .= ' AND s.rowid=' . (int) $val;
@@ -397,7 +378,7 @@ print '<input type="hidden" name="sortorder" value="' . $sortorder . '">';
 print '<input type="hidden" name="page" value="' . $page . '">';
 print '<input type="hidden" name="contextpage" value="' . $contextpage . '">';
 
-print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'clock', 0, 0, '', $limit, 0, 0, 1);
+print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, '', $num, $nbtotalofrecords, 'clock', 0, 0, '', $limit, 0, 0, 1);
 
 include DOL_DOCUMENT_ROOT.'/core/tpl/massactions_pre.tpl.php';
 
@@ -456,8 +437,10 @@ foreach ($arrayfields as $key => $val) {
 	}
 	if (!empty($arrayfields[$key]['checked'])) {
 		print '<td class="liste_titre' . ($cssforfield ? ' ' . $cssforfield : '') . '">';
-		if (in_array($val['fieldalias'], array('socid','projectref', 'fk_user','taskid', 'invoice_id', 'timesheetid'))) {
-			print $form->selectForForms($val['type'], 'search_' . $keysearch, $search[$keysearch], 1, '', '', $morecss);
+		// Tous les champs n'ont pas de fieldalias, et $search ne porte que les criteres
+		// effectivement postes : les lire sans defaut ecrivait un avertissement par colonne
+		if (in_array($val['fieldalias'] ?? '', array('socid','projectref', 'fk_user','taskid', 'invoice_id', 'timesheetid'))) {
+			print $form->selectForForms($val['type'], 'search_' . $keysearch, $search[$keysearch] ?? '', 1, '', '', $morecss);
 		} elseif (preg_match('/^(date|timestamp|datetime)/', $val['type'])) {
 			print '<div class="nowrap">';
 			print $form->selectDate($search[$key . '_dtstart'], "search_" . $key . "_dtstart", 0, 0, 1, '', 1, 0, 0, '', '', '', '', 1, '', $langs->trans('From'));
@@ -546,7 +529,7 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 
 			if (!empty($arrayfields[$key]['checked'])) {
 				print '<td' . ($cssforfield ? ' class="' . $cssforfield . '"' : '') . '>';
-				if (in_array($val['fieldalias'], array('socid', 'projectref', 'fk_user', 'taskid', 'invoice_id', 'timesheetid'))) {
+				if (in_array($val['fieldalias'] ?? '', array('socid', 'projectref', 'fk_user', 'taskid', 'invoice_id', 'timesheetid'))) {
 					$InfoFieldList = explode(':', $val['type']);
 					$classname = $InfoFieldList[0];
 					$classpath = $InfoFieldList[1];
@@ -565,14 +548,14 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 							}
 						}
 					}
-				} elseif ($key == 'task_date') {
-					print dol_print_date($obj->task_date, 'day');
+				} elseif ($key == 'element_date') {
+					print dol_print_date($obj->element_date, 'day');
 				} elseif ($key == 'title' || $key === 'label' || $key == 'note') {
 					print $obj->{$key};
-				} elseif ($key == 'task_duration') {
-					print convertSecondToTime($obj->task_duration, 'allhourmin');
+				} elseif ($key == 'element_duration') {
+					print convertSecondToTime($obj->element_duration, 'allhourmin');
 				} elseif ($key == 'thm') {
-					$value = price2num($obj->thm * $obj->task_duration / 3600, 'MT', 1);
+					$value = price2num($obj->thm * $obj->element_duration / 3600, 'MT', 1);
 					print '<span class="amount" title="'.$langs->trans("THM").': '.price($obj->thm).'">';
 					print price($value, 1, $langs, 1, -1, -1, $conf->currency);
 				}
@@ -583,7 +566,7 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 				if (!empty($val['isameasure']) && $val['isameasure'] == 1) {
 					if (!$i) {
 						$totalarray['pos'][$totalarray['nbfield']] = $key;
-						if ($key == 'task_duration') {
+						if ($key == 'element_duration') {
 							$totalarray['type'][$totalarray['nbfield']]='duration';
 						}
 					}
@@ -610,7 +593,7 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 	$reshook = $hookmanager->executeHooks('printFieldListValue', $parameters, $object); // Note that $action and $object may have been modified by hook
 	// Action column
 	print '<td class="nowrap center">';
-	if ($massactionbutton || $massaction) { // If we are in select mode (massactionbutton defined) or if we have already selected and sent an action ($massaction) defined
+	if (!empty($massaction)) { // Les actions de masse ne sont pas proposees sur cette liste : seule une action deja envoyee peut ouvrir la colonne de selection
 		$selected = 0;
 		if (in_array($object->id, $arrayofselected)) {
 			$selected = 1;
@@ -639,10 +622,16 @@ while ($i < $totalarray['nbfield']) {
         } else {
             print '<td class="left">'.$langs->trans("Totalforthispage").'</td>';
         }
-    } elseif ($totalarray['totaltask_duration'] == $i) {
-        print '<td class="left">'.convertSecondToTime($totalarray['val']['task_duration'], 'allhourmin').'</td>';
-    } elseif ($totalarray['totalthm'] == $i) {
-        print '<td class="right">'.price($totalarray['val']['thm']).'</td>';
+    } elseif (!empty($totalarray['pos'][$i]) && isset($totalarray['val'][$totalarray['pos'][$i]])) {
+        // La boucle d'affichage a renseigne pos[] et val[] ; les cles totaltask_duration et
+        // totalthm testees auparavant n'etaient ecrites nulle part, donc les deux totaux ne
+        // s'affichaient jamais et PHP 8 signalait deux cles absentes a chaque ligne.
+        $totalKey = $totalarray['pos'][$i];
+        if (($totalarray['type'][$i] ?? '') == 'duration') {
+            print '<td class="left">' . convertSecondToTime($totalarray['val'][$totalKey], 'allhourmin') . '</td>';
+        } else {
+            print '<td class="right">' . price($totalarray['val'][$totalKey]) . '</td>';
+        }
     } else {
         print '<td></td>';
     }
