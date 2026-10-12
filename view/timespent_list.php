@@ -108,6 +108,27 @@ $pagenext = $page + 1;
 
 $hookmanager->initHooks(array('timespentlist')); // Note that conf->hooks_modules contains array
 
+// Le selecteur du filtre « Utilisateur » proposait tous les comptes de la base, comptes
+// desactives et contacts de tiers compris. On le restreint a ceux qui ont du temps passe :
+// c'est le seul critere qui ne rend aucune ligne de la liste infiltrable. Filtrer sur
+// employee / fk_soc / statut, comme le proposait la PR #572, ecarte des comptes qui ont
+// pourtant des lignes ici (16 sur 23 sur la base de developpement).
+$timeSpentUserIds = array();
+$sqlTimeSpentUsers = 'SELECT DISTINCT fk_user FROM ' . MAIN_DB_PREFIX . "element_time WHERE elementtype = 'task' AND fk_user > 0";
+$resqlTimeSpentUsers = $db->query($sqlTimeSpentUsers);
+if ($resqlTimeSpentUsers) {
+	while ($objTimeSpentUser = $db->fetch_object($resqlTimeSpentUsers)) {
+		$timeSpentUserIds[] = (int) $objTimeSpentUser->fk_user;
+	}
+	$db->free($resqlTimeSpentUsers);
+}
+// Sans aucune ligne de temps passe, on laisse le selecteur complet : un « in » vide
+// produirait une requete invalide
+$userFieldType = 'User:user/class/user.class.php';
+if (!empty($timeSpentUserIds)) {
+	$userFieldType .= ':1:(t.rowid:in:' . implode(',', $timeSpentUserIds) . ')';
+}
+
 // Les colonnes du temps passe sont celles de llx_element_time, qui a remplace
 // llx_projet_task_time en Dolibarr 18 : element_date et element_duration. La bascule qui
 // portait encore les anciens noms est tombee avec le plancher de compatibilite, monte a 23.
@@ -121,7 +142,7 @@ $arrayfields = array(
 	'pt.rowid'       => array('fieldalias' => 'taskid', 'type' => 'Task:projet/class/task.class.php:1', 'label' => "Task", 'checked' => 1, 'position' => 30, 'visible' => 1),
 	'label'          => array('tablealias' => 'pt.', 'type' => 'text', 'label' => "Label", 'checked' => 1, 'position' => 40, 'visible' => 1),
 	'element_date'   => array('tablealias' => 'ptt.', 'type' => 'datetime', 'label' => "Date", 'checked' => 1, 'position' => 50,  'visible' => 1),
-	'fk_user'        => array('tablealias' => 'ptt.', 'fieldalias' => 'fk_user', 'type' => 'User:user/class/user.class.php', 'label' => "User", 'checked' => 1, 'position' => 60, 'visible' => 1),
+	'fk_user'        => array('tablealias' => 'ptt.', 'fieldalias' => 'fk_user', 'type' => $userFieldType, 'label' => "User", 'checked' => 1, 'position' => 60, 'visible' => 1),
 	'element_duration' => array('tablealias' => 'ptt.', 'type' => 'duration', 'label' => "Duration",  'checked' => 1, 'position' => 70, 'visible' => 1, 'isameasure'=>1),
 	'note'           => array('tablealias' => 'ptt.', 'type' => 'text', 'label' => "Note",  'checked' => 1, 'position' => 80, 'visible' => 1),
 	'thm'            => array('tablealias' => 'ptt.', 'type' => 'price', 'label' => "Value",  'checked' => 1, 'position' => 90, 'visible' => 1, 'isameasure'=>1),
