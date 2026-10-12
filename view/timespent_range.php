@@ -48,7 +48,7 @@ if (isModEnabled('categorie')) {
 }
 
 // Load saturne classes
-require_once __DIR__ . '/../../saturne/class/task/saturnetask.class.php';
+dol_include_once('/saturne/class/task/saturnetask.class.php');
 
 // Load DoliSIRH libraries.
 require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
