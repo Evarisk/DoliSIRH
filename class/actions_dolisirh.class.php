@@ -701,7 +701,7 @@ class ActionsDoliSIRH
                 $permissionToAdd    = $user->hasRight('projet', 'creer');
                 $permissionToDelete = $user->hasRight('projet', 'supprimer');
 
-                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', empty($soc->default_lang) ? '' : $soc->default_lang, $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
+                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', '', $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
                 ?>
 
                 <script src="../custom/saturne/js/saturne.min.js"></script>
