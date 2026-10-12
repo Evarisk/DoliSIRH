@@ -8,8 +8,14 @@ Description : Version corrective. Le filtre « Utilisateur » de la liste du tem
 
 ### Temps passé
 
+![Le filtre Utilisateur de la liste du temps passé](https://raw.githubusercontent.com/nicolas-eoxia/DoliSIRH/assets/release-23.1.2/timespent_user_filter_23.1.2.png)
+
 * **Le filtre « Utilisateur » proposait tous les comptes de la base** — soixante-deux sur notre base de test, pour vingt-trois ayant réellement du temps passé — comptes désactivés et contacts de tiers compris. La liste déroulante devenait inutilisable sur une base un peu ancienne. Elle ne propose désormais que les comptes présents dans le temps passé.
-* Le critère retenu n'est pas « employé actif » mais « a du temps passé », et c'est délibéré : filtrer sur les employés actifs écartait seize des vingt-trois comptes concernés — anciens collaborateurs pour l'essentiel — dont les lignes restent affichées dans la liste. On n'aurait plus pu filtrer dessus.
+* Le critère retenu n'est pas « employé actif » mais « a du temps passé », et c'est délibéré : filtrer sur les employés actifs écartait seize des vingt-trois comptes concernés — d'anciens collaborateurs pour l'essentiel — dont les lignes restent affichées dans la liste. On n'aurait plus pu filtrer dessus.
+
+## Testez les nouveautés maintenant
+
+**Allez tester le filtre du temps passé sur la démo : [https://demodoli.digirisk.com/](https://demodoli.digirisk.com/)**
 
 ## Comparaison des versions [23.1.1](https://github.com/Evarisk/DoliSIRH/compare/23.1.1...23.1.2) et 23.1.2
 
