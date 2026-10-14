@@ -596,10 +596,11 @@ class ActionsDoliSIRH
 			if (GETPOST('action') == 'create') {
 				require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-				$form = new Form($this->db);
+				$form      = new Form($this->db);
+				$categorie = new Categorie($this->db);
 
 				// Categories
-                if (!empty($conf->categorie->enabled)) {
+                if (!empty($conf->categorie->enabled) && isset($categorie->MAP_ID['facturerec'])) {
 					$html = '<td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
                     $cate_arbo = $form->select_all_categories('facturerec', '', 'parent', 64, 0, 1);
 					$html .= img_picto('', 'category') . $form::multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx');
@@ -763,11 +764,12 @@ class ActionsDoliSIRH
      * Overloading the constructCategory function : replacing the parent's function with the one below.
      *
      * @param  array $parameters Hook metadata (context, etc...).
-     * @return void
+     * @return int               0 so that results are merged with other modules ones (1 would replace them)
      */
-    public function constructCategory(array $parameters)
+    public function constructCategory(array $parameters): int
     {
-        if (in_array($parameters['currentcontext'], ['category', 'invoicecard', 'invoicereccard', 'timesheetcard', 'certificatecard', 'invoicelist', 'invoicereclist'])) {
+        // Test the whole context: currentcontext is the first DoliSIRH context initialized in the request, not necessarily 'category'
+        if (strpos($parameters['context'], 'category') !== false) {
             $tags = [
                 'facture' => [
                     'id'        => 436370001,
@@ -797,6 +799,8 @@ class ActionsDoliSIRH
 
             $this->results = $tags;
         }
+
+        return 0;
     }
 
 	/**
@@ -814,7 +818,13 @@ class ActionsDoliSIRH
 		if ($parameters['currentcontext'] == 'invoicecard') {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-			$form = new Form($this->db);
+			$form      = new Form($this->db);
+			$categorie = new Categorie($this->db);
+
+			// Another module's constructCategory hook may have dropped our tag types (e.g. by returning 1)
+			if (!isset($categorie->MAP_ID['facture'])) {
+				return;
+			}
 
 			if ($action == 'create') {
 				if (!empty($conf->categorie->enabled)) {
@@ -829,8 +839,7 @@ class ActionsDoliSIRH
               if ($conf->categorie->enabled) {
                   print '<tr><td>'.$langs->trans("Categories").'</td><td>';
                   $cate_arbo = $form->select_all_categories('facture', '', 'parent', 64, 0, 1);
-                  $c = new Categorie($this->db);
-                  $cats = $c->containing($object->id, 'facture');
+                  $cats = $categorie->containing($object->id, 'facture');
                   $arrayselected = array();
                   if (is_array($cats)) {
                       foreach ($cats as $cat) {
@@ -852,7 +861,12 @@ class ActionsDoliSIRH
 		if ($parameters['currentcontext'] == 'invoicereccard') {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-			$form = new Form($this->db);
+			$form      = new Form($this->db);
+			$categorie = new Categorie($this->db);
+
+			if (!isset($categorie->MAP_ID['facturerec'])) {
+				return;
+			}
 
 			if ($action == '') {
 				// Categories
