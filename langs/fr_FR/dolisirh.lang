@@ -111,6 +111,7 @@ EnableDolisirh             = Veuillez activer le module DoliSIRH pour accéder �
 # Right - Droit
 CreateAllWorkingHours = Créer/Modifier les horaires de travail des utilisateurs (dont je suis responsable hiérarchique)
 CreateMyWorkingHours  = Créer/Modifier ses propres horaires de travail
+CreateEveryoneWorkingHours = Créer/Modifier les horaires de travail de tous les utilisateurs
 
 # Data - Donnée
 WorkingHours            = Horaire de travail
