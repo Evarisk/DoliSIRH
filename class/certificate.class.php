@@ -22,7 +22,7 @@
  */
 
 // Load Saturne libraries.
-require_once __DIR__ . '/../../saturne/class/saturnecertificate.class.php';
+dol_include_once('/saturne/class/saturnecertificate.class.php');
 
 /**
  * Class for Certificate.

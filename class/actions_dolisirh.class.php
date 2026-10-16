@@ -78,7 +78,7 @@ class ActionsDoliSIRH
                 require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
                 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-                require_once __DIR__ . '/../../saturne/lib/object.lib.php';
+                dol_include_once('/saturne/lib/object.lib.php');
 
                 $product   = new Product($this->db);
                 $task      = new Task($this->db);
@@ -245,7 +245,7 @@ class ActionsDoliSIRH
                 $moduleNameLowerCase = 'dolisirh';
                 $permissiontoadd     = $user->rights->projet->creer;
 
-                require_once __DIR__ . '/../../saturne/core/tpl/documents/documents_action.tpl.php';
+                require_once dol_buildpath('/saturne/core/tpl/documents/documents_action.tpl.php');
             }
 
             if ($action == 'pdfGeneration') {
@@ -254,7 +254,7 @@ class ActionsDoliSIRH
                 $upload_dir          = $conf->dolisirh->multidir_output[$conf->entity ?? 1];
 
                 // Action to generate pdf from odt file
-                require_once __DIR__ . '/../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
+                require_once dol_buildpath('/saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php');
 
                 $urlToRedirect = $_SERVER['REQUEST_URI'];
                 $urlToRedirect = preg_replace('/#pdfGeneration$/', '', $urlToRedirect);
@@ -685,7 +685,7 @@ class ActionsDoliSIRH
 
                 $moduleNameLowerCase = 'dolisirh';
 
-                require_once __DIR__ . '/../../saturne/lib/documents.lib.php';
+                dol_include_once('/saturne/lib/documents.lib.php');
 
                 $object = new Project($this->db);
                 $object->fetch(GETPOSTINT('id'), GETPOST('ref','alpha'));
@@ -702,7 +702,7 @@ class ActionsDoliSIRH
                 $permissionToAdd    = $user->hasRight('projet', 'creer');
                 $permissionToDelete = $user->hasRight('projet', 'supprimer');
 
-                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', empty($soc->default_lang) ? '' : $soc->default_lang, $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
+                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', '', $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
                 ?>
 
                 <script src="../custom/saturne/js/saturne.min.js"></script>
