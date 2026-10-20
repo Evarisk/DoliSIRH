@@ -1,0 +1,59 @@
+/* DoliSIRH modern theme: timesheet card (view/timesheet/timesheet_card.php) */
+
+#{$ds-scope} {
+  /* Working time totals, printed as single cell rows at the end of the field table: a compact list
+     of figures instead of grey total rows (the second column of the table stays empty) */
+  table.tableforfield tr.liste_total > td.liste_total {
+    padding: 5px 14px !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: $ds-text;
+    font-variant-numeric: tabular-nums;
+
+    .opacitymediumbycolor {
+      font-weight: 400;
+      color: $ds-muted;
+      opacity: 1;
+    }
+
+    .opacitymediumbycolor strong {
+      font-weight: 700;
+      color: $ds-text;
+    }
+
+    .opacitymediumbycolor a {
+      color: $ds-primary-strong;
+    }
+  }
+
+  table.tableforfield tr:not(.liste_total) + tr.liste_total > td.liste_total {
+    padding-top: 12px !important;
+  }
+
+  table.tableforfield tr.liste_total:last-child > td.liste_total {
+    padding-bottom: 12px !important;
+  }
+
+  /* Notices under the card (time to complete, missing configuration) with their shortcut button */
+  div.tabBar > .wpeo-notice {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 4px 0 16px;
+
+    .notice-content {
+      flex: 1 1 auto;
+    }
+
+    > a.butAction {
+      flex: 0 0 auto;
+      max-width: 340px;
+      margin: 0 !important;
+      text-align: center;
+      white-space: normal;
+    }
+  }
+}

@@ -1,0 +1,7 @@
+/* DoliSIRH modern theme: the DoliSIRH components on top of the shared theme of Saturne, imported
+   last so that it wins over the legacy partials. Every rule is scoped by $ds-scope (see _tokens.scss). */
+
+@import "tokens";
+@import "timespent";
+@import "timesheet";
+@import "misc";
