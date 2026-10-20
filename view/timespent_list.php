@@ -345,7 +345,7 @@ $num = $db->num_rows($resql);
 // Output page
 // --------------------------------------------------------------------
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss, '', '');
+llxHeader('', $title, $help_url, '', 0, 0, $morejs, array_merge($morecss, ['/saturne/css/saturne.min.css', '/dolisirh/css/dolisirh.min.css']), '', 'saturne-theme');
 
 $arrayofselected = is_array($toselect) ? $toselect : array();
 

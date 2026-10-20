@@ -93,7 +93,7 @@ $form        = new Form($db);
 $formcompany = new FormCompany($db);
 $formother   = new FormOther($db);
 
-llxHeader();
+llxHeader('', '', '', '', 0, 0, [], ['/saturne/css/saturne.min.css', '/dolisirh/css/dolisirh.min.css'], '', 'saturne-theme');
 
 $picto = 'bill';
 $title = $langs->trans("RecurringInvoicesStatistics");

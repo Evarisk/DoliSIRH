@@ -72,9 +72,9 @@ if (GETPOST('updateEmployeeExternalUsers', 'alpha')) {
 
 $help_url = 'FR:Module_DoliSIRH';
 $morejs   = ['/dolisirh/js/dolisirh.js'];
-$morecss  = ['/dolisirh/css/dolisirh.css'];
+$morecss  = ['/saturne/css/saturne.min.css', '/dolisirh/css/dolisirh.min.css'];
 
-llxHeader('', $langs->trans('Tools'), $help_url, '', '', '', $morejs, $morecss);
+llxHeader('', $langs->trans('Tools'), $help_url, '', '', '', $morejs, $morecss, '', 'saturne-theme');
 
 print load_fiche_titre($langs->trans('Tools'), '', 'wrench');
 
