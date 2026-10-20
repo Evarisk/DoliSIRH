@@ -1326,7 +1326,7 @@ class ActionsDoliSIRH
         global $conf, $langs, $moduleName;
 
         if (strpos($parameters['context'], 'dolisirhindex') !== false) {
-            if (getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') == 0) {
+            if (getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') < 2) {
                 $out  = '<div class="wpeo-notice notice-info">';
                 $out .= '<div class="notice-content">';
                 $out .= '<div class="notice-title"><strong>' . $langs->trans('SetupDefaultDataNotCreated', $moduleName) . '</strong></div>';

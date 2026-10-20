@@ -160,7 +160,13 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             }
 
             if ($foundTagForLines) {
-                $filter     = ' AND t.rowid NOT IN (' . $conf->global->DOLISIRH_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_PAID_HOLIDAYS_TASK . ',' . $conf->global->DOLISIRH_RTT_TASK . ',' . $conf->global->DOLISIRH_PUBLIC_HOLIDAY_TASK . ',' . $conf->global->DOLISIRH_SICK_LEAVE_TASK . ')';
+                $noWorkTimeTaskIds = [];
+                foreach (get_hr_project_tasks() as $hrProjectTask) {
+                    if (($hrProjectTask['type'] ?? '') === 'no_work_time' && getDolGlobalInt($hrProjectTask['code']) > 0) {
+                        $noWorkTimeTaskIds[] = getDolGlobalInt($hrProjectTask['code']);
+                    }
+                }
+                $filter     = !empty($noWorkTimeTaskIds) ? ' AND t.rowid NOT IN (' . implode(',', $noWorkTimeTaskIds) . ')' : '';
                 $tasksArray = $task->getTasksArray(0, 0, 0, 0, 0, '', '', $filter,  $object->fk_user_assign);
                 if (is_array($tasksArray) && !empty($tasksArray)) {
                     foreach ($tasksArray as $taskSingle) {

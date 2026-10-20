@@ -141,32 +141,77 @@ print dol_get_fiche_head($head, 'projecttasks', $title, -1, 'dolisirh_color@doli
 // Project.
 print load_fiche_titre($langs->transnoentities('HRProject'), '', 'project');
 
+if (getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0 && getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') == 2) {
+    require_once DOL_DOCUMENT_ROOT . '/projet/class/project.class.php';
+    $hrProjectObj = new Project($db);
+    if ($hrProjectObj->fetch(getDolGlobalInt('DOLISIRH_HR_PROJECT')) > 0) {
+        print '<div class="wpeo-notice notice-info">';
+        print '<div class="notice-content">';
+        print '<div class="notice-title"><strong>' . $langs->trans('NewHRProjectCreated', $hrProjectObj->title, $hrProjectObj->ref) . '</strong></div>';
+        print '</div>';
+        print '</div>';
+    }
+}
+
 print '<form method="POST" action="' . $_SERVER['PHP_SELF'] . '" name="project_form">';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="update">';
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
-print '<td>' . $langs->transnoentities('Name') . '</td>';
+print '<td class="titlefield">' . $langs->transnoentities('Name') . '</td>';
 print '<td>' . $langs->transnoentities('ProjectOrTask') . '</td>';
 print '</tr>';
 
 // HRProject.
-print '<tr class="oddeven"><td><label for="hrProject">' . $langs->transnoentities('HRProject') . '</label></td><td>';
+print '<tr class="oddeven"><td class="titlefield"><label for="hrProject">' . $langs->transnoentities('HRProject') . '</label></td><td>';
 print img_picto('', 'project', 'class="pictofixedwidth"');
-$formproject->select_projects(-1, (GETPOSTISSET('hrProject') ? GETPOST('hrProject', 'int') : $conf->global->DOLISIRH_HR_PROJECT), 'hrProject', 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 'maxwidth500 widthcentpercentminusx');
+$formproject->select_projects(-1, (GETPOSTISSET('hrProject') ? GETPOST('hrProject', 'int') : getDolGlobalInt('DOLISIRH_HR_PROJECT')), 'hrProject', 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 'maxwidth500 widthcentpercentminusx');
 print ' <a href="' . DOL_URL_ROOT . '/projet/card.php?action=create&status=1&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?HRProject=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddProject') . '"></span></a>';
 print '</td></tr>';
+print '</table>';
 
-// HRProjectTasks.
+// No Work Time tasks (Absence).
+print load_fiche_titre($langs->transnoentities('NoWorkTimeTasks'), '', 'projecttask');
+
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<td class="titlefield">' . $langs->transnoentities('Name') . '</td>';
+print '<td>' . $langs->transnoentities('ProjectOrTask') . '</td>';
+print '</tr>';
+
 foreach ($hrProjectTasks as $hrProjectTask) {
-    print '<tr class="oddeven"><td><label for="' . $hrProjectTask['name'] . '">' . $langs->transnoentities($hrProjectTask['name']) . '</label></td><td>';
+    if (($hrProjectTask['type'] ?? '') !== 'no_work_time') {
+        continue;
+    }
+    print '<tr class="oddeven"><td class="titlefield"><label for="' . $hrProjectTask['name'] . '">' . $langs->transnoentities($hrProjectTask['name']) . '</label></td><td>';
     print img_picto('', 'projecttask', 'class="pictofixedwidth"');
     $hrProjectTaskCode = $hrProjectTask['code'];
-    $formproject->selectTasks(-1, (GETPOSTISSET($hrProjectTask['name']) ? GETPOST($hrProjectTask['name'], 'int') : $conf->global->$hrProjectTaskCode), $hrProjectTask['name'], 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', $conf->global->DOLISIRH_HR_PROJECT, '');
-    print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . $conf->global->DOLISIRH_HR_PROJECT . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?' . $hrProjectTask['name'] . '=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+    $formproject->selectTasks(-1, (GETPOSTISSET($hrProjectTask['name']) ? GETPOST($hrProjectTask['name'], 'int') : getDolGlobalInt($hrProjectTaskCode)), $hrProjectTask['name'], 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', getDolGlobalString('DOLISIRH_HR_PROJECT'), '');
+    print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . getDolGlobalInt('DOLISIRH_HR_PROJECT') . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?' . $hrProjectTask['name'] . '=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
     print '</td></tr>';
 }
+print '</table>';
 
+// Work Time tasks (Presence).
+print load_fiche_titre($langs->transnoentities('WorkTimeTasks'), '', 'projecttask');
+
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
+print '<td class="titlefield">' . $langs->transnoentities('Name') . '</td>';
+print '<td>' . $langs->transnoentities('ProjectOrTask') . '</td>';
+print '</tr>';
+
+foreach ($hrProjectTasks as $hrProjectTask) {
+    if (($hrProjectTask['type'] ?? '') !== 'work_time') {
+        continue;
+    }
+    print '<tr class="oddeven"><td class="titlefield"><label for="' . $hrProjectTask['name'] . '">' . $langs->transnoentities($hrProjectTask['name']) . '</label></td><td>';
+    print img_picto('', 'projecttask', 'class="pictofixedwidth"');
+    $hrProjectTaskCode = $hrProjectTask['code'];
+    $formproject->selectTasks(-1, (GETPOSTISSET($hrProjectTask['name']) ? GETPOST($hrProjectTask['name'], 'int') : getDolGlobalInt($hrProjectTaskCode)), $hrProjectTask['name'], 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', getDolGlobalString('DOLISIRH_HR_PROJECT'), '');
+    print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . getDolGlobalInt('DOLISIRH_HR_PROJECT') . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?' . $hrProjectTask['name'] . '=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+    print '</td></tr>';
+}
 print '</table>';
 print '<div class="tabsAction"><input type="submit" class="butAction" name="save" value="' . $langs->trans('Save') . '"></div>';
 print '</form>';

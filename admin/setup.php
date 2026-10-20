@@ -60,13 +60,14 @@ saturne_check_access($permissiontoread);
  */
 
 if (GETPOST('create_hr_project_tasks', 'alpha')) {
-    if ($conf->global->DOLISIRH_HR_PROJECT_SET == 0) {
+    if (getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') < 2) {
         require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
         require_once DOL_DOCUMENT_ROOT . '/projet/class/project.class.php';
 
         $error           = 0;
         $now             = dol_now();
-        $projectRefClass = empty($conf->global->PROJECT_ADDON) ? 'mod_project_simple' : $conf->global->PROJECT_ADDON;
+        $isUpdate        = (getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0);
+        $projectRefClass = getDolGlobalString('PROJECT_ADDON', 'mod_project_simple');
 
         if (!empty($projectRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php')) {
             require_once DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php';
@@ -82,12 +83,12 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
 
         if ($error == 0) {
             $project->ref         = $projectRef;
-            $project->title       = $langs->transnoentities('HumanResources') . ' - ' . $conf->global->MAIN_INFO_SOCIETE_NOM;
+            $project->title       = $langs->transnoentities('HumanResources') . ' - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM') . ($isUpdate ? ' - 2.0.0' : '');
             $project->description = $langs->transnoentities('HRDescription');
             $project->date_c      = $now;
             $currentYear          = dol_print_date(dol_now(), '%Y');
-            $fiscalMonthStart     = $conf->global->SOCIETE_FISCAL_MONTH_START;
-            $dateStart            = dol_mktime('0', '0', '0', $fiscalMonthStart ?: '1', '1', $currentYear);
+            $fiscalMonthStart     = getDolGlobalInt('SOCIETE_FISCAL_MONTH_START', 1);
+            $dateStart            = dol_mktime('0', '0', '0', $fiscalMonthStart, '1', $currentYear);
             $project->date_start  = $dateStart;
 
             $project->usage_task = 1;
@@ -115,14 +116,11 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
 
             require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 
-            $task = new Task($db);
-
-            $taskRefClass = empty($conf->global->PROJECT_TASK_ADDON) ? 'mod_task_simple' : $conf->global->PROJECT_TASK_ADDON;
+            $taskRefClass = getDolGlobalString('PROJECT_TASK_ADDON', 'mod_task_simple');
 
             if (!empty($taskRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php')) {
-                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php';
+                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php';
                 $modTask = new $taskRefClass();
-                $modTask->getNextValue('', null);
             } else {
                 $modTask = null;
                 $error++;
@@ -132,27 +130,24 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
                 $hrProjectTasks = get_hr_project_tasks();
 
                 foreach ($hrProjectTasks as $hrProjectTask) {
-                    $task->date_c     = $now;
-                    $task->fk_project = $projectID;
-                    $task->ref        = $modTask->getNextValue('', null);
-                    $task->label      = $langs->transnoentities($hrProjectTask['name']);
-                    $taskID           = $task->create($user);
-                    dolibarr_set_const($db, $hrProjectTask['code'], $taskID, 'integer', 0, '', $conf->entity);
-                }
-
-                $taskArray = $task->getTasksArray(0, 0, $projectID);
-
-                if (!empty($users) && is_array($users)) {
-                    foreach ($users as $userSingle) {
-                        if (is_array($taskArray) && !empty($taskArray)) {
-                            foreach ($taskArray as $task) {
-                                $task->add_contact($userSingle['id'], 'TASKCONTRIBUTOR', 'internal');
+                    $newTask             = new Task($db);
+                    $newTask->date_c     = $now;
+                    $newTask->fk_project = $projectID;
+                    $newTask->ref        = $modTask->getNextValue('', null);
+                    $newTask->label      = $langs->transnoentities($hrProjectTask['name']);
+                    $taskID              = $newTask->create($user);
+                    if ($taskID > 0) {
+                        dolibarr_set_const($db, $hrProjectTask['code'], $taskID, 'integer', 0, '', $conf->entity);
+                        if (!empty($users) && is_array($users)) {
+                            foreach ($users as $userSingle) {
+                                $newTask->add_contact($userSingle['id'], 'TASKCONTRIBUTOR', 'internal');
                             }
                         }
                     }
                 }
 
-                dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT_SET', 1, 'integer', 0, '', $conf->entity);
+                dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT_SET', 2, 'integer', 0, '', $conf->entity);
+                setEventMessage($langs->trans('NewHRProjectCreated', $project->title, $project->ref));
             }
         }
     }
@@ -250,10 +245,10 @@ print '<td>';
 print $langs->transnoentities('HRProjectSetHelp');
 print '</td>';
 print '<td class="center">';
-print $conf->global->DOLISIRH_HR_PROJECT_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
+print ((getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') == 2) ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated'));
 print '</td>';
 print '<td class="center">';
-print $conf->global->DOLISIRH_HR_PROJECT_SET ? '<a class="butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="create_hr_project_tasks" value="' . $langs->transnoentities('Create') . '">';
+print ((getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') == 2) ? '<a class="butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="create_hr_project_tasks" value="' . $langs->transnoentities('Create') . '">');
 print '</td>';
 print '</tr>';
 

@@ -337,7 +337,7 @@ class DolisirhDashboard
                 $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['labels'][] = ['color' => self::getColorRange($key)];
                 for ($idw = 0; $idw < $daysInMonth; $idw++) {
                     $dayInLoop = dol_time_plus_duree($firstdaytoshow, $idw, 'd');
-                    $timeSpentDuration += $timeSpent[dol_print_date($dayInLoop, 'day')] / 3600;
+                    $timeSpentDuration += ($timeSpent[dol_print_date($dayInLoop, 'day')] ?? 0) / 3600;
                 }
                 $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['data'][] = [$timeSpent['task_ref'] . ' - ' . $timeSpent['task_label'], ($datasetOrder == 0 ? 0 : $timeSpentDuration), ($datasetOrder == 0 ? $timeSpentDuration : 0)];
                 $datas[$timeSpent['project_ref'] . ' - ' . $timeSpent['project_label']]['timespent_duration_task'][] = $timeSpentDuration;
