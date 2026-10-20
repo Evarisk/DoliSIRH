@@ -1,0 +1,20 @@
+/* DoliSIRH modern theme: recurring invoice statistics (view/recurringinvoicestatistics.php) */
+
+#{$ds-scope} {
+  /* saturne.min.css puts the third / two-thirds columns of every page on one column up to 1600px:
+     this page now loads it for the theme, it keeps the native statistics layout (filters on the
+     left, graphs on the right) as long as the graphs fit in their half, one column below */
+  @media only screen and (min-width: 1400px) {
+    div.fichecenter:has(> div.fichethirdleft > form[name="stats"]) {
+      > div.fichethirdleft {
+        float: left;
+        width: calc(50% - 20px);
+      }
+
+      > div.fichetwothirdright {
+        float: right;
+        width: calc(50% - 20px);
+      }
+    }
+  }
+}

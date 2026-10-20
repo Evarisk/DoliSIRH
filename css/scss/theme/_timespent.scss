@@ -1,0 +1,502 @@
+/* DoliSIRH modern theme: time spent ranges (view/timespent_range.php, day / week / month input grids)
+   and the modal used to add a time spent.
+   The grid is dense: rows and cells are kept compact, the sticky cells (first column, header, totals)
+   carry inline backgrounds in the PHP, aligned here on the theme surfaces. */
+
+#{$ds-scope} {
+  /* ---- Tabs: the first tab repeats the clock picto of the page title ---- */
+
+  #addtimeform > div.tabs a.tab > .imgTabTitle {
+    display: none;
+  }
+
+  /* The card under the tabs is empty on this page */
+  #addtimeform > div.tabBar {
+    margin-bottom: 0;
+  }
+
+  /* ---- Toolbar above the grid: period navigation (right) and task assignment (left) ---- */
+
+  #addtimeform > div.floatright.right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 5px 6px 5px 4px;
+    @include ds-card;
+    border-radius: $ds-radius;
+
+    > a.inline-block {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: $ds-radius-sm;
+      color: $ds-text-soft;
+      transition: background-color $ds-transition, color $ds-transition;
+
+      &:hover {
+        background: $ds-bg;
+        color: $ds-primary;
+      }
+
+      .fa {
+        padding: 0;
+      }
+    }
+
+    #month_name {
+      padding: 0 4px;
+      font-weight: 700;
+      color: $ds-text;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .divfordateinput {
+      margin-left: 6px;
+    }
+
+    .datenowlink {
+      color: $ds-primary-strong;
+      font-weight: 600;
+    }
+
+    button.bordertransp {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: $ds-radius-sm;
+      background: $ds-primary-soft;
+      color: $ds-primary-strong;
+      cursor: pointer;
+      transition: background-color $ds-transition;
+
+      &:hover {
+        background: rgba(13, 138, 255, 0.18);
+      }
+    }
+  }
+
+  #addtimeform > div.colorbacktimesheet {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    .taskiddiv {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    input.button {
+      margin: 0;
+    }
+  }
+
+  /* The two clearing divs each add 20px of inline padding */
+  #addtimeform > div.clearboth + div.clearboth {
+    display: none;
+  }
+
+  /* ---- The grid ---- */
+
+  #tablelines3 {
+    margin-top: 4px;
+    font-size: 13px;
+
+    /* Corners of the first and last rows, the theme only rounds th / tbody cells */
+    > thead > tr:first-child > td:first-child {
+      border-top-left-radius: 13px;
+    }
+
+    > thead > tr:first-child > td:last-child {
+      border-top-right-radius: 13px;
+    }
+
+    > tfoot > tr:last-child > td:first-child {
+      border-bottom-left-radius: 13px;
+    }
+
+    > tfoot > tr:last-child > td:last-child {
+      border-bottom-right-radius: 13px;
+    }
+
+    /* Filters (user, project, third party, tags): a toolbar, not a header row */
+    > thead > tr.liste_titre:first-child > td {
+      padding-top: 8px;
+      padding-bottom: 8px;
+      background-color: $ds-surface-soft !important;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: normal;
+      text-transform: none;
+      color: $ds-text;
+
+      .pictofixedwidth {
+        color: $ds-faint;
+      }
+    }
+
+    /* Search row: the sticky first cell carries the title background inline */
+    > thead > tr.liste_titre_filter > td {
+      padding-top: 6px;
+      padding-bottom: 6px;
+      background-color: $ds-surface !important;
+    }
+
+    /* Column titles */
+    > thead > tr.liste_titre > th {
+      padding-top: 8px;
+      padding-bottom: 8px;
+      font-size: 11px !important;
+      line-height: 1.35;
+      vertical-align: bottom;
+
+      .fas,
+      .far {
+        color: $ds-muted;
+      }
+
+      input[type="checkbox"] {
+        margin: 0 4px 0 2px;
+        vertical-align: middle;
+      }
+
+      .fa-info-circle {
+        color: $ds-faint;
+      }
+
+      /* Link to the day view, next to each day */
+      .fa-external-link-alt {
+        margin-left: 2px;
+        font-size: 9px;
+        color: $ds-faint;
+      }
+
+      a:hover .fa-external-link-alt {
+        color: $ds-primary;
+      }
+    }
+
+    /* ---- Totals (planned on top, due / spent / difference in the sticky footer) ---- */
+
+    tr.liste_total > td {
+      padding-top: 7px;
+      padding-bottom: 7px;
+      border-top: 1px solid $ds-border-soft !important;
+      background-color: $ds-surface-soft !important;
+      font-size: 12.5px;
+      font-variant-numeric: tabular-nums;
+
+      .opacitymediumbycolor {
+        font-weight: 500;
+        color: $ds-muted;
+        opacity: 1;
+      }
+
+      .opacitymediumbycolor strong {
+        font-weight: 700;
+        color: $ds-text;
+      }
+
+      .opacitymediumbycolor a {
+        color: $ds-primary-strong;
+      }
+    }
+
+    > thead > tr.liste_total > td {
+      border-top: 1px solid $ds-border !important;
+      border-bottom: 1px solid $ds-border !important;
+    }
+
+    > tfoot > tr:first-child > td {
+      border-top: 1px solid $ds-border !important;
+      box-shadow: 0 -1px 0 $ds-border;
+    }
+
+    /* ---- Project break rows ---- */
+
+    > tbody > tr.trforbreak > td {
+      padding-top: 7px;
+      padding-bottom: 7px;
+      border-top: 1px solid $ds-border !important;
+      border-bottom: 1px solid $ds-border !important;
+      background-color: $ds-surface-soft !important;
+      font-size: 12.5px;
+      color: $ds-muted;
+
+      > span > a:first-child {
+        font-weight: 700 !important;
+        color: $ds-text;
+      }
+
+      span.secondary {
+        color: $ds-text-soft;
+      }
+
+      .badge {
+        margin-left: 2px;
+        vertical-align: middle;
+      }
+    }
+
+    /* ---- Task rows ---- */
+
+    > tbody > tr > td {
+      padding-top: 3px;
+      padding-bottom: 3px;
+    }
+
+    /* The label may wrap under the reference on a narrow screen, instead of widening the page */
+    > tbody > tr[data-task_id] > td:first-child {
+      padding-top: 6px;
+      padding-bottom: 6px;
+      background-color: $ds-surface !important;
+      white-space: normal;
+
+      span.opacitymedium {
+        margin-left: 6px !important;
+        color: $ds-text-soft;
+      }
+    }
+
+    > tbody > tr[data-task_id]:hover > td:first-child {
+      background-color: $ds-surface-soft !important;
+    }
+
+    /* Time spent by the user on the range */
+    > tbody > tr[data-task_id] > td.right {
+      color: $ds-faint;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Favourite toggle */
+    .toggleTaskFavorite {
+      margin-left: 6px !important;
+      font-size: 12px;
+      cursor: pointer;
+      transition: color $ds-transition, transform $ds-transition;
+
+      &.fas {
+        color: #f59e0b;
+      }
+
+      &.far {
+        color: $ds-border-strong;
+      }
+
+      &:hover {
+        color: #f59e0b;
+        transform: scale(1.15);
+      }
+    }
+
+    /* Day cells */
+    > tbody > tr > td[data-cell] {
+      padding: 3px 2px;
+      text-align: center;
+    }
+
+    input.timespent {
+      width: 44px;
+      height: 26px;
+      padding: 2px 4px;
+      border: 1px solid $ds-border-strong;
+      border-radius: 6px;
+      background: $ds-surface;
+      font-size: 12.5px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      transition: border-color $ds-transition, background-color $ds-transition, box-shadow $ds-transition;
+
+      &:hover {
+        border-color: $ds-primary;
+        background: $ds-primary-soft;
+      }
+
+      &:focus {
+        border-color: $ds-primary;
+        box-shadow: $ds-ring;
+      }
+
+      &:disabled {
+        border-style: dashed;
+        border-color: $ds-border;
+        background: transparent;
+        cursor: not-allowed;
+      }
+    }
+
+    /* Time already recorded on the day: a tinted pill above the input */
+    span.timesheetalreadyrecorded {
+      display: block;
+
+      input {
+        @include ds-pill;
+        justify-content: center;
+        box-sizing: border-box;
+        width: 44px;
+        height: 20px;
+        margin: 0 auto 3px !important;
+        padding: 0;
+        border: none !important;
+        background: $ds-primary-soft;
+        color: $ds-primary-strong;
+        opacity: 1;
+        cursor: help;
+      }
+    }
+
+    /* Week-ends and public holidays: tinted columns */
+    td.weekend,
+    th.weekend,
+    tr.liste_total > td.weekend {
+      background-color: $ds-bg !important;
+    }
+
+    td.onholidayallday:not(.weekend),
+    th.onholidayallday:not(.weekend),
+    tr.liste_total > td.onholidayallday:not(.weekend) {
+      background-color: #fdf6e9 !important;
+    }
+
+    td.weekend input.timespent:not(:hover):not(:focus),
+    td.onholidayallday input.timespent:not(:hover):not(:focus) {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Wide ranges (8 days or more), scrolled sideways under the sticky task column: long task labels
+       are cut (the full label stays in the title) and the sticky column gets a separating edge */
+    &:has(> thead > tr > th.\37) > tbody > tr[data-task_id] > td:first-child {
+      white-space: nowrap;
+      box-shadow: inset -1px 0 0 $ds-border;
+
+      span.opacitymedium[title] {
+        display: inline-block;
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+      }
+    }
+  }
+
+  /* Progress of a task (spent / planned), here and on the task lists */
+  .task-progress {
+    @include ds-pill;
+    border: 1px solid $ds-border;
+    background: $ds-bg;
+    color: $ds-text-soft;
+
+    &.progress-red {
+      border-color: rgba(224, 83, 83, 0.3);
+      background: $ds-danger-soft;
+      color: $ds-danger-text;
+    }
+
+    &.progress-yellow {
+      border-color: rgba(233, 173, 79, 0.45);
+      background: $ds-warning-soft;
+      color: $ds-warning-text;
+    }
+
+    &.progress-green {
+      border-color: rgba(22, 163, 74, 0.3);
+      background: $ds-success-soft;
+      color: $ds-success-text;
+    }
+  }
+
+  /* ---- Modal to add a time spent ---- */
+
+  .wpeo-modal.modal-timespent {
+    .modal-container {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      padding: 20px 0 16px;
+    }
+
+    /* The header only holds the close cross */
+    .modal-container .modal-header {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      height: auto;
+      padding: 0;
+      border-bottom: none;
+    }
+
+    .modal-container .modal-content {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+      padding: 0 22px;
+    }
+
+    .modal-container .modal-footer {
+      height: auto;
+      margin-top: 14px;
+      padding: 12px 22px 0 !important;
+    }
+
+    .title {
+      margin-bottom: 6px;
+
+      strong {
+        @include ds-label;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .far {
+        font-size: 12px;
+        color: $ds-faint;
+      }
+    }
+
+    .timespent-date {
+      margin-right: 6px;
+      font-weight: 600;
+      color: $ds-text;
+    }
+
+  }
+
+  /* Fields of the modal (its id wins over the field padding of the shared forms, too wide for the
+     40px hour / minute inputs) */
+  #timespent.modal-timespent {
+    input[type="number"] {
+      height: 30px;
+      padding: 4px 2px;
+      border: 1px solid $ds-border-strong;
+      border-radius: $ds-radius-sm;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    textarea.timespent-comment {
+      display: block;
+      height: 88px;
+      padding: 8px 10px;
+      border: 1px solid $ds-border-strong;
+      border-radius: $ds-radius-sm;
+      font-family: $ds-font;
+      resize: vertical;
+    }
+
+    :is(input[type="number"], textarea.timespent-comment):focus {
+      outline: none;
+      border-color: $ds-primary;
+      box-shadow: $ds-ring;
+    }
+  }
+}
