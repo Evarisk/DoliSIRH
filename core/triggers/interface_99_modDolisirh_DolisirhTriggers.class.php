@@ -249,7 +249,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             case 'ECMFILES_CREATE' :
                 if ($object->src_object_type == 'dolisirh_timesheet') {
-                    require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
+                    dol_include_once('/saturne/class/saturnesignature.class.php');
 
                     $signatory = new SaturneSignature($this->db, 'dolisirh');
 
@@ -270,7 +270,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             case 'TIMESHEET_CREATE' :
                 if (!empty($object->fk_user_assign)) {
-                    require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
+                    dol_include_once('/saturne/class/saturnesignature.class.php');
 
                     $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
                     $userTmp   = new User($this->db);
@@ -311,7 +311,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
             case 'CERTIFICATE_CREATE' :
                 if ($object->element_type == 'user') {
-                    require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
+                    dol_include_once('/saturne/class/saturnesignature.class.php');
 
                     $signatory = new SaturneSignature($this->db, 'dolisirh', $object->element);
 

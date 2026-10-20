@@ -28,8 +28,8 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/images.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/company.lib.php';
 
 // Load Saturne libraries.
-require_once __DIR__ . '/../../../../../../saturne/class/saturnesignature.class.php';
-require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
+dol_include_once('/saturne/class/saturnesignature.class.php');
+dol_include_once('/saturne/core/modules/saturne/modules_saturne.php');
 
 // Load DoliSIRH libraries.
 require_once __DIR__ . '/../../../../../lib/dolisirh_function.lib.php';

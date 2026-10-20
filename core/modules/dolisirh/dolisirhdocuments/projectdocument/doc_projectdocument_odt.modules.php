@@ -32,8 +32,8 @@ require_once DOL_DOCUMENT_ROOT . '/projet/class/project.class.php';
 require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 
 // Load Saturne libraries.
-require_once __DIR__ . '/../../../../../../saturne/class/saturnesignature.class.php';
-require_once __DIR__ . '/../../../../../../saturne/core/modules/saturne/modules_saturne.php';
+dol_include_once('/saturne/class/saturnesignature.class.php');
+dol_include_once('/saturne/core/modules/saturne/modules_saturne.php');
 
 // Load DoliSIRH libraries.
 require_once __DIR__ . '/mod_projectdocument_standard.php';
@@ -88,7 +88,7 @@ class doc_projectdocument_odt extends SaturneDocumentModel
     {
         $object = $moreParam['object'];
 
-        require_once __DIR__ . '/../../../../../../saturne/class/task/saturnetask.class.php';
+        dol_include_once('/saturne/class/task/saturnetask.class.php');
         $saturneTask = new SaturneTask($this->db);
         $allTasks    = $saturneTask->getTasksArray(null, null, $object->id);
 
