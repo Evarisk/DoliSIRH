@@ -165,47 +165,67 @@ function get_hr_project_tasks(): array
         [
             'name'     => 'Holidays',
             'code'     => 'DOLISIRH_HOLIDAYS_TASK',
+            'type'     => 'no_work_time',
             'position' => 1
         ],
         [
             'name'     => 'PaidHolidays',
             'code'     => 'DOLISIRH_PAID_HOLIDAYS_TASK',
+            'type'     => 'no_work_time',
             'position' => 10
         ],
         [
             'name'     => 'SickLeave',
             'code'     => 'DOLISIRH_SICK_LEAVE_TASK',
+            'type'     => 'no_work_time',
             'position' => 40
         ],
         [
             'name'     => 'PublicHoliday',
             'code'     => 'DOLISIRH_PUBLIC_HOLIDAY_TASK',
+            'type'     => 'no_work_time',
             'position' => 30
         ],
         [
             'name'     => 'RTT',
             'code'     => 'DOLISIRH_RTT_TASK',
+            'type'     => 'no_work_time',
             'position' => 20
         ],
         [
-            'name' => 'InternalMeeting',
-            'code' => 'DOLISIRH_INTERNAL_MEETING_TASK'
+            'name' => 'Recovery',
+            'code' => 'DOLISIRH_RECOVERY_TASK',
+            'type' => 'no_work_time'
         ],
         [
-            'name' => 'InternalTraining',
-            'code' => 'DOLISIRH_INTERNAL_TRAINING_TASK'
+            'name' => 'CompensatoryRest',
+            'code' => 'DOLISIRH_COMPENSATORY_REST_TASK',
+            'type' => 'no_work_time'
         ],
         [
-            'name' => 'ExternalTraining',
-            'code' => 'DOLISIRH_EXTERNAL_TRAINING_TASK'
+            'name' => 'ExceptionalAbsence',
+            'code' => 'DOLISIRH_EXCEPTIONAL_ABSENCE_TASK',
+            'type' => 'no_work_time'
         ],
         [
-            'name' => 'AutomaticTimeSpending',
-            'code' => 'DOLISIRH_AUTOMATIC_TIMESPENDING_TASK'
+            'name' => 'EffectiveWorkTime',
+            'code' => 'DOLISIRH_EFFECTIVE_WORK_TIME_TASK',
+            'type' => 'work_time'
         ],
         [
-            'name' => 'Miscellaneous',
-            'code' => 'DOLISIRH_MISCELLANEOUS_TASK'
+            'name' => 'ProfessionalTraining',
+            'code' => 'DOLISIRH_PROFESSIONAL_TRAINING_TASK',
+            'type' => 'work_time'
+        ],
+        [
+            'name' => 'BusinessTravelMission',
+            'code' => 'DOLISIRH_BUSINESS_TRAVEL_MISSION_TASK',
+            'type' => 'work_time'
+        ],
+        [
+            'name' => 'CSEDelegation',
+            'code' => 'DOLISIRH_CSE_DELEGATION_TASK',
+            'type' => 'work_time'
         ]
     ];
 }

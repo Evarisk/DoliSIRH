@@ -704,6 +704,76 @@ class modDoliSIRH extends DolibarrModules
             dolibarr_set_const($this->db, 'DOLISIRH_BACKWARD_COMPATIBILITY_PRODUCT_SERVICE', 1, 'integer', 0, '', $conf->entity);
         }
 
+        if (getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0 && getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') < 2) {
+            require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+            require_once DOL_DOCUMENT_ROOT . '/projet/class/project.class.php';
+            require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+            require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
+
+            $now             = dol_now();
+            $project         = new Project($this->db);
+            $userTmp         = new User($this->db);
+            $projectRefClass = getDolGlobalString('PROJECT_ADDON', 'mod_project_simple');
+            $taskRefClass    = getDolGlobalString('PROJECT_TASK_ADDON', 'mod_task_simple');
+
+            if (!empty($projectRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php')
+                && !empty($taskRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php')) {
+                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php';
+                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php';
+
+                $modProject = new $projectRefClass();
+                $modTask    = new $taskRefClass();
+
+                $project->ref         = $modProject->getNextValue('', null);
+                $project->title       = $langs->transnoentities('HumanResources') . ' - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM') . ' - 2.0.0';
+                $project->description = $langs->transnoentities('HRDescription');
+                $project->date_c      = $now;
+                $currentYear          = dol_print_date($now, '%Y');
+                $fiscalMonthStart     = getDolGlobalInt('SOCIETE_FISCAL_MONTH_START', 1);
+                $dateStart            = dol_mktime(0, 0, 0, $fiscalMonthStart, 1, (int) $currentYear);
+                $project->date_start  = $dateStart;
+                $project->usage_task  = 1;
+
+                $dateStartAddYear      = dol_time_plus_duree($dateStart, 1, 'y');
+                $dateStartAddYearMonth = dol_time_plus_duree($dateStartAddYear, -1, 'd');
+                $project->date_end     = dol_print_date($dateStartAddYearMonth, 'dayrfc');
+                $project->statut       = 1;
+
+                $projectID = $project->create($user);
+                if ($projectID > 0) {
+                    dolibarr_set_const($this->db, 'DOLISIRH_HR_PROJECT', $projectID, 'integer', 0, '', $conf->entity);
+                    $users = $userTmp->get_full_tree(0, '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))');
+                    if (!empty($users) && is_array($users)) {
+                        foreach ($users as $userSingle) {
+                            $project->add_contact($userSingle['id'], 'PROJECTCONTRIBUTOR', 'internal');
+                        }
+                    }
+
+                    foreach (get_hr_project_tasks() as $hrProjectTask) {
+                        $newTask             = new Task($this->db);
+                        $newTask->date_c     = $now;
+                        $newTask->fk_project = $projectID;
+                        $newTask->ref        = $modTask->getNextValue('', null);
+                        $newTask->label      = $langs->transnoentities($hrProjectTask['name']);
+                        $taskID              = $newTask->create($user);
+                        if ($taskID > 0) {
+                            dolibarr_set_const($this->db, $hrProjectTask['code'], $taskID, 'integer', 0, '', $conf->entity);
+                            if (!empty($users) && is_array($users)) {
+                                foreach ($users as $userSingle) {
+                                    $newTask->add_contact($userSingle['id'], 'TASKCONTRIBUTOR', 'internal');
+                                }
+                            }
+                        }
+                    }
+
+                    dolibarr_set_const($this->db, 'DOLISIRH_HR_PROJECT_SET', 2, 'integer', 0, '', $conf->entity);
+                    if (!headers_sent()) {
+                        setEventMessage($langs->trans('NewHRProjectCreated', $project->title, $project->ref));
+                    }
+                }
+            }
+        }
+
         return $this->_init([], $options);
     }
 
