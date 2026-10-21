@@ -408,17 +408,15 @@ class pdf_timesheetdocument extends SaturneDocumentModel
             list($label, $value, $color) = $tile;
 
             $pdf->RoundedRect($posX, $posY, $tileWidth, $height, 1.5, '1111', 'DF', [], $this->colors['light']);
-            $pdf->SetFillColor($color[0], $color[1], $color[2]);
-            $pdf->Rect($posX, $posY + 2, 1.2, $height - 4, 'F');
 
             $pdf->SetFont('', '', $size - 1);
             $pdf->SetTextColor($this->colors['muted'][0], $this->colors['muted'][1], $this->colors['muted'][2]);
-            $pdf->SetXY($posX + 4, $posY + 1.5);
+            $pdf->SetXY($posX + 3, $posY + 1.5);
             $pdf->Cell($tileWidth - 6, 4, dol_strtoupper($label), 0, 0, 'L');
 
             $pdf->SetFont('', 'B', $size + 4);
             $pdf->SetTextColor($color[0], $color[1], $color[2]);
-            $pdf->SetXY($posX + 4, $posY + 6);
+            $pdf->SetXY($posX + 3, $posY + 6);
             $pdf->Cell($tileWidth - 6, 7, $value, 0, 0, 'L');
 
             $posX += $tileWidth + $gap;
