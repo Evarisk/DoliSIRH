@@ -97,7 +97,8 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
             $dateStartAddYearMonth = dol_time_plus_duree($dateStartAddYear, -1, 'd');
             $dateEnd               = dol_print_date($dateStartAddYearMonth, 'dayrfc');
             $project->date_end     = $dateEnd;
-            $project->statut       = 1;
+            $project->status       = Project::STATUS_VALIDATED;
+            $project->statut       = Project::STATUS_VALIDATED;
 
             $projectID = $project->create($user);
         } else {

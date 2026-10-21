@@ -737,7 +737,8 @@ class modDoliSIRH extends DolibarrModules
                 $dateStartAddYear      = dol_time_plus_duree($dateStart, 1, 'y');
                 $dateStartAddYearMonth = dol_time_plus_duree($dateStartAddYear, -1, 'd');
                 $project->date_end     = dol_print_date($dateStartAddYearMonth, 'dayrfc');
-                $project->statut       = 1;
+                $project->status       = Project::STATUS_VALIDATED;
+                $project->statut       = Project::STATUS_VALIDATED;
 
                 $projectID = $project->create($user);
                 if ($projectID > 0) {
