@@ -259,9 +259,35 @@ TimesheetsCategoriesArea           = Espace des tags/catégories des navettes
 #
 
 # Data - Donnée
-TimeSheetDocument     = Document Navette
-timesheetdocument.odt = Navette ODT
-timesheetdocument     = navette
+TimeSheetDocument               = Document Navette
+TimeSheetDocumentPDF            = Navette PDF
+TimeSheetDocumentPDFDescription = Navette au format PDF : temps pointés sur les tâches du projet Ressources Humaines, en deux blocs Présence et Absence
+timesheetdocument               = navette
+TimeSheetPeriod                 = Du %s au %s
+TimeSheetEmployee               = Salarié
+TimeSheetResponsible            = Responsable
+TimeSheetWorkingDays            = Jours travaillés prévus
+TimeSheetExpected               = Attendu
+TimeSheetPresence               = Présence
+TimeSheetAbsence                = Absence
+TimeSheetLogged                 = Pointé
+TimeSheetMissing                = Manque
+TimeSheetExcess                 = Excédent
+TimeSheetDifference             = Écart
+TimeSheetBalanced               = OK
+TimeSheetPresenceBlock          = Présence - Temps de travail
+TimeSheetAbsenceBlock           = Absence - Hors temps de travail
+TimeSheetTotalPresence          = Total présence
+TimeSheetTotalAbsence           = Total absence
+TimeSheetSummary                = Synthèse
+TimeSheetExpectedTime           = Temps attendu
+TimeSheetTotalLogged            = Total pointé
+TimeSheetNoTaskConfigured       = Aucune tâche configurée
+TimeSheetPayrollItems           = Éléments variables de paie
+TimeSheetSignatures             = Signatures
+TimeSheetSignedOn               = Signé le %s
+TimeSheetWaitingSignature       = En attente de signature
+TimeSheetGeneratedOn            = Navette générée le %s
 
 
 
