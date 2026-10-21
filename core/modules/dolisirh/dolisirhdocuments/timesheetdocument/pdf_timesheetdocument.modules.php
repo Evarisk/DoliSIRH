@@ -272,6 +272,7 @@ class pdf_timesheetdocument extends SaturneDocumentModel
             $isPublicHoliday = !$isWeekEnd && num_public_holiday($gmtDay, $gmtDay + 86400) > 0;
 
             $days[date('Y-m-d', $cursor)] = [
+                'time'     => $cursor,
                 'mday'     => (int) date('j', $cursor),
                 'weekday'  => dol_ucfirst(dol_substr(dol_print_date($cursor, '%a', 'tzserver', $outputLangs), 0, 2)),
                 'off'      => $isWeekEnd || $isPublicHoliday,
@@ -635,6 +636,104 @@ class pdf_timesheetdocument extends SaturneDocumentModel
     }
 
     /**
+     * Periods of leave and sick leave: the consecutive days logged on the same task.
+     *
+     * A day off (week-end, public holiday, day without working hours) does not break a period: a week of paid
+     * holidays followed by another one makes a single period. A worked day without the absence closes it.
+     *
+     * @param  array $days      Days of the period.
+     * @param  array $tasks     Leave and sick leave tasks, label indexed by task ID.
+     * @param  array $timeSpent Time spent indexed by task then day.
+     * @return array            Periods sorted by first day, with their task label, days count and duration.
+     */
+    protected function buildLeavePeriods(array $days, array $tasks, array $timeSpent): array
+    {
+        $periods = [];
+        foreach ($tasks as $taskID => $taskLabel) {
+            $current = null;
+            foreach ($days as $dayKey => $day) {
+                $duration = (int) ($timeSpent[$taskID][$dayKey] ?? 0);
+                if ($duration > 0) {
+                    if ($current === null) {
+                        $current = ['label' => $taskLabel, 'start' => $day['time'], 'end' => $day['time'], 'days' => 0, 'duration' => 0];
+                    }
+                    $current['end']       = $day['time'];
+                    $current['days']     += 1;
+                    $current['duration'] += $duration;
+                } elseif ($current !== null && !$day['off'] && $day['expected'] > 0) {
+                    $periods[] = $current;
+                    $current   = null;
+                }
+            }
+            if ($current !== null) {
+                $periods[] = $current;
+            }
+        }
+
+        usort($periods, static function (array $first, array $second): int {
+            return $first['start'] <=> $second['start'];
+        });
+
+        return $periods;
+    }
+
+    /**
+     * Recap of the leave and sick leave periods, with their dates, for the payroll.
+     *
+     * @param  TCPDF     $pdf         PDF handler.
+     * @param  array     $periods     Periods built by buildLeavePeriods().
+     * @param  Translate $outputLangs Lang object to use for output.
+     * @param  float     $size        Font size.
+     * @return void
+     */
+    protected function drawLeaveRecap($pdf, array $periods, Translate $outputLangs, float $size)
+    {
+        $width   = $this->contentWidth($pdf);
+        $widths  = [$width * 0.34, $width * 0.18, $width * 0.18, $width * 0.12, $width * 0.18];
+        $height  = 5.5;
+        $nbDays  = array_sum(array_column($periods, 'days'));
+
+        $this->drawSectionTitle($pdf, $outputLangs->transnoentities('TimeSheetLeaveRecap'), $outputLangs->transnoentities('TimeSheetLeaveDaysTotal', (string) $nbDays), $this->colors['absence'], $size, $height * (count($periods) + 1));
+
+        if (empty($periods)) {
+            $pdf->SetFont('', 'I', $size - 1);
+            $pdf->SetTextColor($this->colors['muted'][0], $this->colors['muted'][1], $this->colors['muted'][2]);
+            $pdf->Cell($width, 6, $outputLangs->transnoentities('TimeSheetNoLeave'), 0, 1, 'L');
+            $pdf->SetTextColor($this->colors['text'][0], $this->colors['text'][1], $this->colors['text'][2]);
+            $pdf->Ln(3);
+            return;
+        }
+
+        $pdf->SetDrawColor($this->colors['border'][0], $this->colors['border'][1], $this->colors['border'][2]);
+        $pdf->SetLineWidth(0.15);
+
+        $header = ['TimeSheetLeaveType', 'TimeSheetLeaveFrom', 'TimeSheetLeaveTo', 'TimeSheetLeaveDays', 'TimeSheetLeaveDuration'];
+        $pdf->SetFont('', 'B', $size - 1);
+        $pdf->SetTextColor($this->colors['muted'][0], $this->colors['muted'][1], $this->colors['muted'][2]);
+        $pdf->SetFillColor($this->colors['head'][0], $this->colors['head'][1], $this->colors['head'][2]);
+        $pdf->SetX($this->marge_gauche);
+        foreach ($header as $index => $labelKey) {
+            $pdf->Cell($widths[$index], $height, $outputLangs->transnoentities($labelKey), 1, 0, $index == 0 ? 'L' : 'C', true);
+        }
+        $pdf->Ln($height);
+
+        $pdf->SetTextColor($this->colors['text'][0], $this->colors['text'][1], $this->colors['text'][2]);
+        foreach ($periods as $period) {
+            $pdf->SetX($this->marge_gauche);
+            $pdf->SetFont('', 'B', $size - 1);
+            $pdf->Cell($widths[0], $height, $period['label'], 1, 0, 'L', false, '', 1);
+            $pdf->SetFont('', '', $size - 1);
+            // The weekday explains a period spanning a week-end: from Friday to Monday is two days.
+            $pdf->Cell($widths[1], $height, dol_print_date($period['start'], '%A %d/%m/%Y', 'tzserver', $outputLangs), 1, 0, 'C');
+            $pdf->Cell($widths[2], $height, dol_print_date($period['end'], '%A %d/%m/%Y', 'tzserver', $outputLangs), 1, 0, 'C');
+            $pdf->Cell($widths[3], $height, (string) $period['days'], 1, 0, 'C');
+            $pdf->Cell($widths[4], $height, $this->formatDuration($period['duration']), 1, 1, 'C');
+        }
+
+        $pdf->Ln(4);
+    }
+
+    /**
      * Payroll items of the timesheet: the products and services lines with their quantity.
      *
      * @param  TCPDF     $pdf         PDF handler.
@@ -993,6 +1092,16 @@ class pdf_timesheetdocument extends SaturneDocumentModel
         $summaryState .= '  |  ' . $this->differenceLabel((int) $totals['difference'], $outputLangs) . ' : ' . $this->formatDuration($totals['difference'], true);
         $this->drawSectionTitle($pdf, $outputLangs->transnoentities('TimeSheetSummary'), $summaryState, $this->colors['summary'], $size, 9 + 5 * count($summaryRows));
         $this->drawGrid($pdf, $days, $summaryRows, '', $this->colors['summaryTint'], $outputLangs, $size);
+
+        // Dates of the leave and sick leave periods, as the payroll reads them.
+        $leaveTasks = [];
+        foreach (['DOLISIRH_PAID_HOLIDAYS_TASK', 'DOLISIRH_HOLIDAYS_TASK', 'DOLISIRH_SICK_LEAVE_TASK'] as $leaveTaskCode) {
+            $leaveTaskID = getDolGlobalInt($leaveTaskCode);
+            if (isset($hrTasks['no_work_time'][$leaveTaskID])) {
+                $leaveTasks[$leaveTaskID] = $hrTasks['no_work_time'][$leaveTaskID];
+            }
+        }
+        $this->drawLeaveRecap($pdf, $this->buildLeavePeriods($days, $leaveTasks, $timeSpent), $outputLangs, $size);
 
         $this->drawPayrollItems($pdf, $object, $outputLangs, $size);
         $this->drawNote($pdf, $object, $outputLangs, $size);
