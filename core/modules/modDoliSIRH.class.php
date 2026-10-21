@@ -150,7 +150,6 @@ class modDoliSIRH extends DolibarrModules
         // Example: this->dirs = array("/dolisirh/temp","/dolisirh/subdir");
         $this->dirs = [
             '/dolisirh/temp',
-            '/ecm/dolisirh/timesheetdocument',
             '/ecm/dolisirh/certificatedocument'
         ];
 
@@ -216,9 +215,7 @@ class modDoliSIRH extends DolibarrModules
 
             // CONST TIMESHEET DOCUMENT.
             $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_ADDON', 'chaine', 'mod_timesheetdocument_standard', '', 0, 'current'],
-            $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/timesheetdocument/', '', 0, 'current'],
-            $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/timesheetdocument/', '', 0, 'current'],
-            $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument_odt', '', 0, 'current'],
+            $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument', '', 0, 'current'],
 
             // CONST CERTIFICATE.
             $i++ => ['DOLISIRH_CERTIFICATE_ADDON', 'chaine', 'mod_certificate_standard', '', 0, 'current'],
@@ -664,10 +661,16 @@ class modDoliSIRH extends DolibarrModules
 
         // Document models.
         delDocumentModel('timesheetdocument_odt', 'timesheetdocument');
+        delDocumentModel('timesheetdocument_custom_odt', 'timesheetdocument');
+        delDocumentModel('timesheetdocument', 'timesheetdocument');
         delDocumentModel('certificatedocument_odt', 'certificatedocument');
         delDocumentModel('projectdocument_odt', 'projectdocument');
 
-        addDocumentModel('timesheetdocument_odt', 'timesheetdocument', 'ODT templates', 'DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH');
+        // The timesheet document only exists as a native PDF: the default model of an older install pointed to the ODT one.
+        addDocumentModel('timesheetdocument', 'timesheetdocument', $langs->transnoentities('TimeSheetDocumentPDF'));
+        dolibarr_set_const($this->db, 'DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'timesheetdocument', 'chaine', 0, '', $conf->entity);
+        dolibarr_del_const($this->db, 'DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH', $conf->entity);
+        dolibarr_del_const($this->db, 'DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', $conf->entity);
         addDocumentModel('certificatedocument_odt', 'certificatedocument', 'ODT templates', 'DOLISIRH_CERTIFICATEDOCUMENT_ADDON_ODT_PATH');
         addDocumentModel('projectdocument_odt', 'projectdocument', 'ODT templates', 'DOLISIRH_PROJECTDOCUMENT_ADDON_ODT_PATH');
 
