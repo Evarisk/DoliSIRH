@@ -67,24 +67,25 @@ class pdf_timesheetdocument extends SaturneDocumentModel
     const FOOTER_BAND = 14;
 
     /**
-     * @var array Colors of the document, same palette as the DoliSIRH browser extension.
+     * @var array Colors of the document: black and white for printing, a light grey only marks the table
+     *            headers and the days off.
      */
     protected array $colors = [
-        'text'          => [30, 41, 59],
-        'muted'         => [100, 116, 139],
-        'border'        => [226, 232, 240],
-        'head'          => [241, 245, 249],
-        'light'         => [248, 250, 252],
-        'offDay'        => [236, 240, 245],
-        'presence'      => [16, 185, 129],
-        'presenceTint'  => [236, 253, 245],
-        'absence'       => [243, 156, 18],
-        'absenceTint'   => [254, 245, 231],
-        'summary'       => [71, 85, 105],
-        'summaryTint'   => [241, 245, 249],
-        'expected'      => [59, 130, 246],
-        'ko'            => [239, 68, 68],
-        'ok'            => [16, 185, 129],
+        'text'          => [0, 0, 0],
+        'muted'         => [90, 90, 90],
+        'border'        => [160, 160, 160],
+        'head'          => [235, 235, 235],
+        'light'         => [255, 255, 255],
+        'offDay'        => [225, 225, 225],
+        'presence'      => [0, 0, 0],
+        'presenceTint'  => [255, 255, 255],
+        'absence'       => [0, 0, 0],
+        'absenceTint'   => [255, 255, 255],
+        'summary'       => [0, 0, 0],
+        'summaryTint'   => [255, 255, 255],
+        'expected'      => [0, 0, 0],
+        'ko'            => [0, 0, 0],
+        'ok'            => [0, 0, 0],
     ];
 
     /**
