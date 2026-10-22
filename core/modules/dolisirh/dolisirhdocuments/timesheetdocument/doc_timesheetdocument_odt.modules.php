@@ -457,9 +457,10 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $tmpArray['society_responsible_signature_date'] = '';
         }
 
-        if (dol_strlen($signatoryResponsible->signature) > 0 && $signatoryResponsible->signature != $langs->transnoentities('FileGenerated')) {
+        if (is_object($signatoryResponsible) && dol_strlen($signatoryResponsible->signature) > 0 && $signatoryResponsible->signature != $langs->transnoentities('FileGenerated')) {
             if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
                 $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
+                dol_mkdir($tempDir);
                 $encodedImage = explode(',', $signatoryResponsible->signature)[1];
                 $decodedImage = base64_decode($encodedImage);
                 file_put_contents($tempDir . 'signature.png', $decodedImage);
@@ -481,9 +482,10 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             $tmpArray['society_attendant_signature_date'] = '';
         }
 
-        if (dol_strlen($signatoryAttendant->signature) > 0 && $signatoryAttendant->signature != $langs->transnoentities('FileGenerated')) {
+        if (is_object($signatoryAttendant) && dol_strlen($signatoryAttendant->signature) > 0 && $signatoryAttendant->signature != $langs->transnoentities('FileGenerated')) {
             if ($moreParam['specimen'] == 0 || ($moreParam['specimen'] == 1 && $conf->global->DOLISIRH_SHOW_SIGNATURE_SPECIMEN == 1)) {
                 $tempDir      = $conf->dolisirh->multidir_output[$object->entity ?? 1] . '/temp/';
+                dol_mkdir($tempDir);
                 $encodedImage = explode(',', $signatoryAttendant->signature)[1];
                 $decodedImage = base64_decode($encodedImage);
                 file_put_contents($tempDir . 'signature2.png', $decodedImage);
