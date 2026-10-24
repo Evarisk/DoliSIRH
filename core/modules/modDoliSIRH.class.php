@@ -725,7 +725,7 @@ class modDoliSIRH extends DolibarrModules
                 $modTask    = new $taskRefClass();
 
                 $project->ref         = $modProject->getNextValue('', null);
-                $project->title       = $langs->transnoentities('HumanResources') . ' - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM') . ' - 2.0.0';
+                $project->title       = $langs->transnoentities('HumanResources') . ' - 2.0.0 - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM');
                 $project->description = $langs->transnoentities('HRDescription');
                 $project->date_c      = $now;
                 $currentYear          = dol_print_date($now, '%Y');
@@ -743,7 +743,8 @@ class modDoliSIRH extends DolibarrModules
                 $projectID = $project->create($user);
                 if ($projectID > 0) {
                     dolibarr_set_const($this->db, 'DOLISIRH_HR_PROJECT', $projectID, 'integer', 0, '', $conf->entity);
-                    $users = $userTmp->get_full_tree(0, '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))');
+                    $userFilter = (int) versiondolibarrarray()[0] >= 24 ? '((u.employee:=:1) AND (u.fk_soc:is:NULL) AND (u.statut:=:1))' : '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))';
+                    $users      = $userTmp->get_full_tree(0, $userFilter);
                     if (!empty($users) && is_array($users)) {
                         foreach ($users as $userSingle) {
                             $project->add_contact($userSingle['id'], 'PROJECTCONTRIBUTOR', 'internal');

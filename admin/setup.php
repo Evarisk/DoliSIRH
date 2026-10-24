@@ -66,7 +66,6 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
 
         $error           = 0;
         $now             = dol_now();
-        $isUpdate        = (getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0);
         $projectRefClass = getDolGlobalString('PROJECT_ADDON', 'mod_project_simple');
 
         if (!empty($projectRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php')) {
@@ -83,7 +82,7 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
 
         if ($error == 0) {
             $project->ref         = $projectRef;
-            $project->title       = $langs->transnoentities('HumanResources') . ' - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM') . ($isUpdate ? ' - 2.0.0' : '');
+            $project->title       = $langs->transnoentities('HumanResources') . ' - 2.0.0 - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM');
             $project->description = $langs->transnoentities('HRDescription');
             $project->date_c      = $now;
             $currentYear          = dol_print_date(dol_now(), '%Y');
@@ -108,7 +107,8 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
 
         if ($projectID > 0 && $error == 0) {
             dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT', $projectID, 'integer', 0, '', $conf->entity);
-            $users = $userTmp->get_full_tree(0, '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))');
+            $userFilter = (int) versiondolibarrarray()[0] >= 24 ? '((u.employee:=:1) AND (u.fk_soc:is:NULL) AND (u.statut:=:1))' : '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))';
+            $users      = $userTmp->get_full_tree(0, $userFilter);
             if (!empty($users) && is_array($users)) {
                 foreach ($users as $userSingle) {
                     $project->add_contact($userSingle['id'], 'PROJECTCONTRIBUTOR', 'internal');
@@ -155,7 +155,7 @@ if (GETPOST('create_hr_project_tasks', 'alpha')) {
 }
 
 if (GETPOST('create_timesheet_product_service', 'alpha')) {
-    if ($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 0 || $conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 1) {
+    if (getDolGlobalInt('DOLISIRH_PRODUCT_SERVICE_SET') < 2) {
         require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
         $product = new Product($db);
@@ -170,8 +170,8 @@ if (GETPOST('create_timesheet_product_service', 'alpha')) {
                 $product->barcode = -1;
             }
             $confName = $timesheetProductAndService['code'];
-            if ($conf->global->$confName > 0) {
-                $productID = $product->fetch($conf->global->$confName);
+            if (getDolGlobalInt($confName) > 0) {
+                $productID = $product->fetch(getDolGlobalInt($confName));
             } else {
                 $productID = $product->create($user);
                 dolibarr_set_const($db, $confName, $productID, 'integer', 0, '', $conf->entity);
@@ -183,7 +183,7 @@ if (GETPOST('create_timesheet_product_service', 'alpha')) {
 }
 
 if (GETPOST('create_bookmark', 'alpha')) {
-    if ($conf->global->DOLISIRH_TIMESPENT_BOOKMARK_SET == 0) {
+    if (getDolGlobalInt('DOLISIRH_TIMESPENT_BOOKMARK_SET') == 0) {
         require_once DOL_DOCUMENT_ROOT . '/bookmarks/class/bookmark.class.php';
 
         $bookmark = new Bookmark($db);
@@ -246,10 +246,10 @@ print '<td>';
 print $langs->transnoentities('HRProjectSetHelp');
 print '</td>';
 print '<td class="center">';
-print ((getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') == 2) ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated'));
+print ((getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') >= 2) ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated'));
 print '</td>';
 print '<td class="center">';
-print ((getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') == 2) ? '<a class="butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="create_hr_project_tasks" value="' . $langs->transnoentities('Create') . '">');
+print ((getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') >= 2) ? '<a class="butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="create_hr_project_tasks" value="' . $langs->transnoentities('Create') . '">');
 print '</td>';
 print '</tr>';
 
@@ -259,10 +259,10 @@ print '<td>';
 print $langs->transnoentities('ProductServiceSetHelp');
 print '</td>';
 print '<td class="center">';
-print (($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 2) ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated'));
+print ((getDolGlobalInt('DOLISIRH_PRODUCT_SERVICE_SET') == 2) ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated'));
 print '</td>';
 print '<td class="center">';
-print (($conf->global->DOLISIRH_PRODUCT_SERVICE_SET == 2) ? '<a class="butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="create_timesheet_product_service" value="' . $langs->transnoentities('Create') . '">');
+print ((getDolGlobalInt('DOLISIRH_PRODUCT_SERVICE_SET') == 2) ? '<a class="butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="create_timesheet_product_service" value="' . $langs->transnoentities('Create') . '">');
 print '</td>';
 print '</tr>';
 
@@ -272,10 +272,10 @@ print '<td>';
 print $langs->transnoentities('BookmarkSetHelp');
 print '</td>';
 print '<td class="center">';
-print $conf->global->DOLISIRH_TIMESPENT_BOOKMARK_SET ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
+print getDolGlobalInt('DOLISIRH_TIMESPENT_BOOKMARK_SET') ? $langs->transnoentities('AlreadyCreated') : $langs->transnoentities('NotCreated');
 print '</td>';
 print '<td class="center">';
-print $conf->global->DOLISIRH_TIMESPENT_BOOKMARK_SET ? '<a class=" butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="create_bookmark" value="' . $langs->transnoentities('Create') . '">';
+print getDolGlobalInt('DOLISIRH_TIMESPENT_BOOKMARK_SET') ? '<a class=" butActionRefused">' . $langs->transnoentities('Create') . '</a>' : '<input type="submit" class="button" name="create_bookmark" value="' . $langs->transnoentities('Create') . '">';
 print '</td>';
 print '</tr>';
 
@@ -300,7 +300,7 @@ print '<tr class="oddeven"><td>' . $langs->trans('CertificateUserResponsible') .
 print '<td>';
 print $langs->transnoentities('CertificateUserResponsibleDescription');
 print '</td><td>';
-print img_picto('', 'user', 'class="pictofixedwidth"') . $form->select_dolusers($conf->global->DOLISIRH_CERTIFICATE_USER_RESPONSIBLE, 'certificateUserResponsible', 1, null, 0, '', '', $conf->entity, 0, 0, '(u.statut:=:1)', 0, '', 'minwidth300');
+print img_picto('', 'user', 'class="pictofixedwidth"') . $form->select_dolusers(getDolGlobalInt('DOLISIRH_CERTIFICATE_USER_RESPONSIBLE'), 'certificateUserResponsible', 1, null, 0, '', '', $conf->entity, 0, 0, '(u.statut:=:1)', 0, '', 'minwidth300');
 print '<a href="' . DOL_URL_ROOT . '/user/card.php?action=create&backtopage=' . urlencode($_SERVER["PHP_SELF"]) . '"><span class="fa fa-plus-circle valignmiddle paddingleft" title="' . $langs->trans('AddUser') . '"></span></a>';
 print '</td></tr>';
 

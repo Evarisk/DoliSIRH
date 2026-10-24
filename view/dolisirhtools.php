@@ -37,6 +37,9 @@ if ( ! $res) die('Include of main fails');
 
 global $conf, $db, $langs, $user;
 
+// Load Dolibarr libraries
+require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
+
 // Load translation files required by the page
 $langs->load('tools@dolisirh');
 
@@ -52,8 +55,12 @@ if (!$permissiontoread) accessforbidden();
  * Actions
  */
 
+$employeeExternalFilter    = (int) versiondolibarrarray()[0] >= 24 ? '((u.employee:=:1) AND (u.fk_soc:isnot:NULL))' : 'u.employee = 1 AND u.fk_soc IS NOT NULL';
+$internalNotEmployeeFilter = (int) versiondolibarrarray()[0] >= 24 ? '((u.employee:=:0) AND (u.fk_soc:is:NULL))' : 'u.employee = 0 AND u.fk_soc IS NULL';
+$employeeInternalFilter    = (int) versiondolibarrarray()[0] >= 24 ? '((u.employee:=:1) AND (u.fk_soc:is:NULL))' : 'u.employee = 1 AND u.fk_soc IS NULL';
+
 if (GETPOST('updateEmployeeExternalUsers', 'alpha')) {
-    $employeeExternalUsers = $usertmp->get_full_tree(0, 'u.employee = 1 AND u.fk_soc IS NOT NULL');
+    $employeeExternalUsers = $usertmp->get_full_tree(0, $employeeExternalFilter);
     if (!empty($employeeExternalUsers) && is_array($employeeExternalUsers)) {
         foreach ($employeeExternalUsers as $userSingle) {
             $usertmp->fetch($userSingle['id']);
@@ -86,9 +93,9 @@ if ($user->rights->dolisirh->adminpage->read) { ?>
                 <?php
                 $usersData = [
                     'AllUsers'                 => $usertmp->get_full_tree(),
-                    'InternalUsersNotEmployee' => $usertmp->get_full_tree(0, 'u.employee = 0 AND u.fk_soc IS NULL'),
-                    'EmployeeInternalUsers'    => $usertmp->get_full_tree(0, 'u.employee = 1 AND u.fk_soc IS NULL'),
-                    'EmployeeExternalUsers'    => $usertmp->get_full_tree(0, 'u.employee = 1 AND u.fk_soc IS NOT NULL'),
+                    'InternalUsersNotEmployee' => $usertmp->get_full_tree(0, $internalNotEmployeeFilter),
+                    'EmployeeInternalUsers'    => $usertmp->get_full_tree(0, $employeeInternalFilter),
+                    'EmployeeExternalUsers'    => $usertmp->get_full_tree(0, $employeeExternalFilter),
                 ];
                 foreach ($usersData as $key => $userData) {
                     if (!empty($userData) && is_array($userData)) {

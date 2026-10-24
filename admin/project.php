@@ -64,6 +64,10 @@ saturne_check_access($permissiontoread);
  * Actions.
  */
 
+if ($action == 'close_notice') {
+    dolibarr_set_const($db, 'DOLISIRH_HR_PROJECT_SET', 3, 'integer', 0, '', $conf->entity);
+}
+
 if ($action == 'update') {
     $hrProject = GETPOST('hrProject', 'int');
     if ($hrProject > 0) {
@@ -146,9 +150,11 @@ if (getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0 && getDolGlobalInt('DOLISIRH_HR_P
     $hrProjectObj = new Project($db);
     if ($hrProjectObj->fetch(getDolGlobalInt('DOLISIRH_HR_PROJECT')) > 0) {
         print '<div class="wpeo-notice notice-info">';
+        print '<input type="hidden" name="token" value="' . newToken() . '">';
         print '<div class="notice-content">';
         print '<div class="notice-title"><strong>' . $langs->trans('NewHRProjectCreated', $hrProjectObj->title, $hrProjectObj->ref) . '</strong></div>';
         print '</div>';
+        print '<div class="notice-close notice-close-forever"><i class="fas fa-times"></i></div>';
         print '</div>';
     }
 }
