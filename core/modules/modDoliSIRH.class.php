@@ -681,6 +681,10 @@ class modDoliSIRH extends DolibarrModules
         $param['options']['Facture:compta/facture/class/facture.class.php'] = null;
         $extraFields->addExtraField('fk_facture_name', 'Facture', 'link', 100, null, 'projet_task', 1, 0, null, $param, 1, 1, 1); //extrafields task.
         unset($param);
+
+        // The core only creates the ticket tables when the Ticket module is enabled : load them so the task extrafield exists whenever Ticket is enabled
+        $this->_load_tables('/install/mysql/', 'ticket');
+
         $param['options']['projet_task:label:rowid::(entity:=:$ENTITY$)'] = null; // @todo rework 'projet_task:label:rowid::entity = $ENTITY$ AND fk_projet = ($SEL$ fk_project FROM '. MAIN_DB_PREFIX .'ticket WHERE rowid = $ID$)'
         $extraFields->update('fk_task', 'Tâche', 'sellist', '', 'ticket', 0, 0, 100, $param, 1, 1, '1', '','','',0);
         $extraFields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, $param, 1, 1, '1', '','',0); //extrafields ticket.
