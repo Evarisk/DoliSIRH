@@ -101,14 +101,14 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
         $daysInRangeArray = [];
 
         for ($idw = 0; $idw < $daysInRange; $idw++) {
-            $dayInLoop          = dol_time_plus_duree($dayStartToShow, $idw, 'd');
+            $dayInLoop          = dolisirh_add_days($dayStartToShow, $idw);
             $day                = dol_getdate($dayInLoop);
             $daysInRangeArray[] = $day['mday'];
         }
 
         $isAvailable = [];
         for ($idw = 0; $idw < $daysInRange; $idw++) {
-            $dayInLoop = dol_time_plus_duree($dayStartToShow, $idw, 'd');
+            $dayInLoop = dolisirh_add_days($dayStartToShow, $idw);
             if (is_day_available($dayInLoop, $user->id)) {
                 $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
             } elseif (date('N', $dayInLoop) >= 6) {
@@ -136,7 +136,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             if ($foundTagForLines) {
                 for ($idw = 1; $idw <= 31; $idw++) {
                     if (in_array($idw, $daysInRangeArray)) {
-                        $dayInLoop              = dol_time_plus_duree($dayStartToShow, array_search($idw, $daysInRangeArray), 'd');
+                        $dayInLoop              = dolisirh_add_days($dayStartToShow, (int) array_search($idw, $daysInRangeArray));
                         $tmpArray['day' . $idw] = dol_print_date($dayInLoop, '%a');
                     } else {
                         $tmpArray['day' . $idw] = '-';
@@ -174,7 +174,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
                             $tmpArray['task_ref']   = $taskSingle->ref;
                             $tmpArray['task_label'] = dol_trunc($taskSingle->label, 16);
                             if (in_array($idw, $daysInRangeArray)) {
-                                $dayInLoop                              = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                                $dayInLoop                              = dolisirh_add_days($dayStartToShow, $idw - 1);
                                 $tmpArray['time' . $idw]                = (($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
                                 $totalTimeWithoutHrProject[$dayInLoop] += $timeSpentOnTasks[$taskSingle->id][dol_print_date($dayInLoop, 'day')];
                             } else {
@@ -222,7 +222,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
                     if ($foundTagForLines) {
                         for ($idw = 1; $idw <= 31; $idw++) {
                             if (in_array($idw, $daysInRangeArray)) {
-                                $dayInLoop                        = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                                $dayInLoop                        = dolisirh_add_days($dayStartToShow, $idw - 1);
                                 $tmpArray[$segment[1][$i] . $idw] = (($timeSpentOnTasks[$taskID][dol_print_date($dayInLoop, 'day')] != 0) ? convertSecondToTime($timeSpentOnTasks[$taskID][dol_print_date($dayInLoop, 'day')], (is_float($timeSpentOnTasks[$taskID][dol_print_date($dayInLoop, 'day')]/3600) ? 'allhourmin' : 'allhour')) : '-');
                                 $totalTimeHrProject[$dayInLoop]  += $timeSpentOnTasks[$taskID][dol_print_date($dayInLoop, 'day')];
                             } else {
@@ -250,7 +250,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             if ($foundTagForLines) {
                 for ($idw = 1; $idw <= 31; $idw++) {
                     if (in_array($idw, $daysInRangeArray)) {
-                        $dayInLoop                  = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $dayInLoop                  = dolisirh_add_days($dayStartToShow, $idw - 1);
                         $tmpArray['totalrh' . $idw] = (($totalTimeHrProject[$dayInLoop] != 0) ? convertSecondToTime($totalTimeHrProject[$dayInLoop], (is_float($totalTimeHrProject[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                     } else {
                         $tmpArray['totalrh' . $idw] = '-';
@@ -274,7 +274,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             if ($foundTagForLines) {
                 for ($idw = 1; $idw <= 31; $idw++) {
                     if (in_array($idw, $daysInRangeArray)) {
-                        $dayInLoop                    = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $dayInLoop                    = dolisirh_add_days($dayStartToShow, $idw - 1);
                         $tmpArray['totaltime' . $idw] = (($totalTimeWithoutHrProject[$dayInLoop] != 0) ? convertSecondToTime($totalTimeWithoutHrProject[$dayInLoop], (is_float($totalTimeWithoutHrProject[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                     } else {
                         $tmpArray['totaltime' . $idw] = '-';
@@ -299,7 +299,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             if ($foundTagForLines) {
                 for ($idw = 1; $idw <= 31; $idw++) {
                     if (in_array($idw, $daysInRangeArray)) {
-                        $dayInLoop                   = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $dayInLoop                   = dolisirh_add_days($dayStartToShow, $idw - 1);
                         $totalTimeSpent[$dayInLoop]  = $totalTimeWithoutHrProject[$dayInLoop] + $totalTimeHrProject[$dayInLoop];
                         $tmpArray['totaltps' . $idw] = (($totalTimeSpent[$dayInLoop] != 0) ? convertSecondToTime($totalTimeSpent[$dayInLoop], (is_float($totalTimeSpent[$dayInLoop]) ? 'allhourmin' : 'allhour')) : '-');
                     } else {
@@ -325,8 +325,8 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             if ($foundTagForLines) {
                 for ($idw = 1; $idw <= 31; $idw++) {
                     if (in_array($idw, $daysInRangeArray)) {
-                        $dayInLoop                    = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
-                        $totalTimePlanned[$dayInLoop] = load_passed_time_within_range($dayInLoop, dol_time_plus_duree($dayInLoop, 1, 'd'), $workingHours, $isAvailable);
+                        $dayInLoop                    = dolisirh_add_days($dayStartToShow, $idw - 1);
+                        $totalTimePlanned[$dayInLoop] = load_passed_time_within_range($dayInLoop, dolisirh_add_days($dayInLoop, 1), $workingHours, $isAvailable);
                         $tmpArray['ta' . $idw]        = (($totalTimePlanned[$dayInLoop]['minutes'] != 0) ? convertSecondToTime($totalTimePlanned[$dayInLoop]['minutes'] * 60, (is_float($totalTimePlanned[$dayInLoop]['minutes']/60) ? 'allhourmin' : 'allhour')) : '-');
                     } else {
                         $tmpArray['ta' . $idw] = '-';
@@ -351,7 +351,7 @@ class doc_timesheetdocument_odt extends SaturneDocumentModel
             if ($foundTagForLines) {
                 for ($idw = 1; $idw <= 31; $idw++) {
                     if (in_array($idw, $daysInRangeArray)) {
-                        $dayInLoop                 = dol_time_plus_duree($dayStartToShow, $idw - 1, 'd');
+                        $dayInLoop                 = dolisirh_add_days($dayStartToShow, $idw - 1);
                         $diffTotalTime[$dayInLoop] = $totalTimePlanned[$dayInLoop]['minutes'] * 60 - $totalTimeSpent[$dayInLoop];
                         $tmpArray['diff' . $idw]   = (($diffTotalTime[$dayInLoop] != 0) ? convertSecondToTime(abs($diffTotalTime[$dayInLoop]), (is_float($diffTotalTime[$dayInLoop]/3600) ? 'allhourmin' : 'allhour')) : '-');
                     } else {
