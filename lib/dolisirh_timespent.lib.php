@@ -179,7 +179,7 @@ function load_planned_time_within_range(int $timestampStart, int $timestampEnd, 
     $timeToSpend = ['days' => 0, 'minutes' => 0];
     $daysInRange = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $newTimestampStart = dol_time_plus_duree($timestampStart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0.
+        $newTimestampStart = dolisirh_add_days($timestampStart, $idw); // $firstdaytoshow is a date with hours = 0.
         if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
@@ -217,7 +217,7 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $
     $passedWorkingTime = ['minutes' => 0];
     $daysInRange         = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $newTimestampStart = dol_time_plus_duree($timestampStart, $idw, 'd'); // $firstdaytoshow is a date with hours = 0.
+        $newTimestampStart = dolisirh_add_days($timestampStart, $idw); // $firstdaytoshow is a date with hours = 0.
         if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
@@ -768,9 +768,9 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                         $versionEighteenOrMore = 1;
                     }
                     if ($versionEighteenOrMore) {
-                        $filter = ' AND (t.element_date >= "' . $db->idate($timestampStart) . '" AND t.element_date < "' . $db->idate(dol_time_plus_duree($timestampEnd, 1, 'd')) . '")';
+                        $filter = ' AND (t.element_date >= "' . $db->idate($timestampStart) . '" AND t.element_date < "' . $db->idate(dolisirh_add_days($timestampEnd, 1)) . '")';
                     } else {
-                        $filter = ' AND (t.task_date >= "' . $db->idate($timestampStart) . '" AND t.task_date < "' . $db->idate(dol_time_plus_duree($timestampEnd, 1, 'd')) . '")';
+                        $filter = ' AND (t.task_date >= "' . $db->idate($timestampStart) . '" AND t.task_date < "' . $db->idate(dolisirh_add_days($timestampEnd, 1)) . '")';
                     }
                     $summaryOfTimeSpent = $task->getSummaryOfTimeSpent($fuser->id, $filter);
                     if ($summaryOfTimeSpent['total_duration']) {
@@ -793,7 +793,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                 // Fields to show current time.
                 for ($idw = 0; $idw < $daysInRange; $idw++) {
                     $cellCSS   = '';
-                    $dayInLoop = dol_time_plus_duree($timestampStart, $idw, 'd');
+                    $dayInLoop = dolisirh_add_days($timestampStart, $idw);
                     if (empty($daysAvailable[$dayInLoop]['morning']) && empty($daysAvailable[$dayInLoop]['afternoon'])) {
                         $reason = !empty($daysAvailable[$dayInLoop]['morning_reason']) ? $daysAvailable[$dayInLoop]['morning_reason'] : '';
                         if ($reason == 'public_holiday') {

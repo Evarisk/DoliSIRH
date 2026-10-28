@@ -596,7 +596,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     $isAvailable = [];
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $dayInLoop = dol_time_plus_duree($firstDayToShow, $idw, 'd');
+        $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
         if (is_day_available($dayInLoop, $user->id)) {
             $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
         } elseif (date('N', $dayInLoop) >= 6) {
@@ -608,7 +608,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     $workingHours = $workingHours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
 
-    $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dol_time_plus_duree($lastDayToShow, 1, 'd'), $workingHours, $isAvailable, $object->fk_user_assign);
+    $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dolisirh_add_days($lastDayToShow, 1), $workingHours, $isAvailable, $object->fk_user_assign);
 
     // Planned working time.
     $plannedWorkingTime = $timeSpendingInfos['planned'];

@@ -155,6 +155,26 @@ function dolisirh_num_between_days(int $timestampStart, int $timestampEnd, int $
 }
 
 /**
+ * Add days to a date in the server timezone.
+ *
+ * Depuis Dolibarr 23, dol_time_plus_duree() ajoute les jours en UTC : parti d'un minuit du serveur,
+ * le resultat tombe a 23:00 la veille une fois le changement d'heure franchi, et ne correspond
+ * plus aux dates lues par jdate(). Le parametre $tz du coeur n'existe pas sur toutes les 23.x.
+ *
+ * @param  int $timestamp Timestamp in the server timezone, as returned by dol_mktime() or jdate().
+ * @param  int $days      Number of days to add, may be negative.
+ * @return int            Same time of day, $days days later in the server timezone.
+ */
+function dolisirh_add_days(int $timestamp, int $days): int
+{
+    $date = new DateTime('@' . $timestamp);
+    $date->setTimezone(new DateTimeZone(date_default_timezone_get()));
+    $date->modify(($days < 0 ? '' : '+') . $days . ' day');
+
+    return $date->getTimestamp();
+}
+
+/**
  * Get all HR project tasks info.
  *
  * @return array
