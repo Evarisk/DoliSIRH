@@ -354,7 +354,7 @@ window.dolisirh.task.createTimeSpent = function() {
             $('.loader-spin').remove();
             $('.wpeo-loader').removeClass('wpeo-loader');
             $('#timespent').removeClass('modal-active');
-            $('#tablelines3').html($(resp).find('#tablelines3'));
+            $('#tablelines3').replaceWith($(resp).find('#tablelines3'));
         },
         error: function(resp) {}
     });
