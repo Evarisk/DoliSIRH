@@ -1,0 +1,12 @@
+/* One click unassign from a task or a project, on the time spent screen */
+.unassign-task,
+.unassign-project {
+  margin-left: 5px;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+    color: $color__red;
+  }
+}

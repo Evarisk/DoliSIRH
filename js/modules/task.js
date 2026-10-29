@@ -68,6 +68,7 @@ window.dolisirh.task.event = function() {
     $(document).on('click', '.show-sticky-total-timespent-info', window.dolisirh.task.showStickyTotalTimeSpentInfo);
     $(document).on('click', '.timespent-create', window.dolisirh.task.createTimeSpent);
     $(document).on('click', '.toggleTaskFavorite', window.dolisirh.task.toggleTaskFavorite);
+    $(document).on('click', '.unassign-task, .unassign-project', window.dolisirh.task.unassign);
 };
 
 /**
@@ -392,6 +393,38 @@ window.dolisirh.task.toggleTaskFavorite = function() {
                 taskContainer.removeClass('far');
                 taskContainer.addClass('fas');
             }
+        },
+        error: function(resp) {}
+    });
+};
+
+/**
+ * Unassign the user from a task, or from a project and all its tasks, in one click.
+ *
+ * @memberof DoliSIRH_Task
+ *
+ * @since   23.1.2
+ * @version 23.1.2
+ *
+ * @return {void}
+ */
+window.dolisirh.task.unassign = function() {
+    let element = $(this);
+    let token = $('form[name="addtime"]').find('input[name="token"]').val();
+    let querySeparator = '?';
+    let params = element.hasClass('unassign-project') ? 'action=unassign_project&project_id=' + element.data('project-id') : 'action=unassign_task&task_id=' + element.data('task-id');
+
+    document.URL.match(/\?/) ? querySeparator = '&' : 1;
+
+    window.saturne.loader.display(element.closest('tr'));
+
+    $.ajax({
+        url: document.URL + querySeparator + params + '&token=' + token,
+        type: "POST",
+        processData: false,
+        contentType: false,
+        success: function(resp) {
+            $('#tablelines3').replaceWith($(resp).find('#tablelines3'));
         },
         error: function(resp) {}
     });
