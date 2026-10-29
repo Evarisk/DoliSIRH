@@ -61,8 +61,8 @@ $contextPage         = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ
 $backtopage          = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $lineid              = GETPOST('lineid', 'int');
-$year                = (GETPOST('year', 'int') ? GETPOST('year', 'int') : date('Y'));
-$month               = (GETPOST('month', 'int') ? GETPOST('month', 'int') : date('m'));
+$year                = (int) (GETPOST('year', 'int') ? GETPOST('year', 'int') : date('Y'));
+$month               = (int) (GETPOST('month', 'int') ? GETPOST('month', 'int') : date('m'));
 
 // Initialize technical objects.
 $object       = new TimeSheet($db);
