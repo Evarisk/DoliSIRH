@@ -394,6 +394,7 @@ if ($action == 'create') {
     $object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_get_first_day($timeSheetMonth['year'], $timeSheetMonth['month']), '%B %Y') . ' ' . $user->getFullName($langs, 0, 0);
     $object->fields['fk_project']['default']     = $conf->global->DOLISIRH_HR_PROJECT;
     $object->fields['fk_user_assign']['default'] = $user->id;
+    timesheet_keep_user_assign_selectable($object, $user->id);
 
     $dateStart = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
     $dateEnd   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
@@ -475,6 +476,8 @@ if (($id || $ref) && $action == 'edit') {
     $_POST['date_endday']   = $dateEnd['mday'];
     $_POST['date_endmonth'] = $dateEnd['mon'];
     $_POST['date_endyear']  = $dateEnd['year'];
+
+    timesheet_keep_user_assign_selectable($object, (int) $object->fk_user_assign);
 
     // Common attributes.
     require_once DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_edit.tpl.php';

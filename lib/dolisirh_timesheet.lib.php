@@ -54,3 +54,19 @@ function timesheet_get_creation_start_date(int $dateEnd): int
 
     return dol_time_plus_duree(dol_mktime(0, 0, 0, $dateEnd['mon'], $dateEnd['mday'], $dateEnd['year']), -TimeSheet::CREATION_DAYS_BEFORE_DATE_END, 'd');
 }
+
+/**
+ * Keep a user selectable as timesheet assignee even if not flagged as employee:
+ * otherwise the select silently falls back on the first employee of the list.
+ *
+ * @param TimeSheet $object TimeSheet.
+ * @param int       $userID User to keep selectable.
+ */
+function timesheet_keep_user_assign_selectable(TimeSheet $object, int $userID): void
+{
+    // Type is 'integer:User:user/class/user.class.php:1:Filter', the filter can contain ':'
+    $type    = explode(':', $object->fields['fk_user_assign']['type'], 5);
+    $type[4] = '(' . $type[4] . ') OR (t.rowid:=:' . $userID . ')';
+
+    $object->fields['fk_user_assign']['type'] = implode(':', $type);
+}
