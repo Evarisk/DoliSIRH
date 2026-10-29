@@ -251,6 +251,42 @@ function get_hr_project_tasks(): array
 }
 
 /**
+ * Get the ID of the HR project tasks set in the module setup.
+ *
+ * @param  string $type Type of the tasks, work_time or no_work_time, empty for both.
+ * @return int[]        Tasks ID.
+ */
+function get_hr_project_task_ids(string $type = ''): array
+{
+    $taskIDs = [];
+    foreach (get_hr_project_tasks() as $hrProjectTask) {
+        if ((empty($type) || ($hrProjectTask['type'] ?? '') === $type) && getDolGlobalInt($hrProjectTask['code']) > 0) {
+            $taskIDs[] = getDolGlobalInt($hrProjectTask['code']);
+        }
+    }
+
+    return array_values(array_unique($taskIDs));
+}
+
+/**
+ * Get the tasks whose time spent is compared to the working hours.
+ *
+ * Since the HR project 2.0.0, presence and absence are clocked on the HR project tasks: the time spent on the
+ * other projects tasks is analytic and must not be counted a second time against the working hours.
+ * Without any work time task set up (HR project 1.x), the presence is clocked on the projects tasks: no filter.
+ *
+ * @return int[] Tasks ID, empty for all tasks.
+ */
+function get_presence_time_task_ids(): array
+{
+    if (empty(get_hr_project_task_ids('work_time'))) {
+        return [];
+    }
+
+    return get_hr_project_task_ids();
+}
+
+/**
  * Get all product or service for timesheet line.
  *
  * @return array

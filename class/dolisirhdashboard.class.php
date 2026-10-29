@@ -247,7 +247,7 @@ class DolisirhDashboard
             }
 
             $planned_working_time = load_planned_time_within_range($firstdaytoshow, dolisirh_add_days($lastdayofmonth, 1), $workingHours, $isavailable);
-            $working_time         = load_time_spent_on_tasks_within_range($firstdaytoshow, dolisirh_add_days($lastdaytoshow, 1), $isavailable, $userID);
+            $working_time         = load_time_spent_on_tasks_within_range($firstdaytoshow, dolisirh_add_days($lastdaytoshow, 1), $isavailable, $userID, get_presence_time_task_ids());
 
             $planned_working_time_data = (($planned_working_time['minutes'] != 0) ? convertSecondToTime($planned_working_time['minutes'] * 60, 'fullhour') : 0);
             $working_time_data = convertSecondToTime($working_time['total'], 'fullhour');
@@ -322,7 +322,8 @@ class DolisirhDashboard
 
         }
 
-        $timeSpentOnTasks = load_time_spent_on_tasks_within_range($firstdaytoshow, dolisirh_add_days($lastdaytoshow, 1), $isavailable, $userID);
+        // The global time splits the working hours: presence tasks only, so that the not consumed part is the time left to clock.
+        $timeSpentOnTasks = load_time_spent_on_tasks_within_range($firstdaytoshow, dolisirh_add_days($lastdaytoshow, 1), $isavailable, $userID, ($showNotConsumedWorkingHours > 0 ? get_presence_time_task_ids() : []));
         $datas = [];
         $totalTimeSpent = 0;
 
