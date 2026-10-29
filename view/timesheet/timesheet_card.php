@@ -63,7 +63,6 @@ $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $lineid              = GETPOST('lineid', 'int');
 $year                = (GETPOST('year', 'int') ? GETPOST('year', 'int') : date('Y'));
 $month               = (GETPOST('month', 'int') ? GETPOST('month', 'int') : date('m'));
-$day                 = (GETPOST('day', 'int') ? GETPOST('day', 'int') : date('d'));
 
 // Initialize technical objects.
 $object       = new TimeSheet($db);
@@ -167,9 +166,10 @@ if (empty($resHook)) {
             }
         }
 
-        if (getDolGlobalInt('DOLISIRH_TIMESHEET_CHECK_DATE_END')) {
-            if ($dateEnd > $now) {
-                setEventMessages($langs->trans('ErrorDateEndTimeSheet', dol_print_date($dateEnd, 'dayreduceformat'), dol_print_date($now, 'dayreduceformat')), [], 'errors');
+        if (getDolGlobalInt('DOLISIRH_TIMESHEET_CHECK_DATE_END') && !empty($dateEnd)) {
+            $creationStartDate = timesheet_get_creation_start_date($dateEnd);
+            if ($creationStartDate > $now) {
+                setEventMessages($langs->trans('ErrorDateEndTimeSheet', dol_print_date($dateEnd, 'dayreduceformat'), dol_print_date($creationStartDate, 'dayreduceformat')), [], 'errors');
                 if ($action == 'add') {
                     $action = 'create';
                 } elseif ($action == 'update') {
@@ -385,15 +385,13 @@ if ($action == 'create') {
 
     print '<table class="border centpercent tableforfieldcreate">';
 
-    $specialCaseMonth = 0;
-    if (getDolGlobalInt('DOLISIRH_TIMESHEET_PREFILL_DATE')) {
-        if ($month == 01) {
-            $specialCaseMonth = 12;
-            $year--;
-        }
+    // Prefill with the previous month, or with the current one once its timesheet can be created
+    $timeSheetMonth = ['year' => $year, 'month' => $month];
+    if (getDolGlobalInt('DOLISIRH_TIMESHEET_PREFILL_DATE') && timesheet_get_creation_start_date(dol_get_last_day($year, $month)) > $now) {
+        $timeSheetMonth = dol_get_prev_month($month, $year);
     }
 
-    $object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, (!empty($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) ? (($month != 01) ? $month - 1 : $specialCaseMonth) : $month), $day, $year), '%B %Y') . ' ' . $user->getFullName($langs, 0, 0);
+    $object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_get_first_day($timeSheetMonth['year'], $timeSheetMonth['month']), '%B %Y') . ' ' . $user->getFullName($langs, 0, 0);
     $object->fields['fk_project']['default']     = $conf->global->DOLISIRH_HR_PROJECT;
     $object->fields['fk_user_assign']['default'] = $user->id;
 
@@ -404,14 +402,14 @@ if ($action == 'create') {
     $_POST['date_end']   = $dateEnd;
 
     if (getDolGlobalInt('DOLISIRH_TIMESHEET_PREFILL_DATE') && empty($_POST['date_start']) && empty($_POST['date_end'])) {
-        $firstDay = dol_get_first_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
+        $firstDay = dol_get_first_day($timeSheetMonth['year'], $timeSheetMonth['month']);
         $firstDay = dol_getdate($firstDay);
 
         $_POST['date_startday']   = $firstDay['mday'];
         $_POST['date_startmonth'] = $firstDay['mon'];
         $_POST['date_startyear']  = $firstDay['year'];
 
-        $lastDay = dol_get_last_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
+        $lastDay = dol_get_last_day($timeSheetMonth['year'], $timeSheetMonth['month']);
         $lastDay = dol_getdate($lastDay);
 
         $_POST['date_endday']   = $lastDay['mday'];

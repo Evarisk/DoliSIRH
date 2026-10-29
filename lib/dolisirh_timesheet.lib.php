@@ -21,6 +21,9 @@
  * \brief   Library files with common functions for TimeSheet.
  */
 
+// Load Dolibarr libraries.
+require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+
 // Load Saturne libraries.
 dol_include_once('/saturne/lib/object.lib.php');
 
@@ -37,4 +40,17 @@ function timesheet_prepare_head(TimeSheet $object): array
     $moreParams['attendantTableMode'] = 'simple';
 
     return saturne_object_prepare_head($object, [], $moreParams, true);
+}
+
+/**
+ * Get the date from which a timesheet can be created: a few days before its end date.
+ *
+ * @param  int $dateEnd Timesheet end date.
+ * @return int          Creation start date, at midnight.
+ */
+function timesheet_get_creation_start_date(int $dateEnd): int
+{
+    $dateEnd = dol_getdate($dateEnd);
+
+    return dol_time_plus_duree(dol_mktime(0, 0, 0, $dateEnd['mon'], $dateEnd['mday'], $dateEnd['year']), -TimeSheet::CREATION_DAYS_BEFORE_DATE_END, 'd');
 }

@@ -68,6 +68,11 @@ class TimeSheet extends SaturneObject
     public const STATUS_ARCHIVED  = 3;
 
     /**
+     * @var int Number of days before its end date from which a timesheet can be created (the timesheet of the month can be done before the month ends).
+     */
+    public const CREATION_DAYS_BEFORE_DATE_END = 4;
+
+    /**
      * 'type' field format:
      *      'integer', 'integer:ObjectClass:PathToClass[:AddCreateButtonOrNot[:Filter[:Sortfield]]]',
      *      'select' (list of values are in 'options'),
