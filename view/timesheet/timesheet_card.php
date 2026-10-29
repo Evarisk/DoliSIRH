@@ -608,7 +608,8 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     $workingHours = $workingHours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
 
-    $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dolisirh_add_days($lastDayToShow, 1), $workingHours, $isAvailable, $object->fk_user_assign);
+    // The timesheet counts the HR project tasks only: presence and absence.
+    $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dolisirh_add_days($lastDayToShow, 1), $workingHours, $isAvailable, $object->fk_user_assign, get_timesheet_task_ids());
 
     // Planned working time.
     $plannedWorkingTime = $timeSpendingInfos['planned'];

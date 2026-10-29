@@ -269,15 +269,16 @@ function get_hr_project_task_ids(string $type = ''): array
 }
 
 /**
- * Get the tasks whose time spent is compared to the working hours.
+ * Get the tasks whose time spent the timesheet compares to the working hours.
  *
- * Since the HR project 2.0.0, presence and absence are clocked on the HR project tasks: the time spent on the
- * other projects tasks is analytic and must not be counted a second time against the working hours.
+ * Since the HR project 2.0.0, presence and absence are clocked on the HR project tasks: the timesheet counts them
+ * only, the time spent on the other projects tasks is analytic.
+ * The time spent screens do the opposite: projects tasks and absences, without the work time tasks.
  * Without any work time task set up (HR project 1.x), the presence is clocked on the projects tasks: no filter.
  *
  * @return int[] Tasks ID, empty for all tasks.
  */
-function get_presence_time_task_ids(): array
+function get_timesheet_task_ids(): array
 {
     if (empty(get_hr_project_task_ids('work_time'))) {
         return [];
