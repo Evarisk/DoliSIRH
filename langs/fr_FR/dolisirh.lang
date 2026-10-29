@@ -60,11 +60,11 @@ PerfectTimeSpentColor               = Couleur temps consommés parfait
 
 # Timesheet - Navette
 PrefillDate                                            = Préremplir la date de début et de fin de la navette
-PrefillDateDescription                                 = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
+PrefillDateDescription                                 = Préremplissage des dates de début et de fin avec le mois précédent, ou avec le mois en cours à partir de 4 jours avant sa fin
 AddAttendantsConf                                      = Ajouter des signataires
 AddAttendantsDescription                               = Pouvoir ajouter des signataires pendant la réalisation de la navette <br> (par défaut il y a deux signataires, l'utilisateur assigné et son responsable hiérarchique s'il est configuré dans son profil utilisateur)
 CheckDateEnd                                           = Vérifier la date fin de navette
-CheckDateEndDescription                                = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
+CheckDateEndDescription                                = Vérification que la navette n'est créée qu'à partir de 4 jours avant sa date de fin <br> (évite la création de temps consommés dans le futur, tout en permettant de faire la navette du mois avant la fin du mois)
 ShowTasksWithTimespentOnTimeSheet                      = Afficher les tâches avec du temps consommé
 ShowTasksWithTimespentOnTimeSheetDescription           = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
 AllowDifferenceBetweenPassedAndWorkingHours            = Autoriser la différence entre les heures travaillées et les heures consommées
@@ -231,7 +231,7 @@ GoToTimeSpent                                 = Aller sur le pointage de  temps 
 ErrorLinkedElementTimeSheetTimeSpent          = Erreur liens entre navette et temps consommé <br> il existe déjà une navette lié au temps consommé affecté à l'utilisateur %s sur la période de %s au %s
 RemoveFileTimeSheet                           = Supprimer la fiche navette
 ConfirmRemoveFileTimeSheet                    = Êtes-vous sûr de vouloir <b>supprimer la fiche navette</b> ? La fiche navette sera supprimer <b>ainsi que les liens entre la navette et le temps consommé</b>. <br> De plus la navette retournera au statut brouillon.
-ErrorDateEndTimeSheet                         = Erreur date fin de navette %s supérieure à la date du jour %s
+ErrorDateEndTimeSheet                         = Erreur : la navette se terminant le %s ne peut être faite qu'à partir du %s
 ErrorDateTimeSheet                            = Erreur date début de navette %s supérieure à la date fin de navette %s
 ErrorConfigWorkingHours                       = Erreur : configuration des heures de travail manquantes
 GoToWorkingHours                              = Aller sur la page Horaire de travail de l'utilisateur %s
