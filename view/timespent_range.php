@@ -295,6 +295,42 @@ if (empty($resHook)) {
         $action = '';
     }
 
+    // One click unassign from a task, or from a project and all its tasks. The time spent is kept.
+    if (($action == 'unassign_task' || $action == 'unassign_project') && $permissiontoRead) {
+        $unassignTaskIDs = [];
+        if ($action == 'unassign_project') {
+            // Own objects: $project->id filters the task list of the view.
+            $unassignProject = new Project($db);
+            $projectID       = GETPOSTINT('project_id');
+            if ($projectID > 0 && $projectID != getDolGlobalInt('DOLISIRH_HR_PROJECT') && $unassignProject->fetch($projectID) > 0) {
+                foreach ($unassignProject->liste_contact(-1, 'internal') as $contact) {
+                    if ($contact['id'] == $userTmp->id) {
+                        $unassignProject->delete_contact($contact['rowid']);
+                    }
+                }
+                $resql = $db->query('SELECT rowid FROM ' . MAIN_DB_PREFIX . 'projet_task WHERE fk_projet = ' . ((int) $unassignProject->id));
+                while ($resql && ($obj = $db->fetch_object($resql))) {
+                    $unassignTaskIDs[] = (int) $obj->rowid;
+                }
+            }
+        } elseif (GETPOSTINT('task_id') > 0) {
+            $unassignTaskIDs[] = GETPOSTINT('task_id');
+        }
+
+        $unassignTask = new Task($db);
+        foreach ($unassignTaskIDs as $unassignTaskID) {
+            if ($unassignTask->fetch($unassignTaskID) > 0) {
+                foreach ($unassignTask->liste_contact(-1, 'internal') as $contact) {
+                    if ($contact['id'] == $userTmp->id) {
+                        $unassignTask->delete_contact($contact['rowid']);
+                    }
+                }
+            }
+        }
+
+        $action = '';
+    }
+
     if ($action == 'show_only_favorite_tasks') {
         $data = json_decode(file_get_contents('php://input'), true);
 

@@ -297,6 +297,21 @@
       }
     }
 
+    /* One click unassign from a task or a project */
+    .unassign-task,
+    .unassign-project {
+      margin-left: 6px;
+      font-size: 12px;
+      color: $ds-border-strong;
+      cursor: pointer;
+      transition: color $ds-transition, transform $ds-transition;
+
+      &:hover {
+        color: $ds-danger-text;
+        transform: scale(1.15);
+      }
+    }
+
     /* Day cells */
     > tbody > tr > td[data-cell] {
       padding: 3px 2px;

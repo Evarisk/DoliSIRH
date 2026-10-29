@@ -722,6 +722,10 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                         print '<span class="secondary" title="' . $project->title . '">' . dol_trunc($project->title, '64') . '</span>';
                     }
                     print ' - ' . $project->getLibStatut(5);
+                    // Not on the HR project: leaving it would leave all the presence and absence tasks at once.
+                    if (!empty($projectsRole[$lines[$i]->fk_project]) && $project->id != getDolGlobalInt('DOLISIRH_HR_PROJECT')) {
+                        print '<span class="fas fa-user-minus unassign-project" data-project-id="' . $project->id . '" title="' . dol_escape_htmltag($langs->transnoentities('UnassignProject')) . '"></span>';
+                    }
                     print '</span></td>';
                     print '</tr>';
                 }
@@ -746,6 +750,9 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
                     print '<span class="fas fa-star toggleTaskFavorite" style="margin-left: 5px;" id="' . $task->id . '" value="' . $task->id . '"></span>';
                 } else {
                     print '<span class="far fa-star toggleTaskFavorite" style="margin-left: 5px;" id="' . $task->id . '" value="' . $task->id . '"></span>';
+                }
+                if (!empty($tasksRole[$lines[$i]->id])) {
+                    print '<span class="fas fa-user-minus unassign-task" data-task-id="' . $task->id . '" title="' . dol_escape_htmltag($langs->transnoentities('UnassignTask')) . '"></span>';
                 }
                 if ($task->planned_workload != '') {
                     $tmpArray = $task->getSummaryOfTimeSpent();
