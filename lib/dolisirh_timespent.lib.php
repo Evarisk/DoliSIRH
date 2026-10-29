@@ -83,10 +83,11 @@ function timespent_prepare_head(string $mode, User $fkUser): array
  * @param  int       $timestampEnd   Timestamp last day.
  * @param  int       $userID         Time spent by a particular user.
  * @param  array     $daysAvailable  Available days.
+ * @param  int[]     $taskIDs        Time spent on these tasks only, empty for all tasks.
  * @return array                     Array with minutes, hours and total time spent.
  * @throws Exception
  */
-function load_time_spent_on_tasks_within_range(int $timestampStart, int $timestampEnd, array $daysAvailable, int $userID = 0): array
+function load_time_spent_on_tasks_within_range(int $timestampStart, int $timestampEnd, array $daysAvailable, int $userID = 0, array $taskIDs = []): array
 {
     global $db;
 
@@ -109,6 +110,9 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
         $moreWhereFilter = 'AND (ptt.element_date >= "' . $db->idate($timestampStart) . '" AND ptt.element_date < "' . $db->idate($timestampEnd) . '")';
     } else {
         $moreWhereFilter = 'AND (ptt.task_date >= "' . $db->idate($timestampStart) . '" AND ptt.task_date < "' . $db->idate($timestampEnd) . '")';
+    }
+    if (!empty($taskIDs)) {
+        $moreWhereFilter .= ' AND pt.rowid IN (' . $db->sanitize(implode(',', array_map('intval', $taskIDs))) . ')';
     }
 
     $timeSpentOnTasks = ['days' => 0, 'hours' => 0, 'minutes' => 0, 'total' => 0];
@@ -231,6 +235,7 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $
 
 /**
  * Load difference between passed time and spent time within a time range.
+ * Only the time spent on the presence tasks counts, see get_presence_time_task_ids().
  *
  * @param  int                $timestampStart Timestamp first day.
  * @param  int                $timestampEnd   Timestamp last day.
@@ -247,13 +252,14 @@ function load_difference_between_passed_and_spent_time_within_range(int $timesta
     }
 
     $passedWorkingTime = load_passed_time_within_range($timestampStart, $timestampEnd, $workingHours, $daysAvailable);
-    $spentWorkingTime  = load_time_spent_on_tasks_within_range($timestampStart, $timestampEnd, $daysAvailable, $userID);
+    $spentWorkingTime  = load_time_spent_on_tasks_within_range($timestampStart, $timestampEnd, $daysAvailable, $userID, get_presence_time_task_ids());
 
     return $passedWorkingTime['minutes'] - $spentWorkingTime['minutes'];
 }
 
 /**
  * Load all time spending infos within a time range.
+ * The spent time is the one of the presence tasks, see get_presence_time_task_ids().
  *
  * @param  int                $timestampStart Timestamp first day.
  * @param  int                $timestampEnd   Timestamp last day.
@@ -271,7 +277,7 @@ function load_time_spending_infos_within_range(int $timestampStart, int $timesta
 
     $plannedWorkingTime    = load_planned_time_within_range($timestampStart, $timestampEnd, $workingHours, $daysAvailable);
     $passedWorkingTime     = load_passed_time_within_range($timestampStart, $timestampEnd, $workingHours, $daysAvailable);
-    $spentWorkingTime      = load_time_spent_on_tasks_within_range($timestampStart, $timestampEnd, $daysAvailable, $userID);
+    $spentWorkingTime      = load_time_spent_on_tasks_within_range($timestampStart, $timestampEnd, $daysAvailable, $userID, get_presence_time_task_ids());
     $workingTimeDifference = load_difference_between_passed_and_spent_time_within_range($timestampStart, $timestampEnd, $workingHours, $daysAvailable, $userID);
 
     return [
