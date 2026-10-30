@@ -397,24 +397,6 @@ parameters:
 			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
 
 		-
-			message: '#^Parameter \#1 \$usert of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Parameter \#2 \$userp of method Task\:\:getTasksArray\(\) expects User\|null, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
-			message: '#^Variable \$tmpArray might not be defined\.$#'
-			identifier: variable.undefined
-			count: 8
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
-
-		-
 			message: '#^Parameter \#1 \$id of method Product\:\:fetch\(\) expects int, string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1366,12 +1348,6 @@ parameters:
 			identifier: catch.neverThrown
 			count: 4
 			path: core/modules/dolisirh/dolisirhdocuments/projectdocument/doc_projectdocument_odt.modules.php
-
-		-
-			message: '#^Dead catch \- OdfException is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 9
-			path: core/modules/dolisirh/dolisirhdocuments/timesheetdocument/doc_timesheetdocument_odt.modules.php
 
 		-
 			message: '#^Property DolibarrModules\:\:\$dictionaries \(array\{\}\|array\{langs\: string, tabname\: array\<string\>, tablib\: array\<string\>, tabsql\: array\<string\>, tabsqlsort\: array\<string\>, tabfield\: array\<string\>, tabfieldvalue\: array\<string\>, tabfieldinsert\: array\<string\>, \.\.\.\}\) does not accept array\{langs\: ''dolisirh@dolisirh'', tabname\: array\{''llx_c_timesheet…'', ''llx_c_certificate…''\}, tablib\: array\{''Timesheet'', ''Certificate''\}, tabsql\: array\{''SELECT f\.rowid as…'', ''SELECT f\.rowid as…''\}, tabsqlsort\: array\{''position ASC'', ''position ASC''\}, tabfield\: array\{''ref,label…'', ''ref,label…''\}, tabfieldvalue\: array\{''ref,label…'', ''ref,label…''\}, tabfieldinsert\: array\{''ref,label…'', ''ref,label…''\}, \.\.\.\}\.$#'
