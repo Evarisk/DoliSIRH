@@ -61,9 +61,8 @@ $contextPage         = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ
 $backtopage          = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $lineid              = GETPOST('lineid', 'int');
-$year                = (GETPOST('year', 'int') ? GETPOST('year', 'int') : date('Y'));
-$month               = (GETPOST('month', 'int') ? GETPOST('month', 'int') : date('m'));
-$day                 = (GETPOST('day', 'int') ? GETPOST('day', 'int') : date('d'));
+$year                = (int) (GETPOST('year', 'int') ? GETPOST('year', 'int') : date('Y'));
+$month               = (int) (GETPOST('month', 'int') ? GETPOST('month', 'int') : date('m'));
 
 // Initialize technical objects.
 $object       = new TimeSheet($db);
@@ -167,9 +166,10 @@ if (empty($resHook)) {
             }
         }
 
-        if (getDolGlobalInt('DOLISIRH_TIMESHEET_CHECK_DATE_END')) {
-            if ($dateEnd > $now) {
-                setEventMessages($langs->trans('ErrorDateEndTimeSheet', dol_print_date($dateEnd, 'dayreduceformat'), dol_print_date($now, 'dayreduceformat')), [], 'errors');
+        if (getDolGlobalInt('DOLISIRH_TIMESHEET_CHECK_DATE_END') && !empty($dateEnd)) {
+            $creationStartDate = timesheet_get_creation_start_date($dateEnd);
+            if ($creationStartDate > $now) {
+                setEventMessages($langs->trans('ErrorDateEndTimeSheet', dol_print_date($dateEnd, 'dayreduceformat'), dol_print_date($creationStartDate, 'dayreduceformat')), [], 'errors');
                 if ($action == 'add') {
                     $action = 'create';
                 } elseif ($action == 'update') {
@@ -385,17 +385,16 @@ if ($action == 'create') {
 
     print '<table class="border centpercent tableforfieldcreate">';
 
-    $specialCaseMonth = 0;
-    if (getDolGlobalInt('DOLISIRH_TIMESHEET_PREFILL_DATE')) {
-        if ($month == 01) {
-            $specialCaseMonth = 12;
-            $year--;
-        }
+    // Prefill with the previous month, or with the current one once its timesheet can be created
+    $timeSheetMonth = ['year' => $year, 'month' => $month];
+    if (getDolGlobalInt('DOLISIRH_TIMESHEET_PREFILL_DATE') && timesheet_get_creation_start_date(dol_get_last_day($year, $month)) > $now) {
+        $timeSheetMonth = dol_get_prev_month($month, $year);
     }
 
-    $object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_mktime(0, 0, 0, (!empty($conf->global->DOLISIRH_TIMESHEET_PREFILL_DATE) ? (($month != 01) ? $month - 1 : $specialCaseMonth) : $month), $day, $year), '%B %Y') . ' ' . $user->getFullName($langs, 0, 0);
+    $object->fields['label']['default']          = $langs->trans('TimeSheet') . ' ' . dol_print_date(dol_get_first_day($timeSheetMonth['year'], $timeSheetMonth['month']), '%B %Y') . ' ' . $user->getFullName($langs, 0, 0);
     $object->fields['fk_project']['default']     = $conf->global->DOLISIRH_HR_PROJECT;
     $object->fields['fk_user_assign']['default'] = $user->id;
+    timesheet_keep_user_assign_selectable($object, $user->id);
 
     $dateStart = dol_mktime(0, 0, 0, GETPOST('date_startmonth', 'int'), GETPOST('date_startday', 'int'), GETPOST('date_startyear', 'int'));
     $dateEnd   = dol_mktime(0, 0, 0, GETPOST('date_endmonth', 'int'), GETPOST('date_endday', 'int'), GETPOST('date_endyear', 'int'));
@@ -404,14 +403,14 @@ if ($action == 'create') {
     $_POST['date_end']   = $dateEnd;
 
     if (getDolGlobalInt('DOLISIRH_TIMESHEET_PREFILL_DATE') && empty($_POST['date_start']) && empty($_POST['date_end'])) {
-        $firstDay = dol_get_first_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
+        $firstDay = dol_get_first_day($timeSheetMonth['year'], $timeSheetMonth['month']);
         $firstDay = dol_getdate($firstDay);
 
         $_POST['date_startday']   = $firstDay['mday'];
         $_POST['date_startmonth'] = $firstDay['mon'];
         $_POST['date_startyear']  = $firstDay['year'];
 
-        $lastDay = dol_get_last_day($year, (($month != 01) ? $month - 1 : $specialCaseMonth));
+        $lastDay = dol_get_last_day($timeSheetMonth['year'], $timeSheetMonth['month']);
         $lastDay = dol_getdate($lastDay);
 
         $_POST['date_endday']   = $lastDay['mday'];
@@ -477,6 +476,8 @@ if (($id || $ref) && $action == 'edit') {
     $_POST['date_endday']   = $dateEnd['mday'];
     $_POST['date_endmonth'] = $dateEnd['mon'];
     $_POST['date_endyear']  = $dateEnd['year'];
+
+    timesheet_keep_user_assign_selectable($object, (int) $object->fk_user_assign);
 
     // Common attributes.
     require_once DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_edit.tpl.php';
@@ -596,7 +597,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     $isAvailable = [];
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $dayInLoop = dol_time_plus_duree($firstDayToShow, $idw, 'd');
+        $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
         if (is_day_available($dayInLoop, $user->id)) {
             $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
         } elseif (date('N', $dayInLoop) >= 6) {
@@ -608,7 +609,8 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     $workingHours = $workingHours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
 
-    $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dol_time_plus_duree($lastDayToShow, 1, 'd'), $workingHours, $isAvailable, $object->fk_user_assign);
+    // The timesheet counts the HR project tasks only: presence and absence.
+    $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dolisirh_add_days($lastDayToShow, 1), $workingHours, $isAvailable, $object->fk_user_assign, get_timesheet_task_ids());
 
     // Planned working time.
     $plannedWorkingTime = $timeSpendingInfos['planned'];
@@ -897,7 +899,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
         $fileDir   = $upload_dir . '/' . $dirFiles;
         $urlSource = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
 
-        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', $object->status > TimeSheet::STATUS_DRAFT && $object->status != TimeSheet::STATUS_ARCHIVED, $langs->trans('ObjectMustBeLockedToGenerate', ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
+        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, '', '', '', $langs->defaultlang, '', $object, 0, 'remove_file', $object->status > TimeSheet::STATUS_DRAFT && $object->status != TimeSheet::STATUS_ARCHIVED, $langs->trans('ObjectMustBeLockedToGenerate', ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
 
         print '</div><div class="fichehalfright">';
 

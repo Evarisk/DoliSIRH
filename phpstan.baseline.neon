@@ -547,12 +547,6 @@ parameters:
 			path: lib/dolisirh_timespent.lib.php
 
 		-
-			message: '#^Parameter \#12 \$param of function saturne_show_documents expects string, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: view/certificate/certificate_card.php
-
-		-
 			message: '#^Parameter \#20 \$active of function saturne_show_documents expects int, bool given\.$#'
 			identifier: argument.type
 			count: 1
@@ -718,12 +712,6 @@ parameters:
 			message: '#^If condition is always false\.$#'
 			identifier: if.alwaysFalse
 			count: 2
-			path: view/timesheet/timesheet_card.php
-
-		-
-			message: '#^Parameter \#12 \$param of function saturne_show_documents expects string, int given\.$#'
-			identifier: argument.type
-			count: 1
 			path: view/timesheet/timesheet_card.php
 
 		-

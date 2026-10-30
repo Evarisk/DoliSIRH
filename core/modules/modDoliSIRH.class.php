@@ -684,6 +684,10 @@ class modDoliSIRH extends DolibarrModules
         $param['options']['Facture:compta/facture/class/facture.class.php'] = null;
         $extraFields->addExtraField('fk_facture_name', 'Facture', 'link', 100, null, 'projet_task', 1, 0, null, $param, 1, 1, 1); //extrafields task.
         unset($param);
+
+        // The core only creates the ticket tables when the Ticket module is enabled : load them so the task extrafield exists whenever Ticket is enabled
+        $this->_load_tables('/install/mysql/', 'ticket');
+
         $param['options']['projet_task:label:rowid::(entity:=:$ENTITY$)'] = null; // @todo rework 'projet_task:label:rowid::entity = $ENTITY$ AND fk_projet = ($SEL$ fk_project FROM '. MAIN_DB_PREFIX .'ticket WHERE rowid = $ID$)'
         $extraFields->update('fk_task', 'Tâche', 'sellist', '', 'ticket', 0, 0, 100, $param, 1, 1, '1', '','','',0);
         $extraFields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, $param, 1, 1, '1', '','',0); //extrafields ticket.
@@ -728,7 +732,7 @@ class modDoliSIRH extends DolibarrModules
                 $modTask    = new $taskRefClass();
 
                 $project->ref         = $modProject->getNextValue('', null);
-                $project->title       = $langs->transnoentities('HumanResources') . ' - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM') . ' - 2.0.0';
+                $project->title       = $langs->transnoentities('HumanResources') . ' - 2.0.0 - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM');
                 $project->description = $langs->transnoentities('HRDescription');
                 $project->date_c      = $now;
                 $currentYear          = dol_print_date($now, '%Y');
@@ -740,12 +744,14 @@ class modDoliSIRH extends DolibarrModules
                 $dateStartAddYear      = dol_time_plus_duree($dateStart, 1, 'y');
                 $dateStartAddYearMonth = dol_time_plus_duree($dateStartAddYear, -1, 'd');
                 $project->date_end     = dol_print_date($dateStartAddYearMonth, 'dayrfc');
-                $project->statut       = 1;
+                $project->status       = Project::STATUS_VALIDATED;
+                $project->statut       = Project::STATUS_VALIDATED;
 
                 $projectID = $project->create($user);
                 if ($projectID > 0) {
                     dolibarr_set_const($this->db, 'DOLISIRH_HR_PROJECT', $projectID, 'integer', 0, '', $conf->entity);
-                    $users = $userTmp->get_full_tree(0, '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))');
+                    $userFilter = (int) versiondolibarrarray()[0] >= 24 ? '((u.employee:=:1) AND (u.fk_soc:is:NULL) AND (u.statut:=:1))' : '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))';
+                    $users      = $userTmp->get_full_tree(0, $userFilter);
                     if (!empty($users) && is_array($users)) {
                         foreach ($users as $userSingle) {
                             $project->add_contact($userSingle['id'], 'PROJECTCONTRIBUTOR', 'internal');
