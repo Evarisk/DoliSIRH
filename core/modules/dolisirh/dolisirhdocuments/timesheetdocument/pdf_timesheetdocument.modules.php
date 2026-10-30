@@ -280,7 +280,7 @@ class pdf_timesheetdocument extends SaturneDocumentModel
                 'expected' => dolisirh_working_hours_of_day($workingHours, 'workinghours_' . strtolower(date('l', $cursor))) * 60,
             ];
 
-            $cursor = dol_time_plus_duree($cursor, 1, 'd');
+            $cursor = dolisirh_add_days($cursor, 1);
         }
 
         return $days;
