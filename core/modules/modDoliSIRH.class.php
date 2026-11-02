@@ -33,6 +33,11 @@ require_once DOL_DOCUMENT_ROOT . '/core/modules/DolibarrModules.class.php';
 class modDoliSIRH extends DolibarrModules
 {
     /**
+     * @var int[] Minimum version of Saturne required by module, same format as need_dolibarr_version: checked by init() and by the Saturne index page
+     */
+    public $need_saturne_version = [23, 6];
+
+    /**
      * Constructor. Define names, constants, directories, boxes, permissions.
      *
      * @param DoliDB $db Database handler.
@@ -638,6 +643,16 @@ class modDoliSIRH extends DolibarrModules
     public function init($options = ''): int
     {
         global $conf, $langs, $user;
+
+        // Saturne ships separately: refuse one older than need_saturne_version, it lacks functions this release calls
+        require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
+        dol_include_once('/saturne/core/modules/modSaturne.class.php');
+        $saturneVersion = class_exists('modSaturne') ? (new modSaturne($this->db))->version : '';
+        if (versioncompare(explode('.', $saturneVersion), $this->need_saturne_version) < 0) {
+            $langs->load('admin'); // activateModuleDependNotSatisfied, not loaded when the Saturne index page runs init()
+            $this->error = $langs->trans('activateModuleDependNotSatisfied', $this->name, 'modSaturne >= ' . versiontostring($this->need_saturne_version) . ' (' . ($saturneVersion ?: '-') . ')', $this->name);
+            return -1;
+        }
 
         // Permissions.
         $this->remove($options);
