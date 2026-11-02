@@ -311,3 +311,72 @@ function timesheet_render_daily_calendar(TimeSheet $object, int $firstDayToShow,
 
     return $out;
 }
+
+/**
+ * Check if a user has logged time on days outside their declared working hours schedule
+ * (e.g. Saturday or Sunday when schedule_<day> / workinghours_<day> are empty or 0).
+ *
+ * @param  int                $firstDayToShow Start timestamp of the period.
+ * @param  int                $lastDayToShow  End timestamp of the period.
+ * @param  Workinghours|array $workingHours   User working hours object or array.
+ * @param  int                $userID         User ID.
+ * @param  int[]              $taskIDs        Optional list of task IDs to filter on.
+ * @return array                              Array of days with time spent outside declared working hours.
+ */
+function check_time_spent_outside_working_hours(int $firstDayToShow, int $lastDayToShow, $workingHours, int $userID, array $taskIDs = []): array
+{
+    global $db, $langs;
+
+    if ($userID <= 0) {
+        return [];
+    }
+
+    $startCursor = dol_mktime(0, 0, 0, (int) date('m', $firstDayToShow), (int) date('d', $firstDayToShow), (int) date('Y', $firstDayToShow), 'tzserver');
+    $endCursor   = dol_mktime(0, 0, 0, (int) date('m', $lastDayToShow), (int) date('d', $lastDayToShow), (int) date('Y', $lastDayToShow), 'tzserver');
+    $startDate   = date('Y-m-d', $startCursor);
+    $endDate     = date('Y-m-d', $endCursor);
+
+    $sql  = 'SELECT et.element_date, SUM(et.element_duration) AS total_duration';
+    $sql .= ', ew.schedule_monday, ew.schedule_tuesday, ew.schedule_wednesday, ew.schedule_thursday, ew.schedule_friday, ew.schedule_saturday, ew.schedule_sunday';
+    $sql .= ', ew.workinghours_monday, ew.workinghours_tuesday, ew.workinghours_wednesday, ew.workinghours_thursday, ew.workinghours_friday, ew.workinghours_saturday, ew.workinghours_sunday';
+    $sql .= ' FROM ' . MAIN_DB_PREFIX . 'element_time AS et';
+    $sql .= ' INNER JOIN ' . MAIN_DB_PREFIX . 'projet_task AS pt ON pt.rowid = et.fk_element';
+    $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'element_workinghours AS ew ON ew.element_id = et.fk_user AND ew.element_type = \'user\' AND ew.status = 1 AND ew.entity IN (' . getEntity('element_workinghours') . ')';
+    $sql .= ' WHERE et.fk_user = ' . (int) $userID;
+    $sql .= " AND et.elementtype = 'task'";
+    $sql .= " AND et.element_date >= '" . $db->escape($startDate) . "'";
+    $sql .= " AND et.element_date <= '" . $db->escape($endDate) . "'";
+    if (!empty($taskIDs)) {
+        $sql .= ' AND et.fk_element IN (' . $db->sanitize(implode(',', array_map('intval', $taskIDs))) . ')';
+    }
+    $sql .= ' GROUP BY et.element_date, ew.rowid';
+    $sql .= ' HAVING SUM(et.element_duration) > 0';
+    $sql .= ' ORDER BY et.element_date ASC';
+
+    $outsideDays = [];
+    $resql       = $db->query($sql);
+    if ($resql) {
+        while ($obj = $db->fetch_object($resql)) {
+            $dayTs   = $db->jdate($obj->element_date);
+            $dayKey  = date('Y-m-d', $dayTs);
+            $weekday = dol_strtolower(date('l', $dayTs));
+            $whProp  = 'workinghours_' . $weekday;
+
+            $declaredMinutes = isset($obj->$whProp) ? (int) $obj->$whProp : dolisirh_working_hours_of_day($workingHours, $whProp);
+
+            if ($declaredMinutes <= 0) {
+                $duration = (int) $obj->total_duration;
+                $dayLabel = dol_ucfirst(dol_print_date($dayTs, '%A %d/%m/%Y', 'tzserver', $langs));
+                $outsideDays[$dayKey] = [
+                    'date'      => $dayKey,
+                    'timestamp' => $dayTs,
+                    'duration'  => $duration,
+                    'label'     => $dayLabel . ' (' . convertSecondToTime($duration, 'allhourmin') . ')',
+                ];
+            }
+        }
+        $db->free($resql);
+    }
+
+    return $outsideDays;
+}

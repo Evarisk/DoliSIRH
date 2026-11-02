@@ -122,28 +122,31 @@ function load_time_spent_on_tasks_within_range(int $timestampStart, int $timesta
     $timeSpentOnTasks = ['days' => 0, 'hours' => 0, 'minutes' => 0, 'total' => 0];
     $timeSpentList    = $task->fetchAllTimeSpent($userTmp, $moreWhereFilter);
     if (is_array($timeSpentList) && !empty($timeSpentList)) {
-        $workingDays = [];
+        $workingDays   = [];
+        $totalDuration = 0;
         foreach ($timeSpentList as $timeSpent) {
-            $hours   = floor($timeSpent->timespent_duration / 3600);
-            $minutes = floor($timeSpent->timespent_duration / 60);
-            if (!empty($daysAvailable[$timeSpent->timespent_date]['morning']) && !empty($daysAvailable[$timeSpent->timespent_date]['afternoon'])) {
-                $timeSpentOnTasks['hours']   += $hours;
-                $timeSpentOnTasks['minutes'] += $minutes;
-                $timeSpentOnTasks['total']   += $timeSpent->timespent_duration;
-                if (!empty($timeSpent->timespent_note)) {
-                    $timeSpentOnTasks[$timeSpent->fk_task]['comments'][dol_print_date($timeSpent->timespent_date, 'day')][$timeSpent->timespent_id] = $timeSpent->timespent_note;
-                }
-                $timeSpentOnTasks[$timeSpent->fk_task]['project_ref']   = $timeSpent->project_ref;
-                $timeSpentOnTasks[$timeSpent->fk_task]['project_label'] = $timeSpent->project_label;
-                $timeSpentOnTasks[$timeSpent->fk_task]['task_ref']      = $timeSpent->task_ref;
-                $timeSpentOnTasks[$timeSpent->fk_task]['task_label']    = $timeSpent->task_label;
+            $dayStr   = dol_print_date($timeSpent->timespent_date, 'day');
+            $duration = (int) $timeSpent->timespent_duration;
+            $taskID   = (int) $timeSpent->fk_task;
 
-                $dayStr = dol_print_date($timeSpent->timespent_date, 'day');
-                $timeSpentOnTasks[$timeSpent->fk_task][$dayStr] = ($timeSpentOnTasks[$timeSpent->fk_task][$dayStr] ?? 0) + $timeSpent->timespent_duration;
-                $workingDays[$timeSpent->timespent_date] = 1;
+            $totalDuration += $duration;
+            if (!empty($timeSpent->timespent_note)) {
+                $timeSpentOnTasks[$taskID]['comments'][$dayStr][$timeSpent->timespent_id] = $timeSpent->timespent_note;
+            }
+            $timeSpentOnTasks[$taskID]['project_ref']   = $timeSpent->project_ref;
+            $timeSpentOnTasks[$taskID]['project_label'] = $timeSpent->project_label;
+            $timeSpentOnTasks[$taskID]['task_ref']      = $timeSpent->task_ref;
+            $timeSpentOnTasks[$taskID]['task_label']    = $timeSpent->task_label;
+
+            $timeSpentOnTasks[$taskID][$dayStr] = ($timeSpentOnTasks[$taskID][$dayStr] ?? 0) + $duration;
+            if ($duration > 0) {
+                $workingDays[$dayStr] = 1;
             }
         }
-        $timeSpentOnTasks['days'] = is_array($workingDays) && !empty($workingDays) ? count($workingDays) : 0;
+        $timeSpentOnTasks['total']   = $totalDuration;
+        $timeSpentOnTasks['hours']   = (int) floor($totalDuration / 3600);
+        $timeSpentOnTasks['minutes'] = (int) floor($totalDuration / 60);
+        $timeSpentOnTasks['days']    = count($workingDays);
     }
 
     return $timeSpentOnTasks;

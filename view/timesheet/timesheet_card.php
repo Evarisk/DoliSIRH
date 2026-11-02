@@ -598,7 +598,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     $isAvailable = [];
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
-        if (is_day_available($dayInLoop, $user->id)) {
+        if (is_day_available($dayInLoop, $object->fk_user_assign)) {
             $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
         } elseif (date('N', $dayInLoop) >= 6) {
             $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
@@ -610,7 +610,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     $workingHours = $workingHours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
 
     // The timesheet counts the HR project tasks only: presence and absence.
-    $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dolisirh_add_days($lastDayToShow, 1), $workingHours, $isAvailable, $object->fk_user_assign, get_timesheet_task_ids());
+    $timesheetTaskIDs        = get_timesheet_task_ids();
+    $timeSpendingInfos       = load_time_spending_infos_within_range($firstDayToShow, dolisirh_add_days($lastDayToShow, 1), $workingHours, $isAvailable, $object->fk_user_assign, $timesheetTaskIDs);
+    $outsideWorkingHoursDays = check_time_spent_outside_working_hours($firstDayToShow, $lastDayToShow, $workingHours, (int) $object->fk_user_assign, $timesheetTaskIDs);
 
     // Planned working time.
     $plannedWorkingTime = $timeSpendingInfos['planned'];
@@ -646,6 +648,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
         $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
         $moreCssNotice = 'warning';
         $noticeTitle   = $langs->trans('TimeSpentMustBeCompleted', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayToShow, 'dayreduceformat'), dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y'));
+    } elseif (!empty($outsideWorkingHoursDays)) {
+        $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+        $moreCssNotice = 'error';
+        $noticeTitle   = $langs->trans('TimeSpentDiff', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayToShow, 'dayreduceformat'), dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y'));
     } elseif ($diffTotalTime == 0) {
         $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
         $moreCssNotice = 'success';
@@ -654,6 +660,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
         $moreCssHours  = '';
         $moreCssNotice = '';
         $noticeTitle   = '';
+    }
+    if (!empty($outsideWorkingHoursDays)) {
+        $outsideLabels = array_map(static function (array $dayInfo): string {
+            return dol_escape_htmltag($dayInfo['label']);
+        }, $outsideWorkingHoursDays);
+        $noticeTitle .= '<br>' . dol_escape_htmltag($langs->transnoentities('ConsumedTime') . ' (' . $langs->transnoentities('WorkingHours') . ' : 00:00) : ') . implode(', ', $outsideLabels);
     }
 
     // Working hours.
@@ -852,7 +864,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
             // Lock.
             $displayButton = $onPhone ? '<i class="fas fa-lock fa-2x"></i>' : '<i class="fas fa-lock"></i>' . ' ' . $langs->trans('Lock');
-            if ($object->status == TimeSheet::STATUS_VALIDATED && $signatory->checkSignatoriesSignatures($object->id, $object->element) && (getDolGlobalInt('DOLISIRH_ALLOW_DIFFERENCE_BETWEEN_PASSED_AND_WORKING_HOURS') || $diffTotalTime == 0)) {
+            if ($object->status == TimeSheet::STATUS_VALIDATED && $signatory->checkSignatoriesSignatures($object->id, $object->element) && (getDolGlobalInt('DOLISIRH_ALLOW_DIFFERENCE_BETWEEN_PASSED_AND_WORKING_HOURS') || ($diffTotalTime == 0 && empty($outsideWorkingHoursDays)))) {
                 print '<span class="butAction" id="actionButtonLock">' . $displayButton . '</span>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('AllSignatoriesMustHaveSignedAndDiffTimeSetAt0')) . '">' . $displayButton . '</span>';
