@@ -41,10 +41,22 @@ require_once __DIR__ . '/dolisirh_timespent.lib.php';
  */
 function timesheet_prepare_head(TimeSheet $object): array
 {
+    global $conf, $langs, $user;
+
     $moreParams['documentType']       = 'TimeSheetDocument';
     $moreParams['attendantTableMode'] = 'simple';
 
-    return saturne_object_prepare_head($object, [], $moreParams, true);
+    $head = saturne_object_prepare_head($object, [], $moreParams, true);
+
+    if (!empty($user->rights->dolisirh->timesheet->read)) {
+        $head[] = [
+            dol_buildpath('/dolisirh/view/timesheet/timesheet_timespent.php', 1) . '?id=' . $object->id,
+            $conf->browser->layout != 'phone' ? '<i class="fas fa-clock pictofixedwidth"></i>' . $langs->trans('ConsumedTime') : '<i class="fas fa-clock"></i>',
+            'timespent',
+        ];
+    }
+
+    return $head;
 }
 
 /**
@@ -379,4 +391,116 @@ function check_time_spent_outside_working_hours(int $firstDayToShow, int $lastDa
     }
 
     return $outsideDays;
+}
+
+/**
+ * Load the tasks of the HR project grouped into presence ('work_time') and absence ('no_work_time').
+ *
+ * @param  int   $hrProjectID HR project ID.
+ * @return array              Array with 'work_time' => Task[], 'no_work_time' => Task[], 'all_ids' => int[].
+ */
+function timesheet_get_hr_project_tasks_by_type(int $hrProjectID): array
+{
+    global $db;
+
+    $result = [
+        'work_time'    => [],
+        'no_work_time' => [],
+        'all_ids'      => [],
+    ];
+
+    $configuredWorkTimeIDs   = get_hr_project_task_ids('work_time');
+    $configuredNoWorkTimeIDs = get_hr_project_task_ids('no_work_time');
+    $configuredAllIDs        = array_values(array_unique(array_merge($configuredWorkTimeIDs, $configuredNoWorkTimeIDs)));
+
+    $whereParts = [];
+    if ($hrProjectID > 0) {
+        $whereParts[] = 'pt.fk_projet = ' . (int) $hrProjectID;
+    }
+    if (!empty($configuredAllIDs)) {
+        $whereParts[] = 'pt.rowid IN (' . $db->sanitize(implode(',', array_map('intval', $configuredAllIDs))) . ')';
+    }
+    if (empty($whereParts)) {
+        return $result;
+    }
+
+    $sql  = 'SELECT pt.rowid, pt.ref, pt.fk_projet, pt.fk_task_parent, pt.label, pt.description, pt.duration_effective, pt.planned_workload, pt.progress, pt.fk_statut, pt.dateo, pt.datee, pt.rang';
+    $sql .= ', p.public AS project_public';
+    $sql .= ' FROM ' . MAIN_DB_PREFIX . 'projet_task AS pt';
+    $sql .= ' INNER JOIN ' . MAIN_DB_PREFIX . 'projet AS p ON p.rowid = pt.fk_projet';
+    $sql .= ' WHERE (' . implode(' OR ', $whereParts) . ')';
+    if ($hrProjectID > 0) {
+        $sql .= ' AND pt.fk_projet = ' . (int) $hrProjectID;
+    }
+    $sql .= ' ORDER BY pt.rang ASC, pt.rowid ASC';
+
+    $tasksByID = [];
+    $resql     = $db->query($sql);
+    if ($resql) {
+        while ($obj = $db->fetch_object($resql)) {
+            $taskObj                   = new Task($db);
+            $taskObj->id               = (int) $obj->rowid;
+            $taskObj->ref              = (string) $obj->ref;
+            $taskObj->fk_project       = (int) $obj->fk_projet;
+            $taskObj->fk_task_parent   = (int) $obj->fk_task_parent;
+            $taskObj->label            = (string) $obj->label;
+            $taskObj->description      = (string) $obj->description;
+            $taskObj->duration         = (int) $obj->duration_effective;
+            $taskObj->planned_workload = (int) $obj->planned_workload;
+            $taskObj->progress         = (int) $obj->progress;
+            $taskObj->fk_statut        = (int) $obj->fk_statut;
+            $taskObj->date_start       = $db->jdate($obj->dateo);
+            $taskObj->date_end         = $db->jdate($obj->datee);
+            $taskObj->rang             = (int) $obj->rang;
+            $taskObj->public           = (int) $obj->project_public;
+
+            $tasksByID[$taskObj->id] = $taskObj;
+        }
+        $db->free($resql);
+    }
+
+    // First place configured HR tasks in their defined order
+    $placedIDs = [];
+    foreach ($configuredWorkTimeIDs as $tid) {
+        if (isset($tasksByID[$tid])) {
+            $result['work_time'][] = $tasksByID[$tid];
+            $placedIDs[$tid]       = true;
+        }
+    }
+    foreach ($configuredNoWorkTimeIDs as $tid) {
+        if (isset($tasksByID[$tid])) {
+            $result['no_work_time'][] = $tasksByID[$tid];
+            $placedIDs[$tid]          = true;
+        }
+    }
+
+    // Classify any remaining tasks of the HR project by label
+    foreach ($tasksByID as $tid => $taskObj) {
+        if (isset($placedIDs[$tid])) {
+            continue;
+        }
+        $labelLower = dol_strtolower($taskObj->label);
+        $isPresence = (
+            strpos($labelLower, 'temps de travail') !== false
+            || strpos($labelLower, 'work time') !== false
+            || strpos($labelLower, 'formation') !== false
+            || strpos($labelLower, 'training') !== false
+            || strpos($labelLower, 'déplacement') !== false
+            || strpos($labelLower, 'deplacement') !== false
+            || strpos($labelLower, 'travel') !== false
+            || strpos($labelLower, 'délégation') !== false
+            || strpos($labelLower, 'delegation') !== false
+            || strpos($labelLower, 'cse') !== false
+        ) && strpos($labelLower, 'no work time') === false && strpos($labelLower, 'hors temps') === false;
+
+        if ($isPresence) {
+            $result['work_time'][] = $taskObj;
+        } else {
+            $result['no_work_time'][] = $taskObj;
+        }
+    }
+
+    $result['all_ids'] = array_keys($tasksByID);
+
+    return $result;
 }

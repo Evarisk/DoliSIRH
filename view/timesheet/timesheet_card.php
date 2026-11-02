@@ -723,7 +723,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             <div class="notice-content">
                 <div class="notice-title"><?php echo $noticeTitle ?></div>
             </div>
-            <a class="butAction" style="width = 100% ; margin-right : 0;" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?year=' . $dateStart['year'] . '&month=' . $dateStart['mon'] . '&day=' . $dateStart['mday'] . '&search_user_id=' . $object->fk_user_assign . '&view_mode=month&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans('GoToTimeSpent', dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y')) ?></a>
+            <a class="butAction" style="width = 100% ; margin-right : 0;" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_timespent.php?id=' . $object->id ?>"><?php echo $langs->trans('GoToTimeSpent', dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y')) ?></a>
         </div>
     <?php endif; ?>
 
