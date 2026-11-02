@@ -56,4 +56,308 @@
       white-space: normal;
     }
   }
+
+  /* Horizontal strip of daily cards under the timesheet notice (same visual as the browser extension) */
+  .ts-cal-strip {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    margin: 4px 0 16px;
+    box-sizing: border-box;
+  }
+
+  a.ts-cal-day {
+    flex: 1 1 54px;
+    min-width: 52px;
+    max-width: 78px;
+    height: 66px;
+    min-height: 66px;
+    max-height: 66px;
+    padding: 5px 4px;
+    border-radius: 8px;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    color: #334155 !important;
+    text-decoration: none !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1px;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    position: relative;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(15, 23, 42, 0.08);
+      z-index: 30;
+
+      .ts-cal-day-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    &:nth-child(-n+3) {
+      .ts-cal-day-tooltip {
+        left: 0;
+        transform: translateY(4px);
+      }
+
+      &:hover .ts-cal-day-tooltip {
+        transform: translateY(0);
+      }
+    }
+
+    &:nth-last-child(-n+3) {
+      .ts-cal-day-tooltip {
+        left: auto;
+        right: 0;
+        transform: translateY(4px);
+      }
+
+      &:hover .ts-cal-day-tooltip {
+        transform: translateY(0);
+      }
+    }
+
+    &.is-today {
+      box-shadow: 0 0 0 2px #0f172a;
+    }
+
+    &.cal-day-ok {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #14532d !important;
+    }
+
+    &.cal-day-over {
+      background: #ffedd5;
+      border-color: #f97316;
+      color: #9a3412 !important;
+    }
+
+    &.cal-day-ko {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #7f1d1d !important;
+    }
+
+    &.cal-day-grey {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #64748b !important;
+    }
+  }
+
+  .ts-cal-day-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 2px;
+    box-sizing: border-box;
+    min-height: 13px;
+  }
+
+  .ts-cal-day-name {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+    line-height: 1;
+  }
+
+  .ts-cal-pa-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8.5px;
+    font-weight: 800;
+    padding: 1px 3.5px;
+    border-radius: 3px;
+    line-height: 1.1;
+
+    &.is-p {
+      background: #1d4ed8;
+      color: #ffffff;
+    }
+
+    &.is-a {
+      background: #d97706;
+      color: #ffffff;
+    }
+
+    &.is-pa {
+      background: #7c3aed;
+      color: #ffffff;
+    }
+
+    &.is-none {
+      background: rgba(100, 116, 139, 0.14);
+      color: #64748b;
+    }
+  }
+
+  .ts-cal-day-num {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.05;
+  }
+
+  .ts-cal-day-month {
+    font-size: 8.5px;
+    font-weight: 600;
+    opacity: 0.75;
+    line-height: 1;
+  }
+
+  .ts-cal-day-dur {
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1.1;
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.65);
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Hover tooltip showing recorded time on that day */
+  .ts-cal-day-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    min-width: 260px;
+    max-width: 340px;
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 8px;
+    padding: 8px 10px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: left;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+    z-index: 1000;
+  }
+
+  .ts-cal-tt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    font-weight: 700;
+    font-size: 11.5px;
+  }
+
+  .ts-cal-tt-status {
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+
+    &.cal-day-ok {
+      background: #16a34a;
+      color: #ffffff;
+    }
+
+    &.cal-day-over {
+      background: #ea580c;
+      color: #ffffff;
+    }
+
+    &.cal-day-ko {
+      background: #dc2626;
+      color: #ffffff;
+    }
+
+    &.cal-day-grey {
+      background: #475569;
+      color: #e2e8f0;
+    }
+  }
+
+  .ts-cal-tt-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: #cbd5e1;
+    font-size: 10.5px;
+    margin-bottom: 6px;
+  }
+
+  .ts-cal-tt-section {
+    border-top: 1px dashed rgba(255, 255, 255, 0.14);
+    padding-top: 5px;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .ts-cal-tt-sec-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 1px;
+  }
+
+  .ts-cal-tt-sec-total {
+    &.is-ok {
+      color: #4ade80;
+    }
+
+    &.is-ko {
+      color: #f87171;
+    }
+  }
+
+  .ts-cal-tt-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10.5px;
+  }
+
+  .ts-cal-tt-left {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #f1f5f9;
+  }
+
+  .ts-cal-tt-right {
+    flex-shrink: 0;
+    font-weight: 700;
+    color: #93c5fd;
+  }
+
+  .ts-cal-tt-empty {
+    font-size: 10px;
+    color: #64748b;
+    font-style: italic;
+  }
 }
