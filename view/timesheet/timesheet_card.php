@@ -695,7 +695,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
     $userTmp->fetch($object->fk_user_assign);
 
-    print '<div class="clearboth"></div>'; ?>
+    print '<div class="clearboth"></div>';
+
+    print timesheet_render_daily_calendar($object, $firstDayToShow, $lastDayToShow, $workingHours); ?>
 
     <?php if ($plannedWorkingTime['minutes'] == 0) : ?>
         <div class="wpeo-notice notice-error">
