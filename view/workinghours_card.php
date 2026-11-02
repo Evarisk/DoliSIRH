@@ -137,7 +137,7 @@ if (($action == 'update' && ! GETPOST("cancel", 'alpha')) || ($action == 'update
 
 $object = new Workinghours($db);
 
-$morewhere  = ' AND element_id = ' . GETPOSTINT('id');
+$morewhere  = ' AND element_id = ' . ((int) $usertmp->id);
 $morewhere .= ' AND element_type = ' . "'" . $usertmp->element . "'";
 $morewhere .= ' AND status = 1';
 
@@ -163,9 +163,11 @@ if ( ! empty($usertmp->id)) $res = $usertmp->fetch_optionals();
 $morehtmlref  = '<div class="refidno">';
 $morehtmlref .= '</div>';
 $head = user_prepare_head($usertmp);
-print dol_get_fiche_head($head, 'workinghours', $langs->trans("User"), 0, 'company');
-$linkback = '<a href="' . DOL_URL_ROOT . '/societe/list.php?restore_lastsearch_values=1">' . $langs->trans("BackToList") . '</a>';
-dol_banner_tab($usertmp, 'socid', $linkback, ($usertmp->socid ? 0 : 1), 'rowid', 'nom');
+print dol_get_fiche_head($head, 'workinghours', $langs->trans("User"), -1, 'user');
+// Same banner as the user tabs of the core (user/note.php): user list, navigation by id
+$canreaduser = $user->admin || $user->hasRight('user', 'user', 'read');
+$linkback    = $canreaduser ? '<a href="' . DOL_URL_ROOT . '/user/list.php?restore_lastsearch_values=1">' . $langs->trans("BackToList") . '</a>' : '';
+dol_banner_tab($usertmp, 'id', $linkback, $canreaduser, 'rowid', 'ref');
 
 print dol_get_fiche_end();
 
@@ -175,10 +177,10 @@ print load_fiche_titre($langs->trans('WorkingHours'), '', '');
 
 if ( ! is_object($form)) $form = new Form($db);
 
-print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '?id=' . GETPOST('id') . '" >';
+print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '?id=' . ((int) $usertmp->id) . '" >';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="update">';
-print '<input type="hidden" name="id" value="' . GETPOST('id') . '">';
+print '<input type="hidden" name="id" value="' . ((int) $usertmp->id) . '">';
 if ($backtopage) {
     print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 }
