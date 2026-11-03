@@ -447,7 +447,8 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=dolisirh,fk_leftmenu=timesheet',
             'type'     => 'left',
-            'titre'    => '<i class="fas fa-list pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('TimeSheetList'),
+            'titre'    => $langs->trans('TimeSheetList'),
+            'prefix'   => '<i class="fas fa-list pictofixedwidth" style="padding-right: 4px;"></i>',
             'mainmenu' => 'dolisirh',
             'leftmenu' => 'timesheetlist',
             'url'      => '/dolisirh/view/timesheet/timesheet_list.php',
