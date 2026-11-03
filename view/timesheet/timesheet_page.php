@@ -84,12 +84,10 @@ $firstDayToShow = dol_get_first_day($year, $month, false);
 $lastDayToShow  = dol_get_last_day($year, $month, false);
 $lastDayToShow  = dol_mktime(0, 0, 0, (int) date('m', $lastDayToShow), (int) date('d', $lastDayToShow), (int) date('Y', $lastDayToShow), 'tzserver');
 
-$prevMonthTs = dol_time_plus_duree($firstDayToShow, -1, 'm');
-$nextMonthTs = dol_time_plus_duree($firstDayToShow, 1, 'm');
-$prevYear    = (int) date('Y', $prevMonthTs);
-$prevMonth   = (int) date('m', $prevMonthTs);
-$nextYear    = (int) date('Y', $nextMonthTs);
-$nextMonth   = (int) date('m', $nextMonthTs);
+$prevYear  = ($month === 1) ? ($year - 1) : $year;
+$prevMonth = ($month === 1) ? 12 : ($month - 1);
+$nextYear  = ($month === 12) ? ($year + 1) : $year;
+$nextMonth = ($month === 12) ? 1 : ($month + 1);
 
 /*
  * Actions.
