@@ -435,6 +435,21 @@ class modDoliSIRH extends DolibarrModules
             'prefix'   => '<i class="fas fa-calendar-check pictofixedwidth"></i>',
             'mainmenu' => 'dolisirh',
             'leftmenu' => 'timesheet',
+            'url'      => '/dolisirh/view/timesheet/timesheet_page.php',
+            'langs'    => 'dolisirh@dolisirh',
+            'position' => 1000 + $r,
+            'enabled'  => '$conf->dolisirh->enabled',
+            'perms'    => '$user->rights->dolisirh->timesheet->read',
+            'target'   => '',
+            'user'     => 0,
+        ];
+
+        $this->menu[$r++] = [
+            'fk_menu'  => 'fk_mainmenu=dolisirh,fk_leftmenu=timesheet',
+            'type'     => 'left',
+            'titre'    => '<i class="fas fa-list pictofixedwidth" style="padding-right: 4px;"></i>' . $langs->transnoentities('TimeSheetList'),
+            'mainmenu' => 'dolisirh',
+            'leftmenu' => 'timesheetlist',
             'url'      => '/dolisirh/view/timesheet/timesheet_list.php',
             'langs'    => 'dolisirh@dolisirh',
             'position' => 1000 + $r,

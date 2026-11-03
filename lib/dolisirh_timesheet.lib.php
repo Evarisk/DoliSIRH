@@ -247,7 +247,10 @@ function timesheet_render_daily_calendar(TimeSheet $object, int $firstDayToShow,
         $absFmt      = $absSec > 0 ? convertSecondToTime($absSec, 'allhourmin') : '00:00';
         $projFmt     = $projSec > 0 ? convertSecondToTime($projSec, 'allhourmin') : '00:00';
 
-        $dayUrl = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?year=' . (int) $yyyyStr . '&month=' . (int) $mmStr . '&day=' . (int) $ddStr . '&search_user_id=' . $userID . '&view_mode=month&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $object->id);
+        $backToPageUrl = $object->id > 0
+            ? DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . (int) $object->id
+            : DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_page.php?year=' . (int) $yyyyStr . '&month=' . (int) $mmStr;
+        $dayUrl = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?year=' . (int) $yyyyStr . '&month=' . (int) $mmStr . '&day=' . (int) $ddStr . '&search_user_id=' . $userID . '&view_mode=month&backtopage=' . urlencode($backToPageUrl);
 
         $isTodayClass = ($dayKey === $todayStr) ? ' is-today' : '';
 
