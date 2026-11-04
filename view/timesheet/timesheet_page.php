@@ -176,7 +176,7 @@ print '<div class="ts-page-toolbar-right">';
 print '<a class="ts-page-nav-btn" href="' . $_SERVER['PHP_SELF'] . '?year=' . $prevYear . '&month=' . $prevMonth . '" title="' . dol_escape_htmltag($langs->transnoentities('Previous')) . '">&lsaquo;</a>';
 print '<span class="ts-page-period-label">' . dol_escape_htmltag($periodTitle) . '</span>';
 print '<a class="ts-page-nav-btn" href="' . $_SERVER['PHP_SELF'] . '?year=' . $nextYear . '&month=' . $nextMonth . '" title="' . dol_escape_htmltag($langs->transnoentities('Next')) . '">&rsaquo;</a>';
-print '<a class="ts-page-nav-btn" href="' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_list.php">' . $langs->trans('TimeSheetList') . '</a>';
+print '<a class="ts-page-nav-btn" href="' . dol_buildpath('/dolisirh/view/timesheet/timesheet_list.php', 1) . '">' . $langs->trans('TimeSheetList') . '</a>';
 print '</div>';
 print '</div>';
 
@@ -244,8 +244,8 @@ foreach ($employees as $empID => $empUser) {
     $hoursRgb = 'rgb(' . (int) ($moreCssHours[0] ?? 0) . ',' . (int) ($moreCssHours[1] ?? 0) . ',' . (int) ($moreCssHours[2] ?? 0) . ')';
 
     $empCardUrl = $empTimeSheet->id > 0
-        ? DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . (int) $empTimeSheet->id
-        : DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?year=' . $year . '&month=' . $month . '&day=1&search_user_id=' . $empID . '&view_mode=month';
+        ? dol_buildpath('/dolisirh/view/timesheet/timesheet_card.php', 1) . '?id=' . (int) $empTimeSheet->id
+        : dol_buildpath('/dolisirh/view/timespent_range.php', 1) . '?year=' . $year . '&month=' . $month . '&day=1&search_user_id=' . $empID . '&view_mode=month';
 
     $empFullName  = $empUser->getFullName($langs);
     $empShortName = !empty($empUser->firstname) ? $empUser->firstname : $empFullName;

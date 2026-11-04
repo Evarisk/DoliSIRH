@@ -621,7 +621,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     print $langs->trans('Total');
     print '<span class="opacitymediumbycolor">  - ';
     print $langs->trans('ExpectedWorkingHoursMonthTimeSheet', $startDate, $endDate);
-    print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '" target="_blank">';
+    print ' : <strong><a href="' . dol_buildpath('/dolisirh/view/workinghours_card.php', 1) . '?id=' . $object->fk_user_assign . '" target="_blank">';
     print (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong>';
     print '<span>' . ' - ' . $langs->trans('ExpectedWorkingDayMonth') . ' <strong>' . $plannedWorkingTime['days'] . '</strong></span>';
     print '</span>';
@@ -716,14 +716,14 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             <div class="notice-content">
                 <div class="notice-title"><?php echo $langs->trans('ErrorConfigWorkingHours') ?></div>
             </div>
-            <a class="butAction" style="width = 100%; margin-right : 0;" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $object->fk_user_assign . '&backtopage=' . DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . $id ?>"><?php echo $langs->trans('GoToWorkingHours', $userTmp->getFullName($langs)) ?></a>
+            <a class="butAction" style="width = 100%; margin-right : 0;" target="_blank" href="<?php echo dol_buildpath('/dolisirh/view/workinghours_card.php', 1) . '?id=' . $object->fk_user_assign . '&backtopage=' . dol_buildpath('/dolisirh/view/timesheet/timesheet_card.php', 1) . '?id=' . $id ?>"><?php echo $langs->trans('GoToWorkingHours', $userTmp->getFullName($langs)) ?></a>
         </div>
     <?php else : ?>
         <div class="wpeo-notice notice-<?php echo $moreCssNotice ?>">
             <div class="notice-content">
                 <div class="notice-title"><?php echo $noticeTitle ?></div>
             </div>
-            <a class="butAction" style="width = 100% ; margin-right : 0;" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_timespent.php?id=' . $object->id ?>"><?php echo $langs->trans('GoToTimeSpent', dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y')) ?></a>
+            <a class="butAction" style="width = 100% ; margin-right : 0;" href="<?php echo dol_buildpath('/dolisirh/view/timesheet/timesheet_timespent.php', 1) . '?id=' . $object->id ?>"><?php echo $langs->trans('GoToTimeSpent', dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y')) ?></a>
         </div>
     <?php endif; ?>
 
@@ -742,7 +742,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             <div class="notice-content">
                 <div class="notice-title"><?php echo $langs->trans('ErrorConfigProjectPage') ?></div>
             </div>
-            <a class="butAction" style="width = 100%; margin-right : 0;" target="_blank" href="<?php echo DOL_URL_ROOT . '/custom/dolisirh/admin/project.php'; ?>"><?php echo $langs->trans('GoToConfigProjectPage') ?></a>
+            <a class="butAction" style="width = 100%; margin-right : 0;" target="_blank" href="<?php echo dol_buildpath('/dolisirh/admin/project.php', 1); ?>"><?php echo $langs->trans('GoToConfigProjectPage') ?></a>
         </div>
     <?php endif; ?>
 
@@ -857,7 +857,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // Sign.
             $displayButton = $onPhone ? '<i class="fas fa-signature fa-2x"></i>' : '<i class="fas fa-signature"></i>' . ' ' . $langs->trans('Sign');
             if ($object->status == TimeSheet::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
-                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?module_name=DoliSIRH&object_type=timesheet&document_type=TimeSheetDocument&attendant_table_mode=simple&id=' . $object->id, 3) . '">' . $displayButton . '</a>';
+                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/saturne/view/saturne_attendants.php', 3) . '?module_name=DoliSIRH&object_type=timesheet&document_type=TimeSheetDocument&attendant_table_mode=simple&id=' . $object->id . '">' . $displayButton . '</a>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', $langs->transnoentities('The' . ucfirst($object->element)))) . '">' . $displayButton . '</span>';
             }

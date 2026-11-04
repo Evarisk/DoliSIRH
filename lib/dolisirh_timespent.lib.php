@@ -49,21 +49,21 @@ function timespent_prepare_head(string $mode, User $fkUser): array
     }
 
     if (!getDolGlobalInt('PROJECT_DISABLE_TIMESHEET_PERMONTH')) {
-        $head[$h][0] = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?view_mode=month' . $param;
+        $head[$h][0] = dol_buildpath('/dolisirh/view/timespent_range.php', 1) . '?view_mode=month' . $param;
         $head[$h][1] = $conf->browser->layout != 'phone' ? '<i class="far fa-clock pictofixedwidth"></i>' . $langs->trans('InputPerMonth') : '<i class="far fa-clock"></i>';
         $head[$h][2] = 'inputpermonth';
         $h++;
     }
 
     if (!getDolGlobalInt('PROJECT_DISABLE_TIMESHEET_PERWEEK')) {
-        $head[$h][0] = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?view_mode=week' . $param;
+        $head[$h][0] = dol_buildpath('/dolisirh/view/timespent_range.php', 1) . '?view_mode=week' . $param;
         $head[$h][1] = $conf->browser->layout != 'phone' ? '<i class="far fa-clock pictofixedwidth"></i>' . $langs->trans('InputPerWeek') : '<i class="far fa-clock"></i>';
         $head[$h][2] = 'inputperweek';
         $h++;
     }
 
     if (!getDolGlobalInt('PROJECT_DISABLE_TIMESHEET_PERTIME')) {
-        $head[$h][0] = DOL_URL_ROOT.'/custom/dolisirh/view/timespent_range.php?view_mode=day' . $param;
+        $head[$h][0] = dol_buildpath('/dolisirh/view/timespent_range.php', 1) . '?view_mode=day' . $param;
         $head[$h][1] = $conf->browser->layout != 'phone' ? '<i class="far fa-clock pictofixedwidth"></i>' . $langs->trans('InputPerDay') : '<i class="far fa-clock"></i>';
         $head[$h][2] = 'inputperday';
         $h++;
