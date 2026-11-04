@@ -254,7 +254,7 @@ class modDoliSIRH extends DolibarrModules
         $this->tabs   = [];
         $pictoPath    = dol_buildpath('/dolisirh/img/dolisirh_color.png', 1);
         $pictoModule  = img_picto('', $pictoPath, '', 1, 0, 0, '', 'pictoModule');
-        $this->tabs[] = ['data' => 'user:+workinghours:' . $pictoModule . $langs->trans('WorkingHours') . ':dolisirh@dolisirh:$user->rights->user->self->creer:/custom/dolisirh/view/workinghours_card.php?id=__ID__']; // To add a new tab identified by code tabname1.
+        $this->tabs[] = ['data' => 'user:+workinghours:' . $pictoModule . $langs->trans('WorkingHours') . ':dolisirh@dolisirh:$user->rights->user->self->creer:/dolisirh/view/workinghours_card.php?id=__ID__']; // To add a new tab identified by code tabname1.
 
         // Dictionaries.
         $this->dictionaries = [
