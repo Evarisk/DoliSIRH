@@ -448,7 +448,7 @@ class TimeSheetLine extends SaturneObject
         'rang'           => ['type' => 'integer',  'label' => 'Order',        'enabled' => 1, 'position' => 30, 'notnull' => 0, 'visible' => 0, 'default' => 0],
         'description'    => ['type' => 'html',     'label' => 'Description',  'enabled' => 1, 'position' => 40, 'notnull' => 0, 'visible' => 0],
         'product_type'   => ['type' => 'integer',  'label' => 'ProductType',  'enabled' => 1, 'position' => 50, 'notnull' => 0, 'visible' => 0,'default' => 0],
-        'fk_timesheet'   => ['type' => 'integer:TimeSheet:custom/dolisirh/class/timesheet.class.php:1', 'label' => 'TimeSheet',         'enabled' => 1, 'position' => 60, 'notnull' => 1, 'visible' => 0],
+        'fk_timesheet'   => ['type' => 'integer:TimeSheet:dolisirh/class/timesheet.class.php:1',        'label' => 'TimeSheet',         'enabled' => 1, 'position' => 60, 'notnull' => 1, 'visible' => 0],
         'fk_product'     => ['type' => 'integer:Product:product/class/product.class.php:1',             'label' => 'Product',           'enabled' => 1, 'position' => 70, 'notnull' => 0, 'visible' => 0],
         'fk_parent_line' => ['type' => 'integer:Product:product/class/product.class.php:1',             'label' => 'ParentProductLine', 'enabled' => 1, 'position' => 80, 'notnull' => 0, 'visible' => 0],
     ];

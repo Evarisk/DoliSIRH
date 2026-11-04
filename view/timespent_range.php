@@ -665,7 +665,7 @@ if ($conf->use_javascript_ajax) {
     } else {
         print $langs->trans('ExpectedWorkingHoursWeek', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayOfRange, 'dayreduceformat'));
     }
-    print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $userTmp->id.'" target="_blank">';
+    print ' : <strong><a href="' . dol_buildpath('/dolisirh/view/workinghours_card.php', 1) . '?id=' . $userTmp->id.'" target="_blank">';
     print (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong></span>';
     print '</td>';
     if (!empty($arrayFields['timeconsumed']['checked'])) {

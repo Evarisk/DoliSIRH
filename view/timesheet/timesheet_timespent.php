@@ -227,7 +227,7 @@ if ($object->id > 0) {
 
         print '<th class="center bold ' . $idw . ' ' . $cellCSS . '" style="font-size: 12px;">';
         print dol_strtoupper(dol_print_date($dayInLoop, '%a'));
-        print ' <a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?year=' . $yearNum . '&month=' . $monthNum . '&day=' . $dayNum . '&search_user_id=' . (int) $object->fk_user_assign . '&view_mode=day" target="_blank"><i class="fas fa-external-link-alt"></i></a>';
+        print ' <a href="' . dol_buildpath('/dolisirh/view/timespent_range.php', 1) . '?year=' . $yearNum . '&month=' . $monthNum . '&day=' . $dayNum . '&search_user_id=' . (int) $object->fk_user_assign . '&view_mode=day" target="_blank"><i class="fas fa-external-link-alt"></i></a>';
         print '<br>' . dol_print_date($dayInLoop, '%d/%m') . '</th>';
     }
     print '</tr>';
@@ -422,7 +422,7 @@ if ($object->id > 0) {
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040; max-width: 250px; white-space: normal;">';
     print $langs->trans('ExpectedWorkingHours');
     print '</td>';
-    print '<td class="liste_total right"><strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . (int) $object->fk_user_assign . '" target="_blank">';
+    print '<td class="liste_total right"><strong><a href="' . dol_buildpath('/dolisirh/view/workinghours_card.php', 1) . '?id=' . (int) $object->fk_user_assign . '" target="_blank">';
     print (($plannedWorking['minutes'] != 0) ? convertSecondToTime($plannedWorking['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong></td>';
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {

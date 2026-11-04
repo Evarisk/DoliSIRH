@@ -63,7 +63,7 @@ function dolisirh_admin_prepare_head(): array
     $head[$h][2] = 'documents';
     $h++;
 
-    $head[$h][0] = dol_buildpath('/saturne/admin/pwa.php', 1) . '?module_name=DoliSIRH&start_url=' . dol_buildpath('/custom/dolisirh/view/frontend/pwa_timespent.php?source=pwa', 3);
+    $head[$h][0] = dol_buildpath('/saturne/admin/pwa.php', 1) . '?module_name=DoliSIRH&start_url=' . dol_buildpath('/dolisirh/view/frontend/pwa_timespent.php', 3) . '?source=pwa';
     $head[$h][1] = $conf->browser->layout != 'phone' ? '<i class="fas fa-mobile pictofixedwidth"></i>' . $langs->trans('PWA') : '<i class="fas fa-mobile"></i>';
     $head[$h][2] = 'pwa';
     $h++;

@@ -172,7 +172,7 @@ print '</tr>';
 print '<tr class="oddeven"><td class="titlefield"><label for="hrProject">' . $langs->transnoentities('HRProject') . '</label></td><td>';
 print img_picto('', 'project', 'class="pictofixedwidth"');
 $formproject->select_projects(-1, (GETPOSTISSET('hrProject') ? GETPOST('hrProject', 'int') : getDolGlobalInt('DOLISIRH_HR_PROJECT')), 'hrProject', 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 'maxwidth500 widthcentpercentminusx');
-print ' <a href="' . DOL_URL_ROOT . '/projet/card.php?action=create&status=1&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?HRProject=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddProject') . '"></span></a>';
+print ' <a href="' . DOL_URL_ROOT . '/projet/card.php?action=create&status=1&backtopage=' . urlencode(dol_buildpath('/dolisirh/admin/project.php', 1) . '?HRProject=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddProject') . '"></span></a>';
 print '</td></tr>';
 print '</table>';
 
@@ -193,7 +193,7 @@ foreach ($hrProjectTasks as $hrProjectTask) {
     print img_picto('', 'projecttask', 'class="pictofixedwidth"');
     $hrProjectTaskCode = $hrProjectTask['code'];
     $formproject->selectTasks(-1, (GETPOSTISSET($hrProjectTask['name']) ? GETPOST($hrProjectTask['name'], 'int') : getDolGlobalInt($hrProjectTaskCode)), $hrProjectTask['name'], 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', getDolGlobalString('DOLISIRH_HR_PROJECT'), '');
-    print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . getDolGlobalInt('DOLISIRH_HR_PROJECT') . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?' . $hrProjectTask['name'] . '=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+    print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . getDolGlobalInt('DOLISIRH_HR_PROJECT') . '&backtopage=' . urlencode(dol_buildpath('/dolisirh/admin/project.php', 1) . '?' . $hrProjectTask['name'] . '=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
     print '</td></tr>';
 }
 print '</table>';
@@ -215,7 +215,7 @@ foreach ($hrProjectTasks as $hrProjectTask) {
     print img_picto('', 'projecttask', 'class="pictofixedwidth"');
     $hrProjectTaskCode = $hrProjectTask['code'];
     $formproject->selectTasks(-1, (GETPOSTISSET($hrProjectTask['name']) ? GETPOST($hrProjectTask['name'], 'int') : getDolGlobalInt($hrProjectTaskCode)), $hrProjectTask['name'], 0, 0, '1', 1, 0, 0, 'maxwidth500 widthcentpercentminusx', getDolGlobalString('DOLISIRH_HR_PROJECT'), '');
-    print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . getDolGlobalInt('DOLISIRH_HR_PROJECT') . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/project.php?' . $hrProjectTask['name'] . '=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
+    print ' <a href="' . DOL_URL_ROOT . '/projet/tasks.php?action=create&id=' . getDolGlobalInt('DOLISIRH_HR_PROJECT') . '&backtopage=' . urlencode(dol_buildpath('/dolisirh/admin/project.php', 1) . '?' . $hrProjectTask['name'] . '=&#95;&#95;ID&#95;&#95;') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddTask') . '"></span></a>';
     print '</td></tr>';
 }
 print '</table>';
