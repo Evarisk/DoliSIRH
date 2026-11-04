@@ -75,7 +75,7 @@ if (empty($reshook)) {
  */
 
 $title       = $langs->trans('TimeSpending');
-$manifestUrl = dol_buildpath('/custom/dolisirh/manifest.json.php', 1);
+$manifestUrl = dol_buildpath('/dolisirh/manifest.json.php', 1);
 $head        = '<link rel="manifest" href="' . dol_escape_htmltag($manifestUrl) . '">';
 
 $conf->dol_hide_topmenu  = 1;

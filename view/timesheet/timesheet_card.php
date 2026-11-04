@@ -857,7 +857,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // Sign.
             $displayButton = $onPhone ? '<i class="fas fa-signature fa-2x"></i>' : '<i class="fas fa-signature"></i>' . ' ' . $langs->trans('Sign');
             if ($object->status == TimeSheet::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
-                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?module_name=DoliSIRH&object_type=timesheet&document_type=TimeSheetDocument&attendant_table_mode=simple&id=' . $object->id, 3) . '">' . $displayButton . '</a>';
+                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/saturne/view/saturne_attendants.php', 3) . '?module_name=DoliSIRH&object_type=timesheet&document_type=TimeSheetDocument&attendant_table_mode=simple&id=' . $object->id . '">' . $displayButton . '</a>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', $langs->transnoentities('The' . ucfirst($object->element)))) . '">' . $displayButton . '</span>';
             }

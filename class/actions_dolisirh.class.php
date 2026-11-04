@@ -423,7 +423,7 @@ class ActionsDoliSIRH
     {
         if (strpos($parameters['context'], 'projecttasktime') !== false && $this->canAssignTimeSpentToInvoice() && $this->projectBillsTime()) {
             // Standalone script : the time spent list is a native Dolibarr page, the module bundle is not loaded there.
-            $scriptPath  = '/custom/dolisirh/js/timespent-invoice.js';
+            $scriptPath  = '/dolisirh/js/timespent-invoice.js';
             $scriptFile  = dol_buildpath($scriptPath, 0);
             $scriptMtime = file_exists($scriptFile) ? filemtime($scriptFile) : 1;
 
@@ -656,7 +656,7 @@ class ActionsDoliSIRH
 		<?php }
 
         if ($parameters['currentcontext'] == 'userihm') {
-            $pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
+            $pictopath = dol_buildpath('/dolisirh/img/dolisirh_color.png', 1);
 			$picto = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoModule');
 
             $out = '<tr class="oddeven"><td>' . $picto . $langs->trans('TimeSpentDatasetOrder') . '</td>';
@@ -1350,7 +1350,7 @@ class ActionsDoliSIRH
 	public function hookSetManifest(array $parameters): int
 	{
 		if (strpos($_SERVER['PHP_SELF'], 'dolisirh') !== false) {
-			$this->resprints = dol_buildpath('custom/dolisirh/manifest.json.php', 1);
+			$this->resprints = dol_buildpath('/dolisirh/manifest.json.php', 1);
 			return 1;
 		}
 

@@ -26,8 +26,8 @@
 /** @var User $user */
 
 $companyName = getDolGlobalString('MAIN_INFO_SOCIETE_NOM', 'Dolibarr');
-$moduleIcon  = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
-$desktopUrl  = dol_buildpath('/custom/dolisirh/view/timesheet/timesheet_page.php', 1);
+$moduleIcon  = dol_buildpath('/dolisirh/img/dolisirh_color.png', 1);
+$desktopUrl  = dol_buildpath('/dolisirh/view/timesheet/timesheet_page.php', 1);
 ?>
 <div class="dolisirh-pwa-header ts-header">
 	<div class="ts-header__left">
