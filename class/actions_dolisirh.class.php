@@ -1340,4 +1340,20 @@ class ActionsDoliSIRH
 
         return 0; // or return 1 to replace standard code
     }
+
+	/**
+	 * Overloading the hookSetManifest function : replacing the parent's function with the one below
+	 *
+	 * @param  array $parameters Hook metadata (context, etc...)
+	 * @return int               0 < on error, 0 on success, 1 to replace standard code
+	 */
+	public function hookSetManifest(array $parameters): int
+	{
+		if (strpos($_SERVER['PHP_SELF'], 'dolisirh') !== false) {
+			$this->resprints = dol_buildpath('custom/dolisirh/manifest.json.php', 1);
+			return 1;
+		}
+
+		return 0;
+	}
 }

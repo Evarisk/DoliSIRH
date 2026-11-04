@@ -144,7 +144,8 @@ class modDoliSIRH extends DolibarrModules
                     'projectcard',
                     'invoicelist',
                     'invoicereclist',
-                    'certificatecard'
+                    'certificatecard',
+                    'main'
                 ]
             ],
             // Set this to 1 if features of module are opened to external users.
@@ -425,6 +426,22 @@ class modDoliSIRH extends DolibarrModules
             'enabled'  => '$conf->dolisirh->enabled && $user->rights->dolisirh->lire',
             'perms'    => '$user->rights->dolisirh->lire',
             'target'   => '',
+            'user'     => 0,
+        ];
+
+        $this->menu[$r++] = [
+            'fk_menu'  => 'fk_mainmenu=dolisirh',
+            'type'     => 'left',
+            'titre'    => $langs->trans('MobileApp'),
+            'prefix'   => '<i class="fas fa-mobile-alt pictofixedwidth"></i>',
+            'mainmenu' => 'dolisirh',
+            'leftmenu' => 'dolisirh_pwa',
+            'url'      => '/dolisirh/view/frontend/pwa_timespent.php?source=pwa',
+            'langs'    => 'dolisirh@dolisirh',
+            'position' => 1000 + $r,
+            'enabled'  => '$conf->dolisirh->enabled && $conf->projet->enabled',
+            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
+            'target'   => '_blank',
             'user'     => 0,
         ];
 
