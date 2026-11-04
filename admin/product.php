@@ -109,7 +109,7 @@ foreach ($timesheetProductAndServices as $timesheetProductAndService) {
     print img_picto('', $timesheetProductAndService['type'] == 0 ? 'product' : 'service', 'class="pictofixedwidth"');
     $timesheetProductAndServiceCode = $timesheetProductAndService['code'];
     $form->select_produits((GETPOSTISSET($timesheetProductAndService['name']) ? GETPOST($timesheetProductAndService['name'], 'int') : $conf->global->$timesheetProductAndServiceCode), $timesheetProductAndService['name'], '', 0, 0, -1, 2, '', 0, [], 0, '1', 0, 'maxwidth500 widthcentpercentminusx');
-    print ' <a href="' . DOL_URL_ROOT . '/product/card.php?action=create&type=' . ($timesheetProductAndService['type'] == 0 ? 0 : 1) . '&backtopage=' . urlencode(DOL_URL_ROOT . '/custom/dolisirh/admin/product.php') . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddProduct') . '"></span></a>';
+    print ' <a href="' . DOL_URL_ROOT . '/product/card.php?action=create&type=' . ($timesheetProductAndService['type'] == 0 ? 0 : 1) . '&backtopage=' . urlencode(dol_buildpath('/dolisirh/admin/product.php', 1)) . '"><span class="fa fa-plus-circle valignmiddle" title="' . $langs->transnoentities('AddProduct') . '"></span></a>';
     print '</td></tr>';
 }
 

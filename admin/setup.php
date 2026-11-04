@@ -189,7 +189,7 @@ if (GETPOST('create_bookmark', 'alpha')) {
         $bookmark = new Bookmark($db);
 
         $bookmark->title    = $langs->transnoentities('TimeSpent');
-        $bookmark->url      = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?view_mode=month';
+        $bookmark->url      = dol_buildpath('/dolisirh/view/timespent_range.php', 1) . '?view_mode=month';
         $bookmark->target   = 0;
         $bookmark->position = 10;
         $bookmark->create();

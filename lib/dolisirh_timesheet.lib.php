@@ -248,9 +248,9 @@ function timesheet_render_daily_calendar(TimeSheet $object, int $firstDayToShow,
         $projFmt     = $projSec > 0 ? convertSecondToTime($projSec, 'allhourmin') : '00:00';
 
         $backToPageUrl = $object->id > 0
-            ? DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_card.php?id=' . (int) $object->id
-            : DOL_URL_ROOT . '/custom/dolisirh/view/timesheet/timesheet_page.php?year=' . (int) $yyyyStr . '&month=' . (int) $mmStr;
-        $dayUrl = DOL_URL_ROOT . '/custom/dolisirh/view/timespent_range.php?year=' . (int) $yyyyStr . '&month=' . (int) $mmStr . '&day=' . (int) $ddStr . '&search_user_id=' . $userID . '&view_mode=month&backtopage=' . urlencode($backToPageUrl);
+            ? dol_buildpath('/dolisirh/view/timesheet/timesheet_card.php', 1) . '?id=' . (int) $object->id
+            : dol_buildpath('/dolisirh/view/timesheet/timesheet_page.php', 1) . '?year=' . (int) $yyyyStr . '&month=' . (int) $mmStr;
+        $dayUrl = dol_buildpath('/dolisirh/view/timespent_range.php', 1) . '?year=' . (int) $yyyyStr . '&month=' . (int) $mmStr . '&day=' . (int) $ddStr . '&search_user_id=' . $userID . '&view_mode=month&backtopage=' . urlencode($backToPageUrl);
 
         $isTodayClass = ($dayKey === $todayStr) ? ' is-today' : '';
 
