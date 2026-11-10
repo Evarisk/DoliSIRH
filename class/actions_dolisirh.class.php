@@ -305,7 +305,7 @@ class ActionsDoliSIRH
 
             if (empty($object->array_options['options_fk_task'])) {
                 if (isset($object->fk_project) && !empty($dateStart) && !empty($dateEnd) && (isset($plannedWorkload) && $plannedWorkload != 0)) {
-                    print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['REQUEST_URI'] . '&action=task_create">' . $langs->trans('AddTask') . '</a></div>';
+                    print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['REQUEST_URI'] . '&action=task_create&token=' . newToken() . '">' . $langs->trans('AddTask') . '</a></div>';
                 } else {
                     $mesgs  = !isset($object->fk_project) ? $langs->trans('ErrorNoProject') . '<br>' : '';
                     $mesgs .= empty($dateStart) ? $langs->trans('ErrorDateStart') . '<br>' : '';
