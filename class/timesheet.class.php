@@ -306,6 +306,148 @@ class TimeSheet extends SaturneObject
     }
 
     /**
+     * Expected, passed and spent time of the assigned user over the timesheet period, and the difference.
+     *
+     * Only the HR project tasks count, presence and absence, as in the timesheet document.
+     *
+     * @return array<string,mixed> Keys planned, passed, spent and difference (minutes) of load_time_spending_infos_within_range(),
+     *                             and outside_working_hours_days: days with time spent but no working hours (check_time_spent_outside_working_hours())
+     * @throws Exception
+     */
+    public function getTimeSpendingInfos(): array
+    {
+        require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
+        require_once __DIR__ . '/../lib/dolisirh_timespent.lib.php';
+        require_once __DIR__ . '/../lib/dolisirh_timesheet.lib.php';
+        require_once __DIR__ . '/workinghours.class.php';
+
+        // Due to Dolibarr issue in common field add we do substract 12 hours in timestamp.
+        $firstDay = $this->date_start - 12 * 3600;
+        $lastDay  = $this->date_end - 12 * 3600;
+
+        // Days off of the assigned user, not of the user looking at the timesheet: a manager locks the timesheets of the team
+        $daysAvailable = [];
+        $daysInRange   = dolisirh_num_between_days($firstDay, $lastDay, 1);
+        for ($dayIndex = 0; $dayIndex < $daysInRange; $dayIndex++) {
+            $day = dolisirh_add_days($firstDay, $dayIndex);
+            if (is_day_available($day, (int) $this->fk_user_assign)) {
+                $daysAvailable[$day] = ['morning' => 1, 'afternoon' => 1];
+            } elseif (date('N', $day) >= 6) {
+                $daysAvailable[$day] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
+            } else {
+                $daysAvailable[$day] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
+            }
+        }
+
+        $workingHours = new Workinghours($this->db);
+        $workingHours = $workingHours->fetchCurrentWorkingHours((int) $this->fk_user_assign, 'user');
+
+        $taskIDs           = get_timesheet_task_ids();
+        $timeSpendingInfos = load_time_spending_infos_within_range($firstDay, dolisirh_add_days($lastDay, 1), $workingHours, $daysAvailable, (int) $this->fk_user_assign, $taskIDs);
+
+        // Time spent on a day off (week-end...): the month may balance, the day is still wrong
+        $timeSpendingInfos['outside_working_hours_days'] = check_time_spent_outside_working_hours($firstDay, $lastDay, $workingHours, (int) $this->fk_user_assign, $taskIDs);
+
+        return $timeSpendingInfos;
+    }
+
+    /**
+     * Can the timesheet be locked now? Same conditions as the lock button of the card
+     *
+     * Validated, signed by all the signatories, no difference between the expected and the spent time and no time
+     * spent on a day without working hours, unless DOLISIRH_ALLOW_DIFFERENCE_BETWEEN_PASSED_AND_WORKING_HOURS is set.
+     *
+     * @param  array<string,mixed>|null $timeSpendingInfos Result of getTimeSpendingInfos() when the caller already has it
+     * @return bool                                        True if the timesheet can be locked
+     * @throws Exception
+     */
+    public function isLockable(?array $timeSpendingInfos = null): bool
+    {
+        if ((int) $this->status != self::STATUS_VALIDATED) {
+            return false;
+        }
+
+        $signatory = new SaturneSignature($this->db, $this->module, $this->element);
+        if (!$signatory->checkSignatoriesSignatures($this->id, $this->element)) {
+            return false;
+        }
+
+        if (getDolGlobalInt('DOLISIRH_ALLOW_DIFFERENCE_BETWEEN_PASSED_AND_WORKING_HOURS')) {
+            return true;
+        }
+
+        if ($timeSpendingInfos === null) {
+            $timeSpendingInfos = $this->getTimeSpendingInfos();
+        }
+
+        return $timeSpendingInfos['difference'] == 0 && empty($timeSpendingInfos['outside_working_hours_days']);
+    }
+
+    /**
+     * Lock the timesheet: link the time spent of the assigned user over the period to it, then set it locked
+     *
+     * A time spent already linked to another timesheet stops the lock before anything is linked.
+     *
+     * @param  User $user User that locks
+     * @return int        > 0 if OK, < 0 if KO (message in $this->error)
+     * @throws Exception
+     */
+    public function lock(User $user): int
+    {
+        global $langs;
+
+        require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+
+        $userAssign = new User($this->db);
+        if ($userAssign->fetch((int) $this->fk_user_assign) <= 0) {
+            $this->error = $userAssign->error;
+            return -1;
+        }
+
+        // element_date since Dolibarr 18, the module needs 23
+        $filter     = " AND ptt.element_date BETWEEN '" . dol_print_date($this->date_start, 'dayrfc') . "' AND '" . dol_print_date($this->date_end, 'dayrfc') . "'";
+        $task       = new Task($this->db);
+        $timeSpents = $task->fetchAllTimeSpent($userAssign, $filter);
+        if (!is_array($timeSpents)) {
+            $this->error = $task->error;
+            return -1;
+        }
+
+        // A time spent already linked to this timesheet (lock stopped half way before) is kept, not linked twice
+        $timeSpentIDsToLink = [];
+        foreach ($timeSpents as $timeSpent) {
+            $task->fetchObjectLinked(null, '', $timeSpent->timespent_id, 'project_task_time', 'OR', 1, 'sourcetype', 0);
+            $timeSheetIDs = $task->linkedObjectsIds['dolisirh_timesheet'] ?? [];
+            if (empty($timeSheetIDs)) {
+                $timeSpentIDsToLink[] = (int) $timeSpent->timespent_id;
+            } elseif (!in_array($this->id, array_map('intval', $timeSheetIDs))) {
+                $this->error = $langs->trans('ErrorLinkedElementTimeSheetTimeSpent', $userAssign->getFullName($langs), dol_print_date($this->date_start, 'dayreduceformat'), dol_print_date($this->date_end, 'dayreduceformat'));
+                return -2;
+            }
+        }
+
+        $this->db->begin();
+
+        $task->element = 'project_task_time';
+        foreach ($timeSpentIDsToLink as $timeSpentID) {
+            $task->id = $timeSpentID;
+            if ($task->add_object_linked('dolisirh_timesheet', $this->id) <= 0) {
+                $this->error = $task->error;
+                $this->db->rollback();
+                return -1;
+            }
+        }
+
+        if ($this->setLocked($user) <= 0) {
+            $this->db->rollback();
+            return -1;
+        }
+
+        $this->db->commit();
+        return 1;
+    }
+
+    /**
      * Return the status.
      *
      * @param  int    $status ID status.
