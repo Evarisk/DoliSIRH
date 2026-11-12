@@ -574,7 +574,9 @@
 		flex-direction: column;
 		gap: 4px;
 
-		label {
+		// Field captions only: the buttons of the Saturne media block are labels too and keep their white icons
+		> label,
+		> .ts-field-header > label {
 			font-size: 13px;
 			font-weight: 600;
 			color: #334155;
@@ -922,5 +924,472 @@
 			color: #1e40af;
 			border: 1px solid #93c5fd;
 		}
+	}
+}
+
+/* Pointer tab: one-tap tasks, start and end time, day timeline */
+.dolisirh-pwa-main.ts-card {
+	.ts-msg {
+		position: sticky;
+		top: 58px;
+		z-index: 35;
+		box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+	}
+
+	.ts-quick-tasks {
+		display: flex;
+		gap: 8px;
+		overflow-x: auto;
+		padding-bottom: 4px;
+		scroll-snap-type: x proximity;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.ts-quick-task {
+		flex: 0 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+		max-width: 160px;
+		min-width: 110px;
+		padding: 8px 10px;
+		border: 1px solid #cbd5e1;
+		border-radius: 10px;
+		background: #ffffff;
+		color: #0f172a;
+		text-align: start;
+		cursor: pointer;
+		scroll-snap-align: start;
+		transition: all 0.15s ease;
+
+		.ts-quick-task__label,
+		.ts-quick-task__project {
+			max-width: 100%;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.ts-quick-task__label {
+			font-size: 13px;
+			font-weight: 700;
+		}
+
+		.ts-quick-task__project {
+			font-size: 11px;
+			color: #64748b;
+		}
+
+		&.is-hr {
+			border-inline-start: 4px solid #16a34a;
+		}
+
+		&.is-active {
+			background: #eef2ff;
+			border-color: #313a96;
+			box-shadow: 0 0 0 2px rgba(49, 58, 150, 0.15);
+
+			.ts-quick-task__label {
+				color: #313a96;
+			}
+		}
+	}
+
+	.ts-clock {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 12px;
+		background: #f8fafc;
+		border: 1px solid #e2e8f0;
+		border-radius: 12px;
+	}
+
+	.ts-clock__running {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 10px;
+		background: #dcfce7;
+		border-radius: 999px;
+		color: #166534;
+		font-size: 12.5px;
+		font-weight: 600;
+
+		.ts-clock__pulse {
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #16a34a;
+			animation: dolisirh-pwa-pulse 1.4s ease-in-out infinite;
+		}
+	}
+
+	.ts-clock__range {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.ts-clock__arrow {
+		color: #94a3b8;
+		font-size: 18px;
+		padding-top: 6px;
+	}
+
+	.ts-clock__field {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 4px;
+
+		label {
+			font-size: 12px;
+			font-weight: 600;
+			color: #64748b;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+		}
+
+		input[type="time"] {
+			width: 100%;
+			padding: 8px 6px;
+			font-size: 24px;
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+			text-align: center;
+			border: 1px solid #cbd5e1;
+			border-radius: 10px;
+			background: #ffffff;
+			color: #0f172a;
+			box-sizing: border-box;
+			font-family: inherit;
+
+			&:focus {
+				outline: none;
+				border-color: #313a96;
+				box-shadow: 0 0 0 2px rgba(49, 58, 150, 0.12);
+			}
+		}
+	}
+
+	.ts-clock__now {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+		padding: 6px 8px;
+		border: none;
+		border-radius: 8px;
+		background: #e0e7ff;
+		color: #313a96;
+		font-size: 12.5px;
+		font-weight: 600;
+		cursor: pointer;
+
+		&:active {
+			background: #c7d2fe;
+		}
+	}
+
+	.ts-clock__chips {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: 6px;
+	}
+
+	.ts-chip {
+		padding: 7px 2px;
+		border: 1px solid #cbd5e1;
+		border-radius: 999px;
+		background: #ffffff;
+		color: #334155;
+		font-size: 12px;
+		font-weight: 600;
+		white-space: nowrap;
+		cursor: pointer;
+		transition: all 0.15s ease;
+
+		&.is-active {
+			background: #313a96;
+			border-color: #313a96;
+			color: #ffffff;
+		}
+	}
+
+	.ts-clock__hint {
+		font-size: 11px;
+		font-weight: 600;
+		color: #b45309;
+		text-transform: none;
+	}
+
+	.ts-clock__overlap {
+		padding: 6px 10px;
+		border-radius: 8px;
+		background: #fef3c7;
+		color: #92400e;
+		font-size: 12px;
+		font-weight: 600;
+	}
+
+	.ts-btn-clock {
+		position: sticky;
+		bottom: 12px;
+		z-index: 30;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		width: 100%;
+		min-height: 52px;
+		border: none;
+		border-radius: 12px;
+		background: #313a96;
+		color: #ffffff;
+		font-size: 16px;
+		font-weight: 700;
+		cursor: pointer;
+		box-shadow: 0 8px 20px rgba(49, 58, 150, 0.3);
+		transition: background 0.15s ease;
+
+		&:active:not(:disabled) {
+			background: #262e7a;
+		}
+
+		&:disabled {
+			background: #cbd5e1;
+			color: #f8fafc;
+			box-shadow: none;
+			cursor: not-allowed;
+		}
+	}
+
+	.ts-proj-history__title {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 8px;
+
+		.ts-proj-history__total {
+			font-weight: 500;
+			color: #475569;
+
+			b {
+				color: #0f172a;
+			}
+		}
+	}
+
+	.ts-timeline__empty {
+		padding: 14px;
+		border: 1px dashed #cbd5e1;
+		border-radius: 10px;
+		color: #94a3b8;
+		font-size: 12.5px;
+		text-align: center;
+	}
+
+	.ts-timeline {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ts-timeline__item {
+		position: relative;
+		display: grid;
+		grid-template-columns: 52px 1fr auto;
+		gap: 10px;
+		padding: 10px 0;
+		border-bottom: 1px solid #f1f5f9;
+
+		&::before {
+			content: "";
+			position: absolute;
+			inset-inline-start: 25px;
+			top: 40px;
+			bottom: -10px;
+			width: 2px;
+			background: #e2e8f0;
+		}
+
+		&:last-child::before {
+			display: none;
+		}
+
+		&.is-hr .ts-timeline__range {
+			background: #dcfce7;
+			color: #166534;
+		}
+	}
+
+	.ts-timeline__range {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		align-self: start;
+		padding: 4px 0;
+		border-radius: 8px;
+		background: #eef2ff;
+		color: #313a96;
+		font-size: 13px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+
+		small {
+			font-size: 11px;
+			font-weight: 600;
+			opacity: 0.75;
+		}
+
+		&.is-duration-only {
+			color: #94a3b8;
+			background: #f1f5f9;
+		}
+	}
+
+	.ts-timeline__body {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.ts-timeline__head {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+	}
+
+	.ts-timeline__task {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 13.5px;
+		font-weight: 700;
+		color: #0f172a;
+		text-decoration: none;
+	}
+
+	.ts-timeline__dur {
+		flex-shrink: 0;
+		font-size: 12.5px;
+		font-weight: 700;
+		color: #313a96;
+	}
+
+	.ts-timeline__project {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 11.5px;
+		color: #64748b;
+	}
+
+	.ts-timeline__note {
+		font-size: 12.5px;
+		color: #334155;
+		white-space: pre-line;
+		overflow-wrap: anywhere;
+	}
+
+	.ts-timeline__medias {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: 4px;
+	}
+
+	.ts-timeline__photo img {
+		display: block;
+		width: 44px;
+		height: 44px;
+		border-radius: 8px;
+		object-fit: cover;
+	}
+
+	.ts-timeline__voice {
+		width: 44px;
+		height: 44px;
+		border: none;
+		border-radius: 8px;
+		background: #8e44ad;
+		color: #ffffff;
+		font-size: 15px;
+		cursor: pointer;
+
+		&.is-playing {
+			background: #5b2c6f;
+		}
+
+		// The eldy theme paints every .fa-play dark grey
+		i {
+			color: inherit;
+		}
+	}
+
+	.ts-timeline__del {
+		align-self: start;
+		width: 34px;
+		height: 34px;
+		border: none;
+		border-radius: 8px;
+		background: transparent;
+		color: #94a3b8;
+		cursor: pointer;
+
+		&:hover:not(:disabled) {
+			background: #fee2e2;
+			color: #dc2626;
+		}
+	}
+}
+
+@keyframes dolisirh-pwa-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.3;
+	}
+}
+
+/* Saturne media library opened from the Pointer tab: on a phone its header wraps on three rows and
+   the 10 % height Saturne gives it lets the tools cover the tabs. The rows take the height they need. */
+.dolisirh-pwa-body #media_gallery .modal-container {
+	display: flex;
+	flex-direction: column;
+
+	.modal-header {
+		flex: 0 0 auto;
+		height: auto;
+		padding-top: 10px;
+		padding-bottom: 10px;
+		row-gap: 10px;
+	}
+
+	.modal-content {
+		flex: 1 1 auto;
+		height: auto;
+		min-height: 0;
+		overflow-y: auto;
+	}
+
+	.modal-footer {
+		flex: 0 0 auto;
+		height: auto;
+		padding-top: 10px;
+		padding-bottom: 10px;
 	}
 }
