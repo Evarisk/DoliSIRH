@@ -238,6 +238,11 @@ GoToWorkingHours                              = Aller sur la page Horaire de tra
 ErrorConfigProjectPage                        = Erreur : configuration des projets et tâches ressources humaines manquantes. <br> Impossible de génerer la navette.
 GoToConfigProjectPage                         = Aller sur la page de configuration du projet Ressources Humaines
 ErrorQtyProductServiceTimeSheet               = Erreur : quantité de produit ou service nulle/incorrecte
+ConfirmMassLockTimeSheet                      = Verrouiller les navettes
+ConfirmMassLockTimeSheetQuestion              = Êtes-vous sûr de vouloir verrouiller les %s navette(s) sélectionnée(s) ? Seules les navettes validées, signées par tous et sans écart d'heures seront verrouillées.
+TimeSheetsLocked                              = %s navette(s) verrouillée(s)
+TimeSheetsNotLockableSkipped                  = %s navette(s) ignorée(s) : pas encore validée(s), pas signée(s) par tous ou avec un écart d'heures
+TimeSheetLockFailed                           = Navette %s non verrouillée : %s
 
 # Data - Donnée
 TimeSheet                          = Navette
