@@ -300,47 +300,19 @@ if (empty($resHook)) {
 
     // Action to set status STATUS_LOCKED.
     if ($action == 'confirm_set_Lock' && $permissiontoadd) {
-        $errorLinked = 0;
         $object->fetch($id);
-        if (!$error) {
-            $userTmp->fetch($object->fk_user_assign);
-            $versionEighteenOrMore = 0;
-            if ((float) DOL_VERSION >= 18.0) {
-                $versionEighteenOrMore = 1;
-            }
-            if ($versionEighteenOrMore) {
-                $filter = ' AND ptt.element_date BETWEEN ' . "'"  . dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc') . "'";
-            } else {
-                $filter = ' AND ptt.task_date BETWEEN ' . "'"  . dol_print_date($object->date_start, 'dayrfc') . "'" . ' AND ' . "'" . dol_print_date($object->date_end, 'dayrfc') . "'";
-            }
-            $timeSpents = $task->fetchAllTimeSpent($userTmp, $filter);
-            foreach ($timeSpents as $timespent) {
-                $task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
-                if (!isset($task->linkedObjects['dolisirh_timesheet'])) {
-                    $task->id      = $timespent->timespent_id;
-                    $task->element = 'project_task_time';
-                    $task->add_object_linked('dolisirh_timesheet', $object->id);
-                } else {
-                    $errorLinked++;
-                }
-            }
-            if ($errorLinked == 0) {
-                $object->setLocked($user, false);
-                // Set locked OK
-                $urlToGo = str_replace('__ID__', $id, $backtopage);
-                $urlToGo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urlToGo); // New method to autoselect project after a New on another form object creation.
-                header('Location: ' . $urlToGo);
-                exit;
-            }
-        } elseif (!empty($object->errors)) {
-            // Set locked KO.
-            setEventMessages('', $object->errors, 'errors');
+        // Same conditions as the lock button and the mass lock of the list
+        if (!$object->isLockable()) {
+            setEventMessages($langs->trans('AllSignatoriesMustHaveSignedAndDiffTimeSetAt0'), [], 'errors');
+        } elseif ($object->lock($user) > 0) {
+            // Set locked OK
+            $urlToGo = str_replace('__ID__', $id, $backtopage);
+            $urlToGo = preg_replace('/--IDFORBACKTOPAGE--/', $id, $urlToGo); // New method to autoselect project after a New on another form object creation.
+            header('Location: ' . $urlToGo);
+            exit;
         } else {
-            setEventMessages($object->error, [], 'errors');
-        }
-
-        if ($errorLinked > 0) {
-            setEventMessages($langs->trans('ErrorLinkedElementTimeSheetTimeSpent', $userTmp->getFullName($langs), dol_print_date($object->date_start, 'dayreduceformat'), dol_print_date($object->date_end, 'dayreduceformat')), [], 'errors');
+            // Set locked KO: time spent already linked to another timesheet, or database error.
+            setEventMessages($object->error, $object->errors, 'errors');
         }
     }
 
@@ -593,26 +565,12 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     $startDate = dol_print_date($firstDayToShow, 'dayreduceformat');
     $endDate   = dol_print_date($lastDayToShow, 'dayreduceformat');
 
-    $daysInRange = dolisirh_num_between_days($firstDayToShow, $lastDayToShow, 1);
-
-    $isAvailable = [];
-    for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
-        if (is_day_available($dayInLoop, $object->fk_user_assign)) {
-            $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
-        } elseif (date('N', $dayInLoop) >= 6) {
-            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
-        } else {
-            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
-        }
-    }
-
+    // Working hours of the assigned user, for the daily calendar.
     $workingHours = $workingHours->fetchCurrentWorkingHours($object->fk_user_assign, 'user');
 
     // The timesheet counts the HR project tasks only: presence and absence.
-    $timesheetTaskIDs        = get_timesheet_task_ids();
-    $timeSpendingInfos       = load_time_spending_infos_within_range($firstDayToShow, dolisirh_add_days($lastDayToShow, 1), $workingHours, $isAvailable, $object->fk_user_assign, $timesheetTaskIDs);
-    $outsideWorkingHoursDays = check_time_spent_outside_working_hours($firstDayToShow, $lastDayToShow, $workingHours, (int) $object->fk_user_assign, $timesheetTaskIDs);
+    $timeSpendingInfos       = $object->getTimeSpendingInfos();
+    $outsideWorkingHoursDays = $timeSpendingInfos['outside_working_hours_days'];
 
     // Planned working time.
     $plannedWorkingTime = $timeSpendingInfos['planned'];
@@ -864,7 +822,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
             // Lock.
             $displayButton = $onPhone ? '<i class="fas fa-lock fa-2x"></i>' : '<i class="fas fa-lock"></i>' . ' ' . $langs->trans('Lock');
-            if ($object->status == TimeSheet::STATUS_VALIDATED && $signatory->checkSignatoriesSignatures($object->id, $object->element) && (getDolGlobalInt('DOLISIRH_ALLOW_DIFFERENCE_BETWEEN_PASSED_AND_WORKING_HOURS') || ($diffTotalTime == 0 && empty($outsideWorkingHoursDays)))) {
+            if ($object->isLockable($timeSpendingInfos)) {
                 print '<span class="butAction" id="actionButtonLock">' . $displayButton . '</span>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('AllSignatoriesMustHaveSignedAndDiffTimeSetAt0')) . '">' . $displayButton . '</span>';
