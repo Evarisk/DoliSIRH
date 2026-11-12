@@ -23,11 +23,21 @@
 window.dolisirh = window.dolisirh || {};
 window.dolisirh.pwa = {
 	state: null,
-	mode: 'week',
+	labels: {},
+	mode: 'project',
 	selectedProject: null,
 	selectedTask: null,
 	projectTasks: [],
 	msgTimer: null,
+	// A clock time typed or set by the user is kept, the other one follows the clock or the duration
+	startTouched: false,
+	endTouched: false,
+	restoringDraft: false,
+	saving: false,
+	clockDate: '',
+	tickTimer: null,
+	voice: null,
+	draftKey: 'dolisirh_pwa_draft',
 };
 
 /**
@@ -41,22 +51,152 @@ window.dolisirh.pwa.init = function() {
 		return;
 	}
 
-	var rawStateEl = document.getElementById('dolisirh-pwa-initial-state');
-	if (rawStateEl && rawStateEl.textContent) {
-		try {
-			window.dolisirh.pwa.state = JSON.parse(rawStateEl.textContent);
-		} catch (e) {
-			window.dolisirh.pwa.state = null;
-		}
-	}
+	window.dolisirh.pwa.state = window.dolisirh.pwa.readJsonScript('dolisirh-pwa-initial-state', null);
+	window.dolisirh.pwa.labels = window.dolisirh.pwa.readJsonScript('dolisirh-pwa-labels', {});
 
-	var savedMode = localStorage.getItem('dolisirh_pwa_mode');
+	var savedMode = window.dolisirh.pwa.storageGet('dolisirh_pwa_mode');
 	if (savedMode === 'project' || savedMode === 'week' || savedMode === 'monthly') {
 		window.dolisirh.pwa.mode = savedMode;
 	}
 
+	// The first render puts the default clock times: the kept draft must not be overwritten by them
+	window.dolisirh.pwa.restoringDraft = true;
 	window.dolisirh.pwa.bindEvents();
 	window.dolisirh.pwa.renderAll();
+	window.dolisirh.pwa.restoreDraft();
+
+	// While the end follows the clock, the duration grows on its own: the Pointer tab works as a stopwatch
+	window.dolisirh.pwa.tickTimer = setInterval(window.dolisirh.pwa.tickClock, 20000);
+	document.addEventListener('visibilitychange', function() {
+		if (!document.hidden) {
+			window.dolisirh.pwa.tickClock();
+		}
+	});
+};
+
+/**
+ * Data written by the page in a JSON script element.
+ *
+ * @param {string} id Element id
+ * @param {*} fallback Value when the element is missing or unreadable
+ * @returns {*}
+ */
+window.dolisirh.pwa.readJsonScript = function(id, fallback) {
+	var el = document.getElementById(id);
+	if (!el || !el.textContent) {
+		return fallback;
+	}
+	try {
+		return JSON.parse(el.textContent);
+	} catch (e) {
+		return fallback;
+	}
+};
+
+/**
+ * Read a value kept in the browser, which may refuse storage (private browsing).
+ *
+ * @param {string} key Storage key
+ * @returns {string|null}
+ */
+window.dolisirh.pwa.storageGet = function(key) {
+	try {
+		return localStorage.getItem(key);
+	} catch (e) {
+		return null;
+	}
+};
+
+/**
+ * Keep a value in the browser, or remove it when the value is null.
+ *
+ * @param {string} key Storage key
+ * @param {string|null} value Value to keep
+ * @returns {void}
+ */
+window.dolisirh.pwa.storageSet = function(key, value) {
+	try {
+		if (value === null) {
+			localStorage.removeItem(key);
+		} else {
+			localStorage.setItem(key, value);
+		}
+	} catch (e) {
+		// Nothing kept: the page works the same, only the draft is lost on reload
+	}
+};
+
+/**
+ * Translated label, with its %s replaced by the argument.
+ *
+ * @param {string} key Label key
+ * @param {string} [arg] Value replacing %s
+ * @returns {string}
+ */
+window.dolisirh.pwa.label = function(key, arg) {
+	var text = window.dolisirh.pwa.labels[key] || key;
+	return arg === undefined ? text : text.replace('%s', arg);
+};
+
+/**
+ * Parse a HH:MM clock time into minutes since midnight.
+ *
+ * @param {string} hm HH:MM string
+ * @returns {number} Minutes, -1 when the value is not a clock time
+ */
+window.dolisirh.pwa.hmToMin = function(hm) {
+	var match = /^(\d{1,2}):(\d{2})/.exec(String(hm || ''));
+	if (!match) {
+		return -1;
+	}
+	var h = parseInt(match[1], 10);
+	var m = parseInt(match[2], 10);
+	return (h > 23 || m > 59) ? -1 : (h * 60) + m;
+};
+
+/**
+ * Format minutes since midnight as a HH:MM clock time, wrapping around midnight.
+ *
+ * @param {number} min Minutes
+ * @returns {string}
+ */
+window.dolisirh.pwa.minToHM = function(min) {
+	var m = ((Math.round(min) % 1440) + 1440) % 1440;
+	return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+};
+
+/**
+ * Human readable duration: 45 min, 2 h, 1 h 30.
+ *
+ * @param {number} min Duration in minutes
+ * @returns {string}
+ */
+window.dolisirh.pwa.durationLabel = function(min) {
+	var m = Math.max(0, Math.round(min));
+	if (m < 60) {
+		return m + ' min';
+	}
+	return Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + String(m % 60).padStart(2, '0') : '');
+};
+
+/**
+ * Current clock time of the device, as HH:MM.
+ *
+ * @returns {string}
+ */
+window.dolisirh.pwa.nowHM = function() {
+	var d = new Date();
+	return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+};
+
+/**
+ * Today on the device, as YYYY-MM-DD.
+ *
+ * @returns {string}
+ */
+window.dolisirh.pwa.localToday = function() {
+	var d = new Date();
+	return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 };
 
 /**
@@ -347,8 +487,19 @@ window.dolisirh.pwa.bindEvents = function() {
 		});
 	}
 
-	// Project Date / Duration / Note inputs
+	pwa.bindClockEvents();
+};
+
+/**
+ * Bind the Pointer tab: date, start, end, duration, one-tap durations, note and save.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.bindClockEvents = function() {
+	var pwa = window.dolisirh.pwa;
 	var projDate = document.getElementById('pwa-proj-date');
+	var projStart = document.getElementById('pwa-proj-start');
+	var projEnd = document.getElementById('pwa-proj-end');
 	var projDur = document.getElementById('pwa-proj-duration');
 	var projNote = document.getElementById('pwa-proj-note');
 	var projSaveBtn = document.getElementById('pwa-btn-save-proj');
@@ -361,14 +512,27 @@ window.dolisirh.pwa.bindEvents = function() {
 			pwa.updateProjectSaveButtonState();
 		});
 	}
+	if (projStart) {
+		projStart.addEventListener('input', function() {
+			pwa.startTouched = true;
+			pwa.syncDuration();
+		});
+	}
+	if (projEnd) {
+		projEnd.addEventListener('input', function() {
+			pwa.endTouched = true;
+			pwa.syncDuration();
+		});
+	}
 	if (projDur) {
 		projDur.addEventListener('input', function() {
-			pwa.updateProjectSaveButtonState();
+			pwa.applyDuration(pwa.hmToMin(projDur.value), false);
 		});
 	}
 	if (projNote) {
 		projNote.addEventListener('input', function() {
 			pwa.updateProjectSaveButtonState();
+			pwa.saveDraft();
 		});
 	}
 	if (projSaveBtn) {
@@ -376,6 +540,465 @@ window.dolisirh.pwa.bindEvents = function() {
 			pwa.submitProjectTimeSpent();
 		});
 	}
+
+	document.querySelectorAll('[data-clock-now]').forEach(function(nowBtn) {
+		nowBtn.addEventListener('click', function() {
+			pwa.setClockNow(nowBtn.getAttribute('data-clock-now'));
+		});
+	});
+
+	document.querySelectorAll('.ts-clock__chips .ts-chip').forEach(function(chip) {
+		chip.addEventListener('click', function() {
+			pwa.applyDuration(parseInt(chip.getAttribute('data-duration'), 10), true);
+		});
+	});
+
+	// A photo or a voice note sent through the Saturne media block can stand for the note
+	if (window.jQuery) {
+		window.jQuery(document).ajaxComplete(function() {
+			pwa.updateProjectSaveButtonState();
+		});
+	}
+};
+
+/**
+ * Put the default clock times: the start follows the last entry of the day, the end is now (today)
+ * or one hour later (another day).
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.resetClock = function() {
+	var pwa = window.dolisirh.pwa;
+	var startEl = document.getElementById('pwa-proj-start');
+	var endEl = document.getElementById('pwa-proj-end');
+	if (!startEl || !endEl || !pwa.state) {
+		return;
+	}
+
+	pwa.startTouched = false;
+	pwa.endTouched = false;
+	pwa.clockDate = pwa.state.selected_date;
+
+	var lastEnd = pwa.lastEndOfDay();
+	if (pwa.isTodaySelected()) {
+		var nowMin = pwa.hmToMin(pwa.nowHM());
+		endEl.value = pwa.minToHM(nowMin);
+		// Right after an entry the next one starts at its end, and the end follows the clock from there
+		startEl.value = (lastEnd >= 0 && lastEnd <= nowMin) ? pwa.minToHM(lastEnd) : pwa.minToHM(nowMin - 60);
+	} else {
+		var startMin = lastEnd >= 0 ? lastEnd : 8 * 60;
+		startEl.value = pwa.minToHM(startMin);
+		endEl.value = pwa.minToHM(startMin + 60);
+	}
+
+	pwa.syncDuration();
+};
+
+/**
+ * Whether the selected day is today on the device.
+ *
+ * @returns {boolean}
+ */
+window.dolisirh.pwa.isTodaySelected = function() {
+	var pwa = window.dolisirh.pwa;
+	return Boolean(pwa.state && pwa.state.selected_date === pwa.localToday());
+};
+
+/**
+ * Entries of the selected day of the same kind as the selected task, with clock times.
+ * HR presence spans the day while project tasks happen within it: each kind follows only its own.
+ *
+ * @returns {Array}
+ */
+window.dolisirh.pwa.sameKindEntries = function() {
+	var pwa = window.dolisirh.pwa;
+	var day = pwa.state ? pwa.state.selected_day : null;
+	var isHr = pwa.isHrSelected();
+	return (day && Array.isArray(day.entries) ? day.entries : []).filter(function(entry) {
+		return Boolean(entry.is_hr) === isHr && pwa.hmToMin(entry.start_hm) >= 0;
+	});
+};
+
+/**
+ * End of the latest entry of the same kind on the selected day.
+ *
+ * @returns {number} Minutes since midnight, -1 when no entry has clock times
+ */
+window.dolisirh.pwa.lastEndOfDay = function() {
+	var pwa = window.dolisirh.pwa;
+	var lastEnd = -1;
+	pwa.sameKindEntries().forEach(function(entry) {
+		var s = pwa.hmToMin(entry.start_hm);
+		var e = pwa.hmToMin(entry.end_hm);
+		if (e > s && e > lastEnd) {
+			lastEnd = e;
+		}
+	});
+	return lastEnd;
+};
+
+/**
+ * Set the start or the end to the current time.
+ *
+ * @param {string} which 'start' | 'end'
+ * @returns {void}
+ */
+window.dolisirh.pwa.setClockNow = function(which) {
+	var pwa = window.dolisirh.pwa;
+	var el = document.getElementById(which === 'start' ? 'pwa-proj-start' : 'pwa-proj-end');
+	if (!el) {
+		return;
+	}
+	el.value = pwa.nowHM();
+	if (which === 'start') {
+		pwa.startTouched = true;
+		// Starting now: the end follows the clock until it is set
+		if (!pwa.endTouched) {
+			var endEl = document.getElementById('pwa-proj-end');
+			if (endEl) {
+				endEl.value = el.value;
+			}
+		}
+	} else {
+		pwa.endTouched = true;
+	}
+	pwa.syncDuration();
+};
+
+/**
+ * Apply a duration: the start stays, the end moves to start + duration.
+ *
+ * @param {number} minutes Duration in minutes
+ * @param {boolean} fromChip Whether the duration comes from a one-tap button
+ * @returns {void}
+ */
+window.dolisirh.pwa.applyDuration = function(minutes, fromChip) {
+	var pwa = window.dolisirh.pwa;
+	var startEl = document.getElementById('pwa-proj-start');
+	var endEl = document.getElementById('pwa-proj-end');
+	var startMin = startEl ? pwa.hmToMin(startEl.value) : -1;
+	if (!endEl || startMin < 0 || isNaN(minutes) || minutes <= 0) {
+		pwa.syncDuration(true);
+		return;
+	}
+
+	endEl.value = pwa.minToHM(startMin + minutes);
+
+	// The duration was chosen: the clock must not stretch it any more
+	pwa.startTouched = true;
+	pwa.endTouched = true;
+	pwa.syncDuration(!fromChip);
+};
+
+/**
+ * Recompute the duration from the start and the end, then refresh the hints and the save button.
+ *
+ * @param {boolean} [keepDurationInput] Leave the duration field as typed
+ * @returns {void}
+ */
+window.dolisirh.pwa.syncDuration = function(keepDurationInput) {
+	var pwa = window.dolisirh.pwa;
+	var startEl = document.getElementById('pwa-proj-start');
+	var endEl = document.getElementById('pwa-proj-end');
+	var durEl = document.getElementById('pwa-proj-duration');
+	var overnightEl = document.getElementById('pwa-proj-overnight');
+	if (!startEl || !endEl) {
+		return;
+	}
+
+	var startMin = pwa.hmToMin(startEl.value);
+	var endMin = pwa.hmToMin(endEl.value);
+	var minutes = pwa.clockMinutes();
+
+	if (durEl && !keepDurationInput) {
+		durEl.value = minutes >= 0 ? pwa.minToHM(minutes) : '';
+	}
+	if (overnightEl) {
+		overnightEl.hidden = !(startMin >= 0 && endMin >= 0 && endMin < startMin);
+	}
+
+	document.querySelectorAll('.ts-clock__chips .ts-chip').forEach(function(chip) {
+		chip.classList.toggle('is-active', parseInt(chip.getAttribute('data-duration'), 10) === minutes);
+	});
+
+	pwa.renderRunning();
+	pwa.renderOverlap();
+	pwa.updateProjectSaveButtonState();
+	pwa.saveDraft();
+};
+
+/**
+ * Duration between the start and the end, an end before the start meaning the next day.
+ *
+ * @returns {number} Minutes, -1 when a clock time is missing
+ */
+window.dolisirh.pwa.clockMinutes = function() {
+	var pwa = window.dolisirh.pwa;
+	var startEl = document.getElementById('pwa-proj-start');
+	var endEl = document.getElementById('pwa-proj-end');
+	var startMin = startEl ? pwa.hmToMin(startEl.value) : -1;
+	var endMin = endEl ? pwa.hmToMin(endEl.value) : -1;
+	if (startMin < 0 || endMin < 0) {
+		return -1;
+	}
+	return (endMin - startMin + 1440) % 1440;
+};
+
+/**
+ * Move the end to the current time while it follows the clock.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.tickClock = function() {
+	var pwa = window.dolisirh.pwa;
+	var endEl = document.getElementById('pwa-proj-end');
+	if (!endEl || pwa.endTouched || !pwa.isTodaySelected()) {
+		return;
+	}
+	var nowValue = pwa.nowHM();
+	if (endEl.value !== nowValue) {
+		endEl.value = nowValue;
+		pwa.syncDuration();
+	}
+};
+
+/**
+ * Show the running banner while the start is set and the end follows the clock.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.renderRunning = function() {
+	var pwa = window.dolisirh.pwa;
+	var el = document.getElementById('pwa-clock-running');
+	var startEl = document.getElementById('pwa-proj-start');
+	if (!el || !startEl) {
+		return;
+	}
+	var isRunning = pwa.startTouched && !pwa.endTouched && pwa.isTodaySelected() && pwa.hmToMin(startEl.value) >= 0;
+	el.hidden = !isRunning;
+	if (isRunning) {
+		el.innerHTML = '<span class="ts-clock__pulse"></span>' + pwa.esc(pwa.label('running', startEl.value)) + ' &middot; <b>' + pwa.esc(pwa.durationLabel(Math.max(0, pwa.clockMinutes()))) + '</b>';
+	}
+};
+
+/**
+ * Warn when the time range overlaps an entry already saved on the day.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.renderOverlap = function() {
+	var pwa = window.dolisirh.pwa;
+	var el = document.getElementById('pwa-clock-overlap');
+	var startEl = document.getElementById('pwa-proj-start');
+	var endEl = document.getElementById('pwa-proj-end');
+	if (!el || !startEl || !endEl || !pwa.state) {
+		return;
+	}
+
+	var overlapping = pwa.findOverlap(pwa.hmToMin(startEl.value), pwa.hmToMin(endEl.value));
+	el.hidden = !overlapping;
+	if (overlapping) {
+		el.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + pwa.esc(pwa.label('overlap', overlapping.start_hm + ' - ' + overlapping.end_hm + ' · ' + overlapping.task_label));
+	}
+};
+
+/**
+ * First entry of the selected day whose clock times overlap the given range.
+ *
+ * @param {number} startMin Start in minutes since midnight
+ * @param {number} endMin End in minutes since midnight
+ * @returns {Object|null}
+ */
+window.dolisirh.pwa.findOverlap = function(startMin, endMin) {
+	var pwa = window.dolisirh.pwa;
+	if (startMin < 0 || endMin <= startMin) {
+		return null;
+	}
+	return pwa.sameKindEntries().find(function(entry) {
+		var s = pwa.hmToMin(entry.start_hm);
+		var e = pwa.hmToMin(entry.end_hm);
+		return e > s && startMin < e && s < endMin;
+	}) || null;
+};
+
+/**
+ * Value of a field, or an empty string when the field is missing or not kept.
+ *
+ * @param {string} id Field id
+ * @param {boolean} [keep] Whether the value is kept
+ * @returns {string}
+ */
+window.dolisirh.pwa.fieldValue = function(id, keep) {
+	var el = document.getElementById(id);
+	return (el && keep !== false) ? el.value : '';
+};
+
+/**
+ * Keep the form in the browser, so a closed app finds its stopwatch, task and note again.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.saveDraft = function() {
+	var pwa = window.dolisirh.pwa;
+	if (!pwa.state || pwa.restoringDraft) {
+		return;
+	}
+	var project = pwa.selectedProject;
+	var draft = {
+		date: pwa.state.selected_date,
+		start: pwa.fieldValue('pwa-proj-start', pwa.startTouched),
+		end: pwa.fieldValue('pwa-proj-end', pwa.endTouched),
+		note: pwa.fieldValue('pwa-proj-note'),
+		project: project ? { id: project.id, ref: project.ref, title: project.title, url: project.url || '' } : null,
+		task_id: pwa.selectedTask ? pwa.selectedTask.id : 0,
+	};
+	var isEmpty = !draft.start && !draft.end && !draft.note && !draft.project;
+	pwa.storageSet(pwa.draftKey, isEmpty ? null : JSON.stringify(draft));
+};
+
+/**
+ * Form kept in the browser, if any.
+ *
+ * @returns {Object|null}
+ */
+window.dolisirh.pwa.readDraft = function() {
+	var raw = window.dolisirh.pwa.storageGet(window.dolisirh.pwa.draftKey);
+	try {
+		return raw ? JSON.parse(raw) : null;
+	} catch (e) {
+		return null;
+	}
+};
+
+/**
+ * Restore the form kept in the browser: task and note always, clock times on the same day only.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.restoreDraft = function() {
+	var pwa = window.dolisirh.pwa;
+	var draft = pwa.readDraft();
+	if (!draft || !pwa.state) {
+		pwa.restoringDraft = false;
+		return;
+	}
+
+	pwa.restoringDraft = true;
+	var noteEl = document.getElementById('pwa-proj-note');
+	if (noteEl && draft.note) {
+		noteEl.value = draft.note;
+	}
+	if (draft.date === pwa.state.selected_date) {
+		pwa.restoreDraftClock(draft);
+	}
+	pwa.restoringDraft = false;
+
+	if (draft.project && draft.project.id) {
+		var project = (pwa.state.projects || []).find(function(p) { return p.id === draft.project.id; }) || pwa.fallbackProject(draft.project);
+		pwa.selectProject(project, draft.task_id);
+	}
+	pwa.syncDuration();
+};
+
+/**
+ * Put back the clock times of a draft; an end not set follows the clock again.
+ *
+ * @param {Object} draft Kept form
+ * @returns {void}
+ */
+window.dolisirh.pwa.restoreDraftClock = function(draft) {
+	var pwa = window.dolisirh.pwa;
+	var startEl = document.getElementById('pwa-proj-start');
+	var endEl = document.getElementById('pwa-proj-end');
+	if (!startEl || !endEl) {
+		return;
+	}
+	if (draft.start) {
+		startEl.value = draft.start;
+		pwa.startTouched = true;
+	}
+	if (draft.end) {
+		endEl.value = draft.end;
+		pwa.endTouched = true;
+	} else if (pwa.isTodaySelected()) {
+		endEl.value = pwa.nowHM();
+	}
+};
+
+/**
+ * Project object for a project that is not in the list of open projects (the HR project).
+ *
+ * @param {Object} data Project id, ref, title and url
+ * @returns {Object}
+ */
+window.dolisirh.pwa.fallbackProject = function(data) {
+	return {
+		id: data.id,
+		ref: data.ref || '',
+		title: data.title || '',
+		planned_workload: 0,
+		duration_effective: 0,
+		planned_hm: '-',
+		spent_hm: '-',
+		url: data.url || '',
+	};
+};
+
+/**
+ * Render the one-tap task buttons: HR presence and the latest tasks of the user.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.renderQuickTasks = function() {
+	var pwa = window.dolisirh.pwa;
+	var field = document.getElementById('pwa-quick-field');
+	var box = document.getElementById('pwa-quick-tasks');
+	if (!field || !box || !pwa.state) {
+		return;
+	}
+
+	var tasks = Array.isArray(pwa.state.quick_tasks) ? pwa.state.quick_tasks : [];
+	field.hidden = tasks.length === 0;
+	box.innerHTML = tasks.map(function(t) {
+		var isActive = pwa.selectedTask && pwa.selectedTask.id === t.id;
+		return '<button type="button" class="ts-quick-task' + (isActive ? ' is-active' : '') + (t.is_hr ? ' is-hr' : '') + '" data-task-id="' + t.id + '" title="' + pwa.esc(t.project_ref + ' - ' + t.project_title + ' / ' + t.ref + ' - ' + t.label) + '">' +
+			'<span class="ts-quick-task__label">' + pwa.esc(t.label) + '</span>' +
+			'<span class="ts-quick-task__project">' + pwa.esc(t.is_hr ? pwa.label('presence') : (t.project_title || t.project_ref)) + '</span>' +
+		'</button>';
+	}).join('');
+
+	box.querySelectorAll('.ts-quick-task').forEach(function(btn) {
+		btn.addEventListener('click', function() {
+			var taskId = parseInt(btn.getAttribute('data-task-id'), 10);
+			var task = tasks.find(function(t) { return t.id === taskId; });
+			if (!task) {
+				return;
+			}
+			var project = (pwa.state.projects || []).find(function(p) { return p.id === task.project_id; }) ||
+				pwa.fallbackProject({ id: task.project_id, ref: task.project_ref, title: task.project_title, url: task.project_url });
+			pwa.selectProject(project, task.id);
+		});
+	});
+};
+
+/**
+ * Whether the Saturne media block holds a photo or a voice note waiting for the time entry.
+ *
+ * @returns {boolean}
+ */
+window.dolisirh.pwa.hasPendingMedias = function() {
+	var wrapper = document.getElementById('pwa-proj-media-wrapper');
+	return Boolean(wrapper && wrapper.querySelector('.open-media-editor-as-gallery, .saturne-audio-badge'));
+};
+
+/**
+ * Whether the selected project is the HR project, whose time needs no note.
+ *
+ * @returns {boolean}
+ */
+window.dolisirh.pwa.isHrSelected = function() {
+	var pwa = window.dolisirh.pwa;
+	return Boolean(pwa.selectedProject && pwa.state && pwa.state.hr_project && pwa.state.hr_project.id === pwa.selectedProject.id);
 };
 
 /**
@@ -387,7 +1010,7 @@ window.dolisirh.pwa.bindEvents = function() {
 window.dolisirh.pwa.setMode = function(nextMode) {
 	var pwa = window.dolisirh.pwa;
 	pwa.mode = nextMode;
-	localStorage.setItem('dolisirh_pwa_mode', nextMode);
+	pwa.storageSet('dolisirh_pwa_mode', nextMode);
 
 	['project', 'week', 'monthly'].forEach(function(m) {
 		var btn = document.getElementById('pwa-mode-' + m);
@@ -456,9 +1079,16 @@ window.dolisirh.pwa.renderAll = function() {
 	pwa.renderHrTopBars();
 	pwa.renderWeekBar();
 	pwa.renderHrTaskCards();
+	pwa.renderQuickTasks();
 	pwa.renderProjectHistory();
 	pwa.renderMonthlyCalendar();
-	pwa.updateProjectSaveButtonState();
+
+	// Another day: the clock times start again from that day's entries
+	if (pwa.clockDate !== pwa.state.selected_date) {
+		pwa.resetClock();
+	} else {
+		pwa.syncDuration();
+	}
 };
 
 /**
@@ -765,7 +1395,7 @@ window.dolisirh.pwa.renderProjectDropdown = function(query) {
 	});
 
 	if (filtered.length === 0) {
-		listEl.innerHTML = '<li class="ts-combobox__empty">Aucun projet trouvé</li>';
+		listEl.innerHTML = '<li class="ts-combobox__empty">' + pwa.esc(pwa.label('noProject')) + '</li>';
 		return;
 	}
 
@@ -791,13 +1421,15 @@ window.dolisirh.pwa.renderProjectDropdown = function(query) {
  * Select a project in the Projet tab and load its tasks.
  *
  * @param {Object} project Project object
+ * @param {number} [taskIdToSelect] Task selected once the tasks are loaded
  * @returns {void}
  */
-window.dolisirh.pwa.selectProject = function(project) {
+window.dolisirh.pwa.selectProject = function(project, taskIdToSelect) {
 	var pwa = window.dolisirh.pwa;
 	pwa.selectedProject = project;
 	pwa.selectedTask = null;
 	pwa.projectTasks = [];
+	pwa.renderQuickTasks();
 
 	var projSearch = document.getElementById('pwa-proj-search');
 	if (projSearch) {
@@ -819,7 +1451,10 @@ window.dolisirh.pwa.selectProject = function(project) {
 			if (res && res.success && Array.isArray(res.tasks)) {
 				pwa.projectTasks = res.tasks;
 				pwa.renderTaskFieldState();
-				if (pwa.projectTasks.length === 1) {
+				var wantedTask = taskIdToSelect ? pwa.projectTasks.find(function(t) { return t.id === taskIdToSelect; }) : null;
+				if (wantedTask) {
+					pwa.selectTask(wantedTask);
+				} else if (pwa.projectTasks.length === 1) {
 					pwa.selectTask(pwa.projectTasks[0]);
 				}
 			}
@@ -886,7 +1521,7 @@ window.dolisirh.pwa.renderTaskDropdown = function(query) {
 	});
 
 	if (filtered.length === 0) {
-		listEl.innerHTML = '<li class="ts-combobox__empty">Aucune tâche trouvée</li>';
+		listEl.innerHTML = '<li class="ts-combobox__empty">' + pwa.esc(pwa.label('noTask')) + '</li>';
 		return;
 	}
 
@@ -922,7 +1557,15 @@ window.dolisirh.pwa.selectTask = function(task) {
 		taskSearch.value = task.ref + ' - ' + task.label;
 	}
 	pwa.renderTaskStats();
+	pwa.renderQuickTasks();
+	// Presence and project tasks start from their own last entry: untouched clock times follow the task
+	if (!pwa.startTouched && !pwa.endTouched && !pwa.restoringDraft) {
+		pwa.resetClock();
+	} else {
+		pwa.syncDuration();
+	}
 	pwa.updateProjectSaveButtonState();
+	pwa.saveDraft();
 };
 
 /**
@@ -988,16 +1631,32 @@ window.dolisirh.pwa.updateProjectSaveButtonState = function() {
 	var saveBtn = document.getElementById('pwa-btn-save-proj');
 	if (!saveBtn) return;
 
-	var dateEl = document.getElementById('pwa-proj-date');
-	var durEl = document.getElementById('pwa-proj-duration');
-	var noteEl = document.getElementById('pwa-proj-note');
+	var labelEl = document.getElementById('pwa-btn-save-proj-label');
+	var noteReqEl = document.getElementById('pwa-proj-note-req');
+	var minutes = pwa.clockMinutes();
 
+	if (noteReqEl) {
+		noteReqEl.hidden = pwa.isHrSelected();
+	}
+	if (labelEl) {
+		labelEl.textContent = pwa.label('save') + (minutes > 0 ? ' · ' + pwa.durationLabel(minutes) : '');
+	}
+	saveBtn.disabled = pwa.saving || !pwa.canSaveClock(minutes);
+};
+
+/**
+ * Whether the Pointer form holds what a time entry needs.
+ *
+ * @param {number} minutes Duration in minutes
+ * @returns {boolean}
+ */
+window.dolisirh.pwa.canSaveClock = function(minutes) {
+	var pwa = window.dolisirh.pwa;
 	var hasTask = Boolean(pwa.selectedTask && pwa.selectedTask.id);
-	var hasDate = Boolean(dateEl && dateEl.value);
-	var hasDur = pwa.hmToSec(durEl ? durEl.value : '00:00') > 0;
-	var hasNote = Boolean(noteEl && noteEl.value.trim().length > 0);
-
-	saveBtn.disabled = !(hasTask && hasDate && hasDur && hasNote);
+	var hasDate = pwa.fieldValue('pwa-proj-date') !== '';
+	// Time on a project says what was done: a note, a photo or a voice note. HR time needs none.
+	var hasNote = pwa.isHrSelected() || pwa.fieldValue('pwa-proj-note').trim() !== '' || pwa.hasPendingMedias();
+	return hasTask && hasDate && minutes > 0 && hasNote;
 };
 
 /**
@@ -1010,23 +1669,36 @@ window.dolisirh.pwa.submitProjectTimeSpent = function() {
 	if (!pwa.selectedTask) return;
 
 	var dateEl = document.getElementById('pwa-proj-date');
-	var durEl = document.getElementById('pwa-proj-duration');
+	var startEl = document.getElementById('pwa-proj-start');
+	var endEl = document.getElementById('pwa-proj-end');
 	var noteEl = document.getElementById('pwa-proj-note');
 	var saveBtn = document.getElementById('pwa-btn-save-proj');
 
-	if (saveBtn) saveBtn.disabled = true;
+	pwa.saving = true;
+	if (saveBtn) {
+		saveBtn.disabled = true;
+	}
 
 	pwa.submitTimeSpent({
 		task_id: pwa.selectedTask.id,
 		date: dateEl ? dateEl.value : pwa.state.selected_date,
-		duration_hm: durEl ? durEl.value : '00:15',
+		start_hm: startEl ? startEl.value : '',
+		end_hm: endEl ? endEl.value : '',
+		duration_hm: pwa.minToHM(Math.max(0, pwa.clockMinutes())),
 		note: noteEl ? noteEl.value.trim() : '',
 		is_project_mode: true,
 		cal_month: (pwa.state && pwa.state.cal_month) ? pwa.state.cal_month.ym : '',
 	}).then(function(res) {
+		pwa.saving = false;
 		if (res && res.success) {
-			if (noteEl) noteEl.value = '';
-			if (durEl) durEl.value = '00:15';
+			if (noteEl) {
+				noteEl.value = '';
+			}
+			// The next entry starts where this one ended
+			pwa.clockDate = '';
+			pwa.resetClock();
+			pwa.storageSet(pwa.draftKey, null);
+			pwa.saveDraft();
 			if (res.media_block_html) {
 				var wrapper = document.getElementById('pwa-proj-media-wrapper');
 				if (wrapper) {
@@ -1048,8 +1720,8 @@ window.dolisirh.pwa.submitProjectTimeSpent = function() {
 					pwa.renderProjectStats();
 				}
 			}
-			pwa.updateProjectSaveButtonState();
 		}
+		pwa.updateProjectSaveButtonState();
 	});
 };
 
@@ -1076,17 +1748,17 @@ window.dolisirh.pwa.submitTimeSpent = function(payload) {
 			if (res && res.success && res.state) {
 				pwa.state = res.state;
 				pwa.renderAll();
-				var mediaMsg = (Array.isArray(res.saved_medias) && res.saved_medias.length > 0)
-					? (' (' + res.saved_medias.length + ' média(s) joint(s))')
-					: '';
-				pwa.showMsg('Pointage enregistré (' + payload.duration_hm + ')' + mediaMsg, 'ok');
+				var range = (payload.start_hm && payload.end_hm) ? (payload.start_hm + ' - ' + payload.end_hm + ', ') : '';
+				var mediaCount = Array.isArray(res.saved_medias) ? res.saved_medias.length : 0;
+				var mediaMsg = mediaCount > 0 ? ' · ' + pwa.label('mediasSaved', String(mediaCount)) : '';
+				pwa.showMsg(pwa.label('saved') + ' (' + range + (res.duration_hm || payload.duration_hm) + ')' + mediaMsg, 'ok');
 			} else {
-				pwa.showMsg((res && res.error) ? res.error : 'Erreur lors de l\'enregistrement', 'err');
+				pwa.showMsg((res && res.error) ? res.error : pwa.label('error'), 'err');
 			}
 			return res;
 		})
 		.catch(function(err) {
-			pwa.showMsg(err.message || 'Erreur réseau', 'err');
+			pwa.showMsg(err.message || pwa.label('networkError'), 'err');
 			return { success: false };
 		});
 };
@@ -1122,15 +1794,15 @@ window.dolisirh.pwa.deleteTimeSpent = function(timeSpentId) {
 					pwa.projectTasks = res.project_tasks;
 				}
 				pwa.renderAll();
-				pwa.showMsg('Pointage supprimé.', 'ok');
+				pwa.showMsg(pwa.label('deleted'), 'ok');
 			} else {
-				pwa.showMsg((res && res.error) ? res.error : 'Erreur lors de la suppression', 'err');
+				pwa.showMsg((res && res.error) ? res.error : pwa.label('error'), 'err');
 			}
 		});
 };
 
 /**
- * Render the daily project time entries history below the Projet form.
+ * Render the entries of the selected day under the Pointer form, in clock order, with their medias.
  *
  * @returns {void}
  */
@@ -1140,37 +1812,104 @@ window.dolisirh.pwa.renderProjectHistory = function() {
 	if (!container || !pwa.state) return;
 
 	var dayData = pwa.state.selected_day;
-	var entries = (dayData && Array.isArray(dayData.proj_entries)) ? dayData.proj_entries : [];
-
-	if (entries.length === 0) {
+	var entries = (dayData && Array.isArray(dayData.entries)) ? dayData.entries : [];
+	if (!dayData) {
 		container.innerHTML = '';
 		return;
 	}
 
-	container.innerHTML = '<div class="ts-proj-history__title">Pointages du ' + pwa.esc(dayData.dmy) + '</div>' +
-		entries.map(function(entry) {
-			var taskTitle = entry.task_ref ? (entry.task_ref + (entry.task_label ? ' - ' + entry.task_label : '')) : entry.task_label;
-			return '<div class="ts-hr-entry ts-proj-entry">' +
-				'<span class="ts-proj-entry__date">' + pwa.esc(entry.dmy) + '</span>' +
-				'<span class="ts-proj-entry__sep">|</span>' +
-				'<a href="' + pwa.esc(entry.task_url) + '" target="_blank" class="ts-proj-entry__task" title="' + pwa.esc(taskTitle) + '">' + pwa.esc(taskTitle) + '</a>' +
-				'<span class="ts-proj-entry__sep">|</span>' +
-				'<span class="ts-hr-entry__note" title="' + pwa.esc(entry.note || 'Pointage') + '">' + pwa.esc(entry.note || 'Pointage') + '</span>' +
-				'<span class="ts-hr-entry__dur">' + pwa.esc(entry.duration_hm) + '</span>' +
-				'<button type="button" class="ts-hr-entry__del" data-entry-id="' + entry.id + '" title="Supprimer ce pointage">' +
-					'<i class="far fa-trash-alt"></i>' +
-				'</button>' +
-			'</div>';
+	var totalSec = entries.reduce(function(sum, entry) { return sum + (Number(entry.duration) || 0); }, 0);
+	var html = '<div class="ts-proj-history__title">' +
+		'<span>' + pwa.esc(pwa.label('dayEntries', dayData.dmy)) + '</span>' +
+		(entries.length ? '<span class="ts-proj-history__total">' + pwa.esc(pwa.label('total')) + ' <b>' + pwa.esc(pwa.durationLabel(totalSec / 60)) + '</b></span>' : '') +
+	'</div>';
+
+	if (entries.length === 0) {
+		container.innerHTML = html + '<div class="ts-timeline__empty">' + pwa.esc(pwa.label('noEntry')) + '</div>';
+		return;
+	}
+
+	html += '<ol class="ts-timeline">' + entries.map(function(entry) {
+		var medias = Array.isArray(entry.medias) ? entry.medias : [];
+		var time = '<span class="ts-timeline__range is-duration-only">&mdash;</span>';
+		if (entry.start_hm) {
+			time = '<span class="ts-timeline__range">' + pwa.esc(entry.start_hm) + '<small>' + pwa.esc(entry.end_hm) + '</small></span>';
+		}
+		var mediasHtml = medias.map(function(media) {
+			if (media.type === 'image') {
+				return '<a class="ts-timeline__photo" href="' + pwa.esc(media.url) + '" target="_blank" rel="noopener"><img src="' + pwa.esc(media.thumb) + '" alt="" loading="lazy"></a>';
+			}
+			return '<button type="button" class="ts-timeline__voice" data-src="' + pwa.esc(media.url) + '" title="' + pwa.esc(pwa.label('playVoice')) + '"><i class="fas fa-play"></i></button>';
 		}).join('');
 
-	container.querySelectorAll('.ts-hr-entry__del').forEach(function(delBtn) {
+		return '<li class="ts-timeline__item' + (entry.is_hr ? ' is-hr' : '') + '">' +
+			time +
+			'<div class="ts-timeline__body">' +
+				'<div class="ts-timeline__head">' +
+					'<a href="' + pwa.esc(entry.task_url) + '" target="_blank" class="ts-timeline__task" title="' + pwa.esc(entry.task_ref + ' - ' + entry.task_label) + '">' + pwa.esc(entry.task_label || entry.task_ref) + '</a>' +
+					'<span class="ts-timeline__dur">' + pwa.esc(pwa.durationLabel((Number(entry.duration) || 0) / 60)) + '</span>' +
+				'</div>' +
+				'<div class="ts-timeline__project">' + pwa.esc(entry.project_ref + ' - ' + entry.project_title) + '</div>' +
+				(entry.note ? '<div class="ts-timeline__note">' + pwa.esc(entry.note) + '</div>' : '') +
+				(mediasHtml ? '<div class="ts-timeline__medias">' + mediasHtml + '</div>' : '') +
+			'</div>' +
+			'<button type="button" class="ts-timeline__del" data-entry-id="' + entry.id + '" data-has-medias="' + (medias.length ? '1' : '0') + '"><i class="far fa-trash-alt"></i></button>' +
+		'</li>';
+	}).join('') + '</ol>';
+
+	container.innerHTML = html;
+
+	container.querySelectorAll('.ts-timeline__del').forEach(function(delBtn) {
 		delBtn.addEventListener('click', function() {
 			var entryId = parseInt(delBtn.getAttribute('data-entry-id'), 10);
-			if (entryId > 0) {
+			// Photos and voice notes go with the entry and cannot be brought back
+			if (entryId > 0 && (delBtn.getAttribute('data-has-medias') !== '1' || window.confirm(pwa.label('deleteConfirm')))) {
 				delBtn.disabled = true;
 				pwa.deleteTimeSpent(entryId);
 			}
 		});
+	});
+
+	container.querySelectorAll('.ts-timeline__voice').forEach(function(voiceBtn) {
+		voiceBtn.addEventListener('click', function() {
+			pwa.toggleVoice(voiceBtn);
+		});
+	});
+};
+
+/**
+ * Play or stop the voice note of an entry, one at a time.
+ *
+ * @param {HTMLElement} btn Button carrying the recording URL
+ * @returns {void}
+ */
+window.dolisirh.pwa.toggleVoice = function(btn) {
+	var pwa = window.dolisirh.pwa;
+	var isPlaying = btn.classList.contains('is-playing');
+
+	if (pwa.voice) {
+		pwa.voice.pause();
+		pwa.voice = null;
+	}
+	document.querySelectorAll('.ts-timeline__voice.is-playing').forEach(function(other) {
+		other.classList.remove('is-playing');
+		other.innerHTML = '<i class="fas fa-play"></i>';
+	});
+	if (isPlaying) {
+		return;
+	}
+
+	pwa.voice = new Audio(btn.getAttribute('data-src'));
+	btn.classList.add('is-playing');
+	btn.innerHTML = '<i class="fas fa-stop"></i>';
+	pwa.voice.addEventListener('ended', function() {
+		btn.classList.remove('is-playing');
+		btn.innerHTML = '<i class="fas fa-play"></i>';
+	});
+	pwa.voice.play().catch(function() {
+		btn.classList.remove('is-playing');
+		btn.innerHTML = '<i class="fas fa-play"></i>';
+		pwa.showMsg(pwa.label('error'), 'err');
 	});
 };
 

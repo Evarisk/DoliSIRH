@@ -30,107 +30,48 @@
 /** @var string $uploadTokenContext */
 
 // 1. Saturne media block actions (photo upload, photo delete, audio upload, audio delete)
-if ($action == 'uploadPhoto' && !empty($conf->global->MAIN_UPLOAD_DOC)) {
-	$subDirParam = GETPOST('sub_dir', 'alpha');
-	$uploadDir   = $conf->project->multidir_output[$conf->entity ?? 1];
-	if (!empty($subDirParam)) {
-		$uploadDir .= '/' . $subDirParam;
-	}
+// The medias wait in the temporary folder of the session until the time entry is saved. The folder
+// comes from the session and the posted one must be the same: no other folder can be written to.
+$tempDir     = $conf->dolisirh->dir_output . '/' . $subDir;
+$isOwnFolder = GETPOST('sub_dir', 'alpha') === $subDir && GETPOST('module_name', 'aZ09') === 'dolisirh';
 
-	if (!dol_is_dir($uploadDir)) {
-		dol_mkdir($uploadDir);
-	}
+if (in_array($action, ['uploadPhoto', 'linkPhoto', 'deletePhoto', 'add_audio', 'delete_audio'], true) && $isOwnFolder && !dol_is_dir($tempDir)) {
+	dol_mkdir($tempDir);
+}
 
-	if (!empty($_FILES['userfile']['tmp_name'])) {
-		$tmpNames = is_array($_FILES['userfile']['tmp_name']) ? $_FILES['userfile']['tmp_name'] : [$_FILES['userfile']['tmp_name']];
-		$names    = is_array($_FILES['userfile']['name']) ? $_FILES['userfile']['name'] : [$_FILES['userfile']['name']];
+// Photos picked in the DoliSIRH media library (Saturne gallery): copied, the library keeps its own
+if ($action == 'linkPhoto' && $isOwnFolder) {
+	dolisirh_pwa_link_library_medias($conf, $tempDir, GETPOST('filenames', 'array'));
+}
 
-		// An edited photo comes back under its original name to replace the unedited file
-		$allowOverwrite = GETPOSTINT('overwrite') ? 1 : 0;
-		$res            = dol_add_file_process($uploadDir, $allowOverwrite, 1, 'userfile', '', null, '', 0);
-		if ($res > 0) {
-			$mediaSizes = ['mini', 'small', 'medium', 'large'];
-			foreach ($names as $idx => $name) {
-				if (empty($tmpNames[$idx])) {
-					continue;
-				}
-				$destFull = $uploadDir . '/' . dol_sanitizeFileName($name);
-				if (dol_is_file($destFull) && image_format_supported($destFull) >= 0) {
-					vignette($destFull, 160, 120, '_mini');
-					vignette($destFull, 480, 270, '_small');
-					foreach ($mediaSizes as $size) {
-						$confW = getDolGlobalInt('SATURNE_MEDIA_MAX_WIDTH_' . dol_strtoupper($size));
-						$confH = getDolGlobalInt('SATURNE_MEDIA_MAX_HEIGHT_' . dol_strtoupper($size));
-						if ($confW > 0 && $confH > 0 && function_exists('saturne_vignette')) {
-							saturne_vignette($destFull, $confW, $confH, '_' . $size);
-						}
-					}
-				}
-			}
+if ($action == 'uploadPhoto' && $isOwnFolder && !empty($_FILES['userfile']['tmp_name'])) {
+	$tmpNames = (array) $_FILES['userfile']['tmp_name'];
+	$names    = (array) $_FILES['userfile']['name'];
+	$errors   = (array) $_FILES['userfile']['error'];
+
+	// An edited photo comes back under its original name to replace the unedited file
+	$allowOverwrite = GETPOSTINT('overwrite') ? 1 : 0;
+	foreach ($tmpNames as $index => $tmpName) {
+		$fileName = dol_sanitizeFileName((string) $names[$index]);
+		if (empty($tmpName) || $fileName === '' || image_format_supported($fileName) < 0) {
+			continue;
 		}
+		dol_move_uploaded_file($tmpName, $tempDir . '/' . $fileName, $allowOverwrite, 0, (int) $errors[$index], 0, 'userfile', $tempDir);
 	}
 }
 
-if ($action == 'unlinkFile') {
-	$data     = json_decode(file_get_contents('php://input'), true);
-	$filePath = !empty($data['filepath']) ? $data['filepath'] : GETPOST('filepath', 'alpha');
-	$fileName = !empty($data['filename']) ? $data['filename'] : GETPOST('filename', 'alpha');
-	$fullPath = $filePath . '/' . $fileName;
-
-	if (!empty($fileName) && dol_is_file($fullPath)) {
-		dol_delete_file($fullPath);
-		$thumbsDir = $filePath . '/thumbs';
-		if (dol_is_dir($thumbsDir)) {
-			$pathInfo = pathinfo($fileName);
-			$base     = $pathInfo['filename'];
-			$ext      = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
-			foreach (['_mini', '_small', '_medium', '_large'] as $suffix) {
-				$thumbFile = $thumbsDir . '/' . $base . $suffix . $ext;
-				if (dol_is_file($thumbFile)) {
-					dol_delete_file($thumbFile);
-				}
-			}
-		}
+if (in_array($action, ['deletePhoto', 'delete_audio'], true) && $isOwnFolder) {
+	$fileName = dol_sanitizeFileName(basename(GETPOST('filename', 'alpha')));
+	if ($fileName !== '' && dol_is_file($tempDir . '/' . $fileName)) {
+		dol_delete_file($tempDir . '/' . $fileName, 0, 0, 0, null, false, 0);
 	}
 }
 
-if ($action == 'add_audio' && !empty($_FILES['audio']['tmp_name'])) {
-	$audioModule    = GETPOST('module_name', 'alpha');
-	$audioSubDir    = GETPOST('sub_dir', 'alpha');
-	$audioModLower  = !empty($audioModule) ? dol_strtolower($audioModule) : 'project';
-	$audioSubDirRes = !empty($audioSubDir) ? $audioSubDir : $subDir;
-
-	$uploadDir  = !empty($conf->$audioModLower->multidir_output[$conf->entity ?? 1])
-		? $conf->$audioModLower->multidir_output[$conf->entity ?? 1]
-		: $conf->ecm->dir_output . '/' . $audioModLower;
-	$uploadDir .= '/' . $audioSubDirRes;
-
-	if (!dol_is_dir($uploadDir)) {
-		dol_mkdir($uploadDir);
-	}
-
+if ($action == 'add_audio' && $isOwnFolder && !empty($_FILES['audio']['tmp_name'])) {
+	// The Saturne media block lists the recordings of its folder by their .wav name: the real format
+	// is given back to the file once the time entry is saved
 	$fileName = dol_print_date(dol_now(), 'dayhourlog') . '_audio.wav';
-	$destFile = $uploadDir . '/' . $fileName;
-
-	move_uploaded_file($_FILES['audio']['tmp_name'], $destFile);
-}
-
-if ($action == 'delete_audio') {
-	$audioModule    = GETPOST('module_name', 'alpha');
-	$audioSubDir    = GETPOST('sub_dir', 'alpha');
-	$audioFilename  = GETPOST('filename', 'alpha');
-	$audioModLower  = !empty($audioModule) ? dol_strtolower($audioModule) : 'project';
-	$audioSubDirRes = !empty($audioSubDir) ? $audioSubDir : $subDir;
-
-	$uploadDir  = !empty($conf->$audioModLower->multidir_output[$conf->entity ?? 1])
-		? $conf->$audioModLower->multidir_output[$conf->entity ?? 1]
-		: $conf->ecm->dir_output . '/' . $audioModLower;
-	$uploadDir .= '/' . $audioSubDirRes;
-
-	$filePath = $uploadDir . '/' . dol_basename($audioFilename);
-	if (!empty($audioFilename) && dol_is_file($filePath)) {
-		dol_delete_file($filePath);
-	}
+	dol_move_uploaded_file($_FILES['audio']['tmp_name'], $tempDir . '/' . $fileName, 0, 0, (int) $_FILES['audio']['error'], 0, 'audio', $tempDir);
 }
 
 // 2. AJAX JSON endpoints for the PWA
@@ -183,18 +124,25 @@ if ($action == 'pwa_add_timespent') {
 	$taskId        = (int) ($payload['task_id'] ?? GETPOSTINT('task_id'));
 	$dateStr       = (string) ($payload['date'] ?? GETPOST('date', 'alphanohtml'));
 	$durationHm    = (string) ($payload['duration_hm'] ?? GETPOST('duration_hm', 'alphanohtml'));
-	$note          = trim((string) ($payload['note'] ?? GETPOST('note', 'restricthtml')));
+	$startHm       = (string) ($payload['start_hm'] ?? '');
+	$endHm         = (string) ($payload['end_hm'] ?? '');
+	$note          = trim(dol_string_nohtmltag((string) ($payload['note'] ?? GETPOST('note', 'restricthtml')), 0, 'UTF-8', 0, 0));
 	$isProjectMode = !empty($payload['is_project_mode']);
 	$calMonth      = (string) ($payload['cal_month'] ?? GETPOST('cal_month', 'alphanohtml'));
 
-	$durationSec = dolisirh_pwa_parse_hm_to_seconds($durationHm);
-	if ($taskId <= 0 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr) || $durationSec <= 0) {
-		print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorFieldRequired')]);
-		exit;
+	// A start and an end give the duration and keep the hour, otherwise only the duration is known
+	$startMin = dolisirh_pwa_parse_clock_time($startHm);
+	$endMin   = dolisirh_pwa_parse_clock_time($endHm);
+	$withHour = $startMin >= 0 && $endMin >= 0;
+	if ($withHour) {
+		// An end before the start is a shift going past midnight
+		$durationSec = (($endMin - $startMin + 1440) % 1440) * 60;
+	} else {
+		$durationSec = dolisirh_pwa_parse_hm_to_seconds($durationHm);
 	}
 
-	if ($isProjectMode && $note === '') {
-		print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorFieldRequired', $langs->transnoentities('Note'))]);
+	if ($taskId <= 0 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr) || $durationSec <= 0 || $durationSec > 86400) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities($withHour ? 'ErrorPwaEndEqualsStart' : 'ErrorFieldRequired', $langs->transnoentities('Duration'))]);
 		exit;
 	}
 
@@ -204,8 +152,20 @@ if ($action == 'pwa_add_timespent') {
 		exit;
 	}
 
+	// A closed project takes no more time; the HR project may stay a draft
 	$project = new Project($db);
-	$project->fetch((int) $task->fk_project);
+	if ($project->fetch((int) $task->fk_project) <= 0 || (int) $project->status === Project::STATUS_CLOSED || !in_array((int) $project->entity, explode(',', getEntity('project')))) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('NotEnoughPermissions')]);
+		exit;
+	}
+
+	// Time on a project says what was done: a note, a photo or a voice note. HR time needs none.
+	$isHrTask  = getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0 && (int) $project->id === getDolGlobalInt('DOLISIRH_HR_PROJECT');
+	$hasMedias = $isProjectMode && dol_is_dir($tempDir) && count(dol_dir_list($tempDir, 'files', 0, '', '(\.meta|_preview.*\.png)$')) > 0;
+	if ($isProjectMode && !$isHrTask && $note === '' && !$hasMedias) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorPwaNoteOrMediaRequired')]);
+		exit;
+	}
 
 	dolisirh_pwa_ensure_contributor($db, $user, (int) $task->fk_project, (int) $task->id);
 
@@ -213,8 +173,8 @@ if ($action == 'pwa_add_timespent') {
 	$dateTs    = dol_mktime(12, 0, 0, (int) $dateParts[1], (int) $dateParts[2], (int) $dateParts[0], 'tzserver');
 
 	$task->timespent_date     = $dateTs;
-	$task->timespent_datehour = $dateTs;
-	$task->timespent_withhour = 1;
+	$task->timespent_datehour = $withHour ? dol_mktime(intdiv($startMin, 60), $startMin % 60, 0, (int) $dateParts[1], (int) $dateParts[2], (int) $dateParts[0], 'tzuserrel') : $dateTs;
+	$task->timespent_withhour = $withHour ? 1 : 0;
 	$task->timespent_duration = $durationSec;
 	$task->timespent_note     = $note;
 	$task->timespent_fk_user  = $user->id;
@@ -227,10 +187,10 @@ if ($action == 'pwa_add_timespent') {
 
 	$savedMedias    = [];
 	$mediaBlockHtml = '';
-	if ($isProjectMode && $project->id > 0) {
-		$savedMedias    = dolisirh_pwa_save_uploaded_medias_to_project($conf, $user, $uploadTokenContext, $subDir, $project, $task);
-		$newSubDir      = 'tmp/' . saturne_get_upload_token($uploadTokenContext);
-		$mediaBlockHtml = dolisirh_pwa_media_block($newSubDir);
+	if ($isProjectMode) {
+		$savedMedias = dolisirh_pwa_attach_medias($conf, $subDir, $project, $task, (int) $resAdd);
+		saturne_invalidate_upload_token($uploadTokenContext, 'dolisirh', 'pwa');
+		$mediaBlockHtml = dolisirh_pwa_media_block(dolisirh_pwa_temp_sub_dir(saturne_get_upload_token($uploadTokenContext)));
 	}
 
 	$state        = dolisirh_pwa_get_state($db, $langs, $user, $dateStr, $calMonth);
@@ -239,6 +199,7 @@ if ($action == 'pwa_add_timespent') {
 	print json_encode([
 		'success'          => true,
 		'timespent_id'     => (int) $resAdd,
+		'duration_hm'      => dolisirh_pwa_format_hm($durationSec),
 		'saved_medias'     => $savedMedias,
 		'media_block_html' => $mediaBlockHtml,
 		'state'            => $state,
@@ -276,6 +237,12 @@ if ($action == 'pwa_delete_timespent') {
 	if ($task->fetchTimeSpent($timeSpentId) <= 0 || $task->delTimeSpent($user) <= 0) {
 		print json_encode(['success' => false, 'error' => $task->error ?: $langs->transnoentities('Error')]);
 		exit;
+	}
+
+	// The photos and voice notes of the entry go with it
+	$project = new Project($db);
+	if ($project->fetch((int) $task->fk_project) > 0) {
+		dolisirh_pwa_delete_entry_medias($conf, (string) $project->ref, (string) $task->ref, $timeSpentId);
 	}
 
 	$state        = dolisirh_pwa_get_state($db, $langs, $user, $selectedDate, $calMonth);

@@ -662,6 +662,27 @@ class modDoliSIRH extends DolibarrModules
             'target'   => '',
             'user'     => 0,
         ];
+
+        // Media library of the PWA photos. The page belongs to Saturne, which also reads this entry to
+        // know the module has a library: no entry while the installed Saturne does not ship the page.
+        // Declared last so the positions of the entries above do not move.
+        if (file_exists(dol_buildpath('/saturne/view/saturne_medias.php'))) {
+            $this->menu[$r++] = [
+                'fk_menu'  => 'fk_mainmenu=dolisirh',
+                'type'     => 'left',
+                'titre'    => 'MediaLibrary',
+                'prefix'   => '<i class="fas fa-images pictofixedwidth"></i>',
+                'mainmenu' => 'dolisirh',
+                'leftmenu' => 'dolisirh_medias',
+                'url'      => '/saturne/view/saturne_medias.php?module_name=dolisirh',
+                'langs'    => 'dolisirh@dolisirh',
+                'position' => 1000 + $r,
+                'enabled'  => 'isModEnabled("dolisirh")',
+                'perms'    => '$user->rights->dolisirh->lire',
+                'target'   => '',
+                'user'     => 0,
+            ];
+        }
     }
 
     /**
