@@ -35,13 +35,8 @@
 $tempDir     = $conf->dolisirh->dir_output . '/' . $subDir;
 $isOwnFolder = GETPOST('sub_dir', 'alpha') === $subDir && GETPOST('module_name', 'aZ09') === 'dolisirh';
 
-if (in_array($action, ['uploadPhoto', 'linkPhoto', 'deletePhoto', 'add_audio', 'delete_audio'], true) && $isOwnFolder && !dol_is_dir($tempDir)) {
+if (in_array($action, ['uploadPhoto', 'deletePhoto', 'add_audio', 'delete_audio'], true) && $isOwnFolder && !dol_is_dir($tempDir)) {
 	dol_mkdir($tempDir);
-}
-
-// Photos picked in the DoliSIRH media library (Saturne gallery): copied, the library keeps its own
-if ($action == 'linkPhoto' && $isOwnFolder) {
-	dolisirh_pwa_link_library_medias($conf, $tempDir, GETPOST('filenames', 'array'));
 }
 
 if ($action == 'uploadPhoto' && $isOwnFolder && !empty($_FILES['userfile']['tmp_name'])) {
@@ -72,6 +67,35 @@ if ($action == 'add_audio' && $isOwnFolder && !empty($_FILES['audio']['tmp_name'
 	// is given back to the file once the time entry is saved
 	$fileName = dol_print_date(dol_now(), 'dayhourlog') . '_audio.wav';
 	dol_move_uploaded_file($_FILES['audio']['tmp_name'], $tempDir . '/' . $fileName, 0, 0, (int) $_FILES['audio']['error'], 0, 'audio', $tempDir);
+}
+
+// Files joined to the time entry (quote, delivery note...) wait in their own folder of the session
+$filesDir         = $conf->dolisirh->dir_output . '/' . dolisirh_pwa_files_sub_dir($subDir);
+$isOwnFilesFolder = GETPOST('sub_dir', 'alpha') === dolisirh_pwa_files_sub_dir($subDir) && GETPOST('module_name', 'aZ09') === 'dolisirh';
+
+if ($action == 'uploadFile' && $isOwnFilesFolder && getDolGlobalInt('MAIN_UPLOAD_DOC') && !empty($_FILES['userfile']['tmp_name'])) {
+	if (!dol_is_dir($filesDir)) {
+		dol_mkdir($filesDir);
+	}
+
+	$tmpNames = (array) $_FILES['userfile']['tmp_name'];
+	$names    = (array) $_FILES['userfile']['name'];
+	$errors   = (array) $_FILES['userfile']['error'];
+	foreach ($tmpNames as $index => $tmpName) {
+		$fileName = dol_sanitizeFileName((string) $names[$index]);
+		// A file the server could run has nothing to do in a time entry: refused rather than renamed
+		if (empty($tmpName) || $fileName === '' || isAFileWithExecutableContent($fileName)) {
+			continue;
+		}
+		dol_move_uploaded_file($tmpName, $filesDir . '/' . $fileName, 0, 0, (int) $errors[$index], 0, 'userfile', $filesDir);
+	}
+}
+
+if ($action == 'deleteFile' && $isOwnFilesFolder) {
+	$fileName = dol_sanitizeFileName(basename(GETPOST('filename', 'alpha')));
+	if ($fileName !== '' && dol_is_file($filesDir . '/' . $fileName)) {
+		dol_delete_file($filesDir . '/' . $fileName, 0, 0, 0, null, false, 0);
+	}
 }
 
 // 2. AJAX JSON endpoints for the PWA
@@ -113,6 +137,69 @@ if ($action == 'pwa_create_default_task') {
 	exit;
 }
 
+// Start a time entry: the task and the start time are kept until the entry is stopped
+if ($action == 'pwa_start_clock') {
+	top_httphead('application/json');
+	if (!$user->hasRight('projet', 'lire') && !$user->hasRight('dolisirh', 'lire')) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('NotEnoughPermissions')]);
+		exit;
+	}
+
+	$payload  = json_decode(file_get_contents('php://input'), true);
+	$taskId   = (int) ($payload['task_id'] ?? 0);
+	$dateStr  = (string) ($payload['date'] ?? '');
+	$startHm  = (string) ($payload['start_hm'] ?? '');
+	$calMonth = (string) ($payload['cal_month'] ?? '');
+
+	if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr) || dolisirh_pwa_parse_clock_time($startHm) < 0) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorFieldRequired', $langs->transnoentities('PwaClockStart'))]);
+		exit;
+	}
+
+	$taskAndProject = dolisirh_pwa_fetch_task_for_time($db, $taskId);
+	if ($taskAndProject === null) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('NotEnoughPermissions')]);
+		exit;
+	}
+	[$task, $project] = $taskAndProject;
+
+	// One entry running at a time: it is stopped before the next one starts
+	$running = dolisirh_pwa_get_running($db, $conf, $user);
+	if (!empty($running)) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorPwaAlreadyRunning', $running[0]['task_label'])]);
+		exit;
+	}
+
+	$running[] = ['task_id' => (int) $task->id, 'date' => $dateStr, 'start_hm' => $startHm];
+	if (!dolisirh_pwa_write_running($db, $conf, $user, $running)) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('Error')]);
+		exit;
+	}
+
+	print json_encode(['success' => true, 'state' => dolisirh_pwa_get_state($db, $langs, $user, $dateStr, $calMonth)]);
+	exit;
+}
+
+// Give up a running time entry: nothing is saved
+if ($action == 'pwa_cancel_clock') {
+	top_httphead('application/json');
+	$payload      = json_decode(file_get_contents('php://input'), true);
+	$taskId       = (int) ($payload['task_id'] ?? 0);
+	$selectedDate = (string) ($payload['selected_date'] ?? '');
+	$calMonth     = (string) ($payload['cal_month'] ?? '');
+
+	$running = array_filter(dolisirh_pwa_read_running($db, $conf, $user), function (array $runningEntry) use ($taskId): bool {
+		return $runningEntry['task_id'] !== $taskId;
+	});
+	if (!dolisirh_pwa_write_running($db, $conf, $user, $running)) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('Error')]);
+		exit;
+	}
+
+	print json_encode(['success' => true, 'state' => dolisirh_pwa_get_state($db, $langs, $user, $selectedDate, $calMonth)]);
+	exit;
+}
+
 if ($action == 'pwa_add_timespent') {
 	top_httphead('application/json');
 	if (!$user->hasRight('projet', 'lire') && !$user->hasRight('dolisirh', 'lire')) {
@@ -128,12 +215,36 @@ if ($action == 'pwa_add_timespent') {
 	$endHm         = (string) ($payload['end_hm'] ?? '');
 	$note          = trim(dol_string_nohtmltag((string) ($payload['note'] ?? GETPOST('note', 'restricthtml')), 0, 'UTF-8', 0, 0));
 	$isProjectMode = !empty($payload['is_project_mode']);
+	$stopRunning   = !empty($payload['stop_running']);
 	$calMonth      = (string) ($payload['cal_month'] ?? GETPOST('cal_month', 'alphanohtml'));
+
+	// Stopping a running entry: its day and start time are the ones kept on the server
+	$running = $stopRunning ? dolisirh_pwa_read_running($db, $conf, $user) : [];
+	if ($stopRunning) {
+		$runningEntry = null;
+		foreach ($running as $index => $entry) {
+			if ($entry['task_id'] === $taskId) {
+				$runningEntry = $entry;
+				unset($running[$index]);
+				break;
+			}
+		}
+		if ($runningEntry === null) {
+			print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorPwaNotRunning'), 'state' => dolisirh_pwa_get_state($db, $langs, $user, $dateStr, $calMonth)]);
+			exit;
+		}
+		$dateStr = $runningEntry['date'];
+		$startHm = $runningEntry['start_hm'];
+	}
 
 	// A start and an end give the duration and keep the hour, otherwise only the duration is known
 	$startMin = dolisirh_pwa_parse_clock_time($startHm);
 	$endMin   = dolisirh_pwa_parse_clock_time($endHm);
 	$withHour = $startMin >= 0 && $endMin >= 0;
+	if ($stopRunning && !$withHour) {
+		print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorFieldRequired', $langs->transnoentities('PwaClockEnd'))]);
+		exit;
+	}
 	if ($withHour) {
 		// An end before the start is a shift going past midnight
 		$durationSec = (($endMin - $startMin + 1440) % 1440) * 60;
@@ -146,26 +257,13 @@ if ($action == 'pwa_add_timespent') {
 		exit;
 	}
 
-	$task = new Task($db);
-	if ($task->fetch($taskId) <= 0) {
-		print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorRecordNotFound')]);
-		exit;
-	}
-
-	// A closed project takes no more time; the HR project may stay a draft
-	$project = new Project($db);
-	if ($project->fetch((int) $task->fk_project) <= 0 || (int) $project->status === Project::STATUS_CLOSED || !in_array((int) $project->entity, explode(',', getEntity('project')))) {
+	// A closed project takes no more time; the HR project may stay a draft. The comment is optional.
+	$taskAndProject = dolisirh_pwa_fetch_task_for_time($db, $taskId);
+	if ($taskAndProject === null) {
 		print json_encode(['success' => false, 'error' => $langs->transnoentities('NotEnoughPermissions')]);
 		exit;
 	}
-
-	// Time on a project says what was done: a note, a photo or a voice note. HR time needs none.
-	$isHrTask  = getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0 && (int) $project->id === getDolGlobalInt('DOLISIRH_HR_PROJECT');
-	$hasMedias = $isProjectMode && dol_is_dir($tempDir) && count(dol_dir_list($tempDir, 'files', 0, '', '(\.meta|_preview.*\.png)$')) > 0;
-	if ($isProjectMode && !$isHrTask && $note === '' && !$hasMedias) {
-		print json_encode(['success' => false, 'error' => $langs->transnoentities('ErrorPwaNoteOrMediaRequired')]);
-		exit;
-	}
+	[$task, $project] = $taskAndProject;
 
 	dolisirh_pwa_ensure_contributor($db, $user, (int) $task->fk_project, (int) $task->id);
 
@@ -183,6 +281,10 @@ if ($action == 'pwa_add_timespent') {
 	if ($resAdd <= 0) {
 		print json_encode(['success' => false, 'error' => $task->error ?: $langs->transnoentities('Error')]);
 		exit;
+	}
+
+	if ($stopRunning) {
+		dolisirh_pwa_write_running($db, $conf, $user, $running);
 	}
 
 	$savedMedias    = [];

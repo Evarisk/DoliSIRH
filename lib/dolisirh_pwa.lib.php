@@ -40,6 +40,11 @@ require_once __DIR__ . '/dolisirh_timesheet.lib.php';
 const DOLISIRH_PWA_MEDIA_PREFIX = 'ts';
 
 /**
+ * User parameter holding the time entries started in the Pointer tab and not stopped yet.
+ */
+const DOLISIRH_PWA_RUNNING_PARAM = 'DOLISIRH_PWA_RUNNING';
+
+/**
  * Sub-directory of the DoliSIRH documents holding the medias picked before the time entry exists.
  *
  * @param  string $token Saturne upload token of the user session
@@ -48,6 +53,137 @@ const DOLISIRH_PWA_MEDIA_PREFIX = 'ts';
 function dolisirh_pwa_temp_sub_dir(string $token): string
 {
 	return 'pwa/' . $token;
+}
+
+/**
+ * Sub-directory of the files joined to the time entry. They wait apart from the photos and voice notes:
+ * the Saturne file list shows every file of its folder.
+ *
+ * @param  string $subDir Temporary sub-directory of the session
+ * @return string         Sub-directory, relative to the DoliSIRH documents
+ */
+function dolisirh_pwa_files_sub_dir(string $subDir): string
+{
+	return $subDir . '/files';
+}
+
+/**
+ * Whether a project is the HR project, whose time records the presence of the user.
+ *
+ * @param  int  $projectId Project ID
+ * @return bool
+ */
+function dolisirh_pwa_is_hr_project(int $projectId): bool
+{
+	return getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0 && $projectId === getDolGlobalInt('DOLISIRH_HR_PROJECT');
+}
+
+/**
+ * Task the user may spend time on from the PWA, with its project: visible in the entity and not closed.
+ * The HR project may stay a draft.
+ *
+ * @param  DoliDB     $db     Database handler
+ * @param  int        $taskId Task ID
+ * @return array|null         [Task, Project], null when no time can be spent on the task
+ */
+function dolisirh_pwa_fetch_task_for_time(DoliDB $db, int $taskId): ?array
+{
+	$task = new Task($db);
+	if ($taskId <= 0 || $task->fetch($taskId) <= 0) {
+		return null;
+	}
+
+	$project = new Project($db);
+	if ($project->fetch((int) $task->fk_project) <= 0 || (int) $project->status === Project::STATUS_CLOSED || !in_array((int) $project->entity, explode(',', getEntity('project')))) {
+		return null;
+	}
+
+	return [$task, $project];
+}
+
+/**
+ * Time entries started in the Pointer tab and not stopped yet, as stored: task, day and start time.
+ * They are kept on the server, so a closed app or another device finds them again.
+ *
+ * @param  DoliDB $db   Database handler
+ * @param  Conf   $conf Dolibarr configuration
+ * @param  User   $user User
+ * @return array        List of [task_id, date (YYYY-MM-DD), start_hm (HH:MM)]
+ */
+function dolisirh_pwa_read_running(DoliDB $db, Conf $conf, User $user): array
+{
+	// Read in the entity it is written to: main.inc.php loads the user parameters of the login entity only
+	$sql  = 'SELECT value FROM ' . MAIN_DB_PREFIX . 'user_param';
+	$sql .= ' WHERE fk_user = ' . ((int) $user->id) . ' AND entity = ' . ((int) $conf->entity);
+	$sql .= " AND param = '" . $db->escape(DOLISIRH_PWA_RUNNING_PARAM) . "'";
+
+	$resql   = $db->query($sql);
+	$obj     = $resql ? $db->fetch_object($resql) : null;
+	$stored  = $obj ? json_decode((string) $obj->value, true) : [];
+	$running = [];
+	foreach (is_array($stored) ? $stored : [] as $entry) {
+		if (!is_array($entry) || (int) ($entry['task_id'] ?? 0) <= 0 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($entry['date'] ?? '')) || dolisirh_pwa_parse_clock_time((string) ($entry['start_hm'] ?? '')) < 0) {
+			continue;
+		}
+		$running[] = ['task_id' => (int) $entry['task_id'], 'date' => (string) $entry['date'], 'start_hm' => (string) $entry['start_hm']];
+	}
+
+	return $running;
+}
+
+/**
+ * Store the time entries started and not stopped yet.
+ *
+ * @param  DoliDB $db      Database handler
+ * @param  Conf   $conf    Dolibarr configuration
+ * @param  User   $user    User
+ * @param  array  $running List of [task_id, date, start_hm], more keys are dropped
+ * @return bool
+ */
+function dolisirh_pwa_write_running(DoliDB $db, Conf $conf, User $user, array $running): bool
+{
+	require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
+
+	$stored = [];
+	foreach ($running as $entry) {
+		$stored[] = ['task_id' => (int) $entry['task_id'], 'date' => (string) $entry['date'], 'start_hm' => (string) $entry['start_hm']];
+	}
+
+	// An empty value removes the parameter
+	return dol_set_user_param($db, $conf, $user, [DOLISIRH_PWA_RUNNING_PARAM => empty($stored) ? '' : (string) json_encode($stored)], (int) $conf->entity) > 0;
+}
+
+/**
+ * Time entries started and not stopped yet, with their task and project. The PWA starts one at a time.
+ *
+ * @param  DoliDB $db   Database handler
+ * @param  Conf   $conf Dolibarr configuration
+ * @param  User   $user User
+ * @return array        List of running entries
+ */
+function dolisirh_pwa_get_running(DoliDB $db, Conf $conf, User $user): array
+{
+	$running = [];
+	foreach (dolisirh_pwa_read_running($db, $conf, $user) as $entry) {
+		// A task deleted or a project closed in the meantime takes no more time
+		$taskAndProject = dolisirh_pwa_fetch_task_for_time($db, $entry['task_id']);
+		if ($taskAndProject === null) {
+			continue;
+		}
+		[$task, $project] = $taskAndProject;
+
+		$running[] = $entry + [
+			'task_ref'      => (string) $task->ref,
+			'task_label'    => (string) $task->label,
+			'task_url'      => DOL_URL_ROOT . '/projet/tasks/time.php?id=' . (int) $task->id,
+			'project_id'    => (int) $project->id,
+			'project_ref'   => (string) $project->ref,
+			'project_title' => (string) $project->title,
+			'is_hr'         => dolisirh_pwa_is_hr_project((int) $project->id),
+		];
+	}
+
+	return $running;
 }
 
 /**
@@ -78,43 +214,15 @@ function dolisirh_pwa_purge_temp_dirs(Conf $conf, string $keepToken): void
 }
 
 /**
- * Render the Saturne media upload block for the Pointer tab of the DoliSIRH PWA.
- * The picking button opens the DoliSIRH media library, the camera button takes a new photo.
+ * Render the Saturne media upload block for the Pointer tab of the DoliSIRH PWA: photos taken or picked on
+ * the device, files and voice notes.
  *
  * @param  string $subDir Upload subfolder under the DoliSIRH documents
  * @return string         HTML of the media upload block
  */
 function dolisirh_pwa_media_block(string $subDir): string
 {
-	return saturne_render_media_block('dolisirh', $subDir, 'pwa-timespent', '', ['show_photo' => true, 'show_audio' => true, 'show_library' => true, 'show_ai' => false]);
-}
-
-/**
- * Folder of the DoliSIRH media library, browsed by the Saturne gallery.
- *
- * @param  Conf   $conf Dolibarr configuration
- * @return string       Full path of the folder
- */
-function dolisirh_pwa_library_dir(Conf $conf): string
-{
-	// Same folder as saturne_add_media_to_library(), the ECM module being off or not
-	$ecmDir = $conf->ecm->multidir_output[$conf->entity] ?? saturne_default_documents_dir('ecm', (int) $conf->entity);
-
-	return $ecmDir . '/dolisirh/medias';
-}
-
-/**
- * Whether a photo picked in the PWA comes from the media library: same name and same weight.
- *
- * @param  Conf   $conf     Dolibarr configuration
- * @param  string $filePath Full path of the photo
- * @return bool
- */
-function dolisirh_pwa_is_library_media(Conf $conf, string $filePath): bool
-{
-	$libraryFile = dolisirh_pwa_library_dir($conf) . '/' . basename($filePath);
-
-	return dol_is_file($libraryFile) && dol_filesize($libraryFile) == dol_filesize($filePath);
+	return saturne_render_media_block('dolisirh', $subDir, 'pwa-timespent', '', ['show_photo' => true, 'show_file' => true, 'file_sub_dir' => dolisirh_pwa_files_sub_dir($subDir), 'show_audio' => true, 'show_ai' => false]);
 }
 
 /**
@@ -199,22 +307,30 @@ function dolisirh_pwa_attach_medias(Conf $conf, string $subDir, Project $project
 		dol_mkdir($taskDir);
 	}
 
-	$storedFiles = [];
+	// Photos and voice notes from the session folder, files of any type from their own folder
+	$medias = [];
 	foreach (dol_dir_list($tempDir, 'files', 0, '', '(\.meta|_preview.*\.png)$', 'date', SORT_ASC) as $file) {
 		$isImage = image_format_supported($file['name']) >= 0;
-		$isAudio = preg_match('/\.(wav|mp3|ogg|m4a|webm)$/i', $file['name']);
-		if (!$isImage && !$isAudio) {
-			continue;
+		$isAudio = (bool) preg_match('/\.(wav|mp3|ogg|m4a|webm)$/i', $file['name']);
+		if ($isImage || $isAudio) {
+			$medias[] = [$file, $isImage, $isAudio];
 		}
+	}
+	$filesDir = $conf->dolisirh->dir_output . '/' . dolisirh_pwa_files_sub_dir($subDir);
+	if (dol_is_dir($filesDir)) {
+		foreach (dol_dir_list($filesDir, 'files', 0, '', '(\.meta|_preview.*\.png)$', 'date', SORT_ASC) as $file) {
+			$medias[] = [$file, false, false];
+		}
+	}
 
+	$storedFiles = [];
+	foreach ($medias as [$file, $isImage, $isAudio]) {
 		$fileName = dol_sanitizeFileName($file['name']);
 		if ($isAudio) {
 			$fileName = pathinfo($fileName, PATHINFO_FILENAME) . '.' . dolisirh_pwa_audio_extension($file['fullname']);
 		}
 		$fileName = DOLISIRH_PWA_MEDIA_PREFIX . $timeSpentId . '_' . $fileName;
 		$destFile = $taskDir . '/' . $fileName;
-
-		$fromLibrary = $isImage && dolisirh_pwa_is_library_media($conf, $file['fullname']);
 
 		$moreInfo = ['gen_or_uploaded' => 'uploaded', 'src_object_type' => $task->table_element, 'src_object_id' => $task->id];
 		if (!dol_move($file['fullname'], $destFile, '0', 1, 0, 1, $moreInfo)) {
@@ -224,46 +340,11 @@ function dolisirh_pwa_attach_medias(Conf $conf, string $subDir, Project $project
 		if ($isImage) {
 			vignette($destFile, 160, 120, '_mini');
 			vignette($destFile, 480, 270, '_small');
-
-			// A photo taken on the spot joins the DoliSIRH media library, as Saturne media blocks do;
-			// one picked from the library is already there
-			if (!$fromLibrary && function_exists('saturne_add_media_to_library')) {
-				saturne_add_media_to_library('dolisirh', $destFile);
-			}
 		}
 		$storedFiles[] = $fileName;
 	}
 
 	return $storedFiles;
-}
-
-/**
- * Copy medias of the DoliSIRH media library into the temporary folder of the PWA.
- *
- * @param  Conf     $conf      Dolibarr configuration
- * @param  string   $tempDir   Full path of the temporary folder of the session
- * @param  string[] $fileNames Names of the library medias
- * @return int                 Number of medias copied
- */
-function dolisirh_pwa_link_library_medias(Conf $conf, string $tempDir, array $fileNames): int
-{
-	$libraryDir = dolisirh_pwa_library_dir($conf);
-	$copied     = 0;
-	foreach ($fileNames as $fileName) {
-		$fileName = dol_sanitizeFileName(basename((string) $fileName));
-		if ($fileName === '' || image_format_supported($fileName) < 0 || !dol_is_file($libraryDir . '/' . $fileName)) {
-			continue;
-		}
-
-		if (!dol_is_dir($tempDir)) {
-			dol_mkdir($tempDir);
-		}
-		if (dol_copy($libraryDir . '/' . $fileName, $tempDir . '/' . $fileName, '0', 1) > 0) {
-			$copied++;
-		}
-	}
-
-	return $copied;
 }
 
 /**
@@ -332,6 +413,9 @@ function dolisirh_pwa_get_entries_medias(Conf $conf, array $entries): array
 				$medias[(int) $matches[1]][] = ['type' => 'image', 'name' => $file['name'], 'url' => $url . '&attachment=0', 'thumb' => $thumbUrl];
 			} elseif (preg_match('/\.(wav|mp3|ogg|m4a|webm)$/i', $file['name'])) {
 				$medias[(int) $matches[1]][] = ['type' => 'audio', 'name' => $file['name'], 'url' => $url . '&attachment=0', 'thumb' => ''];
+			} else {
+				// A joined file is shown under its own name, without the prefix of the time entry
+				$medias[(int) $matches[1]][] = ['type' => 'file', 'name' => substr($file['name'], strlen($matches[0])), 'url' => $url, 'thumb' => ''];
 			}
 		}
 	}
@@ -801,6 +885,7 @@ function dolisirh_pwa_get_state(DoliDB $db, Translate $langs, User $user, string
 		'today'         => $todayStr,
 		'selected_date' => $selectedDateStr,
 		'selected_day'  => $selectedDay,
+		'running'       => dolisirh_pwa_get_running($db, $conf, $user),
 		'quick_tasks'   => $quickTasks,
 		'week_days'     => $weekDays,
 		'hr_project'    => $hrProjectData,
