@@ -82,25 +82,36 @@ $head        = '<link rel="manifest" href="' . dol_escape_htmltag($manifestUrl) 
 $conf->dol_hide_topmenu  = 1;
 $conf->dol_hide_leftmenu = 1;
 
-saturne_header(1, $head, $title, '', '', 0, 0, [], [], '', 'template-pwa dolisirh-pwa-body');
+saturne_header(0, $head, $title, '', '', 0, 0, [], [], '', 'template-pwa dolisirh-pwa-body');
 
 dolisirh_pwa_purge_temp_dirs($conf, $uploadToken);
 
 $initialState = dolisirh_pwa_get_state($db, $langs, $user, $selectedDate, $calMonth);
 
-// One-tap durations of the Pointer tab, in minutes
+// One-tap durations of the stop panel, in minutes: they set the end from the start
 $durationChips = [];
 foreach ([15, 30, 60, 120, 210, 420] as $minutes) {
 	$durationChips[$minutes] = $minutes < 60 ? $minutes . ' min' : intdiv($minutes, 60) . ' h' . ($minutes % 60 ? ' ' . sprintf('%02d', $minutes % 60) : '');
 }
 
 $labels = [
-	'save'           => $langs->transnoentities('PwaClockSave'),
+	'started'        => $langs->transnoentities('PwaClockStarted', '%s'),
+	'since'          => $langs->transnoentities('PwaClockSince', '%s'),
+	'startedOn'      => $langs->transnoentities('PwaClockStartedOn', '%s'),
+	'stop'           => $langs->transnoentities('PwaClockStop'),
+	'validate'       => $langs->transnoentities('PwaClockValidate'),
+	'cancel'         => $langs->transnoentities('PwaClockCancel'),
+	'cancelTitle'    => $langs->transnoentities('PwaClockCancelTitle'),
+	'cancelText'     => $langs->transnoentities('PwaClockCancelText'),
+	'cancelOk'       => $langs->transnoentities('PwaClockCancelOk'),
+	'cancelled'      => $langs->transnoentities('PwaClockCancelled'),
+	'save'           => $langs->transnoentities('Save'),
 	'saved'          => $langs->transnoentities('PwaClockSaved'),
 	'mediasSaved'    => $langs->transnoentities('PwaClockMediasSaved', '%s'),
 	'deleted'        => $langs->transnoentities('PwaClockDeleted'),
-	'deleteConfirm'  => $langs->transnoentities('PwaClockDeleteConfirm'),
-	'running'        => $langs->transnoentities('PwaClockRunning', '%s'),
+	'deleteTitle'    => $langs->transnoentities('PwaClockDeleteTitle'),
+	'deleteText'     => $langs->transnoentities('PwaClockDeleteText'),
+	'deleteOk'       => $langs->transnoentities('Delete'),
 	'dayEntries'     => $langs->transnoentities('PwaClockDayEntries', '%s'),
 	'noEntry'        => $langs->transnoentities('PwaClockNoEntry'),
 	'total'          => $langs->transnoentities('Total'),
@@ -159,97 +170,125 @@ require_once __DIR__ . '/../../core/tpl/frontend/dolisirh_pwa_header.tpl.php';
 		<div id="pwa-hr-task-sections" class="ts-hr-task-sections"></div>
 	</section>
 
-	<!-- TAB 2: POINTER (start and end time, task, note, photos and voice notes) -->
+	<!-- TAB 2: POINTER — started with a task and a start time, stopped with an end time, a comment and medias -->
 	<section id="pwa-view-project" class="ts-tab-panel" hidden>
-		<!-- One-tap tasks: HR presence and the latest tasks of the user -->
-		<div class="ts-field" id="pwa-quick-field" hidden>
-			<label><?php echo $langs->trans('PwaQuickTasks'); ?></label>
-			<div id="pwa-quick-tasks" class="ts-quick-tasks"></div>
+		<!-- Time entry started and not stopped yet: while it runs, its card takes the place of the start panel -->
+		<div id="pwa-running" class="ts-running" hidden>
+			<div class="ts-running__title"><?php echo $langs->trans('PwaClockRunningTitle'); ?></div>
+			<div id="pwa-running-list" class="ts-running__list"></div>
 		</div>
 
-		<!-- Project Selector -->
-		<div class="ts-field">
-			<div class="ts-field-header">
-				<label for="pwa-proj-search"><?php echo $langs->trans('Project'); ?></label>
-				<span id="pwa-proj-stats" class="ts-inline-stats"></span>
+		<div id="pwa-start-panel" class="ts-start">
+			<!-- One-tap tasks: HR presence and the latest tasks of the user -->
+			<div class="ts-field" id="pwa-quick-field" hidden>
+				<label><?php echo $langs->trans('PwaQuickTasks'); ?></label>
+				<div id="pwa-quick-tasks" class="ts-quick-tasks"></div>
 			</div>
-			<div class="ts-combobox" id="pwa-proj-combobox">
-				<input type="text" id="pwa-proj-search" class="ts-combobox__input" placeholder="<?php echo dol_escape_htmltag($langs->trans('SelectProject')); ?>" autocomplete="off">
-				<button type="button" id="pwa-proj-toggle" class="ts-combobox__toggle" tabindex="-1"><i class="fas fa-chevron-down"></i></button>
-				<ul id="pwa-proj-list" class="ts-combobox__list" hidden></ul>
-			</div>
-		</div>
 
-		<!-- Task Selector -->
-		<div class="ts-field" id="pwa-task-field">
-			<div class="ts-field-header">
-				<label for="pwa-task-search"><?php echo $langs->trans('Task'); ?></label>
-				<span id="pwa-task-stats" class="ts-inline-stats"></span>
-				<button type="button" id="pwa-btn-create-default-task" class="ts-btn-icon ts-btn-add-task" title="Créer / sélectionner la tâche par défaut SPJ_<Titre du projet>" disabled>
-					<i class="fas fa-plus"></i>
-				</button>
-			</div>
-			<div class="ts-combobox" id="pwa-task-combobox" hidden>
-				<input type="text" id="pwa-task-search" class="ts-combobox__input" placeholder="<?php echo dol_escape_htmltag($langs->trans('SelectTask')); ?>" autocomplete="off">
-				<button type="button" id="pwa-task-toggle" class="ts-combobox__toggle" tabindex="-1"><i class="fas fa-chevron-down"></i></button>
-				<ul id="pwa-task-list" class="ts-combobox__list" hidden></ul>
-			</div>
-		</div>
-
-		<!-- Start and end time: the duration follows, or a duration moves the end -->
-		<div class="ts-clock" id="pwa-clock">
-			<div id="pwa-clock-running" class="ts-clock__running" hidden></div>
-			<div class="ts-clock__range">
-				<div class="ts-clock__field">
-					<label for="pwa-proj-start"><?php echo $langs->trans('PwaClockStart'); ?></label>
-					<input type="time" id="pwa-proj-start" step="60" required>
-					<button type="button" class="ts-clock__now" data-clock-now="start"><i class="far fa-clock"></i> <?php echo $langs->trans('PwaClockNow'); ?></button>
+			<!-- Project Selector -->
+			<div class="ts-field">
+				<div class="ts-field-header">
+					<label for="pwa-proj-search"><?php echo $langs->trans('Project'); ?></label>
+					<span id="pwa-proj-stats" class="ts-inline-stats"></span>
 				</div>
-				<span class="ts-clock__arrow" aria-hidden="true"><i class="fas fa-long-arrow-alt-right"></i></span>
-				<div class="ts-clock__field">
-					<label for="pwa-proj-end"><?php echo $langs->trans('PwaClockEnd'); ?></label>
-					<input type="time" id="pwa-proj-end" step="60" required>
-					<button type="button" class="ts-clock__now" data-clock-now="end"><i class="far fa-clock"></i> <?php echo $langs->trans('PwaClockNow'); ?></button>
+				<div class="ts-combobox" id="pwa-proj-combobox">
+					<input type="text" id="pwa-proj-search" class="ts-combobox__input" placeholder="<?php echo dol_escape_htmltag($langs->trans('SelectProject')); ?>" autocomplete="off">
+					<button type="button" id="pwa-proj-toggle" class="ts-combobox__toggle" tabindex="-1"><i class="fas fa-chevron-down"></i></button>
+					<ul id="pwa-proj-list" class="ts-combobox__list" hidden></ul>
 				</div>
 			</div>
-			<div class="ts-clock__chips" role="group" aria-label="<?php echo dol_escape_htmltag($langs->trans('Duration')); ?>">
-				<?php foreach ($durationChips as $minutes => $chipLabel) : ?>
-					<button type="button" class="ts-chip" data-duration="<?php echo (int) $minutes; ?>"><?php echo dol_escape_htmltag($chipLabel); ?></button>
-				<?php endforeach; ?>
-			</div>
-			<div class="ts-row-2col">
-				<div class="ts-field">
-					<label for="pwa-proj-duration"><?php echo $langs->trans('Duration'); ?> <span id="pwa-proj-overnight" class="ts-clock__hint" hidden><?php echo $langs->trans('PwaClockOvernight'); ?></span></label>
-					<input type="time" id="pwa-proj-duration" value="01:00" step="60">
+
+			<!-- Task Selector -->
+			<div class="ts-field" id="pwa-task-field">
+				<div class="ts-field-header">
+					<label for="pwa-task-search"><?php echo $langs->trans('Task'); ?></label>
+					<span id="pwa-task-stats" class="ts-inline-stats"></span>
+					<button type="button" id="pwa-btn-create-default-task" class="ts-btn-icon ts-btn-add-task" title="Créer / sélectionner la tâche par défaut SPJ_<Titre du projet>" disabled>
+						<i class="fas fa-plus"></i>
+					</button>
 				</div>
-				<div class="ts-field">
-					<label for="pwa-proj-date"><?php echo $langs->trans('Date'); ?></label>
-					<input type="date" id="pwa-proj-date">
+				<div class="ts-combobox" id="pwa-task-combobox" hidden>
+					<input type="text" id="pwa-task-search" class="ts-combobox__input" placeholder="<?php echo dol_escape_htmltag($langs->trans('SelectTask')); ?>" autocomplete="off">
+					<button type="button" id="pwa-task-toggle" class="ts-combobox__toggle" tabindex="-1"><i class="fas fa-chevron-down"></i></button>
+					<ul id="pwa-task-list" class="ts-combobox__list" hidden></ul>
 				</div>
 			</div>
-			<div id="pwa-clock-overlap" class="ts-clock__overlap" hidden></div>
-		</div>
 
-		<!-- Note / Comment -->
-		<div class="ts-field">
-			<label for="pwa-proj-note"><?php echo $langs->trans('Note'); ?> / <?php echo $langs->trans('Comment'); ?> <span id="pwa-proj-note-req" class="ts-req" title="<?php echo dol_escape_htmltag($langs->trans('PwaNoteOrMediaHelp')); ?>">*</span></label>
-			<textarea id="pwa-proj-note" rows="2" placeholder="<?php echo dol_escape_htmltag($langs->trans('PwaNotePlaceholder')); ?>"></textarea>
-		</div>
-
-		<!-- Saturne media block: photos and voice notes, attached to the time entry once saved -->
-		<div class="ts-field ts-media-field">
-			<div class="ts-field-header">
-				<label><i class="fas fa-camera"></i> <?php echo $langs->trans('Medias'); ?></label>
+			<!-- Start time: now by default, following the clock until it is typed -->
+			<div class="ts-clock" id="pwa-clock">
+				<div class="ts-clock__range ts-clock__range--start">
+					<div class="ts-clock__field">
+						<label for="pwa-proj-start"><?php echo $langs->trans('PwaClockStart'); ?></label>
+						<input type="time" id="pwa-proj-start" step="60" required>
+					</div>
+					<div class="ts-clock__field">
+						<label for="pwa-proj-date"><?php echo $langs->trans('Date'); ?></label>
+						<input type="date" id="pwa-proj-date">
+					</div>
+				</div>
 			</div>
-			<div id="pwa-proj-media-wrapper" class="dolisirh-pwa-media-block">
-				<?php print dolisirh_pwa_media_block($subDir); ?>
-			</div>
+
+			<button type="button" id="pwa-btn-start" class="ts-btn-clock" disabled>
+				<i class="fas fa-play"></i>
+				<span><?php echo $langs->trans('PwaClockStartAction'); ?></span>
+			</button>
 		</div>
 
-		<button type="button" id="pwa-btn-save-proj" class="ts-btn-clock" disabled>
-			<i class="fas fa-check"></i>
-			<span id="pwa-btn-save-proj-label"><?php echo $langs->trans('PwaClockSave'); ?></span>
-		</button>
+		<!-- Stop: end time, then the comment, photos, files and voice notes of the time entry -->
+		<div id="pwa-stop-panel" class="ts-stop" hidden>
+			<div class="ts-stop__head">
+				<button type="button" id="pwa-btn-stop-back" class="ts-btn-icon" title="<?php echo dol_escape_htmltag($langs->trans('Back')); ?>"><i class="fas fa-arrow-left"></i></button>
+				<div class="ts-stop__heading">
+					<span class="ts-stop__title"><?php echo $langs->trans('PwaClockStopTitle'); ?></span>
+					<span id="pwa-stop-task" class="ts-stop__task"></span>
+				</div>
+			</div>
+
+			<div class="ts-clock">
+				<div class="ts-clock__range">
+					<div class="ts-clock__field">
+						<span class="ts-clock__label"><?php echo $langs->trans('PwaClockStart'); ?></span>
+						<span id="pwa-stop-start" class="ts-clock__value"></span>
+						<span id="pwa-stop-start-day" class="ts-clock__hint" hidden></span>
+					</div>
+					<span class="ts-clock__arrow" aria-hidden="true"><i class="fas fa-long-arrow-alt-right"></i></span>
+					<div class="ts-clock__field">
+						<label for="pwa-proj-end"><?php echo $langs->trans('PwaClockEnd'); ?></label>
+						<input type="time" id="pwa-proj-end" step="60" required>
+					</div>
+				</div>
+				<div class="ts-clock__chips" role="group" aria-label="<?php echo dol_escape_htmltag($langs->trans('Duration')); ?>">
+					<?php foreach ($durationChips as $minutes => $chipLabel) : ?>
+						<button type="button" class="ts-chip" data-duration="<?php echo (int) $minutes; ?>"><?php echo dol_escape_htmltag($chipLabel); ?></button>
+					<?php endforeach; ?>
+				</div>
+				<div class="ts-clock__total">
+					<?php echo $langs->trans('Duration'); ?> <b id="pwa-stop-duration">-</b>
+					<span id="pwa-proj-overnight" class="ts-clock__hint" hidden><?php echo $langs->trans('PwaClockOvernight'); ?></span>
+				</div>
+				<div id="pwa-clock-overlap" class="ts-clock__overlap" hidden></div>
+			</div>
+
+			<div class="ts-field">
+				<label for="pwa-proj-note"><?php echo $langs->trans('PwaComment'); ?> <span class="ts-optional">(<?php echo $langs->trans('PwaOptional'); ?>)</span></label>
+				<textarea id="pwa-proj-note" rows="2" placeholder="<?php echo dol_escape_htmltag($langs->trans('PwaNotePlaceholder')); ?>"></textarea>
+			</div>
+
+			<!-- Saturne media block: photos, files and voice notes, attached to the time entry once saved -->
+			<div class="ts-field ts-media-field">
+				<div class="ts-field-header">
+					<label><i class="fas fa-paperclip"></i> <?php echo $langs->trans('Medias'); ?> <span class="ts-optional">(<?php echo $langs->trans('PwaOptional'); ?>)</span></label>
+				</div>
+				<div id="pwa-proj-media-wrapper" class="dolisirh-pwa-media-block">
+					<?php print dolisirh_pwa_media_block($subDir); ?>
+				</div>
+			</div>
+
+			<button type="button" id="pwa-btn-save-proj" class="ts-btn-clock" disabled>
+				<i class="fas fa-check"></i>
+				<span id="pwa-btn-save-proj-label"><?php echo $langs->trans('PwaClockValidate'); ?></span>
+			</button>
+		</div>
 
 		<!-- Entries of the selected day, in clock order -->
 		<div id="pwa-proj-history" class="ts-proj-history"></div>
@@ -276,6 +315,19 @@ require_once __DIR__ . '/../../core/tpl/frontend/dolisirh_pwa_header.tpl.php';
 		<div id="pwa-cal-grid" class="ts-cal-grid"></div>
 	</section>
 </main>
+
+<!-- Confirmation before giving up or deleting a time entry: title, text and button set by the script -->
+<dialog id="pwa-confirm" class="ts-confirm" aria-labelledby="pwa-confirm-title" aria-describedby="pwa-confirm-text">
+	<div class="ts-confirm__box">
+		<span class="ts-confirm__icon"><i class="fas fa-exclamation-triangle"></i></span>
+		<h2 id="pwa-confirm-title" class="ts-confirm__title"></h2>
+		<p id="pwa-confirm-text" class="ts-confirm__text"></p>
+		<div class="ts-confirm__actions">
+			<button type="button" id="pwa-confirm-cancel" class="ts-confirm__cancel"><?php echo $langs->trans('Cancel'); ?></button>
+			<button type="button" id="pwa-confirm-ok" class="ts-confirm__ok"></button>
+		</div>
+	</div>
+</dialog>
 
 <?php // A note holding "</script>" must not close the data element: "<\/" reads the same in JSON ?>
 <script id="dolisirh-pwa-initial-state" type="application/json"><?php echo str_replace('</', '<\/', (string) json_encode($initialState)); ?></script>

@@ -29,15 +29,19 @@ window.dolisirh.pwa = {
 	selectedTask: null,
 	projectTasks: [],
 	msgTimer: null,
-	// A clock time typed or set by the user is kept, the other one follows the clock or the duration
+	// A start or end time typed or set by the user is kept, otherwise it follows the clock
 	startTouched: false,
 	endTouched: false,
 	restoringDraft: false,
 	saving: false,
 	clockDate: '',
+	// Running entry whose stop panel is open, null while the start panel shows
+	stopping: null,
 	tickTimer: null,
 	voice: null,
 	draftKey: 'dolisirh_pwa_draft',
+	// Answer of the confirmation dialog while it is open
+	confirmResolve: null,
 };
 
 /**
@@ -65,7 +69,7 @@ window.dolisirh.pwa.init = function() {
 	window.dolisirh.pwa.renderAll();
 	window.dolisirh.pwa.restoreDraft();
 
-	// While the end follows the clock, the duration grows on its own: the Pointer tab works as a stopwatch
+	// The running entries count their time, and untouched start and end times follow the clock
 	window.dolisirh.pwa.tickTimer = setInterval(window.dolisirh.pwa.tickClock, 20000);
 	document.addEventListener('visibilitychange', function() {
 		if (!document.hidden) {
@@ -416,7 +420,7 @@ window.dolisirh.pwa.bindEvents = function() {
 			pwa.projectTasks = [];
 			pwa.renderProjectStats();
 			pwa.renderTaskFieldState();
-			pwa.updateProjectSaveButtonState();
+			pwa.updateClockButtons();
 			pwa.renderProjectDropdown(projSearch.value);
 			if (projList) projList.hidden = false;
 		});
@@ -448,7 +452,7 @@ window.dolisirh.pwa.bindEvents = function() {
 		taskSearch.addEventListener('input', function() {
 			pwa.selectedTask = null;
 			pwa.renderTaskStats();
-			pwa.updateProjectSaveButtonState();
+			pwa.updateClockButtons();
 			pwa.renderTaskDropdown(taskSearch.value);
 			if (taskList) taskList.hidden = false;
 		});
@@ -488,10 +492,11 @@ window.dolisirh.pwa.bindEvents = function() {
 	}
 
 	pwa.bindClockEvents();
+	pwa.bindConfirmEvents();
 };
 
 /**
- * Bind the Pointer tab: date, start, end, duration, one-tap durations, note and save.
+ * Bind the Pointer tab: task and start time to start, end time, durations, comment and medias to stop.
  *
  * @returns {void}
  */
@@ -500,98 +505,100 @@ window.dolisirh.pwa.bindClockEvents = function() {
 	var projDate = document.getElementById('pwa-proj-date');
 	var projStart = document.getElementById('pwa-proj-start');
 	var projEnd = document.getElementById('pwa-proj-end');
-	var projDur = document.getElementById('pwa-proj-duration');
 	var projNote = document.getElementById('pwa-proj-note');
-	var projSaveBtn = document.getElementById('pwa-btn-save-proj');
+	var startBtn = document.getElementById('pwa-btn-start');
+	var saveBtn = document.getElementById('pwa-btn-save-proj');
+	var backBtn = document.getElementById('pwa-btn-stop-back');
+	var runningList = document.getElementById('pwa-running-list');
 
 	if (projDate) {
 		projDate.addEventListener('change', function() {
 			if (projDate.value && pwa.state && projDate.value !== pwa.state.selected_date) {
 				pwa.fetchState(projDate.value, projDate.value.slice(0, 7));
 			}
-			pwa.updateProjectSaveButtonState();
+			pwa.updateClockButtons();
 		});
 	}
 	if (projStart) {
 		projStart.addEventListener('input', function() {
 			pwa.startTouched = true;
-			pwa.syncDuration();
+			pwa.updateClockButtons();
 		});
 	}
 	if (projEnd) {
 		projEnd.addEventListener('input', function() {
 			pwa.endTouched = true;
-			pwa.syncDuration();
-		});
-	}
-	if (projDur) {
-		projDur.addEventListener('input', function() {
-			pwa.applyDuration(pwa.hmToMin(projDur.value), false);
+			pwa.syncStop();
 		});
 	}
 	if (projNote) {
 		projNote.addEventListener('input', function() {
-			pwa.updateProjectSaveButtonState();
 			pwa.saveDraft();
 		});
 	}
-	if (projSaveBtn) {
-		projSaveBtn.addEventListener('click', function() {
-			pwa.submitProjectTimeSpent();
+	if (startBtn) {
+		startBtn.addEventListener('click', function() {
+			pwa.startClock();
+		});
+	}
+	if (saveBtn) {
+		saveBtn.addEventListener('click', function() {
+			pwa.stopClock();
+		});
+	}
+	if (backBtn) {
+		backBtn.addEventListener('click', function() {
+			pwa.closeStop();
 		});
 	}
 
-	document.querySelectorAll('[data-clock-now]').forEach(function(nowBtn) {
-		nowBtn.addEventListener('click', function() {
-			pwa.setClockNow(nowBtn.getAttribute('data-clock-now'));
+	// The running cards are drawn again on every tick: their buttons are listened to from the list
+	if (runningList) {
+		runningList.addEventListener('click', function(e) {
+			var stopBtn = e.target.closest('.ts-running__stop');
+			var cancelBtn = e.target.closest('.ts-running__cancel');
+			if (stopBtn) {
+				var entry = pwa.findRunning(parseInt(stopBtn.getAttribute('data-task-id'), 10));
+				if (entry) {
+					pwa.openStop(entry);
+				}
+			} else if (cancelBtn) {
+				pwa.cancelRunning(parseInt(cancelBtn.getAttribute('data-task-id'), 10));
+			}
 		});
-	});
+	}
 
 	document.querySelectorAll('.ts-clock__chips .ts-chip').forEach(function(chip) {
 		chip.addEventListener('click', function() {
-			pwa.applyDuration(parseInt(chip.getAttribute('data-duration'), 10), true);
+			pwa.applyDuration(parseInt(chip.getAttribute('data-duration'), 10));
 		});
 	});
-
-	// A photo or a voice note sent through the Saturne media block can stand for the note
-	if (window.jQuery) {
-		window.jQuery(document).ajaxComplete(function() {
-			pwa.updateProjectSaveButtonState();
-		});
-	}
 };
 
 /**
- * Put the default clock times: the start follows the last entry of the day, the end is now (today)
- * or one hour later (another day).
+ * Put the default start time: now on today, otherwise where the last entry of the same kind ended or
+ * in the morning.
  *
  * @returns {void}
  */
-window.dolisirh.pwa.resetClock = function() {
+window.dolisirh.pwa.resetStart = function() {
 	var pwa = window.dolisirh.pwa;
 	var startEl = document.getElementById('pwa-proj-start');
-	var endEl = document.getElementById('pwa-proj-end');
-	if (!startEl || !endEl || !pwa.state) {
+	if (!startEl || !pwa.state) {
 		return;
 	}
 
 	pwa.startTouched = false;
-	pwa.endTouched = false;
 	pwa.clockDate = pwa.state.selected_date;
 
-	var lastEnd = pwa.lastEndOfDay();
 	if (pwa.isTodaySelected()) {
-		var nowMin = pwa.hmToMin(pwa.nowHM());
-		endEl.value = pwa.minToHM(nowMin);
-		// Right after an entry the next one starts at its end, and the end follows the clock from there
-		startEl.value = (lastEnd >= 0 && lastEnd <= nowMin) ? pwa.minToHM(lastEnd) : pwa.minToHM(nowMin - 60);
+		startEl.value = pwa.nowHM();
 	} else {
-		var startMin = lastEnd >= 0 ? lastEnd : 8 * 60;
-		startEl.value = pwa.minToHM(startMin);
-		endEl.value = pwa.minToHM(startMin + 60);
+		var lastEnd = pwa.lastEndOfDay(pwa.isHrSelected());
+		startEl.value = pwa.minToHM(lastEnd >= 0 ? lastEnd : 8 * 60);
 	}
 
-	pwa.syncDuration();
+	pwa.updateClockButtons();
 };
 
 /**
@@ -605,29 +612,30 @@ window.dolisirh.pwa.isTodaySelected = function() {
 };
 
 /**
- * Entries of the selected day of the same kind as the selected task, with clock times.
+ * Entries of the selected day of one kind, with clock times.
  * HR presence spans the day while project tasks happen within it: each kind follows only its own.
  *
+ * @param {boolean} isHr Whether the HR presence entries are wanted
  * @returns {Array}
  */
-window.dolisirh.pwa.sameKindEntries = function() {
+window.dolisirh.pwa.sameKindEntries = function(isHr) {
 	var pwa = window.dolisirh.pwa;
 	var day = pwa.state ? pwa.state.selected_day : null;
-	var isHr = pwa.isHrSelected();
 	return (day && Array.isArray(day.entries) ? day.entries : []).filter(function(entry) {
 		return Boolean(entry.is_hr) === isHr && pwa.hmToMin(entry.start_hm) >= 0;
 	});
 };
 
 /**
- * End of the latest entry of the same kind on the selected day.
+ * End of the latest entry of one kind on the selected day.
  *
+ * @param {boolean} isHr Whether the HR presence entries are read
  * @returns {number} Minutes since midnight, -1 when no entry has clock times
  */
-window.dolisirh.pwa.lastEndOfDay = function() {
+window.dolisirh.pwa.lastEndOfDay = function(isHr) {
 	var pwa = window.dolisirh.pwa;
 	var lastEnd = -1;
-	pwa.sameKindEntries().forEach(function(entry) {
+	pwa.sameKindEntries(isHr).forEach(function(entry) {
 		var s = pwa.hmToMin(entry.start_hm);
 		var e = pwa.hmToMin(entry.end_hm);
 		if (e > s && e > lastEnd) {
@@ -638,105 +646,81 @@ window.dolisirh.pwa.lastEndOfDay = function() {
 };
 
 /**
- * Set the start or the end to the current time.
+ * Running time entry of a task.
  *
- * @param {string} which 'start' | 'end'
- * @returns {void}
+ * @param {number} taskId Task ID
+ * @returns {Object|null}
  */
-window.dolisirh.pwa.setClockNow = function(which) {
+window.dolisirh.pwa.findRunning = function(taskId) {
 	var pwa = window.dolisirh.pwa;
-	var el = document.getElementById(which === 'start' ? 'pwa-proj-start' : 'pwa-proj-end');
-	if (!el) {
-		return;
-	}
-	el.value = pwa.nowHM();
-	if (which === 'start') {
-		pwa.startTouched = true;
-		// Starting now: the end follows the clock until it is set
-		if (!pwa.endTouched) {
-			var endEl = document.getElementById('pwa-proj-end');
-			if (endEl) {
-				endEl.value = el.value;
-			}
-		}
-	} else {
-		pwa.endTouched = true;
-	}
-	pwa.syncDuration();
+	var running = (pwa.state && Array.isArray(pwa.state.running)) ? pwa.state.running : [];
+	return running.find(function(entry) { return entry.task_id === taskId; }) || null;
 };
 
 /**
- * Apply a duration: the start stays, the end moves to start + duration.
+ * Minutes elapsed since a running entry started, on the clock of the device.
+ *
+ * @param {Object} entry Running entry (date, start_hm)
+ * @returns {number}
+ */
+window.dolisirh.pwa.elapsedMinutes = function(entry) {
+	var day = String(entry.date).split('-');
+	var time = String(entry.start_hm).split(':');
+	var start = new Date(parseInt(day[0], 10), parseInt(day[1], 10) - 1, parseInt(day[2], 10), parseInt(time[0], 10), parseInt(time[1], 10), 0);
+	return Math.floor((Date.now() - start.getTime()) / 60000);
+};
+
+/**
+ * Whether the end of a running entry follows the clock: it started less than a day ago. An older one was
+ * forgotten, its end is typed.
+ *
+ * @param {Object} entry Running entry
+ * @returns {boolean}
+ */
+window.dolisirh.pwa.followsClock = function(entry) {
+	var elapsed = window.dolisirh.pwa.elapsedMinutes(entry);
+	return elapsed >= 0 && elapsed < 1440;
+};
+
+/**
+ * Day of a YYYY-MM-DD date, as DD/MM.
+ *
+ * @param {string} dateStr YYYY-MM-DD
+ * @returns {string}
+ */
+window.dolisirh.pwa.shortDay = function(dateStr) {
+	var parts = String(dateStr).split('-');
+	return parts.length === 3 ? parts[2] + '/' + parts[1] : dateStr;
+};
+
+/**
+ * Apply a duration to the entry being stopped: the start stays, the end moves to start + duration.
  *
  * @param {number} minutes Duration in minutes
- * @param {boolean} fromChip Whether the duration comes from a one-tap button
  * @returns {void}
  */
-window.dolisirh.pwa.applyDuration = function(minutes, fromChip) {
+window.dolisirh.pwa.applyDuration = function(minutes) {
 	var pwa = window.dolisirh.pwa;
-	var startEl = document.getElementById('pwa-proj-start');
 	var endEl = document.getElementById('pwa-proj-end');
-	var startMin = startEl ? pwa.hmToMin(startEl.value) : -1;
+	var startMin = pwa.stopping ? pwa.hmToMin(pwa.stopping.start_hm) : -1;
 	if (!endEl || startMin < 0 || isNaN(minutes) || minutes <= 0) {
-		pwa.syncDuration(true);
 		return;
 	}
 
 	endEl.value = pwa.minToHM(startMin + minutes);
-
-	// The duration was chosen: the clock must not stretch it any more
-	pwa.startTouched = true;
 	pwa.endTouched = true;
-	pwa.syncDuration(!fromChip);
+	pwa.syncStop();
 };
 
 /**
- * Recompute the duration from the start and the end, then refresh the hints and the save button.
+ * Duration of the entry being stopped, an end before the start meaning the next day.
  *
- * @param {boolean} [keepDurationInput] Leave the duration field as typed
- * @returns {void}
- */
-window.dolisirh.pwa.syncDuration = function(keepDurationInput) {
-	var pwa = window.dolisirh.pwa;
-	var startEl = document.getElementById('pwa-proj-start');
-	var endEl = document.getElementById('pwa-proj-end');
-	var durEl = document.getElementById('pwa-proj-duration');
-	var overnightEl = document.getElementById('pwa-proj-overnight');
-	if (!startEl || !endEl) {
-		return;
-	}
-
-	var startMin = pwa.hmToMin(startEl.value);
-	var endMin = pwa.hmToMin(endEl.value);
-	var minutes = pwa.clockMinutes();
-
-	if (durEl && !keepDurationInput) {
-		durEl.value = minutes >= 0 ? pwa.minToHM(minutes) : '';
-	}
-	if (overnightEl) {
-		overnightEl.hidden = !(startMin >= 0 && endMin >= 0 && endMin < startMin);
-	}
-
-	document.querySelectorAll('.ts-clock__chips .ts-chip').forEach(function(chip) {
-		chip.classList.toggle('is-active', parseInt(chip.getAttribute('data-duration'), 10) === minutes);
-	});
-
-	pwa.renderRunning();
-	pwa.renderOverlap();
-	pwa.updateProjectSaveButtonState();
-	pwa.saveDraft();
-};
-
-/**
- * Duration between the start and the end, an end before the start meaning the next day.
- *
- * @returns {number} Minutes, -1 when a clock time is missing
+ * @returns {number} Minutes, -1 when the end is missing
  */
 window.dolisirh.pwa.clockMinutes = function() {
 	var pwa = window.dolisirh.pwa;
-	var startEl = document.getElementById('pwa-proj-start');
 	var endEl = document.getElementById('pwa-proj-end');
-	var startMin = startEl ? pwa.hmToMin(startEl.value) : -1;
+	var startMin = pwa.stopping ? pwa.hmToMin(pwa.stopping.start_hm) : -1;
 	var endMin = endEl ? pwa.hmToMin(endEl.value) : -1;
 	if (startMin < 0 || endMin < 0) {
 		return -1;
@@ -745,57 +729,186 @@ window.dolisirh.pwa.clockMinutes = function() {
 };
 
 /**
- * Move the end to the current time while it follows the clock.
+ * Follow the clock: the untouched start of a new entry, the untouched end of the entry being stopped,
+ * the time elapsed on the running cards.
  *
  * @returns {void}
  */
 window.dolisirh.pwa.tickClock = function() {
 	var pwa = window.dolisirh.pwa;
+	var startEl = document.getElementById('pwa-proj-start');
 	var endEl = document.getElementById('pwa-proj-end');
-	if (!endEl || pwa.endTouched || !pwa.isTodaySelected()) {
-		return;
-	}
 	var nowValue = pwa.nowHM();
-	if (endEl.value !== nowValue) {
-		endEl.value = nowValue;
-		pwa.syncDuration();
+
+	if (startEl && !pwa.startTouched && pwa.isTodaySelected() && startEl.value !== nowValue) {
+		startEl.value = nowValue;
 	}
+	if (endEl && pwa.stopping && !pwa.endTouched && pwa.followsClock(pwa.stopping) && endEl.value !== nowValue) {
+		endEl.value = nowValue;
+		pwa.syncStop();
+	}
+	pwa.renderRunning();
 };
 
 /**
- * Show the running banner while the start is set and the end follows the clock.
+ * Render the cards of the running time entries and lay the Pointer tab out around them: while an entry
+ * runs, its card takes the place of the start panel, and the stop panel replaces it while it is being stopped.
  *
  * @returns {void}
  */
 window.dolisirh.pwa.renderRunning = function() {
 	var pwa = window.dolisirh.pwa;
-	var el = document.getElementById('pwa-clock-running');
-	var startEl = document.getElementById('pwa-proj-start');
-	if (!el || !startEl) {
+	var box = document.getElementById('pwa-running');
+	var list = document.getElementById('pwa-running-list');
+	if (!box || !list || !pwa.state) {
 		return;
 	}
-	var isRunning = pwa.startTouched && !pwa.endTouched && pwa.isTodaySelected() && pwa.hmToMin(startEl.value) >= 0;
-	el.hidden = !isRunning;
-	if (isRunning) {
-		el.innerHTML = '<span class="ts-clock__pulse"></span>' + pwa.esc(pwa.label('running', startEl.value)) + ' &middot; <b>' + pwa.esc(pwa.durationLabel(Math.max(0, pwa.clockMinutes()))) + '</b>';
+
+	var running = Array.isArray(pwa.state.running) ? pwa.state.running : [];
+	var isRunning = running.length > 0;
+	// The recap of the day stays under the card and the stop panel
+	var panels = {
+		'pwa-start-panel': isRunning || pwa.stopping !== null,
+		'pwa-stop-panel': pwa.stopping === null,
+	};
+	Object.keys(panels).forEach(function(id) {
+		var el = document.getElementById(id);
+		if (el) {
+			el.hidden = panels[id];
+		}
+	});
+	// The days only choose where a new entry goes and which entries are listed
+	var weekBar = document.getElementById('pwa-week-bar');
+	if (weekBar && pwa.mode === 'project') {
+		weekBar.hidden = isRunning;
 	}
+
+	box.hidden = !isRunning || pwa.stopping !== null;
+	list.innerHTML = running.map(function(entry) {
+		var since = entry.date === pwa.localToday() ? entry.start_hm : pwa.shortDay(entry.date) + ' ' + entry.start_hm;
+		return '<div class="ts-running__item' + (entry.is_hr ? ' is-hr' : '') + '">' +
+			'<span class="ts-clock__pulse"></span>' +
+			'<div class="ts-running__body">' +
+				'<span class="ts-running__task">' + pwa.esc(entry.task_label || entry.task_ref) + '</span>' +
+				'<span class="ts-running__meta">' + pwa.esc((entry.is_hr ? pwa.label('presence') : (entry.project_title || entry.project_ref)) + ' · ' + pwa.label('since', since)) + '</span>' +
+			'</div>' +
+			'<b class="ts-running__elapsed">' + pwa.esc(pwa.durationLabel(Math.max(0, pwa.elapsedMinutes(entry)))) + '</b>' +
+			'<div class="ts-running__actions">' +
+				'<button type="button" class="ts-running__cancel" data-task-id="' + entry.task_id + '" title="' + pwa.esc(pwa.label('cancel')) + '"><i class="far fa-trash-alt"></i></button>' +
+				'<button type="button" class="ts-running__stop" data-task-id="' + entry.task_id + '"><i class="fas fa-stop"></i> ' + pwa.esc(pwa.label('stop')) + '</button>' +
+			'</div>' +
+		'</div>';
+	}).join('');
 };
 
 /**
- * Warn when the time range overlaps an entry already saved on the day.
+ * Open the stop panel of a running entry: end time, comment and medias.
+ *
+ * @param {Object} entry Running entry
+ * @returns {void}
+ */
+window.dolisirh.pwa.openStop = function(entry) {
+	var pwa = window.dolisirh.pwa;
+	var stopPanel = document.getElementById('pwa-stop-panel');
+	var taskEl = document.getElementById('pwa-stop-task');
+	var startEl = document.getElementById('pwa-stop-start');
+	var startDayEl = document.getElementById('pwa-stop-start-day');
+	if (!stopPanel) {
+		return;
+	}
+
+	pwa.stopping = entry;
+	if (taskEl) {
+		taskEl.textContent = (entry.task_label || entry.task_ref) + ' · ' + (entry.is_hr ? pwa.label('presence') : (entry.project_title || entry.project_ref));
+	}
+	if (startEl) {
+		startEl.textContent = entry.start_hm;
+	}
+	if (startDayEl) {
+		startDayEl.hidden = entry.date === pwa.localToday();
+		startDayEl.textContent = pwa.label('startedOn', pwa.shortDay(entry.date));
+	}
+
+	pwa.resetEnd();
+	pwa.renderRunning();
+	pwa.syncStop();
+	stopPanel.scrollIntoView({ block: 'start', behavior: 'smooth' });
+};
+
+/**
+ * Close the stop panel: back to the running card when the entry goes on, to the start panel once stopped.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.closeStop = function() {
+	var pwa = window.dolisirh.pwa;
+
+	pwa.stopping = null;
+	pwa.renderRunning();
+	pwa.updateClockButtons();
+	pwa.saveDraft();
+};
+
+/**
+ * Put the default end time: now while the entry started less than a day ago, to be typed otherwise.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.resetEnd = function() {
+	var pwa = window.dolisirh.pwa;
+	var endEl = document.getElementById('pwa-proj-end');
+	if (!endEl || !pwa.stopping) {
+		return;
+	}
+	pwa.endTouched = false;
+	endEl.value = pwa.followsClock(pwa.stopping) ? pwa.nowHM() : '';
+};
+
+/**
+ * Refresh the duration of the entry being stopped, its hints and the validate button.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.syncStop = function() {
+	var pwa = window.dolisirh.pwa;
+	var durEl = document.getElementById('pwa-stop-duration');
+	var overnightEl = document.getElementById('pwa-proj-overnight');
+	var endEl = document.getElementById('pwa-proj-end');
+	var minutes = pwa.clockMinutes();
+	var startMin = pwa.stopping ? pwa.hmToMin(pwa.stopping.start_hm) : -1;
+	var endMin = endEl ? pwa.hmToMin(endEl.value) : -1;
+
+	if (durEl) {
+		durEl.textContent = minutes > 0 ? pwa.durationLabel(minutes) : '-';
+	}
+	if (overnightEl) {
+		overnightEl.hidden = !(startMin >= 0 && endMin >= 0 && endMin < startMin);
+	}
+	document.querySelectorAll('.ts-clock__chips .ts-chip').forEach(function(chip) {
+		chip.classList.toggle('is-active', pwa.endTouched && parseInt(chip.getAttribute('data-duration'), 10) === minutes);
+	});
+
+	pwa.renderOverlap();
+	pwa.updateClockButtons();
+	pwa.saveDraft();
+};
+
+/**
+ * Warn when the entry being stopped overlaps an entry of the same kind already saved on its day.
  *
  * @returns {void}
  */
 window.dolisirh.pwa.renderOverlap = function() {
 	var pwa = window.dolisirh.pwa;
 	var el = document.getElementById('pwa-clock-overlap');
-	var startEl = document.getElementById('pwa-proj-start');
 	var endEl = document.getElementById('pwa-proj-end');
-	if (!el || !startEl || !endEl || !pwa.state) {
+	if (!el || !endEl || !pwa.state) {
 		return;
 	}
 
-	var overlapping = pwa.findOverlap(pwa.hmToMin(startEl.value), pwa.hmToMin(endEl.value));
+	var entry = pwa.stopping;
+	// The saved entries known are the ones of the selected day
+	var overlapping = (entry && entry.date === pwa.state.selected_date) ? pwa.findOverlap(pwa.hmToMin(entry.start_hm), pwa.hmToMin(endEl.value), Boolean(entry.is_hr)) : null;
 	el.hidden = !overlapping;
 	if (overlapping) {
 		el.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + pwa.esc(pwa.label('overlap', overlapping.start_hm + ' - ' + overlapping.end_hm + ' · ' + overlapping.task_label));
@@ -803,18 +916,19 @@ window.dolisirh.pwa.renderOverlap = function() {
 };
 
 /**
- * First entry of the selected day whose clock times overlap the given range.
+ * First entry of one kind on the selected day whose clock times overlap the given range.
  *
  * @param {number} startMin Start in minutes since midnight
  * @param {number} endMin End in minutes since midnight
+ * @param {boolean} isHr Whether the HR presence entries are compared
  * @returns {Object|null}
  */
-window.dolisirh.pwa.findOverlap = function(startMin, endMin) {
+window.dolisirh.pwa.findOverlap = function(startMin, endMin, isHr) {
 	var pwa = window.dolisirh.pwa;
 	if (startMin < 0 || endMin <= startMin) {
 		return null;
 	}
-	return pwa.sameKindEntries().find(function(entry) {
+	return pwa.sameKindEntries(isHr).find(function(entry) {
 		var s = pwa.hmToMin(entry.start_hm);
 		var e = pwa.hmToMin(entry.end_hm);
 		return e > s && startMin < e && s < endMin;
@@ -834,7 +948,8 @@ window.dolisirh.pwa.fieldValue = function(id, keep) {
 };
 
 /**
- * Keep the form in the browser, so a closed app finds its stopwatch, task and note again.
+ * Keep the form in the browser, so a closed app finds its task, the entry being stopped and the comment.
+ * The running entries themselves are kept on the server.
  *
  * @returns {void}
  */
@@ -845,14 +960,13 @@ window.dolisirh.pwa.saveDraft = function() {
 	}
 	var project = pwa.selectedProject;
 	var draft = {
-		date: pwa.state.selected_date,
-		start: pwa.fieldValue('pwa-proj-start', pwa.startTouched),
-		end: pwa.fieldValue('pwa-proj-end', pwa.endTouched),
-		note: pwa.fieldValue('pwa-proj-note'),
 		project: project ? { id: project.id, ref: project.ref, title: project.title, url: project.url || '' } : null,
 		task_id: pwa.selectedTask ? pwa.selectedTask.id : 0,
+		stop_task_id: pwa.stopping ? pwa.stopping.task_id : 0,
+		end: pwa.fieldValue('pwa-proj-end', Boolean(pwa.stopping) && pwa.endTouched),
+		note: pwa.fieldValue('pwa-proj-note'),
 	};
-	var isEmpty = !draft.start && !draft.end && !draft.note && !draft.project;
+	var isEmpty = !draft.project && !draft.stop_task_id && !draft.note;
 	pwa.storageSet(pwa.draftKey, isEmpty ? null : JSON.stringify(draft));
 };
 
@@ -871,7 +985,7 @@ window.dolisirh.pwa.readDraft = function() {
 };
 
 /**
- * Restore the form kept in the browser: task and note always, clock times on the same day only.
+ * Restore the form kept in the browser: task, comment, and the stop panel of an entry still running.
  *
  * @returns {void}
  */
@@ -888,8 +1002,14 @@ window.dolisirh.pwa.restoreDraft = function() {
 	if (noteEl && draft.note) {
 		noteEl.value = draft.note;
 	}
-	if (draft.date === pwa.state.selected_date) {
-		pwa.restoreDraftClock(draft);
+	var stopEntry = draft.stop_task_id ? pwa.findRunning(draft.stop_task_id) : null;
+	if (stopEntry) {
+		pwa.openStop(stopEntry);
+		var endEl = document.getElementById('pwa-proj-end');
+		if (endEl && draft.end) {
+			endEl.value = draft.end;
+			pwa.endTouched = true;
+		}
 	}
 	pwa.restoringDraft = false;
 
@@ -897,31 +1017,8 @@ window.dolisirh.pwa.restoreDraft = function() {
 		var project = (pwa.state.projects || []).find(function(p) { return p.id === draft.project.id; }) || pwa.fallbackProject(draft.project);
 		pwa.selectProject(project, draft.task_id);
 	}
-	pwa.syncDuration();
-};
-
-/**
- * Put back the clock times of a draft; an end not set follows the clock again.
- *
- * @param {Object} draft Kept form
- * @returns {void}
- */
-window.dolisirh.pwa.restoreDraftClock = function(draft) {
-	var pwa = window.dolisirh.pwa;
-	var startEl = document.getElementById('pwa-proj-start');
-	var endEl = document.getElementById('pwa-proj-end');
-	if (!startEl || !endEl) {
-		return;
-	}
-	if (draft.start) {
-		startEl.value = draft.start;
-		pwa.startTouched = true;
-	}
-	if (draft.end) {
-		endEl.value = draft.end;
-		pwa.endTouched = true;
-	} else if (pwa.isTodaySelected()) {
-		endEl.value = pwa.nowHM();
+	if (pwa.stopping) {
+		pwa.syncStop();
 	}
 };
 
@@ -982,17 +1079,7 @@ window.dolisirh.pwa.renderQuickTasks = function() {
 };
 
 /**
- * Whether the Saturne media block holds a photo or a voice note waiting for the time entry.
- *
- * @returns {boolean}
- */
-window.dolisirh.pwa.hasPendingMedias = function() {
-	var wrapper = document.getElementById('pwa-proj-media-wrapper');
-	return Boolean(wrapper && wrapper.querySelector('.open-media-editor-as-gallery, .saturne-audio-badge'));
-};
-
-/**
- * Whether the selected project is the HR project, whose time needs no note.
+ * Whether the selected project is the HR project.
  *
  * @returns {boolean}
  */
@@ -1083,11 +1170,25 @@ window.dolisirh.pwa.renderAll = function() {
 	pwa.renderProjectHistory();
 	pwa.renderMonthlyCalendar();
 
-	// Another day: the clock times start again from that day's entries
+	// Another day: the start time starts again from that day's entries
 	if (pwa.clockDate !== pwa.state.selected_date) {
-		pwa.resetClock();
+		pwa.resetStart();
+	}
+
+	// An entry stopped elsewhere (another device, another tab) closes its stop panel
+	if (pwa.stopping) {
+		var stillRunning = pwa.findRunning(pwa.stopping.task_id);
+		if (stillRunning) {
+			pwa.stopping = stillRunning;
+		} else {
+			pwa.closeStop();
+		}
+	}
+	pwa.renderRunning();
+	if (pwa.stopping) {
+		pwa.syncStop();
 	} else {
-		pwa.syncDuration();
+		pwa.updateClockButtons();
 	}
 };
 
@@ -1279,19 +1380,14 @@ window.dolisirh.pwa.renderHrTaskCards = function() {
 			}).join('') + '</div>';
 		}
 
+		// Sized for a finger: the task by its label, then the note, the time and the save button on one row
 		return '<div class="ts-hr-card' + (isDone ? ' is-done' : '') + '" data-task-id="' + task.id + '">' +
 			'<div class="ts-hr-card__main">' +
-				'<div class="ts-hr-card__info" title="' + pwa.esc(task.ref + ' - ' + task.label) + '">' +
-					'<span class="ts-hr-card__ref">' +
-						'<i class="far fa-clipboard ts-hr-card__icon"></i>' +
-						'<a href="' + pwa.esc(task.url) + '" target="_blank" class="ts-hr-card__ref-link">' + pwa.esc(task.ref) + '</a>' +
-					'</span>' +
-					'<span class="ts-hr-card__label">' + pwa.esc(task.label) + '</span>' +
-				'</div>' +
-				'<textarea class="ts-hr-card__note" rows="1" placeholder="Note / Commentaire..."></textarea>' +
+				'<span class="ts-hr-card__label">' + pwa.esc(task.label) + '</span>' +
+				'<textarea class="ts-hr-card__note" rows="2" placeholder="Note / Commentaire..."></textarea>' +
 				'<input type="time" class="ts-hr-card__time" value="' + pwa.esc(defaultHm) + '" step="60">' +
-				'<button type="button" class="ts-btn-save-icon ts-hr-card__btn" title="Enregistrer">' +
-					'<i class="far fa-save"></i>' +
+				'<button type="button" class="ts-hr-card__btn">' +
+					'<i class="far fa-save"></i><span>' + pwa.esc(pwa.label('save')) + '</span>' +
 				'</button>' +
 			'</div>' +
 			entriesHtml +
@@ -1439,7 +1535,7 @@ window.dolisirh.pwa.selectProject = function(project, taskIdToSelect) {
 	pwa.renderProjectStats();
 	pwa.renderTaskStats();
 	pwa.renderTaskFieldState();
-	pwa.updateProjectSaveButtonState();
+	pwa.updateClockButtons();
 
 	var appEl = document.getElementById('dolisirh-pwa-app');
 	var baseUrl = appEl ? appEl.getAttribute('data-ajax-url') : window.location.pathname;
@@ -1558,13 +1654,11 @@ window.dolisirh.pwa.selectTask = function(task) {
 	}
 	pwa.renderTaskStats();
 	pwa.renderQuickTasks();
-	// Presence and project tasks start from their own last entry: untouched clock times follow the task
-	if (!pwa.startTouched && !pwa.endTouched && !pwa.restoringDraft) {
-		pwa.resetClock();
-	} else {
-		pwa.syncDuration();
+	// On another day, presence and project tasks start from their own last entry: an untouched start follows the task
+	if (!pwa.startTouched && !pwa.restoringDraft) {
+		pwa.resetStart();
 	}
-	pwa.updateProjectSaveButtonState();
+	pwa.updateClockButtons();
 	pwa.saveDraft();
 };
 
@@ -1622,71 +1716,233 @@ window.dolisirh.pwa.createDefaultProjectTask = function() {
 };
 
 /**
- * Enable or disable the Save button in the Projet tab based on required fields.
+ * Enable the Pointer button once a task and a start time are chosen, the Validate button once the entry
+ * being stopped has a duration.
  *
  * @returns {void}
  */
-window.dolisirh.pwa.updateProjectSaveButtonState = function() {
+window.dolisirh.pwa.updateClockButtons = function() {
 	var pwa = window.dolisirh.pwa;
+	var startBtn = document.getElementById('pwa-btn-start');
 	var saveBtn = document.getElementById('pwa-btn-save-proj');
-	if (!saveBtn) return;
-
 	var labelEl = document.getElementById('pwa-btn-save-proj-label');
-	var noteReqEl = document.getElementById('pwa-proj-note-req');
-	var minutes = pwa.clockMinutes();
 
-	if (noteReqEl) {
-		noteReqEl.hidden = pwa.isHrSelected();
-	}
-	if (labelEl) {
-		labelEl.textContent = pwa.label('save') + (minutes > 0 ? ' · ' + pwa.durationLabel(minutes) : '');
-	}
-	saveBtn.disabled = pwa.saving || !pwa.canSaveClock(minutes);
-};
-
-/**
- * Whether the Pointer form holds what a time entry needs.
- *
- * @param {number} minutes Duration in minutes
- * @returns {boolean}
- */
-window.dolisirh.pwa.canSaveClock = function(minutes) {
-	var pwa = window.dolisirh.pwa;
 	var hasTask = Boolean(pwa.selectedTask && pwa.selectedTask.id);
-	var hasDate = pwa.fieldValue('pwa-proj-date') !== '';
-	// Time on a project says what was done: a note, a photo or a voice note. HR time needs none.
-	var hasNote = pwa.isHrSelected() || pwa.fieldValue('pwa-proj-note').trim() !== '' || pwa.hasPendingMedias();
-	return hasTask && hasDate && minutes > 0 && hasNote;
+	var hasRunning = Boolean(pwa.state && Array.isArray(pwa.state.running) && pwa.state.running.length);
+	if (startBtn) {
+		startBtn.disabled = pwa.saving || !hasTask || hasRunning || pwa.hmToMin(pwa.fieldValue('pwa-proj-start')) < 0 || pwa.fieldValue('pwa-proj-date') === '';
+	}
+
+	var minutes = pwa.clockMinutes();
+	if (labelEl) {
+		labelEl.textContent = pwa.label('validate') + (minutes > 0 ? ' · ' + pwa.durationLabel(minutes) : '');
+	}
+	if (saveBtn) {
+		saveBtn.disabled = pwa.saving || !pwa.stopping || minutes <= 0;
+	}
 };
 
 /**
- * Submit a project time entry (along with any uploaded photos/audio in the Saturne media block).
+ * Send a JSON request to the page.
+ *
+ * @param {string} action Action name
+ * @param {Object} payload Request payload
+ * @returns {Promise<Object>}
+ */
+window.dolisirh.pwa.postJson = function(action, payload) {
+	var pwa = window.dolisirh.pwa;
+	var appEl = document.getElementById('dolisirh-pwa-app');
+	var baseUrl = appEl ? appEl.getAttribute('data-ajax-url') : window.location.pathname;
+
+	return fetch(baseUrl + '?action=' + encodeURIComponent(action) + '&token=' + encodeURIComponent(pwa.getToken()), {
+		method: 'POST',
+		credentials: 'same-origin',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(payload),
+	})
+		.then(function(r) { return r.json(); })
+		.catch(function() {
+			return { success: false, error: pwa.label('networkError') };
+		});
+};
+
+/**
+ * Start a time entry on the selected task: kept on the server until it is stopped.
  *
  * @returns {void}
  */
-window.dolisirh.pwa.submitProjectTimeSpent = function() {
+window.dolisirh.pwa.startClock = function() {
 	var pwa = window.dolisirh.pwa;
-	if (!pwa.selectedTask) return;
-
-	var dateEl = document.getElementById('pwa-proj-date');
-	var startEl = document.getElementById('pwa-proj-start');
-	var endEl = document.getElementById('pwa-proj-end');
-	var noteEl = document.getElementById('pwa-proj-note');
-	var saveBtn = document.getElementById('pwa-btn-save-proj');
-
-	pwa.saving = true;
-	if (saveBtn) {
-		saveBtn.disabled = true;
+	if (!pwa.selectedTask || pwa.saving || !pwa.state) {
+		return;
 	}
+
+	// An untouched start is the time of the tap: the field may lag a few seconds behind the clock
+	var startHm = (!pwa.startTouched && pwa.isTodaySelected()) ? pwa.nowHM() : pwa.fieldValue('pwa-proj-start');
+	pwa.saving = true;
+	pwa.updateClockButtons();
+
+	pwa.postJson('pwa_start_clock', {
+		task_id: pwa.selectedTask.id,
+		date: pwa.fieldValue('pwa-proj-date') || pwa.state.selected_date,
+		start_hm: startHm,
+		cal_month: pwa.state.cal_month ? pwa.state.cal_month.ym : '',
+	}).then(function(res) {
+		pwa.saving = false;
+		if (res && res.success && res.state) {
+			pwa.state = res.state;
+			pwa.clockDate = '';
+			pwa.renderAll();
+			pwa.showMsg(pwa.label('started', startHm), 'ok');
+		} else {
+			pwa.showMsg((res && res.error) ? res.error : pwa.label('error'), 'err');
+		}
+		pwa.updateClockButtons();
+	});
+};
+
+/**
+ * Ask for a confirmation in the dialog of the page.
+ *
+ * @param {string} title Question
+ * @param {string} text Consequence of the answer
+ * @param {string} okLabel Label of the confirming button
+ * @returns {Promise<boolean>} Whether the action is confirmed
+ */
+window.dolisirh.pwa.confirm = function(title, text, okLabel) {
+	var pwa = window.dolisirh.pwa;
+	var dialog = document.getElementById('pwa-confirm');
+	if (!dialog || typeof dialog.showModal !== 'function') {
+		return Promise.resolve(window.confirm(title + '\n' + text));
+	}
+
+	// A question left open is answered no before the next one is asked
+	pwa.closeConfirm(false);
+	document.getElementById('pwa-confirm-title').textContent = title;
+	document.getElementById('pwa-confirm-text').textContent = text;
+	document.getElementById('pwa-confirm-ok').textContent = okLabel;
+
+	return new Promise(function(resolve) {
+		pwa.confirmResolve = resolve;
+		dialog.showModal();
+		document.getElementById('pwa-confirm-cancel').focus();
+	});
+};
+
+/**
+ * Close the confirmation dialog with its answer.
+ *
+ * @param {boolean} confirmed Whether the action is confirmed
+ * @returns {void}
+ */
+window.dolisirh.pwa.closeConfirm = function(confirmed) {
+	var pwa = window.dolisirh.pwa;
+	var dialog = document.getElementById('pwa-confirm');
+	var resolve = pwa.confirmResolve;
+	pwa.confirmResolve = null;
+	if (dialog && dialog.open) {
+		dialog.close();
+	}
+	if (resolve) {
+		resolve(confirmed);
+	}
+};
+
+/**
+ * Bind the confirmation dialog: its buttons, Escape, and a tap outside it.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.bindConfirmEvents = function() {
+	var pwa = window.dolisirh.pwa;
+	var dialog = document.getElementById('pwa-confirm');
+	if (!dialog) {
+		return;
+	}
+
+	document.getElementById('pwa-confirm-cancel').addEventListener('click', function() {
+		pwa.closeConfirm(false);
+	});
+	document.getElementById('pwa-confirm-ok').addEventListener('click', function() {
+		pwa.closeConfirm(true);
+	});
+	dialog.addEventListener('cancel', function(e) {
+		e.preventDefault();
+		pwa.closeConfirm(false);
+	});
+	// Only the backdrop is the dialog itself; a press started inside that ends outside does not close it
+	var pressedOutside = false;
+	dialog.addEventListener('pointerdown', function(e) {
+		pressedOutside = e.target === dialog;
+	});
+	dialog.addEventListener('click', function(e) {
+		if (e.target === dialog && pressedOutside) {
+			pwa.closeConfirm(false);
+		}
+	});
+};
+
+/**
+ * Give up a running time entry: nothing is saved.
+ *
+ * @param {number} taskId Task of the running entry
+ * @returns {void}
+ */
+window.dolisirh.pwa.cancelRunning = function(taskId) {
+	var pwa = window.dolisirh.pwa;
+	if (!taskId || !pwa.state) {
+		return;
+	}
+
+	pwa.confirm(pwa.label('cancelTitle'), pwa.label('cancelText'), pwa.label('cancelOk')).then(function(confirmed) {
+		if (!confirmed) {
+			return null;
+		}
+		return pwa.postJson('pwa_cancel_clock', {
+			task_id: taskId,
+			selected_date: pwa.state.selected_date,
+			cal_month: pwa.state.cal_month ? pwa.state.cal_month.ym : '',
+		});
+	}).then(function(res) {
+		if (res === null) {
+			return;
+		}
+		if (res && res.success && res.state) {
+			pwa.state = res.state;
+			pwa.renderAll();
+			pwa.showMsg(pwa.label('cancelled'), 'ok');
+		} else {
+			pwa.showMsg((res && res.error) ? res.error : pwa.label('error'), 'err');
+		}
+	});
+};
+
+/**
+ * Stop the running entry of the stop panel: the time entry is saved with its comment and medias.
+ *
+ * @returns {void}
+ */
+window.dolisirh.pwa.stopClock = function() {
+	var pwa = window.dolisirh.pwa;
+	var entry = pwa.stopping;
+	if (!entry || pwa.saving) {
+		return;
+	}
+
+	var noteEl = document.getElementById('pwa-proj-note');
+	// An end following the clock is the time of the tap
+	var endHm = (!pwa.endTouched && pwa.followsClock(entry)) ? pwa.nowHM() : pwa.fieldValue('pwa-proj-end');
+	pwa.saving = true;
+	pwa.updateClockButtons();
 
 	pwa.submitTimeSpent({
-		task_id: pwa.selectedTask.id,
-		date: dateEl ? dateEl.value : pwa.state.selected_date,
-		start_hm: startEl ? startEl.value : '',
-		end_hm: endEl ? endEl.value : '',
-		duration_hm: pwa.minToHM(Math.max(0, pwa.clockMinutes())),
+		task_id: entry.task_id,
+		date: entry.date,
+		start_hm: entry.start_hm,
+		end_hm: endHm,
 		note: noteEl ? noteEl.value.trim() : '',
 		is_project_mode: true,
+		stop_running: true,
 		cal_month: (pwa.state && pwa.state.cal_month) ? pwa.state.cal_month.ym : '',
 	}).then(function(res) {
 		pwa.saving = false;
@@ -1694,11 +1950,7 @@ window.dolisirh.pwa.submitProjectTimeSpent = function() {
 			if (noteEl) {
 				noteEl.value = '';
 			}
-			// The next entry starts where this one ended
-			pwa.clockDate = '';
-			pwa.resetClock();
-			pwa.storageSet(pwa.draftKey, null);
-			pwa.saveDraft();
+			pwa.closeStop();
 			if (res.media_block_html) {
 				var wrapper = document.getElementById('pwa-proj-media-wrapper');
 				if (wrapper) {
@@ -1720,8 +1972,12 @@ window.dolisirh.pwa.submitProjectTimeSpent = function() {
 					pwa.renderProjectStats();
 				}
 			}
+		} else if (res && res.state) {
+			// The entry was stopped or given up elsewhere: the panel closes on the fresh state
+			pwa.state = res.state;
+			pwa.renderAll();
 		}
-		pwa.updateProjectSaveButtonState();
+		pwa.updateClockButtons();
 	});
 };
 
@@ -1839,6 +2095,9 @@ window.dolisirh.pwa.renderProjectHistory = function() {
 			if (media.type === 'image') {
 				return '<a class="ts-timeline__photo" href="' + pwa.esc(media.url) + '" target="_blank" rel="noopener"><img src="' + pwa.esc(media.thumb) + '" alt="" loading="lazy"></a>';
 			}
+			if (media.type === 'file') {
+				return '<a class="ts-timeline__file" href="' + pwa.esc(media.url) + '" target="_blank" rel="noopener" title="' + pwa.esc(media.name) + '"><i class="fas fa-paperclip"></i><span>' + pwa.esc(media.name) + '</span></a>';
+			}
 			return '<button type="button" class="ts-timeline__voice" data-src="' + pwa.esc(media.url) + '" title="' + pwa.esc(pwa.label('playVoice')) + '"><i class="fas fa-play"></i></button>';
 		}).join('');
 
@@ -1862,11 +2121,23 @@ window.dolisirh.pwa.renderProjectHistory = function() {
 	container.querySelectorAll('.ts-timeline__del').forEach(function(delBtn) {
 		delBtn.addEventListener('click', function() {
 			var entryId = parseInt(delBtn.getAttribute('data-entry-id'), 10);
-			// Photos and voice notes go with the entry and cannot be brought back
-			if (entryId > 0 && (delBtn.getAttribute('data-has-medias') !== '1' || window.confirm(pwa.label('deleteConfirm')))) {
+			var remove = function() {
 				delBtn.disabled = true;
 				pwa.deleteTimeSpent(entryId);
+			};
+			if (entryId <= 0) {
+				return;
 			}
+			if (delBtn.getAttribute('data-has-medias') !== '1') {
+				remove();
+				return;
+			}
+			// Photos, files and voice notes go with the entry and cannot be brought back
+			pwa.confirm(pwa.label('deleteTitle'), pwa.label('deleteText'), pwa.label('deleteOk')).then(function(confirmed) {
+				if (confirmed) {
+					remove();
+				}
+			});
 		});
 	});
 
