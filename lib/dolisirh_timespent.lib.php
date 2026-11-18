@@ -877,3 +877,43 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
     return $totalForEachDay;
 }
+
+/**
+ * Add the time spent set on a task (duration, note, user), with its start hour kept on every supported Dolibarr.
+ *
+ * Up to Dolibarr 24.0.1, Task::addTimeSpent() puts the day back in place of the start hour as soon as they differ
+ * (fixed by Dolibarr#39580 in 24.0.2): the start is given as the day too, as the core page projet/tasks/time.php does.
+ * The day is stored as a date in the timezone of the server. When the start falls on another day there (user ahead
+ * of the server timezone, just after midnight), the chosen day is kept and the start hour dropped by an older core is
+ * written back.
+ *
+ * @param  Task $task    Task, with timespent_duration, timespent_note and timespent_fk_user set.
+ * @param  User $user    User who adds the time spent.
+ * @param  int  $dayTs   Day of the time spent (timestamp within the day, in the timezone of the server).
+ * @param  int  $startTs Start of the time spent (timestamp), 0 when only the duration is known.
+ * @return int           ID of the time spent, <= 0 on error.
+ * @throws Exception
+ */
+function dolisirh_add_time_spent(Task $task, User $user, int $dayTs, int $startTs = 0): int
+{
+    $withHour = $startTs > 0;
+    $sameDay  = $withHour && dol_print_date($startTs, 'dayrfc', 'tzserver') === dol_print_date($dayTs, 'dayrfc', 'tzserver');
+
+    $task->timespent_date     = $sameDay ? $startTs : $dayTs;
+    $task->timespent_datehour = $withHour ? $startTs : $dayTs;
+    $task->timespent_withhour = $withHour ? 1 : 0;
+
+    $timeSpentID = $task->addTimeSpent($user);
+    if ($timeSpentID > 0 && $withHour && (int) $task->timespent_datehour !== $startTs) {
+        $timeSpent = new TimeSpent($task->db);
+        if ($timeSpent->fetch($timeSpentID) > 0) {
+            $timeSpent->element_datehour = $startTs;
+            if ($timeSpent->update($user, 1) < 0) {
+                dol_syslog('dolisirh_add_time_spent: start hour of time spent ' . $timeSpentID . ' not written back: ' . $timeSpent->error, LOG_ERR);
+            }
+        }
+        $task->timespent_datehour = $startTs;
+    }
+
+    return $timeSpentID;
+}

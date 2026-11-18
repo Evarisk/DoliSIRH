@@ -267,17 +267,16 @@ if ($action == 'pwa_add_timespent') {
 
 	dolisirh_pwa_ensure_contributor($db, $user, (int) $task->fk_project, (int) $task->id);
 
+	// The day at noon in the server timezone, the start at the clock time of the user
 	$dateParts = explode('-', $dateStr);
 	$dateTs    = dol_mktime(12, 0, 0, (int) $dateParts[1], (int) $dateParts[2], (int) $dateParts[0], 'tzserver');
+	$startTs   = $withHour ? (int) dol_mktime(intdiv($startMin, 60), $startMin % 60, 0, (int) $dateParts[1], (int) $dateParts[2], (int) $dateParts[0], 'tzuserrel') : 0;
 
-	$task->timespent_date     = $dateTs;
-	$task->timespent_datehour = $withHour ? dol_mktime(intdiv($startMin, 60), $startMin % 60, 0, (int) $dateParts[1], (int) $dateParts[2], (int) $dateParts[0], 'tzuserrel') : $dateTs;
-	$task->timespent_withhour = $withHour ? 1 : 0;
 	$task->timespent_duration = $durationSec;
 	$task->timespent_note     = $note;
 	$task->timespent_fk_user  = $user->id;
 
-	$resAdd = $task->addTimeSpent($user);
+	$resAdd = dolisirh_add_time_spent($task, $user, (int) $dateTs, $startTs);
 	if ($resAdd <= 0) {
 		print json_encode(['success' => false, 'error' => $task->error ?: $langs->transnoentities('Error')]);
 		exit;
