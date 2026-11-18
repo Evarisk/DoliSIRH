@@ -31,7 +31,7 @@ if (file_exists('../../dolisirh.main.inc.php')) {
 }
 
 // Load Saturne libraries.
-require_once __DIR__ . '/../../../saturne/class/saturnesignature.class.php';
+dol_include_once('/saturne/class/saturnesignature.class.php');
 
 // load DoliSIRH libraries.
 require_once __DIR__ . '/../../lib/dolisirh_certificate.lib.php';
@@ -123,16 +123,16 @@ if (empty($resHook)) {
     include DOL_DOCUMENT_ROOT . '/core/actions_addupdatedelete.inc.php';
 
     // Actions set_thirdparty, set_project
-    require_once __DIR__ . '/../../../saturne/core/tpl/actions/banner_actions.tpl.php';
+    require_once dol_buildpath('/saturne/core/tpl/actions/banner_actions.tpl.php');
 
     // Actions builddoc, forcebuilddoc, remove_file.
-    require_once __DIR__ . '/../../../saturne/core/tpl/documents/documents_action.tpl.php';
+    require_once dol_buildpath('/saturne/core/tpl/documents/documents_action.tpl.php');
 
     // Action to generate pdf from odt file.
-    require_once __DIR__ . '/../../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
+    require_once dol_buildpath('/saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php');
 
     // Action confirm_lock, confirm_archive.
-    require_once __DIR__ . '/../../../saturne/core/tpl/actions/object_workflow_actions.tpl.php';
+    require_once dol_buildpath('/saturne/core/tpl/actions/object_workflow_actions.tpl.php');
 
     // Actions to send emails.
     $triggersendname = strtoupper($object->element) . '_SENTBYMAIL';
@@ -422,7 +422,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // Sign.
             $displayButton = $onPhone ? '<i class="fas fa-signature fa-2x"></i>' : '<i class="fas fa-signature"></i>' . ' ' . $langs->trans('Sign');
             if ($object->status == SaturneCertificate::STATUS_VALIDATED && !$signatory->checkSignatoriesSignatures($object->id, $object->element)) {
-                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/custom/saturne/view/saturne_attendants.php?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element . '&document_type=CertificateDocument&attendant_table_mode=simple', 3) . '">' . $displayButton . '</a>';
+                print '<a class="butAction" id="actionButtonSign" href="' . dol_buildpath('/saturne/view/saturne_attendants.php', 3) . '?id=' . $object->id . '&module_name=DoliSIRH&object_type=' . $object->element . '&document_type=CertificateDocument&attendant_table_mode=simple">' . $displayButton . '</a>';
             } else {
                 print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('ObjectMustBeValidatedToSign', ucfirst($langs->transnoentities('The' . ucfirst($object->element))))) . '">' . $displayButton . '</span>';
             }
@@ -478,7 +478,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
         $fileDir   = $upload_dir . '/' . $dirFiles;
         $urlSource = $_SERVER['PHP_SELF'] . '?id=' . $object->id;
 
-        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, 0, '', '', '', $langs->defaultlang, $object, 0, 'remove_file', ($object->status > SaturneCertificate::STATUS_DRAFT && $object->status != SaturneCertificate::STATUS_ARCHIVED), $langs->trans('ObjectMustBeValidatedToGenerate',  ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
+        print saturne_show_documents('dolisirh:' . ucfirst($object->element) . 'Document', $dirFiles, $fileDir, $urlSource, $permissiontoadd, $permissiontodelete, $conf->global->DOLISIRH_CERTIFICATEDOCUMENT_DEFAULT_MODEL, 1, 0, 0, 0, '', '', '', $langs->defaultlang, '', $object, 0, 'remove_file', ($object->status > SaturneCertificate::STATUS_DRAFT && $object->status != SaturneCertificate::STATUS_ARCHIVED), $langs->trans('ObjectMustBeValidatedToGenerate',  ucfirst($langs->transnoentities('The' . ucfirst($object->element)))));
 
         print '</div><div class="fichehalfright">';
 

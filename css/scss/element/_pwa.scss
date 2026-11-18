@@ -1,0 +1,1695 @@
+/* DoliSIRH Mobile Time Tracking PWA */
+.dolisirh-pwa-body {
+	background: #f8fafc !important;
+	color: #1e293b;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	margin: 0;
+	padding: 0;
+
+	#id-container,
+	.fiche {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+}
+
+.dolisirh-pwa-header.ts-header {
+	position: sticky;
+	top: 0;
+	z-index: 40;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	max-width: 520px;
+	margin: 0 auto;
+	padding: 10px 14px;
+	background: #ffffff;
+	border-bottom: 1px solid #e2e8f0;
+
+	.ts-header__left,
+	.ts-header__right {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.ts-profile-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 30px;
+		padding: 0 10px;
+		background: #f8fafc;
+		border: 1px solid #cbd5e1;
+		border-radius: 6px;
+		font-size: 12px;
+		font-weight: 600;
+		color: #1e293b;
+		max-width: 150px;
+
+		.ts-profile-favicon {
+			width: 16px;
+			height: 16px;
+			object-fit: contain;
+			flex-shrink: 0;
+		}
+
+		.ts-profile-badge__label {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	.ts-title {
+		margin: 0;
+		font-size: 15px;
+		font-weight: 700;
+		color: #0f172a;
+		white-space: nowrap;
+	}
+
+	.ts-user-chip img,
+	.ts-user-chip .photouserphoto {
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		object-fit: cover;
+	}
+}
+
+.dolisirh-pwa-main.ts-card {
+	max-width: 520px;
+	margin: 0 auto;
+	padding: 12px 14px 32px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	background: #ffffff;
+	min-height: calc(100vh - 52px);
+	box-sizing: border-box;
+
+	[hidden] {
+		display: none !important;
+	}
+
+	.ts-btn-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		background: #f8fafc;
+		border: 1px solid #cbd5e1;
+		border-radius: 6px;
+		color: #475569;
+		cursor: pointer;
+		text-decoration: none;
+		transition: all 0.15s;
+
+		&:hover:not(:disabled) {
+			background: #eef2ff;
+			border-color: #6366f1;
+			color: #312e81;
+		}
+
+		&:disabled {
+			opacity: 0.45;
+			cursor: not-allowed;
+		}
+	}
+
+	.ts-mode-switch {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 6px;
+	}
+
+	.ts-mode-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		padding: 9px 8px;
+		border: 1px solid #cbd5e1;
+		border-radius: 8px;
+		background: #ffffff;
+		color: #334155;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.15s ease;
+
+		&:hover {
+			background: #f1f5f9;
+		}
+
+		&.is-active {
+			background: #313a96;
+			border-color: #313a96;
+			color: #ffffff;
+		}
+	}
+
+	.ts-hr-project-bar {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 12px;
+		margin-bottom: 8px;
+		background: #f8fafc;
+		border: 1px solid #e2e8f0;
+		border-radius: 8px;
+		font-size: 12.5px;
+		font-weight: 600;
+		color: #1e293b;
+
+		.ts-hr-project-icon {
+			color: #3b82f6;
+		}
+
+		.ts-hr-project-link {
+			color: #0f172a;
+			text-decoration: none;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+
+			&:hover {
+				color: #313a96;
+				text-decoration: underline;
+			}
+		}
+	}
+
+	.ts-hr-summary-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 8px 12px;
+		background: #f1f5f9;
+		border-radius: 8px;
+		font-size: 13px;
+
+		.ts-hr-summary-bar__label {
+			color: #475569;
+			font-weight: 500;
+		}
+
+		.ts-hr-summary-bar__values {
+			color: #313a96;
+			font-weight: 700;
+			font-size: 14px;
+
+			&.is-complete {
+				color: #15803d;
+			}
+		}
+	}
+
+	/* 5-day Week Selector Bar */
+	.ts-week-bar {
+		display: flex;
+		align-items: stretch;
+		gap: 4px;
+	}
+
+	.ts-week-nav {
+		width: 24px;
+		flex-shrink: 0;
+		padding: 0;
+		border: 1px solid #cbd5e1;
+		border-radius: 8px;
+		background: #f8fafc;
+		color: #334155;
+		font-size: 16px;
+		font-weight: 700;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		&:hover {
+			background: #eef2ff;
+			border-color: #6366f1;
+			color: #312e81;
+		}
+	}
+
+	.ts-week-days {
+		flex: 1;
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 5px;
+	}
+
+	.ts-cal-day {
+		border-radius: 8px;
+		padding: 5px 4px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		border: 1.5px solid #cbd5e1;
+		background: #f8fafc;
+		cursor: pointer;
+		user-select: none;
+		transition: transform 0.1s;
+
+		&:hover {
+			transform: translateY(-1px);
+		}
+
+		&.is-empty {
+			visibility: hidden;
+			pointer-events: none;
+		}
+
+		&.cal-day-ok {
+			background: #dcfce7;
+			border-color: #4ade80;
+			color: #14532d;
+		}
+
+		&.cal-day-over {
+			background: #ffedd5;
+			border-color: #fb923c;
+			color: #7c2d12;
+		}
+
+		&.cal-day-ko {
+			background: #fee2e2;
+			border-color: #f87171;
+			color: #7f1d1d;
+		}
+
+		&.cal-day-grey {
+			background: #f1f5f9;
+			border-color: #cbd5e1;
+			color: #475569;
+		}
+
+		&.is-today {
+			box-shadow: 0 0 0 2px #0f172a;
+		}
+
+		.ts-cal-day-top {
+			width: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 2px;
+			box-sizing: border-box;
+		}
+
+		.ts-cal-day-name {
+			font-size: 9px;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			opacity: 0.85;
+		}
+
+		.ts-cal-pa-badge {
+			font-size: 8.5px;
+			font-weight: 800;
+			padding: 1px 4px;
+			border-radius: 3px;
+			line-height: 1.1;
+
+			&.is-p {
+				background: #2563eb;
+				color: #ffffff;
+			}
+
+			&.is-a {
+				background: #d97706;
+				color: #ffffff;
+			}
+
+			&.is-pa {
+				background: #7c3aed;
+				color: #ffffff;
+			}
+
+			&.is-none {
+				background: rgba(15, 23, 42, 0.08);
+				color: #64748b;
+			}
+		}
+
+		.ts-cal-day-num {
+			font-size: 16px;
+			font-weight: 800;
+			line-height: 1.1;
+		}
+
+		.ts-cal-day-month {
+			font-size: 8.5px;
+			opacity: 0.75;
+			line-height: 1;
+		}
+
+		.ts-cal-day-dur {
+			margin-top: 2px;
+			font-size: 10px;
+			font-weight: 800;
+			background: rgba(255, 255, 255, 0.78);
+			padding: 1px 6px;
+			border-radius: 4px;
+		}
+	}
+
+	/* Semaine HR Task Sections & Cards */
+	.ts-hr-task-sections {
+		display: flex;
+		flex-direction: column;
+		gap: 7px;
+	}
+
+	.ts-hr-section-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2px 8px;
+		margin-top: 12px;
+		padding: 8px 12px;
+		border-left: 4px solid #313a96;
+		background: #eef2ff;
+		border-radius: 0 8px 8px 0;
+
+		.ts-hr-section-title {
+			font-size: 18px;
+			font-weight: 800;
+			color: #0f172a;
+		}
+
+		.ts-hr-section-stats {
+			font-size: 12.5px;
+			color: #475569;
+
+			b {
+				color: #0f172a;
+			}
+
+			b.is-ok {
+				color: #16a34a;
+				font-weight: 800;
+			}
+
+			b.is-ko {
+				color: #dc2626;
+				font-weight: 800;
+			}
+		}
+	}
+
+	.ts-hr-card {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 12px;
+		background: #ffffff;
+		border: 1px solid #cbd5e1;
+		border-radius: 12px;
+
+		&.is-done {
+			background: #f0fdf4;
+			border-color: #86efac;
+		}
+
+		// The note, the time and the save button on one row, the time and the button growing with the note
+		.ts-hr-card__main {
+			display: grid;
+			grid-template-columns: 1fr 92px 88px;
+			grid-template-areas:
+				"label label label"
+				"note time btn";
+			gap: 8px;
+		}
+
+		.ts-hr-card__label {
+			grid-area: label;
+			font-size: 14px;
+			font-weight: 700;
+			color: #0f172a;
+			overflow-wrap: anywhere;
+		}
+
+		.ts-hr-card__note {
+			grid-area: note;
+			width: 100%;
+			min-height: 64px;
+			padding: 10px 12px;
+			font-size: 15px;
+			border: 1px solid #cbd5e1;
+			border-radius: 10px;
+			background: #ffffff;
+			resize: vertical;
+			font-family: inherit;
+			box-sizing: border-box;
+		}
+
+		// Narrow column: the clock icon of the browser would hide the minutes, a tap opens the picker anyway
+		.ts-hr-card__time {
+			grid-area: time;
+			width: 100%;
+			min-height: 64px;
+			padding: 4px;
+			font-size: 18px;
+
+			&::-webkit-calendar-picker-indicator {
+				display: none;
+			}
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+			text-align: center;
+			border: 1px solid #cbd5e1;
+			border-radius: 10px;
+			background: #ffffff;
+			box-sizing: border-box;
+			font-family: inherit;
+		}
+
+		.ts-hr-card__btn {
+			grid-area: btn;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 4px;
+			min-height: 64px;
+			border: none;
+			border-radius: 10px;
+			background: #16a34a;
+			color: #ffffff;
+			font-size: 13px;
+			font-weight: 700;
+			cursor: pointer;
+
+			i {
+				color: inherit;
+				font-size: 20px;
+			}
+
+			&:active:not(:disabled) {
+				background: #15803d;
+			}
+
+			&:disabled {
+				background: #e2e8f0;
+				color: #94a3b8;
+				cursor: not-allowed;
+			}
+		}
+	}
+
+	.ts-btn-save-icon {
+		width: 36px;
+		height: 36px;
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		border-radius: 8px;
+		background: #313a96;
+		color: #ffffff;
+		font-size: 15px;
+		cursor: pointer;
+		transition: background 0.15s;
+
+		&:hover:not(:disabled) {
+			background: #232b7a;
+		}
+
+		&:disabled {
+			background: #e2e8f0;
+			color: #94a3b8;
+			cursor: not-allowed;
+		}
+	}
+
+	.ts-hr-card__entries {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding-top: 5px;
+		border-top: 1px dashed #cbd5e1;
+	}
+
+	.ts-hr-entry {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 14px;
+		color: #334155;
+		background: rgba(255, 255, 255, 0.75);
+		padding: 2px 2px 2px 10px;
+		border-radius: 6px;
+
+		.ts-hr-entry__note {
+			flex: 1;
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.ts-hr-entry__dur {
+			font-weight: 700;
+			color: #15803d;
+			background: #dcfce7;
+			padding: 2px 8px;
+			border-radius: 4px;
+			font-size: 13px;
+		}
+
+		.ts-hr-entry__del {
+			flex: 0 0 40px;
+			height: 40px;
+			border: none;
+			background: transparent;
+			color: #94a3b8;
+			font-size: 15px;
+			cursor: pointer;
+			border-radius: 8px;
+
+			&:hover {
+				color: #dc2626;
+				background: #fee2e2;
+			}
+		}
+	}
+
+	/* Projet Form & Comboboxes */
+	#pwa-view-project {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.ts-field {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+
+		// Field captions only: the buttons of the Saturne media block are labels too and keep their white icons
+		> label,
+		> .ts-field-header > label {
+			font-size: 13px;
+			font-weight: 600;
+			color: #334155;
+		}
+
+		input[type="date"],
+		input[type="time"],
+		textarea {
+			width: 100%;
+			padding: 9px 10px;
+			font-size: 13.5px;
+			border: 1px solid #cbd5e1;
+			border-radius: 8px;
+			background: #ffffff;
+			color: #0f172a;
+			box-sizing: border-box;
+			font-family: inherit;
+
+			&:focus {
+				outline: none;
+				border-color: #313a96;
+				box-shadow: 0 0 0 2px rgba(49, 58, 150, 0.12);
+			}
+		}
+	}
+
+	.ts-field-header {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-height: 22px;
+
+		.ts-btn-add-task {
+			margin-left: auto;
+			width: 26px;
+			height: 26px;
+		}
+	}
+
+	.ts-inline-stats {
+		flex: 1;
+		min-width: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 11.5px;
+		color: #475569;
+		overflow: hidden;
+
+		.ts-inline-stats__title {
+			flex: 1;
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			font-weight: 600;
+			color: #334155;
+		}
+
+		.ts-inline-stats__meta {
+			flex-shrink: 0;
+			white-space: nowrap;
+
+			b.is-over {
+				color: #dc2626;
+			}
+		}
+
+		.ts-ext-link {
+			color: #313a96;
+			font-weight: 700;
+			text-decoration: none;
+		}
+	}
+
+	.ts-combobox {
+		position: relative;
+		display: flex;
+		align-items: center;
+
+		.ts-combobox__input {
+			width: 100%;
+			padding: 9px 32px 9px 12px;
+			font-size: 13.5px;
+			border: 1px solid #cbd5e1;
+			border-radius: 8px;
+			background: #ffffff;
+			color: #0f172a;
+			box-sizing: border-box;
+		}
+
+		.ts-combobox__toggle {
+			position: absolute;
+			right: 4px;
+			width: 28px;
+			height: 28px;
+			border: none;
+			background: transparent;
+			color: #64748b;
+			cursor: pointer;
+		}
+
+		.ts-combobox__list {
+			position: absolute;
+			top: calc(100% + 4px);
+			left: 0;
+			right: 0;
+			z-index: 50;
+			max-height: 220px;
+			overflow-y: auto;
+			margin: 0;
+			padding: 4px 0;
+			list-style: none;
+			background: #ffffff;
+			border: 1px solid #cbd5e1;
+			border-radius: 8px;
+			box-shadow: 0 10px 25px rgba(15, 23, 42, 0.14);
+		}
+
+		.ts-combobox__item {
+			padding: 8px 12px;
+			font-size: 13px;
+			color: #1e293b;
+			cursor: pointer;
+
+			&:hover {
+				background: #eef2ff;
+				color: #313a96;
+			}
+		}
+
+		.ts-combobox__empty {
+			padding: 8px 12px;
+			font-size: 12.5px;
+			color: #94a3b8;
+			font-style: italic;
+		}
+	}
+
+	.ts-row-2col {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 10px;
+	}
+
+	.ts-req {
+		color: #dc2626;
+	}
+
+	.ts-note-row {
+		display: flex;
+		align-items: stretch;
+		gap: 8px;
+
+		textarea {
+			flex: 1;
+			min-height: 54px;
+		}
+
+		.ts-btn-save-icon {
+			height: auto;
+			min-height: 42px;
+			width: 42px;
+			align-self: center;
+		}
+	}
+
+	/* Saturne Media Block inside Project Tab */
+	.ts-media-field {
+		background: #f8fafc;
+		border: 1px solid #e2e8f0;
+		border-radius: 8px;
+		padding: 8px 10px;
+
+		.dolisirh-pwa-media-block {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 8px;
+		}
+	}
+
+	.ts-proj-history {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		margin-top: 4px;
+
+		.ts-proj-history__title {
+			font-size: 12px;
+			font-weight: 700;
+			color: #475569;
+			margin-bottom: 2px;
+		}
+
+		.ts-proj-entry {
+			border: 1px solid #e2e8f0;
+			background: #f8fafc;
+
+			.ts-proj-entry__date {
+				font-size: 11px;
+				font-weight: 600;
+				color: #64748b;
+				flex-shrink: 0;
+			}
+
+			.ts-proj-entry__sep {
+				color: #cbd5e1;
+				flex-shrink: 0;
+			}
+
+			.ts-proj-entry__task {
+				font-size: 11.5px;
+				font-weight: 700;
+				color: #2563eb;
+				text-decoration: none;
+				max-width: 150px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				flex-shrink: 0;
+
+				&:hover {
+					text-decoration: underline;
+				}
+			}
+		}
+	}
+
+	/* Monthly Calendar Tab */
+	.ts-cal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		margin-bottom: 8px;
+
+		.ts-cal-title-wrap {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.ts-cal-month-label {
+			font-size: 15px;
+			font-weight: 800;
+			color: #0f172a;
+		}
+
+		.ts-cal-month-summary {
+			font-size: 12px;
+			color: #475569;
+			font-weight: 600;
+		}
+	}
+
+	.ts-cal-legend {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		font-size: 11px;
+		color: #475569;
+		margin-bottom: 8px;
+
+		.ts-cal-legend-item {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+		}
+
+		.ts-dot {
+			width: 9px;
+			height: 9px;
+			border-radius: 3px;
+			display: inline-block;
+
+			&.is-ok {
+				background: #22c55e;
+			}
+
+			&.is-over {
+				background: #fb923c;
+			}
+
+			&.is-ko {
+				background: #ef4444;
+			}
+
+			&.is-grey {
+				background: #cbd5e1;
+			}
+		}
+
+		.ts-pa-pill {
+			font-size: 9px;
+			padding: 1px 4px;
+			border-radius: 3px;
+			color: #ffffff;
+
+			&.is-p {
+				background: #2563eb;
+			}
+
+			&.is-a {
+				background: #d97706;
+			}
+		}
+	}
+
+	.ts-cal-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+
+		.ts-cal-week {
+			display: grid;
+			grid-template-columns: repeat(5, 1fr);
+			gap: 5px;
+		}
+	}
+
+	/* Toast status message */
+	.ts-msg {
+		padding: 8px 12px;
+		border-radius: 8px;
+		font-size: 12.5px;
+		font-weight: 600;
+
+		&.is-ok {
+			background: #dcfce7;
+			color: #166534;
+			border: 1px solid #86efac;
+		}
+
+		&.is-err {
+			background: #fee2e2;
+			color: #991b1b;
+			border: 1px solid #fca5a5;
+		}
+
+		&.is-info {
+			background: #dbeafe;
+			color: #1e40af;
+			border: 1px solid #93c5fd;
+		}
+	}
+}
+
+/* Pointer tab: one-tap tasks, start and end time, day timeline */
+.dolisirh-pwa-main.ts-card {
+	.ts-msg {
+		position: sticky;
+		top: 58px;
+		z-index: 35;
+		box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+	}
+
+	.ts-quick-tasks {
+		display: flex;
+		gap: 8px;
+		overflow-x: auto;
+		padding-bottom: 4px;
+		scroll-snap-type: x proximity;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.ts-quick-task {
+		flex: 0 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+		max-width: 160px;
+		min-width: 110px;
+		padding: 8px 10px;
+		border: 1px solid #cbd5e1;
+		border-radius: 10px;
+		background: #ffffff;
+		color: #0f172a;
+		text-align: start;
+		cursor: pointer;
+		scroll-snap-align: start;
+		transition: all 0.15s ease;
+
+		.ts-quick-task__label,
+		.ts-quick-task__project {
+			max-width: 100%;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.ts-quick-task__label {
+			font-size: 13px;
+			font-weight: 700;
+		}
+
+		.ts-quick-task__project {
+			font-size: 11px;
+			color: #64748b;
+		}
+
+		&.is-hr {
+			border-inline-start: 4px solid #16a34a;
+		}
+
+		&.is-active {
+			background: #eef2ff;
+			border-color: #313a96;
+			box-shadow: 0 0 0 2px rgba(49, 58, 150, 0.15);
+
+			.ts-quick-task__label {
+				color: #313a96;
+			}
+		}
+	}
+
+	.ts-clock {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 12px;
+		background: #f8fafc;
+		border: 1px solid #e2e8f0;
+		border-radius: 12px;
+	}
+
+	.ts-clock__pulse {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: #16a34a;
+		animation: dolisirh-pwa-pulse 1.4s ease-in-out infinite;
+	}
+
+	.ts-start,
+	.ts-stop {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.ts-optional {
+		font-weight: 400;
+		color: #94a3b8;
+		text-transform: none;
+	}
+
+	/* Running entries: what is being clocked, since when, and the way to stop it */
+	.ts-running {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.ts-running__title {
+		font-size: 12px;
+		font-weight: 700;
+		color: #475569;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.ts-running__list {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.ts-running__item {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: center;
+		gap: 8px 10px;
+		padding: 10px 12px;
+		background: #eef2ff;
+		border: 1px solid #c7d2fe;
+		border-radius: 12px;
+
+		&.is-hr {
+			background: #f0fdf4;
+			border-color: #bbf7d0;
+
+			.ts-running__elapsed {
+				color: #166534;
+			}
+		}
+	}
+
+	.ts-running__body {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.ts-running__task,
+	.ts-running__meta {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.ts-running__task {
+		font-size: 14px;
+		font-weight: 700;
+		color: #0f172a;
+	}
+
+	.ts-running__meta {
+		font-size: 12px;
+		color: #64748b;
+	}
+
+	.ts-running__elapsed {
+		font-size: 16px;
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+		color: #313a96;
+		white-space: nowrap;
+	}
+
+	.ts-running__actions {
+		grid-column: 1 / -1;
+		display: flex;
+		gap: 8px;
+	}
+
+	.ts-running__cancel {
+		flex: 0 0 44px;
+		height: 44px;
+		border: 1px solid #e2e8f0;
+		border-radius: 10px;
+		background: #ffffff;
+		color: #94a3b8;
+		cursor: pointer;
+
+		&:hover {
+			background: #fee2e2;
+			color: #dc2626;
+		}
+	}
+
+	.ts-running__stop {
+		flex: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-height: 44px;
+		border: none;
+		border-radius: 10px;
+		background: #dc2626;
+		color: #ffffff;
+		font-size: 15px;
+		font-weight: 700;
+		cursor: pointer;
+
+		&:active {
+			background: #b91c1c;
+		}
+	}
+
+	/* Stop panel: end time, comment and medias of the entry being stopped */
+	.ts-stop__head {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+
+		.ts-btn-icon {
+			flex: 0 0 36px;
+			height: 36px;
+		}
+	}
+
+	.ts-stop__heading {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.ts-stop__title {
+		font-size: 15px;
+		font-weight: 800;
+		color: #0f172a;
+	}
+
+	.ts-stop__task {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 12.5px;
+		color: #64748b;
+	}
+
+	.ts-clock__value {
+		padding: 8px 6px;
+		border-radius: 10px;
+		background: #eef2ff;
+		color: #313a96;
+		font-size: 24px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		text-align: center;
+	}
+
+	.ts-clock__total {
+		font-size: 13px;
+		color: #475569;
+
+		b {
+			font-size: 15px;
+			color: #0f172a;
+		}
+	}
+
+	.ts-clock__range {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 8px;
+
+		&.ts-clock__range--start {
+			grid-template-columns: 1fr 1fr;
+			align-items: start;
+		}
+	}
+
+	// The start may carry its day underneath: both times line up on their captions, the arrow on the times
+	.ts-stop .ts-clock__range {
+		align-items: start;
+
+		.ts-clock__arrow {
+			padding-top: 36px;
+		}
+	}
+
+	.ts-clock__arrow {
+		color: #94a3b8;
+		font-size: 18px;
+		padding-top: 6px;
+	}
+
+	.ts-clock__field {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 4px;
+
+		label,
+		.ts-clock__label {
+			font-size: 12px;
+			font-weight: 600;
+			color: #64748b;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+		}
+
+		input[type="date"] {
+			width: 100%;
+			height: 50px;
+			padding: 8px 6px;
+			font-size: 15px;
+			border: 1px solid #cbd5e1;
+			border-radius: 10px;
+			background: #ffffff;
+			color: #0f172a;
+			box-sizing: border-box;
+			font-family: inherit;
+		}
+
+		input[type="time"] {
+			width: 100%;
+			padding: 8px 6px;
+			font-size: 24px;
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+			text-align: center;
+			border: 1px solid #cbd5e1;
+			border-radius: 10px;
+			background: #ffffff;
+			color: #0f172a;
+			box-sizing: border-box;
+			font-family: inherit;
+
+			&:focus {
+				outline: none;
+				border-color: #313a96;
+				box-shadow: 0 0 0 2px rgba(49, 58, 150, 0.12);
+			}
+		}
+	}
+
+	.ts-clock__chips {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: 6px;
+	}
+
+	.ts-chip {
+		padding: 7px 2px;
+		border: 1px solid #cbd5e1;
+		border-radius: 999px;
+		background: #ffffff;
+		color: #334155;
+		font-size: 12px;
+		font-weight: 600;
+		white-space: nowrap;
+		cursor: pointer;
+		transition: all 0.15s ease;
+
+		&.is-active {
+			background: #313a96;
+			border-color: #313a96;
+			color: #ffffff;
+		}
+	}
+
+	.ts-clock__hint {
+		font-size: 11px;
+		font-weight: 600;
+		color: #b45309;
+		text-transform: none;
+	}
+
+	.ts-clock__overlap {
+		padding: 6px 10px;
+		border-radius: 8px;
+		background: #fef3c7;
+		color: #92400e;
+		font-size: 12px;
+		font-weight: 600;
+	}
+
+	.ts-btn-clock {
+		position: sticky;
+		bottom: 12px;
+		z-index: 30;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		width: 100%;
+		min-height: 52px;
+		border: none;
+		border-radius: 12px;
+		background: #313a96;
+		color: #ffffff;
+		font-size: 16px;
+		font-weight: 700;
+		cursor: pointer;
+		box-shadow: 0 8px 20px rgba(49, 58, 150, 0.3);
+		transition: background 0.15s ease;
+
+		&:active:not(:disabled) {
+			background: #262e7a;
+		}
+
+		&:disabled {
+			background: #cbd5e1;
+			color: #f8fafc;
+			box-shadow: none;
+			cursor: not-allowed;
+		}
+	}
+
+	// The eldy theme paints every .fa-play and .fa-stop dark grey
+	.ts-btn-clock i,
+	.ts-running__stop i {
+		color: inherit;
+	}
+
+	.ts-timeline__file {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		max-width: 100%;
+		height: 44px;
+		padding: 0 10px;
+		border: 1px solid #e2e8f0;
+		border-radius: 8px;
+		background: #f8fafc;
+		color: #334155;
+		font-size: 12px;
+		text-decoration: none;
+
+		span {
+			max-width: 160px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	.ts-proj-history__title {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 8px;
+
+		.ts-proj-history__total {
+			font-weight: 500;
+			color: #475569;
+
+			b {
+				color: #0f172a;
+			}
+		}
+	}
+
+	.ts-timeline__empty {
+		padding: 14px;
+		border: 1px dashed #cbd5e1;
+		border-radius: 10px;
+		color: #94a3b8;
+		font-size: 12.5px;
+		text-align: center;
+	}
+
+	.ts-timeline {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ts-timeline__item {
+		position: relative;
+		display: grid;
+		grid-template-columns: 52px 1fr auto;
+		gap: 10px;
+		padding: 10px 0;
+		border-bottom: 1px solid #f1f5f9;
+
+		&::before {
+			content: "";
+			position: absolute;
+			inset-inline-start: 25px;
+			top: 40px;
+			bottom: -10px;
+			width: 2px;
+			background: #e2e8f0;
+		}
+
+		&:last-child::before {
+			display: none;
+		}
+
+		&.is-hr .ts-timeline__range {
+			background: #dcfce7;
+			color: #166534;
+		}
+	}
+
+	.ts-timeline__range {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		align-self: start;
+		padding: 4px 0;
+		border-radius: 8px;
+		background: #eef2ff;
+		color: #313a96;
+		font-size: 13px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+
+		small {
+			font-size: 11px;
+			font-weight: 600;
+			opacity: 0.75;
+		}
+
+		&.is-duration-only {
+			color: #94a3b8;
+			background: #f1f5f9;
+		}
+	}
+
+	.ts-timeline__body {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.ts-timeline__head {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+	}
+
+	.ts-timeline__task {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 13.5px;
+		font-weight: 700;
+		color: #0f172a;
+		text-decoration: none;
+	}
+
+	.ts-timeline__dur {
+		flex-shrink: 0;
+		font-size: 12.5px;
+		font-weight: 700;
+		color: #313a96;
+	}
+
+	.ts-timeline__project {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 11.5px;
+		color: #64748b;
+	}
+
+	.ts-timeline__note {
+		font-size: 12.5px;
+		color: #334155;
+		white-space: pre-line;
+		overflow-wrap: anywhere;
+	}
+
+	.ts-timeline__medias {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: 4px;
+	}
+
+	.ts-timeline__photo img {
+		display: block;
+		width: 44px;
+		height: 44px;
+		border-radius: 8px;
+		object-fit: cover;
+	}
+
+	.ts-timeline__voice {
+		width: 44px;
+		height: 44px;
+		border: none;
+		border-radius: 8px;
+		background: #8e44ad;
+		color: #ffffff;
+		font-size: 15px;
+		cursor: pointer;
+
+		&.is-playing {
+			background: #5b2c6f;
+		}
+
+		// The eldy theme paints every .fa-play dark grey
+		i {
+			color: inherit;
+		}
+	}
+
+	.ts-timeline__del {
+		align-self: start;
+		width: 34px;
+		height: 34px;
+		border: none;
+		border-radius: 8px;
+		background: transparent;
+		color: #94a3b8;
+		cursor: pointer;
+
+		&:hover:not(:disabled) {
+			background: #fee2e2;
+			color: #dc2626;
+		}
+	}
+}
+
+/* Confirmation dialog: the box carries the padding, so a tap on the dialog itself is a tap on the backdrop */
+.dolisirh-pwa-body .ts-confirm {
+	width: calc(100% - 32px);
+	max-width: 360px;
+	padding: 0;
+	border: none;
+	border-radius: 16px;
+	background: #ffffff;
+	color: #0f172a;
+	box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+
+	&::backdrop {
+		background: rgba(15, 23, 42, 0.55);
+	}
+
+	&[open] {
+		animation: dolisirh-pwa-pop 0.15s ease-out;
+	}
+
+	.ts-confirm__box {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+		padding: 22px 18px 18px;
+		text-align: center;
+	}
+
+	.ts-confirm__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 48px;
+		height: 48px;
+		margin-bottom: 4px;
+		border-radius: 50%;
+		background: #fee2e2;
+		color: #dc2626;
+		font-size: 20px;
+
+		i {
+			color: inherit;
+		}
+	}
+
+	.ts-confirm__title {
+		margin: 0;
+		font-size: 17px;
+		font-weight: 800;
+		color: #0f172a;
+	}
+
+	.ts-confirm__text {
+		margin: 0;
+		font-size: 14px;
+		color: #64748b;
+	}
+
+	.ts-confirm__actions {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 10px;
+		width: 100%;
+		margin-top: 12px;
+
+		button {
+			min-height: 46px;
+			border-radius: 10px;
+			font-size: 15px;
+			font-weight: 700;
+			cursor: pointer;
+		}
+	}
+
+	.ts-confirm__cancel {
+		border: 1px solid #cbd5e1;
+		background: #ffffff;
+		color: #334155;
+	}
+
+	.ts-confirm__ok {
+		border: none;
+		background: #dc2626;
+		color: #ffffff;
+
+		&:active {
+			background: #b91c1c;
+		}
+	}
+}
+
+@keyframes dolisirh-pwa-pop {
+	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes dolisirh-pwa-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.3;
+	}
+}

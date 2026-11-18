@@ -30,10 +30,19 @@ DoliSIRHDescriptionLong = Simplification de la gestion du temps. <br> Générati
 HRProject                           = Projet Ressources Humaines
 ProjectsAndTasks                    = Projets et tâches
 ProjectOrTask                       = Projet ou tâche
-Holidays                            = Congés
+NoWorkTimeTasks                     = Tâches d'absence (No Work Time)
+WorkTimeTasks                       = Tâches de présence (Work Time)
+Holidays                            = Congés sans solde
 PaidHolidays                        = Congés payés
-SickLeave                           = Congés maladie
+SickLeave                           = Arrêt maladie
 PublicHoliday                       = Jour férié
+Recovery                            = Récupération
+CompensatoryRest                    = Repos compensateur
+ExceptionalAbsence                  = Absence exceptionnelle
+EffectiveWorkTime                   = Temps de travail effectif (standard)
+ProfessionalTraining                = Formation professionnelle
+BusinessTravelMission               = Déplacement professionnel
+CSEDelegation                       = Délégation CSE
 AutomaticTimeSpending               = Auto-pointage
 InternalMeeting                     = Réunion interne
 InternalTraining                    = Formation interne
@@ -51,11 +60,11 @@ PerfectTimeSpentColor               = Couleur temps consommés parfait
 
 # Timesheet - Navette
 PrefillDate                                            = Préremplir la date de début et de fin de la navette
-PrefillDateDescription                                 = Préremplissage de la date de début avec le premier jour du mois en cours et la date de fin avec le dernier jour du mois en cours
+PrefillDateDescription                                 = Préremplissage des dates de début et de fin avec le mois précédent, ou avec le mois en cours à partir de 4 jours avant sa fin
 AddAttendantsConf                                      = Ajouter des signataires
 AddAttendantsDescription                               = Pouvoir ajouter des signataires pendant la réalisation de la navette <br> (par défaut il y a deux signataires, l'utilisateur assigné et son responsable hiérarchique s'il est configuré dans son profil utilisateur)
 CheckDateEnd                                           = Vérifier la date fin de navette
-CheckDateEndDescription                                = Vérification si la date fin de navette est supérieure à la date du jour <br> (évite la création de temps consommés dans le futur)
+CheckDateEndDescription                                = Vérification que la navette n'est créée qu'à partir de 4 jours avant sa date de fin <br> (évite la création de temps consommés dans le futur, tout en permettant de faire la navette du mois avant la fin du mois)
 ShowTasksWithTimespentOnTimeSheet                      = Afficher les tâches avec du temps consommé
 ShowTasksWithTimespentOnTimeSheetDescription           = Permet d'afficher les tâches avec du temps consommé dans la fiche de navette
 AllowDifferenceBetweenPassedAndWorkingHours            = Autoriser la différence entre les heures travaillées et les heures consommées
@@ -67,6 +76,7 @@ HumanResources                        = Ressources humaines
 HRDescription                         = Projet comprenant les tâches liées aux ressources humaines
 HRProjectSet                          = Création du Projet Ressources Humaines
 HRProjectSetHelp                      = Cette option permet de créer le "Projet Ressources Humaines" utilisé pour pointer son temps ou gérer ses navettes<br>De plus, tous les utilisateurs internes sont automatiquement affectés au projet et tâches
+NewHRProjectCreated                   = Le nouveau projet "%s" (%s) et ses tâches (No Work Time / Work Time) ont été créés avec succès. L'ancien projet et ses pointages de temps ont été conservés.
 ProductServiceSet                     = Création des produits et services pour la navette
 ProductServiceSetHelp                 = Cette option permet de créer les produits et services utilisé pour gérer les lignes de navette
 BookmarkSet                           = Création d'un marque-page pour le temps consommé
@@ -111,6 +121,7 @@ EnableDolisirh             = Veuillez activer le module DoliSIRH pour accéder �
 # Right - Droit
 CreateAllWorkingHours = Créer/Modifier les horaires de travail des utilisateurs (dont je suis responsable hiérarchique)
 CreateMyWorkingHours  = Créer/Modifier ses propres horaires de travail
+CreateEveryoneWorkingHours = Créer/Modifier les horaires de travail de tous les utilisateurs
 
 # Data - Donnée
 WorkingHours            = Horaire de travail
@@ -134,6 +145,8 @@ TimeSpending                           = Suivi temps
 DoliSIRHNewTimeSpent                   = Temps consommé (en minutes)
 DivideTimeIntoTasks                    = Répartir entre les tâches du projet
 ShowOnlyFavoriteTasks                  = Afficher uniquement les tâches favorites
+UnassignTask                           = Désaffecter de la tâche (le temps pointé est conservé)
+UnassignProject                        = Désaffecter du projet et de toutes ses tâches (le temps pointé est conservé)
 ConsumedTime                           = Temps pointé
 ExpectedWorkingHoursMonth              = Heures de travail prévues au mois de %s
 SpentWorkingHoursMonth                 = Heures de travail dues (%s - %s)
@@ -218,13 +231,18 @@ GoToTimeSpent                                 = Aller sur le pointage de  temps 
 ErrorLinkedElementTimeSheetTimeSpent          = Erreur liens entre navette et temps consommé <br> il existe déjà une navette lié au temps consommé affecté à l'utilisateur %s sur la période de %s au %s
 RemoveFileTimeSheet                           = Supprimer la fiche navette
 ConfirmRemoveFileTimeSheet                    = Êtes-vous sûr de vouloir <b>supprimer la fiche navette</b> ? La fiche navette sera supprimer <b>ainsi que les liens entre la navette et le temps consommé</b>. <br> De plus la navette retournera au statut brouillon.
-ErrorDateEndTimeSheet                         = Erreur date fin de navette %s supérieure à la date du jour %s
+ErrorDateEndTimeSheet                         = Erreur : la navette se terminant le %s ne peut être faite qu'à partir du %s
 ErrorDateTimeSheet                            = Erreur date début de navette %s supérieure à la date fin de navette %s
 ErrorConfigWorkingHours                       = Erreur : configuration des heures de travail manquantes
 GoToWorkingHours                              = Aller sur la page Horaire de travail de l'utilisateur %s
 ErrorConfigProjectPage                        = Erreur : configuration des projets et tâches ressources humaines manquantes. <br> Impossible de génerer la navette.
 GoToConfigProjectPage                         = Aller sur la page de configuration du projet Ressources Humaines
 ErrorQtyProductServiceTimeSheet               = Erreur : quantité de produit ou service nulle/incorrecte
+ConfirmMassLockTimeSheet                      = Verrouiller les navettes
+ConfirmMassLockTimeSheetQuestion              = Êtes-vous sûr de vouloir verrouiller les %s navette(s) sélectionnée(s) ? Seules les navettes validées, signées par tous et sans écart d'heures seront verrouillées.
+TimeSheetsLocked                              = %s navette(s) verrouillée(s)
+TimeSheetsNotLockableSkipped                  = %s navette(s) ignorée(s) : pas encore validée(s), pas signée(s) par tous ou avec un écart d'heures
+TimeSheetLockFailed                           = Navette %s non verrouillée : %s
 
 # Data - Donnée
 TimeSheet                          = Navette
@@ -248,9 +266,43 @@ TimesheetsCategoriesArea           = Espace des tags/catégories des navettes
 #
 
 # Data - Donnée
-TimeSheetDocument     = Document Navette
-timesheetdocument.odt = Navette ODT
-timesheetdocument     = navette
+TimeSheetDocument               = Document Navette
+TimeSheetDocumentPDF            = Navette PDF
+TimeSheetDocumentPDFDescription = Navette au format PDF : temps pointés sur les tâches du projet Ressources Humaines, en deux blocs Présence et Absence
+timesheetdocument               = navette
+TimeSheetPeriod                 = Du %s au %s
+TimeSheetEmployee               = Salarié
+TimeSheetResponsible            = Responsable
+TimeSheetWorkingDays            = Jours travaillés prévus
+TimeSheetExpected               = Attendu
+TimeSheetPresence               = Présence
+TimeSheetAbsence                = Absence
+TimeSheetLogged                 = Pointé
+TimeSheetMissing                = Manque
+TimeSheetExcess                 = Excédent
+TimeSheetDifference             = Écart
+TimeSheetBalanced               = OK
+TimeSheetPresenceBlock          = Présence - Temps de travail
+TimeSheetAbsenceBlock           = Absence - Hors temps de travail
+TimeSheetTotalPresence          = Total présence
+TimeSheetTotalAbsence           = Total absence
+TimeSheetSummary                = Synthèse
+TimeSheetExpectedTime           = Temps attendu
+TimeSheetTotalLogged            = Total pointé
+TimeSheetNoTaskConfigured       = Aucune tâche configurée
+TimeSheetLeaveRecap             = Récapitulatif des congés et arrêts maladie
+TimeSheetLeaveDaysTotal         = %s jour(s) d'absence
+TimeSheetLeaveType              = Type
+TimeSheetLeaveFrom              = Du
+TimeSheetLeaveTo                = Au
+TimeSheetLeaveDays              = Jours
+TimeSheetLeaveDuration          = Durée
+TimeSheetNoLeave                = Aucun congé ni arrêt maladie sur la période
+TimeSheetPayrollItems           = Éléments variables de paie
+TimeSheetSignatures             = Signatures
+TimeSheetSignedOn               = Signé le %s
+TimeSheetWaitingSignature       = En attente de signature
+TimeSheetGeneratedOn            = Navette générée le %s
 
 
 
@@ -301,3 +353,53 @@ JourneySubscription = Abonnement trajet
 SpecialBonus        = Prime spéciale
 MealBaskets         = Paniers repas
 TeleworkingPackage  = Forfait télétravail
+MobileApp           = Application mobile
+MediaLibrary        = Bibliothèque de médias
+
+
+
+#
+# PWA - Application mobile de pointage
+#
+
+# Data - Donnée
+PwaClockTab                 = Pointer
+PwaQuickTasks               = Tâches récentes
+PwaClockStart               = Début
+PwaClockEnd                 = Fin
+PwaClockOvernight           = (fin le lendemain)
+PwaClockStartAction         = Pointer
+PwaClockStarted             = Pointage démarré à %s
+PwaClockRunningTitle        = En cours
+PwaClockSince               = depuis %s
+PwaClockStartedOn           = commencé le %s
+PwaClockStop                = Arrêter
+PwaClockStopTitle           = Fin du pointage
+PwaClockValidate            = Valider
+PwaClockCancel              = Abandonner ce pointage
+PwaClockCancelTitle         = Abandonner ce pointage ?
+PwaClockCancelText          = Le temps écoulé ne sera pas enregistré.
+PwaClockCancelOk            = Abandonner
+PwaClockCancelled           = Pointage abandonné
+PwaClockSaved               = Pointage enregistré
+PwaClockMediasSaved         = %s média(s) joint(s)
+PwaClockDeleted             = Pointage supprimé
+PwaClockDeleteTitle         = Supprimer ce pointage ?
+PwaClockDeleteText          = Ses photos, fichiers et vocaux seront supprimés avec lui.
+PwaClockDayEntries          = Pointages du %s
+PwaClockNoEntry             = Aucun pointage ce jour-là
+PwaClockPlayVoice           = Écouter le vocal
+PwaClockPresence            = Présence
+PwaClockAbsence             = Absence
+PwaClockOverlap             = Chevauche %s
+PwaComment                  = Commentaire
+PwaOptional                 = facultatif
+PwaNotePlaceholder          = Ce qui a été fait…
+PwaNoProjectFound           = Aucun projet trouvé
+PwaNoTaskFound              = Aucune tâche trouvée
+PwaNetworkError             = Erreur réseau
+
+# Error - Erreur
+ErrorPwaEndEqualsStart      = L'heure de fin doit être différente de l'heure de début
+ErrorPwaAlreadyRunning      = Un pointage est déjà en cours : %s. Arrêtez-le d'abord.
+ErrorPwaNotRunning          = Ce pointage n'est plus en cours

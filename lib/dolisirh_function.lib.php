@@ -155,6 +155,26 @@ function dolisirh_num_between_days(int $timestampStart, int $timestampEnd, int $
 }
 
 /**
+ * Add days to a date in the server timezone.
+ *
+ * Depuis Dolibarr 23, dol_time_plus_duree() ajoute les jours en UTC : parti d'un minuit du serveur,
+ * le resultat tombe a 23:00 la veille une fois le changement d'heure franchi, et ne correspond
+ * plus aux dates lues par jdate(). Le parametre $tz du coeur n'existe pas sur toutes les 23.x.
+ *
+ * @param  int $timestamp Timestamp in the server timezone, as returned by dol_mktime() or jdate().
+ * @param  int $days      Number of days to add, may be negative.
+ * @return int            Same time of day, $days days later in the server timezone.
+ */
+function dolisirh_add_days(int $timestamp, int $days): int
+{
+    $date = new DateTime('@' . $timestamp);
+    $date->setTimezone(new DateTimeZone(date_default_timezone_get()));
+    $date->modify(($days < 0 ? '' : '+') . $days . ' day');
+
+    return $date->getTimestamp();
+}
+
+/**
  * Get all HR project tasks info.
  *
  * @return array
@@ -165,49 +185,106 @@ function get_hr_project_tasks(): array
         [
             'name'     => 'Holidays',
             'code'     => 'DOLISIRH_HOLIDAYS_TASK',
+            'type'     => 'no_work_time',
             'position' => 1
         ],
         [
             'name'     => 'PaidHolidays',
             'code'     => 'DOLISIRH_PAID_HOLIDAYS_TASK',
+            'type'     => 'no_work_time',
             'position' => 10
         ],
         [
             'name'     => 'SickLeave',
             'code'     => 'DOLISIRH_SICK_LEAVE_TASK',
+            'type'     => 'no_work_time',
             'position' => 40
         ],
         [
             'name'     => 'PublicHoliday',
             'code'     => 'DOLISIRH_PUBLIC_HOLIDAY_TASK',
+            'type'     => 'no_work_time',
             'position' => 30
         ],
         [
             'name'     => 'RTT',
             'code'     => 'DOLISIRH_RTT_TASK',
+            'type'     => 'no_work_time',
             'position' => 20
         ],
         [
-            'name' => 'InternalMeeting',
-            'code' => 'DOLISIRH_INTERNAL_MEETING_TASK'
+            'name' => 'Recovery',
+            'code' => 'DOLISIRH_RECOVERY_TASK',
+            'type' => 'no_work_time'
         ],
         [
-            'name' => 'InternalTraining',
-            'code' => 'DOLISIRH_INTERNAL_TRAINING_TASK'
+            'name' => 'CompensatoryRest',
+            'code' => 'DOLISIRH_COMPENSATORY_REST_TASK',
+            'type' => 'no_work_time'
         ],
         [
-            'name' => 'ExternalTraining',
-            'code' => 'DOLISIRH_EXTERNAL_TRAINING_TASK'
+            'name' => 'ExceptionalAbsence',
+            'code' => 'DOLISIRH_EXCEPTIONAL_ABSENCE_TASK',
+            'type' => 'no_work_time'
         ],
         [
-            'name' => 'AutomaticTimeSpending',
-            'code' => 'DOLISIRH_AUTOMATIC_TIMESPENDING_TASK'
+            'name' => 'EffectiveWorkTime',
+            'code' => 'DOLISIRH_EFFECTIVE_WORK_TIME_TASK',
+            'type' => 'work_time'
         ],
         [
-            'name' => 'Miscellaneous',
-            'code' => 'DOLISIRH_MISCELLANEOUS_TASK'
+            'name' => 'ProfessionalTraining',
+            'code' => 'DOLISIRH_PROFESSIONAL_TRAINING_TASK',
+            'type' => 'work_time'
+        ],
+        [
+            'name' => 'BusinessTravelMission',
+            'code' => 'DOLISIRH_BUSINESS_TRAVEL_MISSION_TASK',
+            'type' => 'work_time'
+        ],
+        [
+            'name' => 'CSEDelegation',
+            'code' => 'DOLISIRH_CSE_DELEGATION_TASK',
+            'type' => 'work_time'
         ]
     ];
+}
+
+/**
+ * Get the ID of the HR project tasks set in the module setup.
+ *
+ * @param  string $type Type of the tasks, work_time or no_work_time, empty for both.
+ * @return int[]        Tasks ID.
+ */
+function get_hr_project_task_ids(string $type = ''): array
+{
+    $taskIDs = [];
+    foreach (get_hr_project_tasks() as $hrProjectTask) {
+        if ((empty($type) || ($hrProjectTask['type'] ?? '') === $type) && getDolGlobalInt($hrProjectTask['code']) > 0) {
+            $taskIDs[] = getDolGlobalInt($hrProjectTask['code']);
+        }
+    }
+
+    return array_values(array_unique($taskIDs));
+}
+
+/**
+ * Get the tasks whose time spent the timesheet compares to the working hours.
+ *
+ * Since the HR project 2.0.0, presence and absence are clocked on the HR project tasks: the timesheet counts them
+ * only, the time spent on the other projects tasks is analytic.
+ * The time spent screens do the opposite: projects tasks and absences, without the work time tasks.
+ * Without any work time task set up (HR project 1.x), the presence is clocked on the projects tasks: no filter.
+ *
+ * @return int[] Tasks ID, empty for all tasks.
+ */
+function get_timesheet_task_ids(): array
+{
+    if (empty(get_hr_project_task_ids('work_time'))) {
+        return [];
+    }
+
+    return get_hr_project_task_ids();
 }
 
 /**

@@ -93,7 +93,7 @@ $form        = new Form($db);
 $formcompany = new FormCompany($db);
 $formother   = new FormOther($db);
 
-llxHeader();
+llxHeader('', '', '', '', 0, 0, [], ['/saturne/css/saturne.min.css', '/dolisirh/css/dolisirh.min.css'], '', 'saturne-theme');
 
 $picto = 'bill';
 $title = $langs->trans("RecurringInvoicesStatistics");
@@ -262,7 +262,7 @@ if (!count($arrayyears)) {
 
 $h = 0;
 $head = array();
-$head[$h][0] = DOL_URL_ROOT.'/custom/dolisirh/view/recurringinvoicestatistics.php?mode='.urlencode($mode);
+$head[$h][0] = dol_buildpath('/dolisirh/view/recurringinvoicestatistics.php', 1).'?mode='.urlencode($mode);
 $head[$h][1] = $langs->trans("ByMonthYear");
 $head[$h][2] = 'byyear';
 $h++;
