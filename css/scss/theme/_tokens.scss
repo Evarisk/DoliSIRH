@@ -1,0 +1,78 @@
+/* DoliSIRH modern theme: design tokens.
+   The generic restyle of the back office (titles, tabs, lists, forms, buttons, modals) is the shared
+   theme of Saturne. saturne_header() puts its saturne-theme class on the logged-in pages only: the
+   public pages, which have their own design, never get it. The DoliSIRH components below aim at the
+   same scope. */
+$ds-scope: 'body#mainbody.saturne-theme';
+
+/* The module stylesheet is compiled apart from Saturne: the values come from the CSS custom
+   properties the shared theme exposes on that scope */
+$ds-bg: var(--saturne-bg);
+$ds-surface: var(--saturne-surface);
+$ds-surface-soft: var(--saturne-surface-soft);
+$ds-border: var(--saturne-border);
+$ds-border-soft: var(--saturne-border-soft);
+$ds-border-strong: var(--saturne-border-strong);
+$ds-text: var(--saturne-text);
+$ds-text-soft: var(--saturne-text-soft);
+$ds-muted: var(--saturne-muted);
+$ds-faint: var(--saturne-faint);
+
+$ds-primary: var(--saturne-primary);
+$ds-primary-strong: var(--saturne-primary-strong);
+$ds-primary-soft: var(--saturne-primary-soft);
+$ds-navy: var(--saturne-navy);
+$ds-success: var(--saturne-success);
+$ds-success-soft: var(--saturne-success-soft);
+$ds-warning: var(--saturne-warning);
+$ds-warning-soft: var(--saturne-warning-soft);
+$ds-danger: var(--saturne-danger);
+$ds-danger-soft: var(--saturne-danger-soft);
+
+$ds-radius-lg: var(--saturne-radius-lg);
+$ds-radius: var(--saturne-radius);
+$ds-radius-sm: var(--saturne-radius-sm);
+$ds-radius-pill: var(--saturne-radius-pill);
+
+$ds-shadow-sm: var(--saturne-shadow-sm);
+$ds-shadow: var(--saturne-shadow);
+$ds-shadow-hover: var(--saturne-shadow-hover);
+$ds-ring: var(--saturne-ring);
+
+$ds-font: var(--saturne-font);
+$ds-transition: 0.15s ease;
+
+/* Text colours of the tinted pills, same as the status badges of the shared theme */
+$ds-success-text: #15803d;
+$ds-warning-text: #a16207;
+$ds-danger-text: #b91c1c;
+
+/* Uppercase micro label, used for table headers and field labels */
+@mixin ds-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $ds-muted;
+}
+
+/* White rounded surface */
+@mixin ds-card {
+  background: $ds-surface;
+  border: 1px solid $ds-border;
+  border-radius: $ds-radius-lg;
+  box-shadow: $ds-shadow-sm;
+}
+
+/* Tinted pill (task progress, recorded time) */
+@mixin ds-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $ds-radius-pill;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

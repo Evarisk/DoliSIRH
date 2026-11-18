@@ -73,12 +73,12 @@ class ActionsDoliSIRH
     {
         global $conf, $langs, $user;
 
-        if ($parameters['currentcontext'] == 'invoicecard') {
+        if ($this->getActiveContext($parameters, 'invoicecard')) {
             if ($action == 'task_create') {
                 require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
                 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-                require_once __DIR__ . '/../../saturne/lib/object.lib.php';
+                dol_include_once('/saturne/lib/object.lib.php');
 
                 $product   = new Product($this->db);
                 $task      = new Task($this->db);
@@ -141,7 +141,7 @@ class ActionsDoliSIRH
             }
         }
 
-        if ($parameters['currentcontext'] == 'projecttasktime') {
+        if ($this->getActiveContext($parameters, 'projecttasktime')) {
             // Assign the edited time spent line to an invoice service line, the native update of the line stores it.
             if ($action == 'updateline' && !GETPOST('cancel', 'alpha') && GETPOSTISSET('dolisirh_invoice_line_id') && $this->canAssignTimeSpentToInvoice()) {
                 require_once __DIR__ . '/../lib/dolisirh_invoice.lib.php';
@@ -225,7 +225,7 @@ class ActionsDoliSIRH
             }
         }
 
-        if ($parameters['currentcontext'] == 'userihm') {
+        if ($this->getActiveContext($parameters, 'userihm')) {
             if ($action == 'update') {
                 if (GETPOST('set_timespent_dataset_order') == 'on') {
                     $tabParam['DOLISIRH_TIMESPENT_DATASET_ORDER'] = 1;
@@ -236,7 +236,7 @@ class ActionsDoliSIRH
             }
         }
 
-        if ($parameters['currentcontext'] == 'projectcard') {
+        if ($this->getActiveContext($parameters, 'projectcard')) {
             if ($action == 'builddoc' && strstr(GETPOST('model'), 'projectdocument_odt')) {
                 require_once __DIR__ . '/dolisirhdocuments/projectdocument.class.php';
 
@@ -245,7 +245,7 @@ class ActionsDoliSIRH
                 $moduleNameLowerCase = 'dolisirh';
                 $permissiontoadd     = $user->rights->projet->creer;
 
-                require_once __DIR__ . '/../../saturne/core/tpl/documents/documents_action.tpl.php';
+                require_once dol_buildpath('/saturne/core/tpl/documents/documents_action.tpl.php');
             }
 
             if ($action == 'pdfGeneration') {
@@ -254,7 +254,7 @@ class ActionsDoliSIRH
                 $upload_dir          = $conf->dolisirh->multidir_output[$conf->entity ?? 1];
 
                 // Action to generate pdf from odt file
-                require_once __DIR__ . '/../../saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php';
+                require_once dol_buildpath('/saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php');
 
                 $urlToRedirect = $_SERVER['REQUEST_URI'];
                 $urlToRedirect = preg_replace('/#pdfGeneration$/', '', $urlToRedirect);
@@ -286,7 +286,7 @@ class ActionsDoliSIRH
     {
         global $langs, $user;
 
-        if ($parameters['currentcontext'] == 'invoicecard') {
+        if ($this->getActiveContext($parameters, 'invoicecard')) {
             $product = new Product($this->db);
             if (is_array($object->lines) && !empty($object->lines)) {
                 foreach ($object->lines as $factureLine) {
@@ -305,7 +305,7 @@ class ActionsDoliSIRH
 
             if (empty($object->array_options['options_fk_task'])) {
                 if (isset($object->fk_project) && !empty($dateStart) && !empty($dateEnd) && (isset($plannedWorkload) && $plannedWorkload != 0)) {
-                    print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['REQUEST_URI'] . '&action=task_create">' . $langs->trans('AddTask') . '</a></div>';
+                    print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['REQUEST_URI'] . '&action=task_create&token=' . newToken() . '">' . $langs->trans('AddTask') . '</a></div>';
                 } else {
                     $mesgs  = !isset($object->fk_project) ? $langs->trans('ErrorNoProject') . '<br>' : '';
                     $mesgs .= empty($dateStart) ? $langs->trans('ErrorDateStart') . '<br>' : '';
@@ -329,7 +329,7 @@ class ActionsDoliSIRH
     {
         global $langs;
 
-        if ($parameters['currentcontext'] == 'projecttasktime') {
+        if ($this->getActiveContext($parameters, 'projecttasktime')) {
             // The mass action is already running, the confirmation form is displayed instead of the selector.
             if (GETPOST('massaction', 'alpha') == 'dolisirh_assign_invoice') {
                 return 0;
@@ -355,7 +355,7 @@ class ActionsDoliSIRH
     {
         global $langs, $projectstatic;
 
-        if ($parameters['currentcontext'] != 'projecttasktime' || GETPOST('cancel', 'alpha')) {
+        if (!$this->getActiveContext($parameters, 'projecttasktime') || GETPOST('cancel', 'alpha')) {
             return 0;
         }
         if (!$this->canAssignTimeSpentToInvoice() || !$this->projectBillsTime()) {
@@ -423,7 +423,7 @@ class ActionsDoliSIRH
     {
         if (strpos($parameters['context'], 'projecttasktime') !== false && $this->canAssignTimeSpentToInvoice() && $this->projectBillsTime()) {
             // Standalone script : the time spent list is a native Dolibarr page, the module bundle is not loaded there.
-            $scriptPath  = '/custom/dolisirh/js/timespent-invoice.js';
+            $scriptPath  = '/dolisirh/js/timespent-invoice.js';
             $scriptFile  = dol_buildpath($scriptPath, 0);
             $scriptMtime = file_exists($scriptFile) ? filemtime($scriptFile) : 1;
 
@@ -498,7 +498,7 @@ class ActionsDoliSIRH
                 }
 			}
 		}
-		if (in_array($parameters['currentcontext'], array('projecttaskcard', 'projecttasktime'))) {
+		if ($this->getActiveContext($parameters, ['projecttaskcard', 'projecttasktime'])) {
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
 			if (GETPOST('action') == 'toggleTaskFavorite') {
@@ -539,7 +539,7 @@ class ActionsDoliSIRH
 			</script>
 			<?php
 		}
-		if ($parameters['currentcontext'] == 'projecttaskscard') {
+		if ($this->getActiveContext($parameters, 'projecttaskscard')) {
 			global $db;
 
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
@@ -562,7 +562,7 @@ class ActionsDoliSIRH
 				}
 			}
 		}
-		if ($parameters['currentcontext'] == 'tasklist') {
+		if ($this->getActiveContext($parameters, 'tasklist')) {
 			global $db;
 
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
@@ -592,14 +592,15 @@ class ActionsDoliSIRH
 			}
 		}
 
-		if ($parameters['currentcontext'] == 'invoicereccard') {
+		if ($this->getActiveContext($parameters, 'invoicereccard')) {
 			if (GETPOST('action') == 'create') {
 				require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-				$form = new Form($this->db);
+				$form      = new Form($this->db);
+				$categorie = new Categorie($this->db);
 
 				// Categories
-                if (!empty($conf->categorie->enabled)) {
+                if (!empty($conf->categorie->enabled) && isset($categorie->MAP_ID['facturerec'])) {
 					$html = '<td class="valignmiddle">'.$langs->trans('Categories').'</td><td>';
                     $cate_arbo = $form->select_all_categories('facturerec', '', 'parent', 64, 0, 1);
 					$html .= img_picto('', 'category') . $form::multiselectarray('categories', $cate_arbo, GETPOST('categories', 'array'), '', 0, 'quatrevingtpercent widthcentpercentminusx');
@@ -611,7 +612,7 @@ class ActionsDoliSIRH
 			}
 		}
 
-        if ($parameters['currentcontext'] == 'actioncard') { ?>
+        if ($this->getActiveContext($parameters, 'actioncard')) { ?>
             <script>
                 function getDiffTimestampEvent() {
                     let dayap   = $('#apday').val();
@@ -654,8 +655,8 @@ class ActionsDoliSIRH
             </script>
 		<?php }
 
-        if ($parameters['currentcontext'] == 'userihm') {
-            $pictopath = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
+        if ($this->getActiveContext($parameters, 'userihm')) {
+            $pictopath = dol_buildpath('/dolisirh/img/dolisirh_color.png', 1);
 			$picto = img_picto('', $pictopath, '', 1, 0, 0, '', 'pictoModule');
 
             $out = '<tr class="oddeven"><td>' . $picto . $langs->trans('TimeSpentDatasetOrder') . '</td>';
@@ -676,15 +677,15 @@ class ActionsDoliSIRH
             <?php endif;
         }
 
-        if ($parameters['currentcontext'] == 'projectcard') {
+        if ($this->getActiveContext($parameters, 'projectcard')) {
             if (GETPOST('action') != 'create') {
                 global $user;
 
-                print '<link rel="stylesheet" type="text/css" href="../custom/saturne/css/saturne.min.css">';
+                print '<link rel="stylesheet" type="text/css" href="' . dol_buildpath('/saturne/css/saturne.min.css', 1) . '">';
 
                 $moduleNameLowerCase = 'dolisirh';
 
-                require_once __DIR__ . '/../../saturne/lib/documents.lib.php';
+                dol_include_once('/saturne/lib/documents.lib.php');
 
                 $object = new Project($this->db);
                 $object->fetch(GETPOSTINT('id'), GETPOST('ref','alpha'));
@@ -701,10 +702,10 @@ class ActionsDoliSIRH
                 $permissionToAdd    = $user->hasRight('projet', 'creer');
                 $permissionToDelete = $user->hasRight('projet', 'supprimer');
 
-                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', empty($soc->default_lang) ? '' : $soc->default_lang, $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
+                $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', '', $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
                 ?>
 
-                <script src="../custom/saturne/js/saturne.min.js"></script>
+                <script src="<?php echo dol_buildpath('/saturne/js/saturne.min.js', 1); ?>"></script>
                 <script>
                     jQuery('.fichehalfleft .div-table-responsive-no-min').append(<?php echo json_encode($html) ; ?>)
                 </script>
@@ -712,7 +713,7 @@ class ActionsDoliSIRH
             }
         }
 
-		if (in_array($parameters['currentcontext'], array('timesheetcard')) && GETPOST('action') == 'create') {
+		if ($this->getActiveContext($parameters, ['timesheetcard']) && GETPOST('action') == 'create') {
 			?>
 			<script>
 				$('.field_fk_soc').find($('.butActionNew')).attr('href', $('.field_fk_soc').find($('.butActionNew')).attr('href').replace('fk_societe', 'fk_soc'))
@@ -721,7 +722,7 @@ class ActionsDoliSIRH
 		}
 
 		if (preg_match('/categoryindex/', $parameters['context'])) {
-			print '<script src="../custom/dolisirh/js/dolisirh.js"></script>';
+			print '<script src="' . dol_buildpath('/dolisirh/js/dolisirh.js', 1) . '"></script>';
 		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
             toggle_task_favorite(GETPOSTINT('taskId'), $user->id);
@@ -763,11 +764,12 @@ class ActionsDoliSIRH
      * Overloading the constructCategory function : replacing the parent's function with the one below.
      *
      * @param  array $parameters Hook metadata (context, etc...).
-     * @return void
+     * @return int               0 so that results are merged with other modules ones (1 would replace them)
      */
-    public function constructCategory(array $parameters)
+    public function constructCategory(array $parameters): int
     {
-        if (in_array($parameters['currentcontext'], ['category', 'invoicecard', 'invoicereccard', 'timesheetcard', 'certificatecard', 'invoicelist', 'invoicereclist'])) {
+        // Test the whole context: currentcontext is the first DoliSIRH context initialized in the request, not necessarily 'category'
+        if (strpos($parameters['context'], 'category') !== false) {
             $tags = [
                 'facture' => [
                     'id'        => 436370001,
@@ -797,6 +799,8 @@ class ActionsDoliSIRH
 
             $this->results = $tags;
         }
+
+        return 0;
     }
 
 	/**
@@ -811,10 +815,16 @@ class ActionsDoliSIRH
 	{
 		global $conf, $langs;
 
-		if ($parameters['currentcontext'] == 'invoicecard') {
+		if ($this->getActiveContext($parameters, 'invoicecard')) {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-			$form = new Form($this->db);
+			$form      = new Form($this->db);
+			$categorie = new Categorie($this->db);
+
+			// Another module's constructCategory hook may have dropped our tag types (e.g. by returning 1)
+			if (!isset($categorie->MAP_ID['facture'])) {
+				return;
+			}
 
 			if ($action == 'create') {
 				if (!empty($conf->categorie->enabled)) {
@@ -829,8 +839,7 @@ class ActionsDoliSIRH
               if ($conf->categorie->enabled) {
                   print '<tr><td>'.$langs->trans("Categories").'</td><td>';
                   $cate_arbo = $form->select_all_categories('facture', '', 'parent', 64, 0, 1);
-                  $c = new Categorie($this->db);
-                  $cats = $c->containing($object->id, 'facture');
+                  $cats = $categorie->containing($object->id, 'facture');
                   $arrayselected = array();
                   if (is_array($cats)) {
                       foreach ($cats as $cat) {
@@ -849,10 +858,15 @@ class ActionsDoliSIRH
 				}
 			}
 		}
-		if ($parameters['currentcontext'] == 'invoicereccard') {
+		if ($this->getActiveContext($parameters, 'invoicereccard')) {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 
-			$form = new Form($this->db);
+			$form      = new Form($this->db);
+			$categorie = new Categorie($this->db);
+
+			if (!isset($categorie->MAP_ID['facturerec'])) {
+				return;
+			}
 
 			if ($action == '') {
 				// Categories
@@ -874,7 +888,7 @@ class ActionsDoliSIRH
 	 */
 	public function afterCreationOfRecurringInvoice(array $parameters, $object)
 	{
-		if (in_array($parameters['currentcontext'], array('cron', 'cronjoblist'))) {
+		if ($this->getActiveContext($parameters, ['cron', 'cronjoblist'])) {
 			require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
 			require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
 
@@ -900,7 +914,7 @@ class ActionsDoliSIRH
 	 */
 	public function printObjectLine(array $parameters)
 	{
-		if ($parameters['currentcontext'] == 'timesheetcard') {
+		if ($this->getActiveContext($parameters, 'timesheetcard')) {
 			if ($parameters['line']->fk_product > 0) {
 				require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
@@ -926,7 +940,7 @@ class ActionsDoliSIRH
 	public function deleteFile(array $parameters, $object)
 	{
 
-		if ($parameters['currentcontext'] == 'timesheetcard' && !preg_match('/signature|odtaspdf/', $parameters['file'])) {
+		if ($this->getActiveContext($parameters, 'timesheetcard') && !preg_match('/signature|odtaspdf/', $parameters['file'])) {
 			global $user;
 
 			require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
@@ -975,7 +989,7 @@ class ActionsDoliSIRH
 	 */
 	public function printFieldListOption(array $parameters)
 	{
-		if ($parameters['currentcontext'] == 'projecttasktime') {
+		if ($this->getActiveContext($parameters, 'projecttasktime')) {
 			global $langs;
 
 			$parameters['arrayfields']['fk_timesheet'] = array(
@@ -998,7 +1012,7 @@ class ActionsDoliSIRH
 	 */
 	public function printFieldListTitle(array $parameters)
 	{
-		if ($parameters['currentcontext'] == 'projecttasktime') {
+		if ($this->getActiveContext($parameters, 'projecttasktime')) {
 			global $langs;
 
 			$parameters['arrayfields']['fk_timesheet'] = array(
@@ -1021,7 +1035,7 @@ class ActionsDoliSIRH
 	 */
 	public function printFieldListValue(array $parameters)
 	{
-		if ($parameters['currentcontext'] == 'projecttasktime') {
+		if ($this->getActiveContext($parameters, 'projecttasktime')) {
 			global $langs;
 
 			require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
@@ -1109,8 +1123,8 @@ class ActionsDoliSIRH
     {
         global $conf;
 
-        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
-            switch ($parameters['currentcontext']) {
+        if ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
+            switch ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
                 case 'invoicelist' :
                     $type = 'facture';
                     break;
@@ -1138,7 +1152,7 @@ class ActionsDoliSIRH
      */
     public function printFieldListFrom(array $parameters, $object): int
     {
-        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+        if ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
             if (isModEnabled('categorie')) {
                 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
                 $this->resprints = Categorie::getFilterJoinQuery($object->element, 'f.rowid');
@@ -1156,10 +1170,10 @@ class ActionsDoliSIRH
      */
     public function printFieldListWhere(array $parameters): int
     {
-        if (in_array($parameters['currentcontext'], ['invoicelist', 'invoicereclist'])) {
+        if ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
             if (isModEnabled('categorie')) {
                 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
-                switch ($parameters['currentcontext']) {
+                switch ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
                     case 'invoicelist' :
                         $type = 'facture';
                         break;
@@ -1187,12 +1201,12 @@ class ActionsDoliSIRH
     {
         global $db, $user;
 
-        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+        if ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
             // Filter on categories.
             if (isModEnabled('categorie') && $user->rights->categorie->lire) {
                 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcategory.class.php';
                 $formCategory = new FormCategory($db);
-                switch ($parameters['currentcontext']) {
+                switch ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
                     case 'invoicelist' :
                         $type = 'facture';
                         break;
@@ -1219,7 +1233,7 @@ class ActionsDoliSIRH
      */
     public function printFieldListSearchParam(array $parameters, $object): int
     {
-        if (in_array($parameters['currentcontext'] , ['invoicelist', 'invoicereclist'])) {
+        if ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
             if (isModEnabled('categorie')) {
                 $searchCategoryObjectList = GETPOST('search_category_' . $object->element . '_list', 'array');
                 if (!empty($searchCategoryObjectList)) {
@@ -1241,7 +1255,7 @@ class ActionsDoliSIRH
      */
     public function saturneAdminObjectConst(array $parameters): int
     {
-        if ($parameters['currentcontext'] == 'timesheetadmin') {
+        if ($this->getActiveContext($parameters, 'timesheetadmin')) {
             $constArray['dolisirh'] = [
                 'PrefillDate' => [
                     'name'        => 'PrefillDate',
@@ -1284,7 +1298,7 @@ class ActionsDoliSIRH
      */
     public function saturneAdminDocumentData(array $parameters): int
     {
-        if ($parameters['currentcontext'] == 'dolisirhadmindocuments') {
+        if ($this->getActiveContext($parameters, 'dolisirhadmindocuments')) {
             $types = [
                 'TimeSheetDocument' => [
                     'documentType' => 'timesheetdocument',
@@ -1312,7 +1326,7 @@ class ActionsDoliSIRH
         global $conf, $langs, $moduleName;
 
         if (strpos($parameters['context'], 'dolisirhindex') !== false) {
-            if (getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') == 0) {
+            if (getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') < 2) {
                 $out  = '<div class="wpeo-notice notice-info">';
                 $out .= '<div class="notice-content">';
                 $out .= '<div class="notice-title"><strong>' . $langs->trans('SetupDefaultDataNotCreated', $moduleName) . '</strong></div>';
@@ -1325,5 +1339,44 @@ class ActionsDoliSIRH
         }
 
         return 0; // or return 1 to replace standard code
+    }
+
+	/**
+	 * Overloading the hookSetManifest function : replacing the parent's function with the one below
+	 *
+	 * @param  array $parameters Hook metadata (context, etc...)
+	 * @return int               0 < on error, 0 on success, 1 to replace standard code
+	 */
+	public function hookSetManifest(array $parameters): int
+	{
+		if (strpos($_SERVER['PHP_SELF'], 'dolisirh') !== false) {
+			$this->resprints = dol_buildpath('/dolisirh/manifest.json.php', 1);
+			return 1;
+		}
+
+		return 0;
+	}
+
+    /**
+     * Return the first of the given hook contexts initialized in the current request
+     *
+     * HookManager runs a method of a module once per hook, with currentcontext set to the first context of the module
+     * initialized in the request. DoliSIRH listens to 'main', initialized by main.inc.php before the contexts of the
+     * page : currentcontext is then always 'main', so the page contexts are looked for in the whole context string
+     *
+     * @param  array           $parameters Hook metadata (context, etc...)
+     * @param  string|string[] $contexts   Hook context(s) to look for
+     * @return string                      First context found, empty string if none
+     */
+    private function getActiveContext(array $parameters, $contexts): string
+    {
+        $initializedContexts = explode(':', (string) ($parameters['context'] ?? ''));
+        foreach ((array) $contexts as $context) {
+            if (in_array($context, $initializedContexts, true)) {
+                return $context;
+            }
+        }
+
+        return '';
     }
 }

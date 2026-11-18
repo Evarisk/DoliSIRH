@@ -194,6 +194,38 @@ if (empty($reshook)) {
         $massaction = ''; // Protection to avoid mass action if we force a new search during a mass action confirmation.
     }
 
+    // Mass lock: same conditions as the lock button of the card (validated, signed by all, no time difference)
+    if ($action == 'lock' && $confirm == 'yes' && $permissiontoadd && !empty($toselect)) {
+        $nbLocked  = 0;
+        $nbSkipped = 0;
+        foreach ($toselect as $toSelectedID) {
+            // A new object each time: isLockable() and lock() work on the status, dates and assigned user of this timesheet
+            $timeSheet = new TimeSheet($db);
+            if ($timeSheet->fetch((int) $toSelectedID) <= 0) {
+                setEventMessages($timeSheet->error, $timeSheet->errors, 'errors');
+                continue;
+            }
+            if (!$timeSheet->isLockable()) {
+                $nbSkipped++;
+                continue;
+            }
+            // A failure (time spent already linked to another timesheet) stops this timesheet only, not the others
+            if ($timeSheet->lock($user) > 0) {
+                $nbLocked++;
+            } else {
+                setEventMessages($langs->trans('TimeSheetLockFailed', $timeSheet->ref, $timeSheet->error), $timeSheet->errors, 'errors');
+            }
+        }
+
+        if ($nbLocked > 0) {
+            setEventMessages($langs->trans('TimeSheetsLocked', $nbLocked), []);
+        }
+        if ($nbSkipped > 0) {
+            setEventMessages($langs->trans('TimeSheetsNotLockableSkipped', $nbSkipped), [], 'warnings');
+        }
+        $action = 'list';
+    }
+
     // Mass actions.
     $objectclass = 'TimeSheet';
     $objectlabel = 'TimeSheet';
@@ -368,10 +400,13 @@ $param .= $hookmanager->resPrint;
 
 // List of mass actions available.
 $arrayofmassactions = [];
+if ($permissiontoadd) {
+    $arrayofmassactions['prelock'] = img_picto('', 'fa-lock', 'class="pictofixedwidth"') . $langs->trans('Lock');
+}
 if ($permissiontodelete) {
     $arrayofmassactions['predelete'] = img_picto('', 'delete', 'class="pictofixedwidth"') . $langs->trans('Delete');
 }
-if (GETPOST('nomassaction', 'int') || in_array($massaction, ['presend', 'predelete'])) {
+if (GETPOST('nomassaction', 'int') || in_array($massaction, ['presend', 'predelete', 'prelock'])) {
     $arrayofmassactions = [];
 }
 $massactionbutton = $form->selectMassAction('', $arrayofmassactions);
@@ -403,6 +438,10 @@ $modelmail = 'timesheet';
 $objecttmp = new Timesheet($db);
 $trackid   = 'xxxx' . $object->id;
 include DOL_DOCUMENT_ROOT . '/core/tpl/massactions_pre.tpl.php';
+
+if ($massaction == 'prelock') {
+    print $form->formconfirm($_SERVER['PHP_SELF'], $langs->trans('ConfirmMassLockTimeSheet'), $langs->trans('ConfirmMassLockTimeSheetQuestion', count($toselect)), 'lock', null, '', 0, 200, 500, 1);
+}
 
 if ($search_all) {
     $setupstring = '';

@@ -33,6 +33,11 @@ require_once DOL_DOCUMENT_ROOT . '/core/modules/DolibarrModules.class.php';
 class modDoliSIRH extends DolibarrModules
 {
     /**
+     * @var int[] Minimum version of Saturne required by module, same format as need_dolibarr_version: checked by init() and by the Saturne index page
+     */
+    public $need_saturne_version = [23, 8, 0];
+
+    /**
      * Constructor. Define names, constants, directories, boxes, permissions.
      *
      * @param DoliDB $db Database handler.
@@ -42,8 +47,8 @@ class modDoliSIRH extends DolibarrModules
         global $langs, $conf;
         $this->db = $db;
 
-        if (file_exists(__DIR__ . '/../../../saturne/lib/saturne_functions.lib.php')) {
-            require_once __DIR__ . '/../../../saturne/lib/saturne_functions.lib.php';
+        if (file_exists(dol_buildpath('/saturne/lib/saturne_functions.lib.php'))) {
+            require_once dol_buildpath('/saturne/lib/saturne_functions.lib.php');
             saturne_load_langs(['dolisirh@dolisirh']);
         } else {
             $this->error++;
@@ -78,7 +83,7 @@ class modDoliSIRH extends DolibarrModules
         $this->editor_url  = 'https://evarisk.com';
 
         // Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'.
-        $this->version = '23.1.2';
+        $this->version = '23.2.0';
 
         // Url to the file with your last numberversion of this module.
         //$this->url_last_version = 'http://www.example.com/versionmodule.txt';
@@ -139,7 +144,8 @@ class modDoliSIRH extends DolibarrModules
                     'projectcard',
                     'invoicelist',
                     'invoicereclist',
-                    'certificatecard'
+                    'certificatecard',
+                    'main'
                 ]
             ],
             // Set this to 1 if features of module are opened to external users.
@@ -150,7 +156,6 @@ class modDoliSIRH extends DolibarrModules
         // Example: this->dirs = array("/dolisirh/temp","/dolisirh/subdir");
         $this->dirs = [
             '/dolisirh/temp',
-            '/ecm/dolisirh/timesheetdocument',
             '/ecm/dolisirh/certificatedocument'
         ];
 
@@ -216,9 +221,7 @@ class modDoliSIRH extends DolibarrModules
 
             // CONST TIMESHEET DOCUMENT.
             $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_ADDON', 'chaine', 'mod_timesheetdocument_standard', '', 0, 'current'],
-            $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH', 'chaine', 'DOL_DOCUMENT_ROOT/custom/dolisirh/documents/doctemplates/timesheetdocument/', '', 0, 'current'],
-            $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', 'chaine', 'DOL_DATA_ROOT' . (($conf->entity == 1 ) ? '/' : '/' . $conf->entity . '/') . 'ecm/dolisirh/timesheetdocument/', '', 0, 'current'],
-            $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument_odt', '', 0, 'current'],
+            $i++ => ['DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'chaine', 'timesheetdocument', '', 0, 'current'],
 
             // CONST CERTIFICATE.
             $i++ => ['DOLISIRH_CERTIFICATE_ADDON', 'chaine', 'mod_certificate_standard', '', 0, 'current'],
@@ -249,9 +252,9 @@ class modDoliSIRH extends DolibarrModules
         // $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@dolisirh:$user->rights->othermodule->read:/dolisirh/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
         // $this->tabs[] = array('data'=>'objecttype:-tabname:NU:conditiontoremove');
         $this->tabs   = [];
-        $pictoPath    = dol_buildpath('/custom/dolisirh/img/dolisirh_color.png', 1);
+        $pictoPath    = dol_buildpath('/dolisirh/img/dolisirh_color.png', 1);
         $pictoModule  = img_picto('', $pictoPath, '', 1, 0, 0, '', 'pictoModule');
-        $this->tabs[] = ['data' => 'user:+workinghours:' . $pictoModule . $langs->trans('WorkingHours') . ':dolisirh@dolisirh:$user->rights->user->self->creer:/custom/dolisirh/view/workinghours_card.php?id=__ID__']; // To add a new tab identified by code tabname1.
+        $this->tabs[] = ['data' => 'user:+workinghours:' . $pictoModule . $langs->trans('WorkingHours') . ':dolisirh@dolisirh:$user->rights->user->self->creer:/dolisirh/view/workinghours_card.php?id=__ID__']; // To add a new tab identified by code tabname1.
 
         // Dictionaries.
         $this->dictionaries = [
@@ -396,6 +399,13 @@ class modDoliSIRH extends DolibarrModules
         $this->rights[$r][1] = $langs->transnoentities('ReadAdminPage', 'DoliSIRH');
         $this->rights[$r][4] = 'adminpage';
         $this->rights[$r][5] = 'read';
+        $r++;
+
+        // Appended last: inserting it with the other working hours rights would shift the ids already granted
+        $this->rights[$r][0] = $this->numero . sprintf('%02d', $r + 1);
+        $this->rights[$r][1] = $langs->transnoentities('CreateEveryoneWorkingHours');
+        $this->rights[$r][4] = 'workinghours';
+        $this->rights[$r][5] = 'everyone';
 
         // Main menu entries to add.
         $this->menu = [];
@@ -422,10 +432,42 @@ class modDoliSIRH extends DolibarrModules
         $this->menu[$r++] = [
             'fk_menu'  => 'fk_mainmenu=dolisirh',
             'type'     => 'left',
+            'titre'    => $langs->trans('MobileApp'),
+            'prefix'   => '<i class="fas fa-mobile-alt pictofixedwidth"></i>',
+            'mainmenu' => 'dolisirh',
+            'leftmenu' => 'dolisirh_pwa',
+            'url'      => '/dolisirh/view/frontend/pwa_timespent.php?source=pwa',
+            'langs'    => 'dolisirh@dolisirh',
+            'position' => 1000 + $r,
+            'enabled'  => '$conf->dolisirh->enabled && $conf->projet->enabled',
+            'perms'    => '$user->rights->dolisirh->lire && $user->rights->projet->lire',
+            'target'   => '_blank',
+            'user'     => 0,
+        ];
+
+        $this->menu[$r++] = [
+            'fk_menu'  => 'fk_mainmenu=dolisirh',
+            'type'     => 'left',
             'titre'    => $langs->trans('TimeSheet'),
             'prefix'   => '<i class="fas fa-calendar-check pictofixedwidth"></i>',
             'mainmenu' => 'dolisirh',
             'leftmenu' => 'timesheet',
+            'url'      => '/dolisirh/view/timesheet/timesheet_page.php',
+            'langs'    => 'dolisirh@dolisirh',
+            'position' => 1000 + $r,
+            'enabled'  => '$conf->dolisirh->enabled',
+            'perms'    => '$user->rights->dolisirh->timesheet->read',
+            'target'   => '',
+            'user'     => 0,
+        ];
+
+        $this->menu[$r++] = [
+            'fk_menu'  => 'fk_mainmenu=dolisirh,fk_leftmenu=timesheet',
+            'type'     => 'left',
+            'titre'    => $langs->trans('TimeSheetList'),
+            'prefix'   => '<i class="fas fa-list pictofixedwidth" style="padding-right: 4px;"></i>',
+            'mainmenu' => 'dolisirh',
+            'leftmenu' => 'timesheetlist',
             'url'      => '/dolisirh/view/timesheet/timesheet_list.php',
             'langs'    => 'dolisirh@dolisirh',
             'position' => 1000 + $r,
@@ -620,6 +662,27 @@ class modDoliSIRH extends DolibarrModules
             'target'   => '',
             'user'     => 0,
         ];
+
+        // Media library of the PWA photos. The page belongs to Saturne, which also reads this entry to
+        // know the module has a library: no entry while the installed Saturne does not ship the page.
+        // Declared last so the positions of the entries above do not move.
+        if (file_exists(dol_buildpath('/saturne/view/saturne_medias.php'))) {
+            $this->menu[$r++] = [
+                'fk_menu'  => 'fk_mainmenu=dolisirh',
+                'type'     => 'left',
+                'titre'    => 'MediaLibrary',
+                'prefix'   => '<i class="fas fa-images pictofixedwidth"></i>',
+                'mainmenu' => 'dolisirh',
+                'leftmenu' => 'dolisirh_medias',
+                'url'      => '/saturne/view/saturne_medias.php?module_name=dolisirh',
+                'langs'    => 'dolisirh@dolisirh',
+                'position' => 1000 + $r,
+                'enabled'  => 'isModEnabled("dolisirh")',
+                'perms'    => '$user->rights->dolisirh->lire',
+                'target'   => '',
+                'user'     => 0,
+            ];
+        }
     }
 
     /**
@@ -634,6 +697,16 @@ class modDoliSIRH extends DolibarrModules
     public function init($options = ''): int
     {
         global $conf, $langs, $user;
+
+        // Saturne ships separately: refuse one older than need_saturne_version, it lacks functions this release calls
+        require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
+        dol_include_once('/saturne/core/modules/modSaturne.class.php');
+        $saturneVersion = class_exists('modSaturne') ? (new modSaturne($this->db))->version : '';
+        if (versioncompare(explode('.', $saturneVersion), $this->need_saturne_version) < 0) {
+            $langs->load('admin'); // activateModuleDependNotSatisfied, not loaded when the Saturne index page runs init()
+            $this->error = $langs->trans('activateModuleDependNotSatisfied', $this->name, 'modSaturne >= ' . versiontostring($this->need_saturne_version) . ' (' . ($saturneVersion ?: '-') . ')', $this->name);
+            return -1;
+        }
 
         // Permissions.
         $this->remove($options);
@@ -657,10 +730,16 @@ class modDoliSIRH extends DolibarrModules
 
         // Document models.
         delDocumentModel('timesheetdocument_odt', 'timesheetdocument');
+        delDocumentModel('timesheetdocument_custom_odt', 'timesheetdocument');
+        delDocumentModel('timesheetdocument', 'timesheetdocument');
         delDocumentModel('certificatedocument_odt', 'certificatedocument');
         delDocumentModel('projectdocument_odt', 'projectdocument');
 
-        addDocumentModel('timesheetdocument_odt', 'timesheetdocument', 'ODT templates', 'DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH');
+        // The timesheet document only exists as a native PDF: the default model of an older install pointed to the ODT one.
+        addDocumentModel('timesheetdocument', 'timesheetdocument', $langs->transnoentities('TimeSheetDocumentPDF'));
+        dolibarr_set_const($this->db, 'DOLISIRH_TIMESHEETDOCUMENT_DEFAULT_MODEL', 'timesheetdocument', 'chaine', 0, '', $conf->entity);
+        dolibarr_del_const($this->db, 'DOLISIRH_TIMESHEETDOCUMENT_ADDON_ODT_PATH', $conf->entity);
+        dolibarr_del_const($this->db, 'DOLISIRH_TIMESHEETDOCUMENT_CUSTOM_ADDON_ODT_PATH', $conf->entity);
         addDocumentModel('certificatedocument_odt', 'certificatedocument', 'ODT templates', 'DOLISIRH_CERTIFICATEDOCUMENT_ADDON_ODT_PATH');
         addDocumentModel('projectdocument_odt', 'projectdocument', 'ODT templates', 'DOLISIRH_PROJECTDOCUMENT_ADDON_ODT_PATH');
 
@@ -674,6 +753,10 @@ class modDoliSIRH extends DolibarrModules
         $param['options']['Facture:compta/facture/class/facture.class.php'] = null;
         $extraFields->addExtraField('fk_facture_name', 'Facture', 'link', 100, null, 'projet_task', 1, 0, null, $param, 1, 1, 1); //extrafields task.
         unset($param);
+
+        // The core only creates the ticket tables when the Ticket module is enabled : load them so the task extrafield exists whenever Ticket is enabled
+        $this->_load_tables('/install/mysql/', 'ticket');
+
         $param['options']['projet_task:label:rowid::(entity:=:$ENTITY$)'] = null; // @todo rework 'projet_task:label:rowid::entity = $ENTITY$ AND fk_projet = ($SEL$ fk_project FROM '. MAIN_DB_PREFIX .'ticket WHERE rowid = $ID$)'
         $extraFields->update('fk_task', 'Tâche', 'sellist', '', 'ticket', 0, 0, 100, $param, 1, 1, '1', '','','',0);
         $extraFields->addExtraField('fk_task', 'Tâche', 'sellist', 100, null, 'ticket', 0, 0, null, $param, 1, 1, '1', '','',0); //extrafields ticket.
@@ -695,6 +778,78 @@ class modDoliSIRH extends DolibarrModules
             }
 
             dolibarr_set_const($this->db, 'DOLISIRH_BACKWARD_COMPATIBILITY_PRODUCT_SERVICE', 1, 'integer', 0, '', $conf->entity);
+        }
+
+        if (getDolGlobalInt('DOLISIRH_HR_PROJECT') > 0 && getDolGlobalInt('DOLISIRH_HR_PROJECT_SET') < 2) {
+            require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
+            require_once DOL_DOCUMENT_ROOT . '/projet/class/project.class.php';
+            require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+            require_once __DIR__ . '/../../lib/dolisirh_function.lib.php';
+
+            $now             = dol_now();
+            $project         = new Project($this->db);
+            $userTmp         = new User($this->db);
+            $projectRefClass = getDolGlobalString('PROJECT_ADDON', 'mod_project_simple');
+            $taskRefClass    = getDolGlobalString('PROJECT_TASK_ADDON', 'mod_task_simple');
+
+            if (!empty($projectRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php')
+                && !empty($taskRefClass) && is_readable(DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php')) {
+                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/' . $projectRefClass . '.php';
+                require_once DOL_DOCUMENT_ROOT . '/core/modules/project/task/' . $taskRefClass . '.php';
+
+                $modProject = new $projectRefClass();
+                $modTask    = new $taskRefClass();
+
+                $project->ref         = $modProject->getNextValue('', null);
+                $project->title       = $langs->transnoentities('HumanResources') . ' - 2.0.0 - ' . getDolGlobalString('MAIN_INFO_SOCIETE_NOM');
+                $project->description = $langs->transnoentities('HRDescription');
+                $project->date_c      = $now;
+                $currentYear          = dol_print_date($now, '%Y');
+                $fiscalMonthStart     = getDolGlobalInt('SOCIETE_FISCAL_MONTH_START', 1);
+                $dateStart            = dol_mktime(0, 0, 0, $fiscalMonthStart, 1, (int) $currentYear);
+                $project->date_start  = $dateStart;
+                $project->usage_task  = 1;
+
+                $dateStartAddYear      = dol_time_plus_duree($dateStart, 1, 'y');
+                $dateStartAddYearMonth = dol_time_plus_duree($dateStartAddYear, -1, 'd');
+                $project->date_end     = dol_print_date($dateStartAddYearMonth, 'dayrfc');
+                $project->status       = Project::STATUS_VALIDATED;
+                $project->statut       = Project::STATUS_VALIDATED;
+
+                $projectID = $project->create($user);
+                if ($projectID > 0) {
+                    dolibarr_set_const($this->db, 'DOLISIRH_HR_PROJECT', $projectID, 'integer', 0, '', $conf->entity);
+                    $userFilter = (int) versiondolibarrarray()[0] >= 24 ? '((u.employee:=:1) AND (u.fk_soc:is:NULL) AND (u.statut:=:1))' : '((u.employee = 1) AND (u.fk_soc IS NULL) AND (u.statut = 1))';
+                    $users      = $userTmp->get_full_tree(0, $userFilter);
+                    if (!empty($users) && is_array($users)) {
+                        foreach ($users as $userSingle) {
+                            $project->add_contact($userSingle['id'], 'PROJECTCONTRIBUTOR', 'internal');
+                        }
+                    }
+
+                    foreach (get_hr_project_tasks() as $hrProjectTask) {
+                        $newTask             = new Task($this->db);
+                        $newTask->date_c     = $now;
+                        $newTask->fk_project = $projectID;
+                        $newTask->ref        = $modTask->getNextValue('', null);
+                        $newTask->label      = $langs->transnoentities($hrProjectTask['name']);
+                        $taskID              = $newTask->create($user);
+                        if ($taskID > 0) {
+                            dolibarr_set_const($this->db, $hrProjectTask['code'], $taskID, 'integer', 0, '', $conf->entity);
+                            if (!empty($users) && is_array($users)) {
+                                foreach ($users as $userSingle) {
+                                    $newTask->add_contact($userSingle['id'], 'TASKCONTRIBUTOR', 'internal');
+                                }
+                            }
+                        }
+                    }
+
+                    dolibarr_set_const($this->db, 'DOLISIRH_HR_PROJECT_SET', 2, 'integer', 0, '', $conf->entity);
+                    if (!headers_sent()) {
+                        setEventMessage($langs->trans('NewHRProjectCreated', $project->title, $project->ref));
+                    }
+                }
+            }
         }
 
         return $this->_init([], $options);
