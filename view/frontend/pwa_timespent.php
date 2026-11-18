@@ -121,6 +121,7 @@ $labels = [
 	'networkError'   => $langs->transnoentities('PwaNetworkError'),
 	'error'          => $langs->transnoentities('Error'),
 	'presence'       => $langs->transnoentities('PwaClockPresence'),
+	'absence'        => $langs->transnoentities('PwaClockAbsence'),
 	'overlap'        => $langs->transnoentities('PwaClockOverlap', '%s'),
 ];
 

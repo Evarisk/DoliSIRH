@@ -790,7 +790,7 @@ window.dolisirh.pwa.renderRunning = function() {
 			'<span class="ts-clock__pulse"></span>' +
 			'<div class="ts-running__body">' +
 				'<span class="ts-running__task">' + pwa.esc(entry.task_label || entry.task_ref) + '</span>' +
-				'<span class="ts-running__meta">' + pwa.esc((entry.is_hr ? pwa.label('presence') : (entry.project_title || entry.project_ref)) + ' · ' + pwa.label('since', since)) + '</span>' +
+				'<span class="ts-running__meta">' + pwa.esc(pwa.taskContext(entry, entry.task_id) + ' · ' + pwa.label('since', since)) + '</span>' +
 			'</div>' +
 			'<b class="ts-running__elapsed">' + pwa.esc(pwa.durationLabel(Math.max(0, pwa.elapsedMinutes(entry)))) + '</b>' +
 			'<div class="ts-running__actions">' +
@@ -819,7 +819,7 @@ window.dolisirh.pwa.openStop = function(entry) {
 
 	pwa.stopping = entry;
 	if (taskEl) {
-		taskEl.textContent = (entry.task_label || entry.task_ref) + ' · ' + (entry.is_hr ? pwa.label('presence') : (entry.project_title || entry.project_ref));
+		taskEl.textContent = (entry.task_label || entry.task_ref) + ' · ' + pwa.taskContext(entry, entry.task_id);
 	}
 	if (startEl) {
 		startEl.textContent = entry.start_hm;
@@ -1060,7 +1060,7 @@ window.dolisirh.pwa.renderQuickTasks = function() {
 		var isActive = pwa.selectedTask && pwa.selectedTask.id === t.id;
 		return '<button type="button" class="ts-quick-task' + (isActive ? ' is-active' : '') + (t.is_hr ? ' is-hr' : '') + '" data-task-id="' + t.id + '" title="' + pwa.esc(t.project_ref + ' - ' + t.project_title + ' / ' + t.ref + ' - ' + t.label) + '">' +
 			'<span class="ts-quick-task__label">' + pwa.esc(t.label) + '</span>' +
-			'<span class="ts-quick-task__project">' + pwa.esc(t.is_hr ? pwa.label('presence') : (t.project_title || t.project_ref)) + '</span>' +
+			'<span class="ts-quick-task__project">' + pwa.esc(pwa.taskContext(t, t.id)) + '</span>' +
 		'</button>';
 	}).join('');
 
@@ -1086,6 +1086,25 @@ window.dolisirh.pwa.renderQuickTasks = function() {
 window.dolisirh.pwa.isHrSelected = function() {
 	var pwa = window.dolisirh.pwa;
 	return Boolean(pwa.selectedProject && pwa.state && pwa.state.hr_project && pwa.state.hr_project.id === pwa.selectedProject.id);
+};
+
+/**
+ * What a task is about, shown under its label: its project, or for a task of the HR project its nature,
+ * presence on the working time or absence out of it (leave, sick leave...).
+ *
+ * @param {Object} task Task or entry: is_hr, project_title, project_ref
+ * @param {number} taskId Task ID
+ * @returns {string}
+ */
+window.dolisirh.pwa.taskContext = function(task, taskId) {
+	var pwa = window.dolisirh.pwa;
+	if (!task.is_hr) {
+		return task.project_title || task.project_ref;
+	}
+
+	var absTasks = (pwa.state && pwa.state.hr_tasks && Array.isArray(pwa.state.hr_tasks.absence)) ? pwa.state.hr_tasks.absence : [];
+	var isAbsence = absTasks.some(function(absTask) { return Number(absTask.id) === Number(taskId); });
+	return pwa.label(isAbsence ? 'absence' : 'presence');
 };
 
 /**
