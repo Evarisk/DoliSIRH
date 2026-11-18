@@ -277,7 +277,14 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
                     $userTmp->fetch($object->fk_user_assign);
                     $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'Signatory');
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'Responsible');
+
+                    // The responsible is the supervisor of the user card: without one, only the employee would sign
+                    if ((int) $userTmp->fk_user > 0) {
+                        $signatory->setSignatory($object->id, $object->element, 'user', [(int) $userTmp->fk_user], 'Responsible');
+                    } elseif (!headers_sent()) {
+                        $langs->load('dolisirh@dolisirh');
+                        setEventMessages($langs->trans('TimeSheetNoResponsible', $userTmp->getFullName($langs)), [], 'warnings');
+                    }
                 }
 
                 if (getDolGlobalInt('DOLISIRH_PRODUCT_SERVICE_SET')) {

@@ -243,6 +243,7 @@ ConfirmMassLockTimeSheetQuestion              = Êtes-vous sûr de vouloir verro
 TimeSheetsLocked                              = %s navette(s) verrouillée(s)
 TimeSheetsNotLockableSkipped                  = %s navette(s) ignorée(s) : pas encore validée(s), pas signée(s) par tous ou avec un écart d'heures
 TimeSheetLockFailed                           = Navette %s non verrouillée : %s
+TimeSheetNoResponsible                        = %s n'a pas de responsable sur sa fiche utilisateur : la navette ne sera signée que par le salarié. Ajoutez le responsable dans l'onglet Participants pour qu'il la signe aussi.
 
 # Data - Donnée
 TimeSheet                          = Navette
