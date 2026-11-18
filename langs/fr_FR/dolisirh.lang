@@ -390,6 +390,7 @@ PwaClockDayEntries          = Pointages du %s
 PwaClockNoEntry             = Aucun pointage ce jour-là
 PwaClockPlayVoice           = Écouter le vocal
 PwaClockPresence            = Présence
+PwaClockAbsence             = Absence
 PwaClockOverlap             = Chevauche %s
 PwaComment                  = Commentaire
 PwaOptional                 = facultatif
