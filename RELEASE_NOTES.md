@@ -12,7 +12,7 @@ Description : Vos salariés pointent depuis leur téléphone : ils démarrent le
 * **Pointer en deux temps** : on choisit la tâche (les tâches récentes et la présence RH sont à un tap, sinon projet puis tâche), l'heure de début (maintenant par défaut), et on appuie sur « Pointer ». Le pointage en cours est gardé par le serveur : il survit à la fermeture de l'application et suit le salarié sur un autre appareil. Un seul pointage tourne à la fois.
 * **Arrêter** ouvre la fin du pointage : heure de fin (elle suit l'horloge tant qu'on n'y touche pas), durées en un tap de 15 min à 7 h, alerte si le pointage en chevauche un autre du même type, **commentaire facultatif**, **photo** (prise sur place ou choisie dans le téléphone), **fichier** et **message vocal**, puis « Valider ». Un pointage de nuit est rangé au jour de son début. La corbeille abandonne le pointage sans rien enregistrer.
 * Photos, fichiers et vocaux sont rangés dans les documents de la tâche et partent avec le pointage s'il est supprimé.
-* Sous le formulaire, les **pointages du jour** : durée, commentaire, miniatures des photos, lien vers les fichiers, écoute des vocaux et total. Sur Dolibarr 24.0.2 et suivantes, chaque temps est enregistré avec ses heures de début et de fin ; les versions antérieures du cœur ramènent l'heure de début à midi (la durée et le jour restent justes).
+* Sous le formulaire, les **pointages du jour** : durée, commentaire, miniatures des photos, lien vers les fichiers, écoute des vocaux et total. Chaque temps est enregistré avec ses heures de début et de fin, sur toutes les versions de Dolibarr prises en charge.
 
 <img src="https://raw.githubusercontent.com/nicolas-eoxia/DoliSIRH/refs/heads/assets/release-23.2.0/pwa-pointer.png" alt="Onglet Pointer sur téléphone : tâche récente « Pose des cloisons » choisie, projet et tâche remplis, début 17:00, bouton Pointer et pointages du jour" width="32%"> <img src="https://raw.githubusercontent.com/nicolas-eoxia/DoliSIRH/refs/heads/assets/release-23.2.0/pwa-en-cours.png" alt="Pointage en cours sur « Pose des cloisons » depuis 14:00, 3 h écoulées, boutons Arrêter et corbeille" width="32%"> <img src="https://raw.githubusercontent.com/nicolas-eoxia/DoliSIRH/refs/heads/assets/release-23.2.0/pwa-fin-du-pointage.png" alt="Fin du pointage : début 14:00, fin 17:00, durées en un tap, commentaire facultatif, boutons photo, galerie, fichier et vocal, bouton Valider 3 h" width="32%">
 
@@ -81,6 +81,7 @@ Description : Vos salariés pointent depuis leur téléphone : ils démarrent le
 
 ### Pointage
 
+* Dans la fenêtre « Temps passé » de la navette et de la vue par plage, l'heure de début saisie était ramenée à 00:00 sur Dolibarr 23.0 à 24.0.1 : elle est conservée.
 * **Ce qui est compté, avec le projet RH 2.0.0** : la navette compare les horaires au seul temps des tâches du projet RH (présence et absences), si bien que le temps pointé sur un projet client ne crée plus d'écart rouge qui bloquerait le verrouillage. Le décompte en bas du pointage et le tableau de bord, analytiques, comptent les projets et les absences, sans le temps de présence qui ferait doublon.
 * **Changement d'heure** : le temps passé d'après le changement d'heure sortait de sa colonne (compté dans le total mais absent des cases du jour) et l'en-tête affichait deux fois le dimanche.
 * Après un ajout de temps dans la fenêtre, le tableau n'est plus imbriqué dans lui-même.
@@ -117,6 +118,8 @@ Description : Vos salariés pointent depuis leur téléphone : ils démarrent le
 
 ## Comparaison des versions [23.1.2](https://github.com/Evarisk/DoliSIRH/compare/23.1.2...23.2.0) et 23.2.0
 
+* [#799] [PWA] fix: tâches d'absence du projet RH étiquetées Absence et non Présence [`df08fa25`](https://github.com/Evarisk/DoliSIRH/commit/df08fa25)
+* [#798] [PWA] fix: heure de début gardée sur Dolibarr 23.0.x et 24.0.0/24.0.1 [`9a610369`](https://github.com/Evarisk/DoliSIRH/commit/9a610369)
 * [#796] [CI] chore: build assets JS/CSS minified [`31570432`](https://github.com/Evarisk/DoliSIRH/commit/31570432)
 * [#796] [PWA] feat: pointer en deux temps (début, puis fin avec commentaire facultatif, photo, fichier et vocal) [`cffde6f1`](https://github.com/Evarisk/DoliSIRH/commit/cffde6f1)
 * [#794] [CI] chore: build assets JS/CSS minified [`eb203422`](https://github.com/Evarisk/DoliSIRH/commit/eb203422)
