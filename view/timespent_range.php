@@ -394,17 +394,13 @@ if (empty($resHook)) {
 
         $task->fetch($taskID);
 
-        $task->timespent_date     = $timestamp;
-        $task->timespent_datehour = $timestamp + ($dateHour * 3600) + ($dateMin * 60);
-        if ($dateHour > 0 || $dateMin > 0) {
-            $task->timespent_withhour = 1;
-        }
         $task->timespent_note     = $comment;
         $task->timespent_duration = ($hour * 3600) + ($min * 60);
         $task->timespent_fk_user  = $user->id;
 
         if ($task->timespent_duration > 0) {
-            $task->addTimeSpent($user);
+            // The day at midnight, the start hour added to it when given
+            dolisirh_add_time_spent($task, $user, $timestamp, ($dateHour > 0 || $dateMin > 0) ? $timestamp + ($dateHour * 3600) + ($dateMin * 60) : 0);
         }
     }
 }
