@@ -48,7 +48,7 @@ if (isModEnabled('categorie')) {
 }
 
 // Load saturne classes
-require_once __DIR__ . '/../../saturne/class/task/saturnetask.class.php';
+dol_include_once('/saturne/class/task/saturnetask.class.php');
 
 // Load DoliSIRH libraries.
 require_once __DIR__ . '/../lib/dolisirh_function.lib.php';
@@ -158,7 +158,7 @@ switch ($viewMode) {
         $nextDay   = $next['day'];
 
         $firstDayToShow = dol_mktime(0, 0, 0, $firstMonth, $firstDay, $firstYear);
-        $lastDayOfRange = dol_time_plus_duree($firstDayToShow, 6, 'd');
+        $lastDayOfRange = dolisirh_add_days($firstDayToShow, 6);
         $rangeDate      = 'W';
         $range          = $week;
         break;
@@ -295,6 +295,42 @@ if (empty($resHook)) {
         $action = '';
     }
 
+    // One click unassign from a task, or from a project and all its tasks. The time spent is kept.
+    if (($action == 'unassign_task' || $action == 'unassign_project') && $permissiontoRead) {
+        $unassignTaskIDs = [];
+        if ($action == 'unassign_project') {
+            // Own objects: $project->id filters the task list of the view.
+            $unassignProject = new Project($db);
+            $projectID       = GETPOSTINT('project_id');
+            if ($projectID > 0 && $projectID != getDolGlobalInt('DOLISIRH_HR_PROJECT') && $unassignProject->fetch($projectID) > 0) {
+                foreach ($unassignProject->liste_contact(-1, 'internal') as $contact) {
+                    if ($contact['id'] == $userTmp->id) {
+                        $unassignProject->delete_contact($contact['rowid']);
+                    }
+                }
+                $resql = $db->query('SELECT rowid FROM ' . MAIN_DB_PREFIX . 'projet_task WHERE fk_projet = ' . ((int) $unassignProject->id));
+                while ($resql && ($obj = $db->fetch_object($resql))) {
+                    $unassignTaskIDs[] = (int) $obj->rowid;
+                }
+            }
+        } elseif (GETPOSTINT('task_id') > 0) {
+            $unassignTaskIDs[] = GETPOSTINT('task_id');
+        }
+
+        $unassignTask = new Task($db);
+        foreach ($unassignTaskIDs as $unassignTaskID) {
+            if ($unassignTask->fetch($unassignTaskID) > 0) {
+                foreach ($unassignTask->liste_contact(-1, 'internal') as $contact) {
+                    if ($contact['id'] == $userTmp->id) {
+                        $unassignTask->delete_contact($contact['rowid']);
+                    }
+                }
+            }
+        }
+
+        $action = '';
+    }
+
     if ($action == 'show_only_favorite_tasks') {
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -358,17 +394,13 @@ if (empty($resHook)) {
 
         $task->fetch($taskID);
 
-        $task->timespent_date     = $timestamp;
-        $task->timespent_datehour = $timestamp + ($dateHour * 3600) + ($dateMin * 60);
-        if ($dateHour > 0 || $dateMin > 0) {
-            $task->timespent_withhour = 1;
-        }
         $task->timespent_note     = $comment;
         $task->timespent_duration = ($hour * 3600) + ($min * 60);
         $task->timespent_fk_user  = $user->id;
 
         if ($task->timespent_duration > 0) {
-            $task->addTimeSpent($user);
+            // The day at midnight, the start hour added to it when given
+            dolisirh_add_time_spent($task, $user, $timestamp, ($dateHour > 0 || $dateMin > 0) ? $timestamp + ($dateHour * 3600) + ($dateMin * 60) : 0);
         }
     }
 }
@@ -505,7 +537,7 @@ print '<div class="clearboth" style="padding-bottom: 20px;"></div>';
 // Get if user is available or not for each day.
 $isAvailable = [];
 for ($idw = 0; $idw < $daysInRange; $idw++) {
-    $dayInLoop =  dol_time_plus_duree($firstDayToShow, $idw, 'd');
+    $dayInLoop =  dolisirh_add_days($firstDayToShow, $idw);
     if (is_day_available($dayInLoop, $user->id)) {
         $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
     } elseif (date('N', $dayInLoop) >= 6) {
@@ -587,7 +619,7 @@ if (!empty($arrayFields['timeconsumed']['checked'])) {
 
 for ($idw = 0; $idw < $daysInRange; $idw++) {
     $cellCSS   = '';
-    $dayInLoop = dol_time_plus_duree($firstDayToShow, $idw, 'd');
+    $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
     if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
         if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
             $cellCSS = 'onholidayallday';
@@ -613,8 +645,12 @@ $colspan = 1 + (!getDolGlobalInt('PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT') ? 
 
 $workingHours = $workingHours->fetchCurrentWorkingHours($userTmp->id, 'user');
 
+// Totals compared to the working hours: projects tasks and absences, without the work time tasks counted by the timesheet.
+// The lines still show every task.
+$workTimeTaskIDs = get_hr_project_task_ids('work_time');
+
 if ($conf->use_javascript_ajax) {
-    $plannedWorkingTime = load_planned_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable);
+    $plannedWorkingTime = load_planned_time_within_range($firstDayToShow, dolisirh_add_days($lastDayOfRange, 1), $workingHours, $isAvailable);
 
     print '<tr class="liste_total">';
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
@@ -625,7 +661,7 @@ if ($conf->use_javascript_ajax) {
     } else {
         print $langs->trans('ExpectedWorkingHoursWeek', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayOfRange, 'dayreduceformat'));
     }
-    print ' : <strong><a href="' . DOL_URL_ROOT . '/custom/dolisirh/view/workinghours_card.php?id=' . $userTmp->id.'" target="_blank">';
+    print ' : <strong><a href="' . dol_buildpath('/dolisirh/view/workinghours_card.php', 1) . '?id=' . $userTmp->id.'" target="_blank">';
     print (($plannedWorkingTime['minutes'] != 0) ? convertSecondToTime($plannedWorkingTime['minutes'] * 60, 'allhourmin') : '00:00') . '</a></strong></span>';
     print '</td>';
     if (!empty($arrayFields['timeconsumed']['checked'])) {
@@ -635,8 +671,8 @@ if ($conf->use_javascript_ajax) {
     // Fill days data.
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $cellCSS           = '';
-        $dayInLoop         =  dol_time_plus_duree($firstDayToShow, $idw, 'd');
-        $plannedHoursOnDay = load_planned_time_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $workingHours, $isAvailable);
+        $dayInLoop         =  dolisirh_add_days($firstDayToShow, $idw);
+        $plannedHoursOnDay = load_planned_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable);
         if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
             if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                 $cellCSS = 'onholidayallday';
@@ -652,7 +688,7 @@ if ($conf->use_javascript_ajax) {
 
     if ((!empty($user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO) ? $user->conf->DOLISIRH_SHOW_STICKY_TOTAL_TIMESPENT_INFO : 0) > 0) {
         // Passed working hours.
-        $passedWorkingTime = load_passed_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable);
+        $passedWorkingTime = load_passed_time_within_range($firstDayToShow, dolisirh_add_days($lastDayOfRange, 1), $workingHours, $isAvailable);
 
         print '<tr class="liste_total planned-working-hours">';
         print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
@@ -668,8 +704,8 @@ if ($conf->use_javascript_ajax) {
         // Fill days data.
         for ($idw = 0; $idw < $daysInRange; $idw++) {
             $cellCSS          = '';
-            $dayInLoop        = dol_time_plus_duree($firstDayToShow, $idw, 'd');
-            $passedHoursOnDay = load_passed_time_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $workingHours, $isAvailable);
+            $dayInLoop        = dolisirh_add_days($firstDayToShow, $idw);
+            $passedHoursOnDay = load_passed_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable);
             if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
                 if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                     $cellCSS = 'onholidayallday';
@@ -683,7 +719,7 @@ if ($conf->use_javascript_ajax) {
         print '<td></td>';
 
         // Spent hours within dates range.
-        $timeSpent = load_time_spent_on_tasks_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $isAvailable, $userTmp->id);
+        $timeSpent = load_time_spent_on_tasks_within_range($firstDayToShow, dolisirh_add_days($lastDayOfRange, 1), $isAvailable, $userTmp->id, [], $workTimeTaskIDs);
 
         print '<tr class="liste_total spent-hours-in-range">';
         print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
@@ -697,8 +733,8 @@ if ($conf->use_javascript_ajax) {
 
         for ($idw = 0; $idw < $daysInRange; $idw++) {
             $cellCSS             = '';
-            $dayInLoop           = dol_time_plus_duree($firstDayToShow, $idw, 'd');
-            $timespentHoursOnDay = load_time_spent_on_tasks_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $isAvailable, $userTmp->id);
+            $dayInLoop           = dolisirh_add_days($firstDayToShow, $idw);
+            $timespentHoursOnDay = load_time_spent_on_tasks_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $isAvailable, $userTmp->id, [], $workTimeTaskIDs);
             if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
                 if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                     $cellCSS = 'onholidayallday';
@@ -712,7 +748,7 @@ if ($conf->use_javascript_ajax) {
         print '<td></td>';
 
         //Difference between planned & working hours
-        $timeSpentDiff = load_difference_between_passed_and_spent_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable, $userTmp->id);
+        $timeSpentDiff = load_difference_between_passed_and_spent_time_within_range($firstDayToShow, dolisirh_add_days($lastDayOfRange, 1), $workingHours, $isAvailable, $userTmp->id, [], $workTimeTaskIDs);
 
         print '<tr class="liste_total planned-working-difference">';
         print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
@@ -735,8 +771,8 @@ if ($conf->use_javascript_ajax) {
 
         for ($idw = 0; $idw < $daysInRange; $idw++) {
             $cellCSS              = '';
-            $dayInLoop            = dol_time_plus_duree($firstDayToShow, $idw, 'd');
-            $timeSpentDiffThisDay = load_difference_between_passed_and_spent_time_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $workingHours, $isAvailable, $userTmp->id);
+            $dayInLoop            = dolisirh_add_days($firstDayToShow, $idw);
+            $timeSpentDiffThisDay = load_difference_between_passed_and_spent_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable, $userTmp->id, [], $workTimeTaskIDs);
             if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
                 if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                     $cellCSS = 'onholidayallday';
@@ -769,7 +805,7 @@ $j     = 0;
 $level = 0;
 
 // Show tasks lines.
-$timeSpentOnTasks = load_time_spent_on_tasks_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $isAvailable, $userTmp->id);
+$timeSpentOnTasks = load_time_spent_on_tasks_within_range($firstDayToShow, dolisirh_add_days($lastDayOfRange, 1), $isAvailable, $userTmp->id);
 
 task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $tasksArray, $level, $projectsRole, $tasksRole, $mine, $restrictViewForMyTask, $isAvailable, $timeSpentOnTasks, 0, $arrayFields, $extraFields); ?>
 
@@ -823,7 +859,7 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
     print '<tfoot style="position: sticky; bottom: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;">';
 
     // Passed working hours.
-    $passedWorkingTime = load_passed_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable);
+    $passedWorkingTime = load_passed_time_within_range($firstDayToShow, dolisirh_add_days($lastDayOfRange, 1), $workingHours, $isAvailable);
 
     print '<tr class="liste_total planned-working-hours">';
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
@@ -839,8 +875,8 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
     // Fill days data.
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $cellCSS          = '';
-        $dayInLoop        = dol_time_plus_duree($firstDayToShow, $idw, 'd');
-        $passedHoursOnDay = load_passed_time_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $workingHours, $isAvailable);
+        $dayInLoop        = dolisirh_add_days($firstDayToShow, $idw);
+        $passedHoursOnDay = load_passed_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable);
         if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
             if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                 $cellCSS = 'onholidayallday';
@@ -855,7 +891,7 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
     print '</tr>';
 
     // Spent hours within dates range.
-    $timeSpent = load_time_spent_on_tasks_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $isAvailable, $userTmp->id);
+    $timeSpent = load_time_spent_on_tasks_within_range($firstDayToShow, dolisirh_add_days($lastDayOfRange, 1), $isAvailable, $userTmp->id, [], $workTimeTaskIDs);
 
     print '<tr class="liste_total spent-hours-in-range">';
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
@@ -869,8 +905,8 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $cellCSS             = '';
-        $dayInLoop           = dol_time_plus_duree($firstDayToShow, $idw, 'd');
-        $timespentHoursOnDay = load_time_spent_on_tasks_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $isAvailable, $userTmp->id);
+        $dayInLoop           = dolisirh_add_days($firstDayToShow, $idw);
+        $timespentHoursOnDay = load_time_spent_on_tasks_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $isAvailable, $userTmp->id, [], $workTimeTaskIDs);
         if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
             if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                 $cellCSS = 'onholidayallday';
@@ -885,7 +921,7 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
     print '</tr>';
 
     //Difference between planned & working hours
-    $timeSpentDiff = load_difference_between_passed_and_spent_time_within_range($firstDayToShow, dol_time_plus_duree($lastDayOfRange, 1, 'd'), $workingHours, $isAvailable, $userTmp->id);
+    $timeSpentDiff = load_difference_between_passed_and_spent_time_within_range($firstDayToShow, dolisirh_add_days($lastDayOfRange, 1), $workingHours, $isAvailable, $userTmp->id, [], $workTimeTaskIDs);
 
     print '<tr class="liste_total planned-working-difference">';
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040;" colspan="' . $colspan . '">';
@@ -908,8 +944,8 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $cellCSS              = '';
-        $dayInLoop            = dol_time_plus_duree($firstDayToShow, $idw, 'd');
-        $timeSpentDiffThisDay = load_difference_between_passed_and_spent_time_within_range($dayInLoop, dol_time_plus_duree($firstDayToShow, $idw + 1, 'd'), $workingHours, $isAvailable, $userTmp->id);
+        $dayInLoop            = dolisirh_add_days($firstDayToShow, $idw);
+        $timeSpentDiffThisDay = load_difference_between_passed_and_spent_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable, $userTmp->id, [], $workTimeTaskIDs);
         if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
             if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                 $cellCSS = 'onholidayallday';

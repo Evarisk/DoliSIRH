@@ -147,7 +147,7 @@ $arrayfields = array(
 	'note'           => array('tablealias' => 'ptt.', 'type' => 'text', 'label' => "Note",  'checked' => 1, 'position' => 80, 'visible' => 1),
 	'thm'            => array('tablealias' => 'ptt.', 'type' => 'price', 'label' => "Value",  'checked' => 1, 'position' => 90, 'visible' => 1, 'isameasure'=>1),
 	'invoice_id'     => array('tablealias' => 'ptt.', 'fieldalias' => 'invoice_id', 'type' => 'Facture:compta/facture/class/facture.class.php:1', 'label' => "Facture", 'checked' => 1, 'position' => 100, 'visible' => 1),
-	'ts.rowid'       => array('fieldalias' => 'timesheetid', 'type' => 'TimeSheet:custom/dolisirh/class/timesheet.class.php:1', 'label' => "TimeSheet", 'checked' => 1, 'position' => 110, 'visible' => 1),
+	'ts.rowid'       => array('fieldalias' => 'timesheetid', 'type' => 'TimeSheet:dolisirh/class/timesheet.class.php:1', 'label' => "TimeSheet", 'checked' => 1, 'position' => 110, 'visible' => 1),
 );
 
 // Default sort order (if not yet defined by previous GETPOST)
@@ -345,7 +345,7 @@ $num = $db->num_rows($resql);
 // Output page
 // --------------------------------------------------------------------
 
-llxHeader('', $title, $help_url, '', 0, 0, $morejs, $morecss, '', '');
+llxHeader('', $title, $help_url, '', 0, 0, $morejs, array_merge($morecss, ['/saturne/css/saturne.min.css', '/dolisirh/css/dolisirh.min.css']), '', 'saturne-theme');
 
 $arrayofselected = is_array($toselect) ? $toselect : array();
 

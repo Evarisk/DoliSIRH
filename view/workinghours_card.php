@@ -52,8 +52,7 @@ $langs->loadLangs(array("dolisirh@dolisirh"));
 $action     = (GETPOST('action', 'aZ09') ? GETPOST('action', 'aZ09') : 'view');
 $backtopage = GETPOST('backtopage', 'alpha');
 
-$socid                                          = GETPOST('socid', 'int') ? GETPOST('socid', 'int') : GETPOST('id', 'int');
-if ($usertmp->socid) $socid                        = $usertmp->socid;
+$socid = GETPOSTINT('socid') ? GETPOSTINT('socid') : GETPOSTINT('id');
 if (empty($socid) && $action == 'view') $action = 'create';
 
 $usertmp = new User($db);
@@ -61,14 +60,33 @@ $usertmp = new User($db);
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $hookmanager->initHooks(array('userworkinghours', 'globalcard'));
 
-if ($action == 'view' && $usertmp->fetch($socid) <= 0) {
+if ($socid > 0 && $usertmp->fetch($socid) <= 0) {
 	$langs->load("errors");
 	print($langs->trans('ErrorRecordNotFound'));
 	exit;
 }
 
-// Security check
-$permissiontoadd = $usertmp->rights->societe->creer;
+// Hierarchy of the displayed user: his manager, the manager of his manager...
+$usertmphierarchy = [];
+if ($usertmp->fk_user > 0) {
+	$usertmphierarchy = array($usertmp->fk_user);
+	$usertmpboss = new User($db);
+	$usertmpboss->fetch($usertmp->fk_user);
+	while ($usertmpboss->fk_user > 0) {
+		$usertmphierarchy[] = $usertmpboss->fk_user;
+		$usertmpboss->fetch($usertmpboss->fk_user);
+		// We do not want to loop between two users who would be each other bosses
+		if (in_array($usertmpboss->id, $usertmphierarchy)) {
+			break;
+		}
+	}
+}
+
+// Security check: own working hours, users I manage, or everyone (HR). Applies to the save button AND the action
+$permissiontoedit = $user->admin
+	|| $user->hasRight('dolisirh', 'workinghours', 'everyone')
+	|| ($user->hasRight('dolisirh', 'workinghours', 'myworkinghours') && $usertmp->id > 0 && $usertmp->id == $user->id)
+	|| ($user->hasRight('dolisirh', 'workinghours', 'allworkinghours') && in_array($user->id, $usertmphierarchy));
 
 /*
  * Actions
@@ -79,9 +97,12 @@ $reshook    = $hookmanager->executeHooks('doActions', $parameters, $usertmp, $ac
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
 if (($action == 'update' && ! GETPOST("cancel", 'alpha')) || ($action == 'updateedit')) {
+	if (!$permissiontoedit || empty($usertmp->id)) {
+		accessforbidden();
+	}
 	$object               = new Workinghours($db);
 	$object->element_type = $usertmp->element;
-	$object->element_id   = GETPOST('id');
+	$object->element_id   = $usertmp->id;
 	$object->status       = 1;
 	$object->fk_user_creat       = $user->id;
 	$object->schedule_monday       = GETPOST('schedule_monday');
@@ -116,7 +137,7 @@ if (($action == 'update' && ! GETPOST("cancel", 'alpha')) || ($action == 'update
 
 $object = new Workinghours($db);
 
-$morewhere  = ' AND element_id = ' . GETPOST('id');
+$morewhere  = ' AND element_id = ' . ((int) $usertmp->id);
 $morewhere .= ' AND element_type = ' . "'" . $usertmp->element . "'";
 $morewhere .= ' AND status = 1';
 
@@ -131,9 +152,9 @@ $title = $langs->trans("User");
 if ( ! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/', $conf->global->MAIN_HTML_TITLE) && $usertmp->name) $title = $usertmp->name . " - " . $langs->trans('WorkingHours');
 $help_url = 'FR:Module_DoliSIRH';
 
-$morecss = array("/dolisirh/css/dolisirh.css");
+$morecss = array('/saturne/css/saturne.min.css', '/dolisirh/css/dolisirh.min.css');
 
-llxHeader('', $title, $help_url, '', '', '', array(), $morecss);
+llxHeader('', $title, $help_url, '', '', '', array(), $morecss, '', 'saturne-theme');
 
 if ( ! empty($usertmp->id)) $res = $usertmp->fetch_optionals();
 
@@ -142,9 +163,11 @@ if ( ! empty($usertmp->id)) $res = $usertmp->fetch_optionals();
 $morehtmlref  = '<div class="refidno">';
 $morehtmlref .= '</div>';
 $head = user_prepare_head($usertmp);
-print dol_get_fiche_head($head, 'workinghours', $langs->trans("User"), 0, 'company');
-$linkback = '<a href="' . DOL_URL_ROOT . '/societe/list.php?restore_lastsearch_values=1">' . $langs->trans("BackToList") . '</a>';
-dol_banner_tab($usertmp, 'socid', $linkback, ($usertmp->socid ? 0 : 1), 'rowid', 'nom');
+print dol_get_fiche_head($head, 'workinghours', $langs->trans("User"), -1, 'user');
+// Same banner as the user tabs of the core (user/note.php): user list, navigation by id
+$canreaduser = $user->admin || $user->hasRight('user', 'user', 'read');
+$linkback    = $canreaduser ? '<a href="' . DOL_URL_ROOT . '/user/list.php?restore_lastsearch_values=1">' . $langs->trans("BackToList") . '</a>' : '';
+dol_banner_tab($usertmp, 'id', $linkback, $canreaduser, 'rowid', 'ref');
 
 print dol_get_fiche_end();
 
@@ -154,10 +177,10 @@ print load_fiche_titre($langs->trans('WorkingHours'), '', '');
 
 if ( ! is_object($form)) $form = new Form($db);
 
-print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '?id=' . GETPOST('id') . '" >';
+print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '?id=' . ((int) $usertmp->id) . '" >';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="update">';
-print '<input type="hidden" name="id" value="' . GETPOST('id') . '">';
+print '<input type="hidden" name="id" value="' . ((int) $usertmp->id) . '">';
 if ($backtopage) {
     print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 }
@@ -253,23 +276,7 @@ print '</tr>' . "\n";
 
 print '</table>';
 
-// Buid current user hierarchy
-$usertmphierarchy = [];
-if ($usertmp->fk_user > 0) {
-	$usertmphierarchy = array($usertmp->fk_user);
-	$usertmpboss = new User($object->db);
-	$usertmpboss->fetch($usertmp->fk_user);
-	while ($usertmpboss->fk_user > 0) {
-		$usertmphierarchy[] = $usertmpboss->fk_user;
-		$usertmpboss->fetch($usertmpboss->fk_user);
-		// We do not want to loop between two users who would be each other bosses
-		if (in_array($usertmpboss->id, $usertmphierarchy)) {
-			break;
-		}
-	}
-}
-
-if (($user->rights->dolisirh->workinghours->myworkinghours && $usertmp->id == $user->id) || ($user->rights->dolisirh->workinghours->allworkinghours && in_array($user->id, $usertmphierarchy)) || $user->admin == 1){
+if ($permissiontoedit) {
     print '<br><div class="center">';
     print '<input type="submit" class="button" name="save" value="' . $langs->trans("Save") . '">';
     print '</div>';
