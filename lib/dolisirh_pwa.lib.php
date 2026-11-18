@@ -575,25 +575,29 @@ function dolisirh_pwa_load_days_range(DoliDB $db, Translate $langs, int $userId,
 		$dayKey          = date('Y-m-d', $cursor);
 		$isoDay          = (int) date('N', $cursor);
 		$isWeekEnd       = $isoDay >= 6;
+		// num_public_holiday() reads its dates in GMT, and counts the week-end too: weekdays only
 		$gmtDay          = dol_mktime(0, 0, 0, (int) date('m', $cursor), (int) date('d', $cursor), (int) date('Y', $cursor), 'gmt');
 		$isPublicHoliday = !$isWeekEnd && num_public_holiday($gmtDay, $gmtDay + 86400) > 0;
-		$expectedSec     = ($isWeekEnd || $isPublicHoliday) ? 0 : ($schedule[$isoDay] ?? 0);
+		// Same rule as the timesheet document, which the payroll reads: the working hours of the weekday,
+		// a public holiday is not removed from them but justified by the public holiday absence task
+		$expectedSec     = $schedule[$isoDay] ?? 0;
 
 		$dayName = dol_strtoupper(dol_substr(dol_print_date($cursor, '%a', 'tzserver', $langs), 0, 3));
 
 		$days[$dayKey] = [
-			'date'         => $dayKey,
-			'iso_day'      => $isoDay,
-			'day_name'     => $dayName,
-			'dd'           => date('d', $cursor),
-			'mm_yyyy'      => date('m/Y', $cursor),
-			'dmy'          => date('d/m/Y', $cursor),
-			'expected_sec' => $expectedSec,
-			'pres_sec'     => 0,
-			'abs_sec'      => 0,
-			'proj_sec'     => 0,
-			'hr_entries'   => [],
-			'proj_entries' => [],
+			'date'              => $dayKey,
+			'iso_day'           => $isoDay,
+			'day_name'          => $dayName,
+			'dd'                => date('d', $cursor),
+			'mm_yyyy'           => date('m/Y', $cursor),
+			'dmy'               => date('d/m/Y', $cursor),
+			'expected_sec'      => $expectedSec,
+			'is_public_holiday' => $isPublicHoliday,
+			'pres_sec'          => 0,
+			'abs_sec'           => 0,
+			'proj_sec'          => 0,
+			'hr_entries'        => [],
+			'proj_entries'      => [],
 		];
 
 		$cursor = dolisirh_add_days($cursor, 1);
@@ -890,8 +894,10 @@ function dolisirh_pwa_get_state(DoliDB $db, Translate $langs, User $user, string
 		'week_days'     => $weekDays,
 		'hr_project'    => $hrProjectData,
 		'hr_tasks'      => [
-			'presence' => $presenceTasks,
-			'absence'  => $absenceTasks,
+			'presence'          => $presenceTasks,
+			'absence'           => $absenceTasks,
+			// A public holiday is justified by this absence task, as on the timesheet document
+			'public_holiday_id' => in_array(getDolGlobalInt('DOLISIRH_PUBLIC_HOLIDAY_TASK'), $absenceTaskIds, true) ? getDolGlobalInt('DOLISIRH_PUBLIC_HOLIDAY_TASK') : 0,
 		],
 		'sel_month'     => [
 			'ym'              => $selParts[0] . '-' . $selParts[1],

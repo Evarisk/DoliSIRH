@@ -1363,24 +1363,31 @@ window.dolisirh.pwa.renderHrTaskCards = function() {
 	var totalLoggedSec = presSec + absSec;
 	var remainingDaySec = Math.max(0, expectedSec - totalLoggedSec);
 
-	var expectedPresSec = Math.max(0, expectedSec - absSec);
+	var presTasks = (st.hr_tasks && st.hr_tasks.presence) ? st.hr_tasks.presence : [];
+	var absTasks = (st.hr_tasks && st.hr_tasks.absence) ? st.hr_tasks.absence : [];
+
+	// A public holiday keeps its expected time, as on the timesheet document: the public holiday absence task justifies it
+	var publicHolidayTaskId = Number((st.hr_tasks && st.hr_tasks.public_holiday_id) || 0);
+	var isHolidayOff = !!dayData.is_public_holiday && presSec === 0 && absTasks.some(function(t) { return Number(t.id) === publicHolidayTaskId; });
+
+	var expectedPresSec = isHolidayOff ? 0 : Math.max(0, expectedSec - absSec);
 	var diffPresSec = Math.max(0, expectedPresSec - presSec);
 	var isPresOk = (diffPresSec === 0);
 
-	var expectedAbsSec = (presSec === 0 && absSec > 0) ? expectedSec : 0;
+	var expectedAbsSec = (presSec === 0 && (absSec > 0 || isHolidayOff)) ? expectedSec : 0;
 	var diffAbsSec = Math.max(0, expectedAbsSec - absSec);
 	var isAbsOk = (diffAbsSec === 0);
-
-	var presTasks = (st.hr_tasks && st.hr_tasks.presence) ? st.hr_tasks.presence : [];
-	var absTasks = (st.hr_tasks && st.hr_tasks.absence) ? st.hr_tasks.absence : [];
 
 	var renderCard = function(task, idx, isPresenceSection) {
 		var entries = (dayData.hr_entries && dayData.hr_entries[task.id]) ? dayData.hr_entries[task.id] : [];
 		var loggedTaskSec = entries.reduce(function(sum, e) { return sum + (Number(e.duration) || 0); }, 0);
 		var isDone = (loggedTaskSec > 0);
 
+		// The time left goes to the first presence task, or to the public holiday task on a public holiday
+		var takesRemaining = isHolidayOff ? (!isPresenceSection && Number(task.id) === publicHolidayTaskId) : (isPresenceSection && idx === 0);
+
 		var defaultHm = '00:00';
-		if (isPresenceSection && idx === 0 && !isDone && remainingDaySec > 0) {
+		if (takesRemaining && !isDone && remainingDaySec > 0) {
 			defaultHm = pwa.secToHM(remainingDaySec);
 		} else if (isDone) {
 			defaultHm = pwa.secToHM(loggedTaskSec);
