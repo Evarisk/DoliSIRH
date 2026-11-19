@@ -191,7 +191,8 @@ function load_planned_time_within_range(int $timestampStart, int $timestampEnd, 
     $daysInRange = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $newTimestampStart = dolisirh_add_days($timestampStart, $idw); // $firstdaytoshow is a date with hours = 0.
-        if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
+        // A working day, or a public holiday justified by the public holiday task, as on the timesheet document
+        if (dolisirh_is_day_expected($daysAvailable[$newTimestampStart] ?? [])) {
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
 
@@ -229,7 +230,7 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $
     $daysInRange         = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $newTimestampStart = dolisirh_add_days($timestampStart, $idw); // $firstdaytoshow is a date with hours = 0.
-        if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
+        if (dolisirh_is_day_expected($daysAvailable[$newTimestampStart] ?? [])) {
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
 

@@ -252,6 +252,7 @@ class pdf_timesheetdocument extends SaturneDocumentModel
      *
      * The expected time follows the working hours of the weekday, as in the browser extension:
      * a day off is justified by an absence task, it is not removed from the expected time.
+     * A public holiday is left out only when no public holiday task is set up to justify it.
      *
      * @param  int                $dateStart    First day of the period.
      * @param  int                $dateEnd      Last day of the period.
@@ -277,7 +278,8 @@ class pdf_timesheetdocument extends SaturneDocumentModel
                 'mday'     => (int) date('j', $cursor),
                 'weekday'  => dol_ucfirst(dol_substr(dol_print_date($cursor, '%a', 'tzserver', $outputLangs), 0, 2)),
                 'off'      => $isWeekEnd || $isPublicHoliday,
-                'expected' => dolisirh_working_hours_of_day($workingHours, 'workinghours_' . strtolower(date('l', $cursor))) * 60,
+                // Without the public holiday task, nothing could justify a public holiday: it is not expected
+                'expected' => ($isPublicHoliday && !dolisirh_is_public_holiday_expected()) ? 0 : dolisirh_working_hours_of_day($workingHours, 'workinghours_' . strtolower(date('l', $cursor))) * 60,
             ];
 
             $cursor = dolisirh_add_days($cursor, 1);

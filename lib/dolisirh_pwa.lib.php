@@ -579,8 +579,9 @@ function dolisirh_pwa_load_days_range(DoliDB $db, Translate $langs, int $userId,
 		$gmtDay          = dol_mktime(0, 0, 0, (int) date('m', $cursor), (int) date('d', $cursor), (int) date('Y', $cursor), 'gmt');
 		$isPublicHoliday = !$isWeekEnd && num_public_holiday($gmtDay, $gmtDay + 86400) > 0;
 		// Same rule as the timesheet document, which the payroll reads: the working hours of the weekday,
-		// a public holiday is not removed from them but justified by the public holiday absence task
-		$expectedSec     = $schedule[$isoDay] ?? 0;
+		// a public holiday is not removed from them but justified by the public holiday absence task.
+		// Without that task, nothing could justify it: it is not expected.
+		$expectedSec     = ($isPublicHoliday && !dolisirh_is_public_holiday_expected()) ? 0 : ($schedule[$isoDay] ?? 0);
 
 		$dayName = dol_strtoupper(dol_substr(dol_print_date($cursor, '%a', 'tzserver', $langs), 0, 3));
 
