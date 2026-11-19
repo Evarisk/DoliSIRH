@@ -275,7 +275,7 @@ if ($object->id > 0) {
     $inc            = 0;
     $restrictBefore = null;
     if (getDolGlobalInt('PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS')) {
-        $restrictBefore = dol_time_plus_duree(dol_now(), -(int) $conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS, 'm');
+        $restrictBefore = dol_time_plus_duree(dol_now(), -getDolGlobalInt('PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS'), 'm');
     }
 
     $blocksToRender = [
@@ -484,28 +484,36 @@ if ($object->id > 0) {
     }
     print '</tr>';
 
-    // Row 4: Difference between due & consumed working hours.
-    $diffTotalSec = $diffTotalMinutes * 60;
-    if ($diffTotalSec < 0) {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-    } elseif ($diffTotalSec > 0) {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-    } else {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
-    }
+    // Row 4: Difference, logged minus expected as on the timesheet document and the days band (+ excess, - missing),
+    // in the colors of the module setup: time spent exceeded, time spent not exceeded or missing, perfect.
+    $exceededColor    = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
+    $notExceededColor = colorStringToArray(getDolGlobalString('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'));
+    $perfectColor     = colorStringToArray(getDolGlobalString('DOLISIRH_PERFECT_TIME_SPENT_COLOR'));
+    $differenceCell   = static function (int $differenceSec) use ($exceededColor, $notExceededColor, $perfectColor): array {
+        if ($differenceSec > 0) {
+            return ['+' . convertSecondToTime($differenceSec, 'allhourmin'), $exceededColor];
+        }
+        if ($differenceSec < 0) {
+            return ['-' . convertSecondToTime(-$differenceSec, 'allhourmin'), $notExceededColor];
+        }
+
+        return ['00:00', $perfectColor];
+    };
+
+    // The difference of the period is expected minus spent
+    [$differenceLabel, $differenceColor] = $differenceCell(-$diffTotalMinutes * 60);
 
     print '<tr class="liste_total planned-working-difference">';
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040; max-width: 250px; white-space: normal;">';
     print $langs->trans('TimeSheetDifference');
     print '</td>';
-    print '<td class="liste_total right" style="color: rgb(' . $morecss[0] . ',' . $morecss[1] . ',' . $morecss[2] . ');"><strong>' . (($diffTotalSec != 0) ? convertSecondToTime(abs($diffTotalSec), 'allhourmin') : '00:00') . '</strong></td>';
+    print '<td class="liste_total right" style="color: rgb(' . (int) $differenceColor[0] . ',' . (int) $differenceColor[1] . ',' . (int) $differenceColor[2] . ');"><strong>' . $differenceLabel . '</strong></td>';
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $cellCSS          = '';
         $dayInLoop        = dolisirh_add_days($firstDayToShow, $idw);
         $passedHoursOnDay = load_passed_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable);
         $daySpentMinutes  = (int) floor($dailyConsumedByTaskGroup['all'][$idw] / 60);
-        $dayDiffMinutes   = (int) $passedHoursOnDay['minutes'] - $daySpentMinutes;
 
         if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
             if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
@@ -515,16 +523,10 @@ if ($object->id > 0) {
             }
         }
 
-        if ($dayDiffMinutes < 0) {
-            $dayCss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-        } elseif ($dayDiffMinutes > 0) {
-            $dayCss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-        } else {
-            $dayCss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
-        }
+        [$dayDifferenceLabel, $dayDifferenceColor] = $differenceCell(($daySpentMinutes - (int) $passedHoursOnDay['minutes']) * 60);
 
-        print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS . '" align="center" style="color: rgb(' . $dayCss[0] . ',' . $dayCss[1] . ',' . $dayCss[2] . ');">';
-        print '<div class="' . $idw . '">' . (($dayDiffMinutes != 0) ? convertSecondToTime(abs($dayDiffMinutes * 60), 'allhourmin') : '00:00') . '</div></td>';
+        print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS . '" align="center" style="color: rgb(' . (int) $dayDifferenceColor[0] . ',' . (int) $dayDifferenceColor[1] . ',' . (int) $dayDifferenceColor[2] . ');">';
+        print '<div class="' . $idw . '">' . $dayDifferenceLabel . '</div></td>';
     }
     print '</tr>';
 
