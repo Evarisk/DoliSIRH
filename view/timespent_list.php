@@ -423,7 +423,7 @@ if (empty($reshook)) {
 }
 
 // Filter on categories
-if (!empty($conf->categorie->enabled) && $user->rights->categorie->lire) {
+if (!empty($conf->categorie->enabled) && $user->hasRight('categorie', 'lire')) {
 	$formcategory = new FormCategory($db);
 	$moreforfilter .= $formcategory->getFilterBox(Categorie::TYPE_PROJECT, $search_category_array);
 }
