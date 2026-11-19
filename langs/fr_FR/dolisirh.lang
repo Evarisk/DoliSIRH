@@ -399,6 +399,10 @@ PwaNotePlaceholder          = Ce qui a été fait…
 PwaNoProjectFound           = Aucun projet trouvé
 PwaNoTaskFound              = Aucune tâche trouvée
 PwaNetworkError             = Erreur réseau
+PwaNoWorkingHoursTitle      = Aucun horaire de travail renseigné
+PwaNoWorkingHours           = Le temps attendu reste à 0 h chaque jour, comme sur ta navette.
+PwaNoWorkingHoursEdit       = Renseigner mes horaires
+PwaNoWorkingHoursAsk        = Demande à ton responsable de les renseigner.
 
 # Error - Erreur
 ErrorPwaEndEqualsStart      = L'heure de fin doit être différente de l'heure de début
