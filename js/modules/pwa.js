@@ -1245,7 +1245,11 @@ window.dolisirh.pwa.renderHrTopBars = function() {
 };
 
 /**
- * Render the 5-day week strip (Monday to Friday) for Semaine and Projet modes.
+ * Render the 5-day week strip (Monday to Friday) for the Semaine and Pointer modes.
+ *
+ * The Pointer tab clocks the HR presence too: with presence tasks in the HR project, its days count what the
+ * timesheet counts, presence and absence, as the Semaine tab. Without any (HR project 1.x, presence clocked on
+ * the projects), they count the time of the projects.
  *
  * @returns {void}
  */
@@ -1257,7 +1261,8 @@ window.dolisirh.pwa.renderWeekBar = function() {
 		return;
 	}
 
-	var isProjectMode = (pwa.mode === 'project');
+	var hasPresenceTasks = !!(st.hr_tasks && Array.isArray(st.hr_tasks.presence) && st.hr_tasks.presence.length > 0);
+	var countsProjects = (pwa.mode === 'project') && !hasPresenceTasks;
 	var todayStr = st.today;
 	var selectedDateStr = st.selected_date;
 
@@ -1266,10 +1271,10 @@ window.dolisirh.pwa.renderWeekBar = function() {
 		var presSec = Number(day.pres_sec) || 0;
 		var absSec = Number(day.abs_sec) || 0;
 		var projSec = Number(day.proj_sec) || 0;
-		var totalDaySec = isProjectMode ? projSec : (presSec + absSec);
+		var totalDaySec = countsProjects ? projSec : (presSec + absSec);
 
 		var stateClass = 'cal-day-grey';
-		if (isProjectMode) {
+		if (countsProjects) {
 			if (expectedSec > 0 && projSec >= expectedSec) {
 				stateClass = 'cal-day-ok';
 			} else if (day.date <= todayStr && expectedSec > 0 && projSec < expectedSec) {
@@ -1287,7 +1292,7 @@ window.dolisirh.pwa.renderWeekBar = function() {
 
 		var paText = '-';
 		var paClass = 'is-none';
-		if (isProjectMode) {
+		if (countsProjects) {
 			if (projSec > 0) {
 				paText = 'P';
 				paClass = 'is-p';
@@ -1306,7 +1311,7 @@ window.dolisirh.pwa.renderWeekBar = function() {
 		}
 
 		var durStr;
-		if (isProjectMode) {
+		if (countsProjects) {
 			durStr = projSec > 0 ? pwa.secToHM(projSec) : '00:00';
 		} else {
 			durStr = (stateClass === 'cal-day-grey')
