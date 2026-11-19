@@ -354,8 +354,10 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
             // VALIDATE
             case 'TIMESHEET_VALIDATE' :
             case 'CERTIFICATE_VALIDATE' :
+                // A validation trigger runs before the object takes its final ref, kept meanwhile in newref, as in Dolibarr core:
+                // the event is labelled with it, not with the (PROVn) one
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_VALIDATE';
-                $actioncomm->label = $langs->trans('ObjectValidateTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
+                $actioncomm->label = $langs->trans('ObjectValidateTrigger', $langs->transnoentities(ucfirst($object->element)), !empty($object->newref) ? $object->newref : $object->ref);
                 $actioncomm->create($user);
                 break;
 
