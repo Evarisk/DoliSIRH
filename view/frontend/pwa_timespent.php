@@ -128,7 +128,8 @@ $labels = [
 require_once __DIR__ . '/../../core/tpl/frontend/dolisirh_pwa_header.tpl.php';
 ?>
 
-<main class="dolisirh-pwa-main ts-card" id="dolisirh-pwa-app" data-ajax-url="<?php echo dol_escape_htmltag($_SERVER['PHP_SELF']); ?>">
+<?php // The day states and the legend take the time spent colors of the module setup, as the days band of the timesheet ?>
+<main class="dolisirh-pwa-main ts-card" id="dolisirh-pwa-app" data-ajax-url="<?php echo dol_escape_htmltag($_SERVER['PHP_SELF']); ?>" style="<?php echo dol_escape_htmltag(dolisirh_time_spent_color_vars()); ?>">
 	<input type="hidden" name="token" id="dolisirh-pwa-token" value="<?php echo newToken(); ?>">
 
 	<!-- 3-Tab Mode Switcher: Pointer / Semaine / Mensuel -->

@@ -599,19 +599,19 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
     $diffTotalTime = $timeSpendingInfos['difference'];
 
     if ($diffTotalTime < 0) {
-        $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+        $moreCssHours  = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
         $moreCssNotice = 'error';
         $noticeTitle   = $langs->trans('TimeSpentDiff', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayToShow, 'dayreduceformat'), dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y'));
     } elseif ($diffTotalTime > 0) {
-        $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+        $moreCssHours  = colorStringToArray(getDolGlobalString('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'));
         $moreCssNotice = 'warning';
         $noticeTitle   = $langs->trans('TimeSpentMustBeCompleted', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayToShow, 'dayreduceformat'), dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y'));
     } elseif (!empty($outsideWorkingHoursDays)) {
-        $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+        $moreCssHours  = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
         $moreCssNotice = 'error';
         $noticeTitle   = $langs->trans('TimeSpentDiff', dol_print_date($firstDayToShow, 'dayreduceformat'), dol_print_date($lastDayToShow, 'dayreduceformat'), dol_print_date(dol_mktime(0, 0, 0, $dateStart['mon'], $dateStart['mday'], $dateStart['year']), '%B %Y'));
     } elseif ($diffTotalTime == 0) {
-        $moreCssHours  = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+        $moreCssHours  = colorStringToArray(getDolGlobalString('DOLISIRH_PERFECT_TIME_SPENT_COLOR'));
         $moreCssNotice = 'success';
         $noticeTitle   = $langs->trans('TimeSpentPerfect');
     } else {
@@ -626,14 +626,14 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
         $noticeTitle .= '<br>' . dol_escape_htmltag($langs->transnoentities('ConsumedTime') . ' (' . $langs->transnoentities('WorkingHours') . ' : 00:00) : ') . implode(', ', $outsideLabels);
     }
 
-    // Working hours.
+    // Working hours: fewer days clocked than planned is not exceeded or not clocked, more days is exceeded.
     $workingTime = $timeSpendingInfos['spent'];
     if ($plannedWorkingTime['days'] > $workingTime['days']) {
-        $morecssDays = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-    } elseif ($plannedWorkingTime['days'] < $workingTime['days']){
-        $morecssDays = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+        $morecssDays = colorStringToArray(getDolGlobalString('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'));
+    } elseif ($plannedWorkingTime['days'] < $workingTime['days']) {
+        $morecssDays = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
     } else {
-        $morecssDays = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+        $morecssDays = colorStringToArray(getDolGlobalString('DOLISIRH_PERFECT_TIME_SPENT_COLOR'));
     }
 
     print '<tr class="liste_total"><td class="liste_total">';

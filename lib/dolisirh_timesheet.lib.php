@@ -89,6 +89,46 @@ function timesheet_keep_user_assign_selectable(TimeSheet $object, int $userID): 
 }
 
 /**
+ * CSS custom properties of the time spent colors of the module setup: exceeded, not exceeded or not clocked, perfect.
+ *
+ * The days band, the employee cards of the timesheets page and the PWA read them, so that they follow the setup as the
+ * difference lines do. Each color comes with a light tint for a background, a dark shade for a text and the text color
+ * readable on it.
+ *
+ * @return string Declarations for a style attribute: --dolisirh-exceeded, --dolisirh-exceeded-tint...
+ */
+function dolisirh_time_spent_color_vars(): string
+{
+    require_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
+
+    // Default colors of the module setup, for a value left empty
+    $colors = [
+        'exceeded'     => ['DOLISIRH_EXCEEDED_TIME_SPENT_COLOR', [255, 0, 0]],
+        'not-exceeded' => ['DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR', [255, 165, 0]],
+        'perfect'      => ['DOLISIRH_PERFECT_TIME_SPENT_COLOR', [0, 128, 0]],
+    ];
+
+    $declarations = [];
+    foreach ($colors as $name => [$constant, $defaultColor]) {
+        $rgb = array_map(static function ($component): int {
+            return max(0, min(255, (int) $component));
+        }, array_slice(colorStringToArray(getDolGlobalString($constant), $defaultColor), 0, 3));
+
+        $shade      = array_map(static function (int $component): int {
+            return (int) round($component * 0.55);
+        }, $rgb);
+        $brightness = ($rgb[0] * 299 + $rgb[1] * 587 + $rgb[2] * 114) / 1000;
+
+        $declarations[] = '--dolisirh-' . $name . ': rgb(' . implode(', ', $rgb) . ')';
+        $declarations[] = '--dolisirh-' . $name . '-tint: rgba(' . implode(', ', $rgb) . ', 0.14)';
+        $declarations[] = '--dolisirh-' . $name . '-text: rgb(' . implode(', ', $shade) . ')';
+        $declarations[] = '--dolisirh-' . $name . '-contrast: ' . ($brightness >= 150 ? '#0f172a' : '#ffffff');
+    }
+
+    return implode('; ', $declarations) . ';';
+}
+
+/**
  * Render the horizontal strip of daily cards for a timesheet, with hover details of recorded time.
  *
  * @param  TimeSheet          $object         Timesheet object.
@@ -182,7 +222,8 @@ function timesheet_render_daily_calendar(TimeSheet $object, int $firstDayToShow,
     $today    = dol_mktime(0, 0, 0, (int) date('m'), (int) date('d'), (int) date('Y'), 'tzserver');
     $todayStr = date('Y-m-d', $today);
 
-    $out    = '<div class="ts-cal-strip">';
+    // The day states take the time spent colors of the module setup
+    $out    = '<div class="ts-cal-strip" style="' . dol_escape_htmltag(dolisirh_time_spent_color_vars()) . '">';
     $cursor = $startCursor;
 
     for ($i = 0; $cursor <= $endCursor && $i < 62; $i++) {
@@ -203,21 +244,21 @@ function timesheet_render_daily_calendar(TimeSheet $object, int $firstDayToShow,
             continue;
         }
 
+        // The state follows the sign of the difference: over takes the exceeded color, ko the not exceeded or not
+        // clocked one. A day to come is judged once time is clocked on it.
+        $diff       = $totalDaySec - $expectedSec;
         $stateClass = 'cal-day-grey';
-        $statusText = $langs->transnoentities('Status');
-        if (($expectedSec > 0 && $totalDaySec === $expectedSec) || ($expectedSec === 0 && $totalDaySec > 0 && !$isWeekEnd)) {
+        $statusText = '00:00';
+        if (($expectedSec > 0 && $diff === 0) || ($expectedSec === 0 && $totalDaySec > 0 && !$isWeekEnd)) {
             $stateClass = 'cal-day-ok';
             $statusText = $langs->transnoentities('TimeSheetBalanced');
-        } elseif ($totalDaySec > $expectedSec && $expectedSec > 0) {
+        } elseif ($diff > 0 && ($expectedSec > 0 || $isWeekEnd)) {
+            // More than expected, time on a week-end day included
             $stateClass = 'cal-day-over';
-            $diff       = $totalDaySec - $expectedSec;
             $statusText = '+' . convertSecondToTime($diff, 'allhourmin');
-        } elseif (($cursor <= $today && $expectedSec > 0 && $totalDaySec !== $expectedSec) || ($cursor > $today && $totalDaySec > 0 && $totalDaySec !== $expectedSec) || ($isWeekEnd && $totalDaySec > 0)) {
+        } elseif ($diff < 0 && ($cursor <= $today || $totalDaySec > 0)) {
             $stateClass = 'cal-day-ko';
-            $diff       = $totalDaySec - $expectedSec;
-            $statusText = ($diff > 0 ? '+' : '-') . convertSecondToTime(abs($diff), 'allhourmin');
-        } else {
-            $statusText = '00:00';
+            $statusText = '-' . convertSecondToTime(-$diff, 'allhourmin');
         }
 
         $paText  = '-';
