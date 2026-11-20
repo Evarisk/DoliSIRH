@@ -24,7 +24,6 @@
 // Load Dolibarr libraries.
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
-require_once DOL_DOCUMENT_ROOT . '/holiday/class/holiday.class.php';
 
 // Load DoliSIRH libraries.
 require_once __DIR__ . '/../class/workinghours.class.php';
@@ -92,29 +91,25 @@ function is_task_favorite(int $taskID, int $userID): int
 }
 
 /**
- * Check if day is available.
+ * Check if day is available: false on a week-end or a public holiday.
  *
- * @param  int      $date   timestamp.
- * @param  int      $userID User ID.
- * @return bool             false = not availability | true = availability.
+ * An approved leave does not make the day unavailable: it counts in the expected time, as on the timesheet document,
+ * and the employee justifies it with the leave task. The test meant to leave approved leaves out never did, since
+ * Holiday::verifDateHolidayForTimestamp() returns an array, always true: it is gone, with one query per day.
+ *
+ * @param  int  $date Timestamp.
+ * @return bool       false = not availability | true = availability.
  */
-function is_day_available(int $date, int $userID): bool
+function is_day_available(int $date): bool
 {
-    global $db;
-
     if (empty($date)) {
         dol_print_error('', 'Error date parameter is empty');
     }
 
-    $holiday = new Holiday($db);
+    $date            = dol_stringtotime(dol_print_date($date, 'standard'));
+    $isPublicHoliday = num_public_holiday($date, dol_time_plus_duree($date, 1, 'd'));
 
-    $statusOfHolidayToCheck = Holiday::STATUS_APPROVED;
-
-    $date               = dol_stringtotime(dol_print_date($date, 'standard'));
-    $isAvailableForUser = $holiday->verifDateHolidayForTimestamp($userID, $date, $statusOfHolidayToCheck);
-    $isPublicHoliday    = num_public_holiday($date, dol_time_plus_duree($date, 1,'d'));
-
-    return $isAvailableForUser && !$isPublicHoliday;
+    return !$isPublicHoliday;
 }
 
 /**
@@ -181,12 +176,12 @@ function dolisirh_is_public_holiday(int $date): bool
  * working hours of its weekday in the expected time ('expected') when the public holiday task can justify it.
  *
  * @param  int   $date   Day, at midnight in the timezone of the server.
- * @param  int   $userID User ID.
+ * @param  int   $userID User ID. Their approved leaves do not change the availability: see is_day_available().
  * @return array         Availability of the day.
  */
 function dolisirh_get_day_availability(int $date, int $userID): array
 {
-    if (is_day_available($date, $userID)) {
+    if (is_day_available($date)) {
         return ['morning' => 1, 'afternoon' => 1];
     }
 
