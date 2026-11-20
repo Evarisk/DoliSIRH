@@ -150,13 +150,7 @@ if ($object->id > 0) {
     $isAvailable = [];
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
-        if (is_day_available($dayInLoop, (int) $object->fk_user_assign)) {
-            $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
-        } elseif (date('N', $dayInLoop) >= 6) {
-            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
-        } else {
-            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
-        }
+        $isAvailable[$dayInLoop] = dolisirh_get_day_availability($dayInLoop, (int) $object->fk_user_assign);
     }
 
     $workingHours = $workingHours->fetchCurrentWorkingHours((int) $object->fk_user_assign, 'user');

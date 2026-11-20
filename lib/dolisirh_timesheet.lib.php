@@ -192,7 +192,8 @@ function timesheet_render_daily_calendar(TimeSheet $object, int $firstDayToShow,
         $gmtDay          = dol_mktime(0, 0, 0, (int) date('m', $cursor), (int) date('d', $cursor), (int) date('Y', $cursor), 'gmt');
         $isPublicHoliday = !$isWeekEnd && num_public_holiday($gmtDay, $gmtDay + 86400) > 0;
 
-        $expectedSec = ($isWeekEnd || $isPublicHoliday) ? 0 : dolisirh_working_hours_of_day($workingHours, 'workinghours_' . dol_strtolower(date('l', $cursor))) * 60;
+        // A public holiday keeps the working hours of its weekday, justified by the public holiday task, as on the timesheet document
+        $expectedSec = ($isWeekEnd || ($isPublicHoliday && !dolisirh_is_public_holiday_expected())) ? 0 : dolisirh_working_hours_of_day($workingHours, 'workinghours_' . dol_strtolower(date('l', $cursor))) * 60;
         $presSec     = $daily[$dayKey]['pres_sec'] ?? 0;
         $absSec      = $daily[$dayKey]['abs_sec'] ?? 0;
         $projSec     = $daily[$dayKey]['proj_sec'] ?? 0;
