@@ -749,11 +749,11 @@ if ($conf->use_javascript_ajax) {
         print $langs->trans('Total');
         $diffTotalTime = $timeSpentDiff * 60;
         if ($diffTotalTime < 0) {
-            $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+            $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
         } elseif ($diffTotalTime > 0) {
-            $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+            $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'));
         } elseif ($diffTotalTime == 0) {
-            $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+            $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_PERFECT_TIME_SPENT_COLOR'));
         } else {
             $morecss = '';
         }
@@ -776,11 +776,11 @@ if ($conf->use_javascript_ajax) {
             }
 
             if ($timeSpentDiffThisDay < 0) {
-                $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+                $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
             } elseif ($timeSpentDiffThisDay > 0) {
-                $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+                $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'));
             } elseif ($timeSpentDiffThisDay == 0) {
-                $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+                $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_PERFECT_TIME_SPENT_COLOR'));
             }
 
             print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS;
@@ -922,11 +922,11 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
     print $langs->trans('Total');
     $diffTotalTime = $timeSpentDiff * 60;
     if ($diffTotalTime < 0) {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+        $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
     } elseif ($diffTotalTime > 0) {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+        $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'));
     } elseif ($diffTotalTime == 0) {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+        $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_PERFECT_TIME_SPENT_COLOR'));
     } else {
         $morecss = '';
     }
@@ -949,11 +949,11 @@ task_lines_within_range($j, $firstDayToShow, $lastDayOfRange, $userTmp, 0, $task
         }
 
         if ($timeSpentDiffThisDay < 0) {
-            $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
+            $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
         } elseif ($timeSpentDiffThisDay > 0) {
-            $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
+            $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'));
         } elseif ($timeSpentDiffThisDay == 0) {
-            $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+            $morecss = colorStringToArray(getDolGlobalString('DOLISIRH_PERFECT_TIME_SPENT_COLOR'));
         }
 
         print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS;
