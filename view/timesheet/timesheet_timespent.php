@@ -135,7 +135,7 @@ saturne_header(0, '', $title, $help_url);
 if ($object->id > 0) {
     $object->fetch_optionals();
 
-    saturne_get_fiche_head($object, 'timespent', $title);
+    saturne_get_fiche_head($object, 'timesheet_timespent', $title);
     saturne_banner_tab($object);
 
     $userTmp->fetch((int) $object->fk_user_assign);

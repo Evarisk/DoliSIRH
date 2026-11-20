@@ -52,7 +52,8 @@ function timesheet_prepare_head(TimeSheet $object): array
         $head[] = [
             dol_buildpath('/dolisirh/view/timesheet/timesheet_timespent.php', 1) . '?id=' . $object->id,
             $conf->browser->layout != 'phone' ? '<i class="fas fa-clock pictofixedwidth"></i>' . $langs->trans('ConsumedTime') : '<i class="fas fa-clock"></i>',
-            'timespent',
+            // Dolibarr gives the tab this key as id: 'timespent' is the id of the time spent modal of the tab
+            'timesheet_timespent',
         ];
     }
 
