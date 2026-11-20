@@ -1203,7 +1203,7 @@ class ActionsDoliSIRH
 
         if ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
             // Filter on categories.
-            if (isModEnabled('categorie') && $user->rights->categorie->lire) {
+            if (isModEnabled('categorie') && $user->hasRight('categorie', 'lire')) {
                 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcategory.class.php';
                 $formCategory = new FormCategory($db);
                 switch ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {

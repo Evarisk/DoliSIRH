@@ -456,7 +456,7 @@ if ($search_all) {
 $moreforfilter = '';
 
 // Filter on categories
-if (isModEnabled('categorie') && $user->rights->categorie->lire) {
+if (isModEnabled('categorie') && $user->hasRight('categorie', 'lire')) {
     $formcategory = new FormCategory($db);
     $moreforfilter .= $formcategory->getFilterBox('timesheet', $search_category_array);
 }

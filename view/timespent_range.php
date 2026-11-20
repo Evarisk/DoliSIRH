@@ -562,7 +562,7 @@ if (!getDolGlobalInt('PROJECT_TIMESHEET_DISABLEBREAK_ON_PROJECT')) {
 $moreForFilter .= '</td>';
 
 // Filter on categories.
-if (isModEnabled('categorie') && $user->rights->categorie->lire) {
+if (isModEnabled('categorie') && $user->hasRight('categorie', 'lire')) {
     $moreForFilter .= '<td class="liste_titre" colspan="6"><span>' . $formCategory->getFilterBox(Categorie::TYPE_PROJECT, $searchCategoryArray, 'minwidth300 widthcentpercentminusx timespent-list-z-index') . '</span></td>';
 }
 
