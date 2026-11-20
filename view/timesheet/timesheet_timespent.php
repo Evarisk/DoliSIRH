@@ -115,8 +115,8 @@ if (empty($resHook)) {
                 $task->timespent_fk_user  = (int) $object->fk_user_assign;
 
                 if ($task->timespent_duration > 0) {
-                    // The day at midnight, the start hour added to it when given
-                    dolisirh_add_time_spent($task, $user, $timestamp, ($dateHour > 0 || $dateMin > 0) ? $timestamp + ($dateHour * 3600) + ($dateMin * 60) : 0);
+                    // The day of the cell, the start hour read in the timezone of the core pages when given
+                    dolisirh_add_time_spent($task, $user, $timestamp, dolisirh_get_time_spent_start($timestamp, $dateHour, $dateMin));
                 }
             }
         }
