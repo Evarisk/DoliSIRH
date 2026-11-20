@@ -475,12 +475,6 @@ parameters:
 			path: lib/dolisirh_function.lib.php
 
 		-
-			message: '#^Parameter \#3 \$status of method Holiday\:\:verifDateHolidayForTimestamp\(\) expects string, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: lib/dolisirh_function.lib.php
-
-		-
 			message: '#^Parameter \#4 \$notrigger of method CommonObject\:\:add_object_linked\(\) expects int, string given\.$#'
 			identifier: argument.type
 			count: 1
