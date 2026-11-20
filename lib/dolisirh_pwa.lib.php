@@ -531,6 +531,8 @@ function dolisirh_pwa_parse_hm_to_seconds(string $hm): int
 /**
  * Get the user's daily working schedule in seconds per ISO weekday (1 = Monday .. 7 = Sunday).
  *
+ * Without working hours, every day expects 0, as on the timesheet that the payroll reads: no default schedule.
+ *
  * @param  DoliDB $db     Database handler
  * @param  int    $userId User ID
  * @return array<int,int> Map of ISO weekday (1..7) => expected working seconds
@@ -551,24 +553,9 @@ function dolisirh_pwa_get_user_schedule(DoliDB $db, int $userId): array
 	];
 
 	$schedule = [];
-	$totalSec = 0;
 	foreach ($dayKeys as $isoDay => $key) {
-		$mins               = dolisirh_working_hours_of_day($workingHours, $key);
-		$schedule[$isoDay]  = max(0, $mins * 60);
-		$totalSec          += $schedule[$isoDay];
-	}
-
-	if ($totalSec === 0) {
-		// Default fallback: 7h/day Monday to Friday
-		$schedule = [
-			1 => 7 * 3600,
-			2 => 7 * 3600,
-			3 => 7 * 3600,
-			4 => 7 * 3600,
-			5 => 7 * 3600,
-			6 => 0,
-			7 => 0,
-		];
+		$mins              = dolisirh_working_hours_of_day($workingHours, $key);
+		$schedule[$isoDay] = max(0, $mins * 60);
 	}
 
 	return $schedule;
@@ -927,6 +914,8 @@ function dolisirh_pwa_get_state(DoliDB $db, Translate $langs, User $user, string
 		'running'       => dolisirh_pwa_get_running($db, $conf, $user),
 		'quick_tasks'   => $quickTasks,
 		'week_days'     => $weekDays,
+		// Without working hours the expected time is 0: the page says so
+		'has_working_hours' => array_sum($schedule) > 0,
 		'hr_project'    => $hrProjectData,
 		'hr_tasks'      => [
 			'presence'          => $presenceTasks,
