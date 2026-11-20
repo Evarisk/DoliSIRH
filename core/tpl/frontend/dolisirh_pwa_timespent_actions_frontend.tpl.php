@@ -267,10 +267,11 @@ if ($action == 'pwa_add_timespent') {
 
 	dolisirh_pwa_ensure_contributor($db, $user, (int) $task->fk_project, (int) $task->id);
 
-	// The day at noon in the server timezone, the start at the clock time of the user
+	// The day at noon in the server timezone, the start read as the core reads it: in $conf->tzuserinputkey, the server
+	// timezone unless MAIN_TZUSERINPUTKEY says otherwise
 	$dateParts = explode('-', $dateStr);
 	$dateTs    = dol_mktime(12, 0, 0, (int) $dateParts[1], (int) $dateParts[2], (int) $dateParts[0], 'tzserver');
-	$startTs   = $withHour ? (int) dol_mktime(intdiv($startMin, 60), $startMin % 60, 0, (int) $dateParts[1], (int) $dateParts[2], (int) $dateParts[0], 'tzuserrel') : 0;
+	$startTs   = $withHour ? (int) dol_mktime(intdiv($startMin, 60), $startMin % 60, 0, (int) $dateParts[1], (int) $dateParts[2], (int) $dateParts[0], $conf->tzuserinputkey) : 0;
 
 	$task->timespent_duration = $durationSec;
 	$task->timespent_note     = $note;

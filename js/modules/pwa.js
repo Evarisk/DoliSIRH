@@ -184,23 +184,63 @@ window.dolisirh.pwa.durationLabel = function(min) {
 };
 
 /**
- * Current clock time of the device, as HH:MM.
+ * Clock of now in the timezone of the clock times, as the core pages read them: the timezone of the server by
+ * default, the one of the user with MAIN_TZUSERINPUTKEY = tzuserrel (state.clock). The device clock when the
+ * browser cannot read that timezone.
+ *
+ * @returns {{date: string, hm: string, wallMs: number}} Day (YYYY-MM-DD), time (HH:MM), and the wall clock as a UTC timestamp
+ */
+window.dolisirh.pwa.inputClock = function() {
+	var pwa = window.dolisirh.pwa;
+	var now = new Date();
+	var timezone = (pwa.state && pwa.state.clock) ? pwa.state.clock.timezone : '';
+	var parts = null;
+
+	if (timezone && window.Intl && Intl.DateTimeFormat) {
+		try {
+			parts = {};
+			new Intl.DateTimeFormat('en-GB', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now).forEach(function(part) {
+				parts[part.type] = part.value;
+			});
+		} catch (e) {
+			parts = null;
+		}
+	}
+	if (!parts || !parts.year) {
+		parts = {
+			year: String(now.getFullYear()),
+			month: String(now.getMonth() + 1).padStart(2, '0'),
+			day: String(now.getDate()).padStart(2, '0'),
+			hour: String(now.getHours()).padStart(2, '0'),
+			minute: String(now.getMinutes()).padStart(2, '0'),
+		};
+	}
+	// Some browsers write midnight 24:00
+	var hour = parts.hour === '24' ? '00' : parts.hour;
+
+	return {
+		date: parts.year + '-' + parts.month + '-' + parts.day,
+		hm: hour + ':' + parts.minute,
+		wallMs: Date.UTC(parseInt(parts.year, 10), parseInt(parts.month, 10) - 1, parseInt(parts.day, 10), parseInt(hour, 10), parseInt(parts.minute, 10), 0),
+	};
+};
+
+/**
+ * Current clock time, as HH:MM, in the timezone of the clock times.
  *
  * @returns {string}
  */
 window.dolisirh.pwa.nowHM = function() {
-	var d = new Date();
-	return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+	return window.dolisirh.pwa.inputClock().hm;
 };
 
 /**
- * Today on the device, as YYYY-MM-DD.
+ * Today, as YYYY-MM-DD, in the timezone of the clock times.
  *
  * @returns {string}
  */
 window.dolisirh.pwa.localToday = function() {
-	var d = new Date();
-	return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+	return window.dolisirh.pwa.inputClock().date;
 };
 
 /**
@@ -602,7 +642,7 @@ window.dolisirh.pwa.resetStart = function() {
 };
 
 /**
- * Whether the selected day is today on the device.
+ * Whether the selected day is today, in the timezone of the clock times.
  *
  * @returns {boolean}
  */
@@ -658,7 +698,7 @@ window.dolisirh.pwa.findRunning = function(taskId) {
 };
 
 /**
- * Minutes elapsed since a running entry started, on the clock of the device.
+ * Minutes elapsed since a running entry started, both read on the clock of the timezone of the clock times.
  *
  * @param {Object} entry Running entry (date, start_hm)
  * @returns {number}
@@ -666,8 +706,8 @@ window.dolisirh.pwa.findRunning = function(taskId) {
 window.dolisirh.pwa.elapsedMinutes = function(entry) {
 	var day = String(entry.date).split('-');
 	var time = String(entry.start_hm).split(':');
-	var start = new Date(parseInt(day[0], 10), parseInt(day[1], 10) - 1, parseInt(day[2], 10), parseInt(time[0], 10), parseInt(time[1], 10), 0);
-	return Math.floor((Date.now() - start.getTime()) / 60000);
+	var startMs = Date.UTC(parseInt(day[0], 10), parseInt(day[1], 10) - 1, parseInt(day[2], 10), parseInt(time[0], 10), parseInt(time[1], 10), 0);
+	return Math.floor((window.dolisirh.pwa.inputClock().wallMs - startMs) / 60000);
 };
 
 /**
