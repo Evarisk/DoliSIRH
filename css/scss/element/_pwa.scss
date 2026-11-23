@@ -266,22 +266,24 @@
 			pointer-events: none;
 		}
 
+		// Time spent colors of the module setup, as the days band of the timesheet:
+		// over = exceeded, ko = not exceeded or not clocked, ok = perfect
 		&.cal-day-ok {
-			background: #dcfce7;
-			border-color: #4ade80;
-			color: #14532d;
+			background: var(--dolisirh-perfect-tint, #dcfce7);
+			border-color: var(--dolisirh-perfect, #4ade80);
+			color: var(--dolisirh-perfect-text, #14532d);
 		}
 
 		&.cal-day-over {
-			background: #ffedd5;
-			border-color: #fb923c;
-			color: #7c2d12;
+			background: var(--dolisirh-exceeded-tint, #fee2e2);
+			border-color: var(--dolisirh-exceeded, #f87171);
+			color: var(--dolisirh-exceeded-text, #7f1d1d);
 		}
 
 		&.cal-day-ko {
-			background: #fee2e2;
-			border-color: #f87171;
-			color: #7f1d1d;
+			background: var(--dolisirh-not-exceeded-tint, #ffedd5);
+			border-color: var(--dolisirh-not-exceeded, #fb923c);
+			color: var(--dolisirh-not-exceeded-text, #7c2d12);
 		}
 
 		&.cal-day-grey {
@@ -394,12 +396,13 @@
 			}
 
 			b.is-ok {
-				color: #16a34a;
+				color: var(--dolisirh-perfect-text, #16a34a);
 				font-weight: 800;
 			}
 
+			// Time missing on the day: not exceeded or not clocked
 			b.is-ko {
-				color: #dc2626;
+				color: var(--dolisirh-not-exceeded-text, #c2410c);
 				font-weight: 800;
 			}
 		}
@@ -877,15 +880,15 @@
 			display: inline-block;
 
 			&.is-ok {
-				background: #22c55e;
+				background: var(--dolisirh-perfect, #22c55e);
 			}
 
 			&.is-over {
-				background: #fb923c;
+				background: var(--dolisirh-exceeded, #ef4444);
 			}
 
 			&.is-ko {
-				background: #ef4444;
+				background: var(--dolisirh-not-exceeded, #fb923c);
 			}
 
 			&.is-grey {

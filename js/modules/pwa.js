@@ -184,23 +184,63 @@ window.dolisirh.pwa.durationLabel = function(min) {
 };
 
 /**
- * Current clock time of the device, as HH:MM.
+ * Clock of now in the timezone of the clock times, as the core pages read them: the timezone of the server by
+ * default, the one of the user with MAIN_TZUSERINPUTKEY = tzuserrel (state.clock). The device clock when the
+ * browser cannot read that timezone.
+ *
+ * @returns {{date: string, hm: string, wallMs: number}} Day (YYYY-MM-DD), time (HH:MM), and the wall clock as a UTC timestamp
+ */
+window.dolisirh.pwa.inputClock = function() {
+	var pwa = window.dolisirh.pwa;
+	var now = new Date();
+	var timezone = (pwa.state && pwa.state.clock) ? pwa.state.clock.timezone : '';
+	var parts = null;
+
+	if (timezone && window.Intl && Intl.DateTimeFormat) {
+		try {
+			parts = {};
+			new Intl.DateTimeFormat('en-GB', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now).forEach(function(part) {
+				parts[part.type] = part.value;
+			});
+		} catch (e) {
+			parts = null;
+		}
+	}
+	if (!parts || !parts.year) {
+		parts = {
+			year: String(now.getFullYear()),
+			month: String(now.getMonth() + 1).padStart(2, '0'),
+			day: String(now.getDate()).padStart(2, '0'),
+			hour: String(now.getHours()).padStart(2, '0'),
+			minute: String(now.getMinutes()).padStart(2, '0'),
+		};
+	}
+	// Some browsers write midnight 24:00
+	var hour = parts.hour === '24' ? '00' : parts.hour;
+
+	return {
+		date: parts.year + '-' + parts.month + '-' + parts.day,
+		hm: hour + ':' + parts.minute,
+		wallMs: Date.UTC(parseInt(parts.year, 10), parseInt(parts.month, 10) - 1, parseInt(parts.day, 10), parseInt(hour, 10), parseInt(parts.minute, 10), 0),
+	};
+};
+
+/**
+ * Current clock time, as HH:MM, in the timezone of the clock times.
  *
  * @returns {string}
  */
 window.dolisirh.pwa.nowHM = function() {
-	var d = new Date();
-	return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+	return window.dolisirh.pwa.inputClock().hm;
 };
 
 /**
- * Today on the device, as YYYY-MM-DD.
+ * Today, as YYYY-MM-DD, in the timezone of the clock times.
  *
  * @returns {string}
  */
 window.dolisirh.pwa.localToday = function() {
-	var d = new Date();
-	return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+	return window.dolisirh.pwa.inputClock().date;
 };
 
 /**
@@ -602,7 +642,7 @@ window.dolisirh.pwa.resetStart = function() {
 };
 
 /**
- * Whether the selected day is today on the device.
+ * Whether the selected day is today, in the timezone of the clock times.
  *
  * @returns {boolean}
  */
@@ -658,7 +698,7 @@ window.dolisirh.pwa.findRunning = function(taskId) {
 };
 
 /**
- * Minutes elapsed since a running entry started, on the clock of the device.
+ * Minutes elapsed since a running entry started, both read on the clock of the timezone of the clock times.
  *
  * @param {Object} entry Running entry (date, start_hm)
  * @returns {number}
@@ -666,8 +706,8 @@ window.dolisirh.pwa.findRunning = function(taskId) {
 window.dolisirh.pwa.elapsedMinutes = function(entry) {
 	var day = String(entry.date).split('-');
 	var time = String(entry.start_hm).split(':');
-	var start = new Date(parseInt(day[0], 10), parseInt(day[1], 10) - 1, parseInt(day[2], 10), parseInt(time[0], 10), parseInt(time[1], 10), 0);
-	return Math.floor((Date.now() - start.getTime()) / 60000);
+	var startMs = Date.UTC(parseInt(day[0], 10), parseInt(day[1], 10) - 1, parseInt(day[2], 10), parseInt(time[0], 10), parseInt(time[1], 10), 0);
+	return Math.floor((window.dolisirh.pwa.inputClock().wallMs - startMs) / 60000);
 };
 
 /**
@@ -1245,7 +1285,11 @@ window.dolisirh.pwa.renderHrTopBars = function() {
 };
 
 /**
- * Render the 5-day week strip (Monday to Friday) for Semaine and Projet modes.
+ * Render the 5-day week strip (Monday to Friday) for the Semaine and Pointer modes.
+ *
+ * The Pointer tab clocks the HR presence too: with presence tasks in the HR project, its days count what the
+ * timesheet counts, presence and absence, as the Semaine tab. Without any (HR project 1.x, presence clocked on
+ * the projects), they count the time of the projects.
  *
  * @returns {void}
  */
@@ -1257,7 +1301,8 @@ window.dolisirh.pwa.renderWeekBar = function() {
 		return;
 	}
 
-	var isProjectMode = (pwa.mode === 'project');
+	var hasPresenceTasks = !!(st.hr_tasks && Array.isArray(st.hr_tasks.presence) && st.hr_tasks.presence.length > 0);
+	var countsProjects = (pwa.mode === 'project') && !hasPresenceTasks;
 	var todayStr = st.today;
 	var selectedDateStr = st.selected_date;
 
@@ -1266,10 +1311,10 @@ window.dolisirh.pwa.renderWeekBar = function() {
 		var presSec = Number(day.pres_sec) || 0;
 		var absSec = Number(day.abs_sec) || 0;
 		var projSec = Number(day.proj_sec) || 0;
-		var totalDaySec = isProjectMode ? projSec : (presSec + absSec);
+		var totalDaySec = countsProjects ? projSec : (presSec + absSec);
 
 		var stateClass = 'cal-day-grey';
-		if (isProjectMode) {
+		if (countsProjects) {
 			if (expectedSec > 0 && projSec >= expectedSec) {
 				stateClass = 'cal-day-ok';
 			} else if (day.date <= todayStr && expectedSec > 0 && projSec < expectedSec) {
@@ -1287,7 +1332,7 @@ window.dolisirh.pwa.renderWeekBar = function() {
 
 		var paText = '-';
 		var paClass = 'is-none';
-		if (isProjectMode) {
+		if (countsProjects) {
 			if (projSec > 0) {
 				paText = 'P';
 				paClass = 'is-p';
@@ -1306,7 +1351,7 @@ window.dolisirh.pwa.renderWeekBar = function() {
 		}
 
 		var durStr;
-		if (isProjectMode) {
+		if (countsProjects) {
 			durStr = projSec > 0 ? pwa.secToHM(projSec) : '00:00';
 		} else {
 			durStr = (stateClass === 'cal-day-grey')
@@ -1363,24 +1408,31 @@ window.dolisirh.pwa.renderHrTaskCards = function() {
 	var totalLoggedSec = presSec + absSec;
 	var remainingDaySec = Math.max(0, expectedSec - totalLoggedSec);
 
-	var expectedPresSec = Math.max(0, expectedSec - absSec);
+	var presTasks = (st.hr_tasks && st.hr_tasks.presence) ? st.hr_tasks.presence : [];
+	var absTasks = (st.hr_tasks && st.hr_tasks.absence) ? st.hr_tasks.absence : [];
+
+	// A public holiday keeps its expected time, as on the timesheet document: the public holiday absence task justifies it
+	var publicHolidayTaskId = Number((st.hr_tasks && st.hr_tasks.public_holiday_id) || 0);
+	var isHolidayOff = !!dayData.is_public_holiday && presSec === 0 && absTasks.some(function(t) { return Number(t.id) === publicHolidayTaskId; });
+
+	var expectedPresSec = isHolidayOff ? 0 : Math.max(0, expectedSec - absSec);
 	var diffPresSec = Math.max(0, expectedPresSec - presSec);
 	var isPresOk = (diffPresSec === 0);
 
-	var expectedAbsSec = (presSec === 0 && absSec > 0) ? expectedSec : 0;
+	var expectedAbsSec = (presSec === 0 && (absSec > 0 || isHolidayOff)) ? expectedSec : 0;
 	var diffAbsSec = Math.max(0, expectedAbsSec - absSec);
 	var isAbsOk = (diffAbsSec === 0);
-
-	var presTasks = (st.hr_tasks && st.hr_tasks.presence) ? st.hr_tasks.presence : [];
-	var absTasks = (st.hr_tasks && st.hr_tasks.absence) ? st.hr_tasks.absence : [];
 
 	var renderCard = function(task, idx, isPresenceSection) {
 		var entries = (dayData.hr_entries && dayData.hr_entries[task.id]) ? dayData.hr_entries[task.id] : [];
 		var loggedTaskSec = entries.reduce(function(sum, e) { return sum + (Number(e.duration) || 0); }, 0);
 		var isDone = (loggedTaskSec > 0);
 
+		// The time left goes to the first presence task, or to the public holiday task on a public holiday
+		var takesRemaining = isHolidayOff ? (!isPresenceSection && Number(task.id) === publicHolidayTaskId) : (isPresenceSection && idx === 0);
+
 		var defaultHm = '00:00';
-		if (isPresenceSection && idx === 0 && !isDone && remainingDaySec > 0) {
+		if (takesRemaining && !isDone && remainingDaySec > 0) {
 			defaultHm = pwa.secToHM(remainingDaySec);
 		} else if (isDone) {
 			defaultHm = pwa.secToHM(loggedTaskSec);

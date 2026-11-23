@@ -191,9 +191,10 @@ class TimeSheet extends SaturneObject
     public $date_end;
 
     /**
-     * @var string Description.
+     * @var string Description, empty by default : createCommon() reads every field, a typed property left uninitialized
+     *             would stop the creation of a timesheet whose description was not given (#841)
      */
-    public string $description;
+    public string $description = '';
 
     /**
      * @var string Public note.
@@ -308,7 +309,8 @@ class TimeSheet extends SaturneObject
     /**
      * Expected, passed and spent time of the assigned user over the timesheet period, and the difference.
      *
-     * Only the HR project tasks count, presence and absence, as in the timesheet document.
+     * Only the HR project tasks count, presence and absence, as in the timesheet document. A public holiday keeps the working
+     * hours of its weekday in the expected time, justified by the public holiday task (dolisirh_get_day_availability()).
      *
      * @return array<string,mixed> Keys planned, passed, spent and difference (minutes) of load_time_spending_infos_within_range(),
      *                             and outside_working_hours_days: days with time spent but no working hours (check_time_spent_outside_working_hours())
@@ -330,13 +332,7 @@ class TimeSheet extends SaturneObject
         $daysInRange   = dolisirh_num_between_days($firstDay, $lastDay, 1);
         for ($dayIndex = 0; $dayIndex < $daysInRange; $dayIndex++) {
             $day = dolisirh_add_days($firstDay, $dayIndex);
-            if (is_day_available($day, (int) $this->fk_user_assign)) {
-                $daysAvailable[$day] = ['morning' => 1, 'afternoon' => 1];
-            } elseif (date('N', $day) >= 6) {
-                $daysAvailable[$day] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
-            } else {
-                $daysAvailable[$day] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
-            }
+            $daysAvailable[$day] = dolisirh_get_day_availability($day, (int) $this->fk_user_assign);
         }
 
         $workingHours = new Workinghours($this->db);
@@ -356,6 +352,7 @@ class TimeSheet extends SaturneObject
      *
      * Validated, signed by all the signatories, no difference between the expected and the spent time and no time
      * spent on a day without working hours, unless DOLISIRH_ALLOW_DIFFERENCE_BETWEEN_PASSED_AND_WORKING_HOURS is set.
+     * A public holiday is expected, as on the timesheet document: the public holiday task must be clocked on it.
      *
      * @param  array<string,mixed>|null $timeSpendingInfos Result of getTimeSpendingInfos() when the caller already has it
      * @return bool                                        True if the timesheet can be locked
