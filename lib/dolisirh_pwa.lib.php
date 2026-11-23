@@ -469,6 +469,32 @@ function dolisirh_pwa_get_recent_tasks(DoliDB $db, int $userId, int $hrProjectId
 }
 
 /**
+ * Timezone of the clock times typed and read in the PWA: the one of the core pages, $conf->tzuserinputkey.
+ *
+ * The core reads and shows the hours of a time spent in the timezone of the server by default, in the timezone of the
+ * user with MAIN_TZUSERINPUTKEY = tzuserrel (the one of the browser at login). The PWA follows it, so that a time
+ * entry shows the same hour in the app and on the task.
+ *
+ * @param  Conf   $conf Dolibarr configuration
+ * @return string       Timezone identifier, e.g. Europe/Paris
+ */
+function dolisirh_pwa_input_timezone(Conf $conf): string
+{
+	$timezone = (string) @date_default_timezone_get();
+	if (in_array($conf->tzuserinputkey, ['tzuser', 'tzuserrel'], true) && !empty($_SESSION['dol_tz_string'])) {
+		$timezone = (string) $_SESSION['dol_tz_string'];
+	}
+
+	try {
+		new DateTimeZone($timezone);
+	} catch (Exception $e) {
+		$timezone = (string) @date_default_timezone_get();
+	}
+
+	return $timezone;
+}
+
+/**
  * Format seconds as HH:MM (e.g. 25200 -> 07:00).
  *
  * @param  int    $seconds Duration in seconds
@@ -505,6 +531,8 @@ function dolisirh_pwa_parse_hm_to_seconds(string $hm): int
 /**
  * Get the user's daily working schedule in seconds per ISO weekday (1 = Monday .. 7 = Sunday).
  *
+ * Without working hours, every day expects 0, as on the timesheet that the payroll reads: no default schedule.
+ *
  * @param  DoliDB $db     Database handler
  * @param  int    $userId User ID
  * @return array<int,int> Map of ISO weekday (1..7) => expected working seconds
@@ -525,24 +553,9 @@ function dolisirh_pwa_get_user_schedule(DoliDB $db, int $userId): array
 	];
 
 	$schedule = [];
-	$totalSec = 0;
 	foreach ($dayKeys as $isoDay => $key) {
-		$mins               = dolisirh_working_hours_of_day($workingHours, $key);
-		$schedule[$isoDay]  = max(0, $mins * 60);
-		$totalSec          += $schedule[$isoDay];
-	}
-
-	if ($totalSec === 0) {
-		// Default fallback: 7h/day Monday to Friday
-		$schedule = [
-			1 => 7 * 3600,
-			2 => 7 * 3600,
-			3 => 7 * 3600,
-			4 => 7 * 3600,
-			5 => 7 * 3600,
-			6 => 0,
-			7 => 0,
-		];
+		$mins              = dolisirh_working_hours_of_day($workingHours, $key);
+		$schedule[$isoDay] = max(0, $mins * 60);
 	}
 
 	return $schedule;
@@ -564,6 +577,8 @@ function dolisirh_pwa_get_user_schedule(DoliDB $db, int $userId): array
  */
 function dolisirh_pwa_load_days_range(DoliDB $db, Translate $langs, int $userId, string $startDate, string $endDate, array $schedule, array $presenceTaskIds, array $absenceTaskIds, int $hrProjectId): array
 {
+	global $conf;
+
 	$startParts = explode('-', $startDate);
 	$endParts   = explode('-', $endDate);
 	$startTs    = dol_mktime(0, 0, 0, (int) $startParts[1], (int) $startParts[2], (int) $startParts[0], 'tzserver');
@@ -575,25 +590,30 @@ function dolisirh_pwa_load_days_range(DoliDB $db, Translate $langs, int $userId,
 		$dayKey          = date('Y-m-d', $cursor);
 		$isoDay          = (int) date('N', $cursor);
 		$isWeekEnd       = $isoDay >= 6;
+		// num_public_holiday() reads its dates in GMT, and counts the week-end too: weekdays only
 		$gmtDay          = dol_mktime(0, 0, 0, (int) date('m', $cursor), (int) date('d', $cursor), (int) date('Y', $cursor), 'gmt');
 		$isPublicHoliday = !$isWeekEnd && num_public_holiday($gmtDay, $gmtDay + 86400) > 0;
-		$expectedSec     = ($isWeekEnd || $isPublicHoliday) ? 0 : ($schedule[$isoDay] ?? 0);
+		// Same rule as the timesheet document, which the payroll reads: the working hours of the weekday,
+		// a public holiday is not removed from them but justified by the public holiday absence task.
+		// Without that task, nothing could justify it: it is not expected.
+		$expectedSec     = ($isPublicHoliday && !dolisirh_is_public_holiday_expected()) ? 0 : ($schedule[$isoDay] ?? 0);
 
 		$dayName = dol_strtoupper(dol_substr(dol_print_date($cursor, '%a', 'tzserver', $langs), 0, 3));
 
 		$days[$dayKey] = [
-			'date'         => $dayKey,
-			'iso_day'      => $isoDay,
-			'day_name'     => $dayName,
-			'dd'           => date('d', $cursor),
-			'mm_yyyy'      => date('m/Y', $cursor),
-			'dmy'          => date('d/m/Y', $cursor),
-			'expected_sec' => $expectedSec,
-			'pres_sec'     => 0,
-			'abs_sec'      => 0,
-			'proj_sec'     => 0,
-			'hr_entries'   => [],
-			'proj_entries' => [],
+			'date'              => $dayKey,
+			'iso_day'           => $isoDay,
+			'day_name'          => $dayName,
+			'dd'                => date('d', $cursor),
+			'mm_yyyy'           => date('m/Y', $cursor),
+			'dmy'               => date('d/m/Y', $cursor),
+			'expected_sec'      => $expectedSec,
+			'is_public_holiday' => $isPublicHoliday,
+			'pres_sec'          => 0,
+			'abs_sec'           => 0,
+			'proj_sec'          => 0,
+			'hr_entries'        => [],
+			'proj_entries'      => [],
 		];
 
 		$cursor = dolisirh_add_days($cursor, 1);
@@ -623,7 +643,8 @@ function dolisirh_pwa_load_days_range(DoliDB $db, Translate $langs, int $userId,
 				continue;
 			}
 
-			// Entries saved with a start hour are shown as a time range, the others by their duration only
+			// Entries saved with a start hour are shown as a time range, the others by their duration only.
+			// The hours read in the timezone of the core pages, as they are typed.
 			$startTs = !empty($obj->element_date_withhour) ? $db->jdate($obj->element_datehour) : 0;
 
 			$entry = [
@@ -636,8 +657,8 @@ function dolisirh_pwa_load_days_range(DoliDB $db, Translate $langs, int $userId,
 				'project_title' => (string) $obj->project_title,
 				'duration'      => $duration,
 				'duration_hm'   => dolisirh_pwa_format_hm($duration),
-				'start_hm'      => $startTs > 0 ? dol_print_date($startTs, '%H:%M', 'tzuserrel') : '',
-				'end_hm'        => $startTs > 0 ? dol_print_date($startTs + $duration, '%H:%M', 'tzuserrel') : '',
+				'start_hm'      => $startTs > 0 ? dol_print_date($startTs, '%H:%M', $conf->tzuserinputkey) : '',
+				'end_hm'        => $startTs > 0 ? dol_print_date($startTs + $duration, '%H:%M', $conf->tzuserinputkey) : '',
 				'is_hr'         => $hrProjectId > 0 && $projectId === $hrProjectId,
 				'note'          => trim((string) $obj->note),
 				'date'          => $dayKey,
@@ -701,8 +722,8 @@ function dolisirh_pwa_get_state(DoliDB $db, Translate $langs, User $user, string
 {
 	global $conf;
 
-	$todayTs  =dol_mktime(0, 0, 0, (int) date('m'), (int) date('d'), (int) date('Y'), 'tzserver');
-	$todayStr = date('Y-m-d', $todayTs);
+	// Today in the timezone of the clock times, as the clock of the app
+	$todayStr = dol_print_date(dol_now(), 'dayrfc', $conf->tzuserinputkey);
 
 	if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selectedDateStr)) {
 		$selectedDateStr = $todayStr;
@@ -883,15 +904,24 @@ function dolisirh_pwa_get_state(DoliDB $db, Translate $langs, User $user, string
 
 	return [
 		'today'         => $todayStr,
+		// The app follows the clock of this timezone: current time, today, time elapsed of a running entry
+		'clock'         => [
+			'timezone' => dolisirh_pwa_input_timezone($conf),
+			'key'      => (string) $conf->tzuserinputkey,
+		],
 		'selected_date' => $selectedDateStr,
 		'selected_day'  => $selectedDay,
 		'running'       => dolisirh_pwa_get_running($db, $conf, $user),
 		'quick_tasks'   => $quickTasks,
 		'week_days'     => $weekDays,
+		// Without working hours the expected time is 0: the page says so
+		'has_working_hours' => array_sum($schedule) > 0,
 		'hr_project'    => $hrProjectData,
 		'hr_tasks'      => [
-			'presence' => $presenceTasks,
-			'absence'  => $absenceTasks,
+			'presence'          => $presenceTasks,
+			'absence'           => $absenceTasks,
+			// A public holiday is justified by this absence task, as on the timesheet document
+			'public_holiday_id' => in_array(getDolGlobalInt('DOLISIRH_PUBLIC_HOLIDAY_TASK'), $absenceTaskIds, true) ? getDolGlobalInt('DOLISIRH_PUBLIC_HOLIDAY_TASK') : 0,
 		],
 		'sel_month'     => [
 			'ym'              => $selParts[0] . '-' . $selParts[1],

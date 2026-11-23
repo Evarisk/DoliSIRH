@@ -191,7 +191,8 @@ function load_planned_time_within_range(int $timestampStart, int $timestampEnd, 
     $daysInRange = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $newTimestampStart = dolisirh_add_days($timestampStart, $idw); // $firstdaytoshow is a date with hours = 0.
-        if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
+        // A working day, or a public holiday justified by the public holiday task, as on the timesheet document
+        if (dolisirh_is_day_expected($daysAvailable[$newTimestampStart] ?? [])) {
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
 
@@ -229,7 +230,7 @@ function load_passed_time_within_range(int $timestampStart, int $timestampEnd, $
     $daysInRange         = dolisirh_num_between_days($timestampStart, $timestampEnd);
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $newTimestampStart = dolisirh_add_days($timestampStart, $idw); // $firstdaytoshow is a date with hours = 0.
-        if ($daysAvailable[$newTimestampStart]['morning'] && $daysAvailable[$newTimestampStart]['afternoon']) {
+        if (dolisirh_is_day_expected($daysAvailable[$newTimestampStart] ?? [])) {
             $currentDay = date('l', $newTimestampStart);
             $currentDay = 'workinghours_' . strtolower($currentDay);
 
@@ -916,4 +917,27 @@ function dolisirh_add_time_spent(Task $task, User $user, int $dayTs, int $startT
     }
 
     return $timeSpentID;
+}
+
+/**
+ * Get the start of a time spent typed in the time spent modal of the back office: day of the cell, hour and minute typed.
+ *
+ * The hour is read in $conf->tzuserinputkey, as the core page projet/tasks/time.php and the PWA read it: the timezone of
+ * the server by default, the one of the user with MAIN_TZUSERINPUTKEY = tzuserrel. Added to the midnight of the server,
+ * it was read in the timezone of the server whatever that setting.
+ *
+ * @param  int $dayTs  Day of the cell, at midnight in the timezone of the server.
+ * @param  int $hour   Hour typed (0 to 23).
+ * @param  int $minute Minute typed (0 to 59).
+ * @return int         Start of the time spent (timestamp), 0 when no hour is typed (00:00 too, as before).
+ */
+function dolisirh_get_time_spent_start(int $dayTs, int $hour, int $minute): int
+{
+    global $conf;
+
+    if ($hour <= 0 && $minute <= 0) {
+        return 0;
+    }
+
+    return (int) dol_mktime($hour, $minute, 0, (int) date('m', $dayTs), (int) date('d', $dayTs), (int) date('Y', $dayTs), $conf->tzuserinputkey);
 }

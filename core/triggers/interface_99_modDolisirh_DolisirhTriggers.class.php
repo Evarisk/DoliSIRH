@@ -59,8 +59,8 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $this->name        = preg_replace('/^Interface/i', '', get_class($this));
         $this->family      = 'demo';
         $this->description = 'DoliSIRH triggers.';
-        $this->version     = '23.2.0';
-        $this->picto       = 'dolisirh@dolisirh';
+        $this->version     = '23.2.1';
+        $this->picto       = 'dolisirh_color@dolisirh';
     }
 
     /**
@@ -165,16 +165,17 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                         return -1;
                     }
                 }
-                if ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && $object->fk_element > 0 && $object->elementtype == 'task' && !empty($object->datef)) {
+                // Since Dolibarr 23, the agenda links an event to a task with the element type project_task (task before)
+                $isTaskEvent = in_array($object->elementtype ?? '', ['task', 'project_task'], true);
+                if ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && $object->fk_element > 0 && $isTaskEvent && !empty($object->datef)) {
                     require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+                    require_once __DIR__ . '/../../lib/dolisirh_timespent.lib.php';
                     $task   = new Task($this->db);
                     $result = $task->fetch($object->fk_element);
                     if ($result > 0 && $task->id > 0) {
                         $contactsOfTask = $task->getListContactId();
                         if (in_array($user->id, $contactsOfTask)) {
-                            $task->timespent_date     = dol_print_date($object->datep,'standard', 'tzuser');
-                            $task->timespent_withhour = 1;
-                            $task->timespent_note     = $langs->trans('TimeSpentAutoCreate', $object->id) . '<br>' . $object->label . '<br>' . $object->note_private;
+                            $task->timespent_note     = $langs->transnoentities('TimeSpentAutoCreate', (string) $object->id) . '<br>' . $object->label . '<br>' . $object->note_private;
                             $task->timespent_duration = $object->datef - $object->datep;
                             $task->timespent_fk_user  = $user->id;
 
@@ -182,7 +183,8 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                             $nameMessage = $task->ref;
 
                             if ($task->timespent_duration > 0) {
-                                $result = $task->addTimeSpent($user);
+                                // The start of the event itself: as a text in the timezone of the user, it was read back as GMT
+                                $result = dolisirh_add_time_spent($task, $user, (int) $object->datep, (int) $object->datep);
                             } else {
                                 $result = -1;
                                 $task->error = $langs->trans('ErrorTimeSpentDurationCantBeNegative');
@@ -210,7 +212,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                         }
                         return -1;
                     }
-                } elseif ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && $object->elementtype != 'task') {
+                } elseif ($object->element == 'action' && !empty($object->array_options['options_timespent']) && $object->array_options['options_timespent'] == 1 && !$isTaskEvent) {
                     if (!headers_sent()) {
                         setEventMessages('MissingTaskWithTimeSpentOption', $object->errors, 'errors');
                     }
@@ -277,7 +279,14 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
 
                     $userTmp->fetch($object->fk_user_assign);
                     $signatory->setSignatory($object->id, $object->element, 'user', [$object->fk_user_assign], 'Signatory');
-                    $signatory->setSignatory($object->id, $object->element, 'user', [$userTmp->fk_user], 'Responsible');
+
+                    // The responsible is the supervisor of the user card: without one, only the employee would sign
+                    if ((int) $userTmp->fk_user > 0) {
+                        $signatory->setSignatory($object->id, $object->element, 'user', [(int) $userTmp->fk_user], 'Responsible');
+                    } elseif (!headers_sent()) {
+                        $langs->load('dolisirh@dolisirh');
+                        setEventMessages($langs->trans('TimeSheetNoResponsible', $userTmp->getFullName($langs)), [], 'warnings');
+                    }
                 }
 
                 if (getDolGlobalInt('DOLISIRH_PRODUCT_SERVICE_SET')) {
@@ -345,8 +354,10 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
             // VALIDATE
             case 'TIMESHEET_VALIDATE' :
             case 'CERTIFICATE_VALIDATE' :
+                // A validation trigger runs before the object takes its final ref, kept meanwhile in newref, as in Dolibarr core:
+                // the event is labelled with it, not with the (PROVn) one
                 $actioncomm->code  = 'AC_' . strtoupper($object->element) . '_VALIDATE';
-                $actioncomm->label = $langs->trans('ObjectValidateTrigger', $langs->transnoentities(ucfirst($object->element)), $object->ref);
+                $actioncomm->label = $langs->trans('ObjectValidateTrigger', $langs->transnoentities(ucfirst($object->element)), !empty($object->newref) ? $object->newref : $object->ref);
                 $actioncomm->create($user);
                 break;
 

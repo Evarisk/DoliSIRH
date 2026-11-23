@@ -131,22 +131,24 @@
       box-shadow: 0 0 0 2px #0f172a;
     }
 
+    // Time spent colors of the module setup (dolisirh_time_spent_color_vars()), its defaults otherwise:
+    // over = exceeded, ko = not exceeded or not clocked, ok = perfect
     &.cal-day-ok {
-      background: #dcfce7;
-      border-color: #22c55e;
-      color: #14532d !important;
+      background: var(--dolisirh-perfect-tint, #dcfce7);
+      border-color: var(--dolisirh-perfect, #22c55e);
+      color: var(--dolisirh-perfect-text, #14532d) !important;
     }
 
     &.cal-day-over {
-      background: #ffedd5;
-      border-color: #f97316;
-      color: #9a3412 !important;
+      background: var(--dolisirh-exceeded-tint, #fee2e2);
+      border-color: var(--dolisirh-exceeded, #ef4444);
+      color: var(--dolisirh-exceeded-text, #7f1d1d) !important;
     }
 
     &.cal-day-ko {
-      background: #fee2e2;
-      border-color: #ef4444;
-      color: #7f1d1d !important;
+      background: var(--dolisirh-not-exceeded-tint, #ffedd5);
+      border-color: var(--dolisirh-not-exceeded, #f97316);
+      color: var(--dolisirh-not-exceeded-text, #9a3412) !important;
     }
 
     &.cal-day-grey {
@@ -274,18 +276,18 @@
     font-weight: 800;
 
     &.cal-day-ok {
-      background: #16a34a;
-      color: #ffffff;
+      background: var(--dolisirh-perfect, #16a34a);
+      color: var(--dolisirh-perfect-contrast, #ffffff);
     }
 
     &.cal-day-over {
-      background: #ea580c;
-      color: #ffffff;
+      background: var(--dolisirh-exceeded, #dc2626);
+      color: var(--dolisirh-exceeded-contrast, #ffffff);
     }
 
     &.cal-day-ko {
-      background: #dc2626;
-      color: #ffffff;
+      background: var(--dolisirh-not-exceeded, #ea580c);
+      color: var(--dolisirh-not-exceeded-contrast, #ffffff);
     }
 
     &.cal-day-grey {
@@ -484,19 +486,20 @@
     cursor: pointer;
     transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 
+    // is-ko = exceeded, is-warn = not exceeded or not clocked, is-ok = perfect
     &.is-ok {
-      border-color: #86efac;
-      background: #f0fdf4;
+      border-color: var(--dolisirh-perfect, #86efac);
+      background: var(--dolisirh-perfect-tint, #f0fdf4);
     }
 
     &.is-warn {
-      border-color: #fdba74;
-      background: #fff7ed;
+      border-color: var(--dolisirh-not-exceeded, #fdba74);
+      background: var(--dolisirh-not-exceeded-tint, #fff7ed);
     }
 
     &.is-ko {
-      border-color: #fca5a5;
-      background: #fef2f2;
+      border-color: var(--dolisirh-exceeded, #fca5a5);
+      background: var(--dolisirh-exceeded-tint, #fef2f2);
     }
 
     &:hover {
