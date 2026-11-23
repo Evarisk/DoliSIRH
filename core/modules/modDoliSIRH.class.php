@@ -852,7 +852,16 @@ class modDoliSIRH extends DolibarrModules
             }
         }
 
-        return $this->_init([], $options);
+        $result = $this->_init([], $options);
+
+        // Files of the timesheets validated while they stayed under (PROVn) : moved back once the module is enabled,
+        // from Home > Modules as well, where nothing else does it (Saturne#1939). A Saturne without the function
+        // leaves them
+        if ($result > 0 && function_exists('saturne_recover_prov_directories')) {
+            saturne_recover_prov_directories($this->name);
+        }
+
+        return $result;
     }
 
     /**
