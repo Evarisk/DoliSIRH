@@ -191,9 +191,10 @@ class TimeSheet extends SaturneObject
     public $date_end;
 
     /**
-     * @var string Description.
+     * @var string Description, empty by default : createCommon() reads every field, a typed property left uninitialized
+     *             would stop the creation of a timesheet whose description was not given (#841)
      */
-    public string $description;
+    public string $description = '';
 
     /**
      * @var string Public note.
