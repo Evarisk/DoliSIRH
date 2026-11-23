@@ -22,8 +22,8 @@
 */
 
 // Load Dolibarr libraries.
+require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
-require_once DOL_DOCUMENT_ROOT . '/holiday/class/holiday.class.php';
 
 // Load DoliSIRH libraries.
 require_once __DIR__ . '/../class/workinghours.class.php';
@@ -91,29 +91,121 @@ function is_task_favorite(int $taskID, int $userID): int
 }
 
 /**
- * Check if day is available.
+ * Check if day is available: false on a week-end or a public holiday.
  *
- * @param  int      $date   timestamp.
- * @param  int      $userID User ID.
- * @return bool             false = not availability | true = availability.
+ * An approved leave does not make the day unavailable: it counts in the expected time, as on the timesheet document,
+ * and the employee justifies it with the leave task. The test meant to leave approved leaves out never did, since
+ * Holiday::verifDateHolidayForTimestamp() returns an array, always true: it is gone, with one query per day.
+ *
+ * @param  int  $date Timestamp.
+ * @return bool       false = not availability | true = availability.
  */
-function is_day_available(int $date, int $userID): bool
+function is_day_available(int $date): bool
 {
-    global $db;
-
     if (empty($date)) {
         dol_print_error('', 'Error date parameter is empty');
     }
 
-    $holiday = new Holiday($db);
+    $date            = dol_stringtotime(dol_print_date($date, 'standard'));
+    $isPublicHoliday = num_public_holiday($date, dol_time_plus_duree($date, 1, 'd'));
 
-    $statusOfHolidayToCheck = Holiday::STATUS_APPROVED;
+    return !$isPublicHoliday;
+}
 
-    $date               = dol_stringtotime(dol_print_date($date, 'standard'));
-    $isAvailableForUser = $holiday->verifDateHolidayForTimestamp($userID, $date, $statusOfHolidayToCheck);
-    $isPublicHoliday    = num_public_holiday($date, dol_time_plus_duree($date, 1,'d'));
+/**
+ * Get the public holiday task: the absence task that justifies a public holiday on the timesheet.
+ *
+ * @return int Task ID, 0 when the task is not set up or does not exist anymore.
+ */
+function dolisirh_get_public_holiday_task_id(): int
+{
+    global $db;
 
-    return $isAvailableForUser && !$isPublicHoliday;
+    static $existingTaskIDs = [];
+
+    $taskID = getDolGlobalInt('DOLISIRH_PUBLIC_HOLIDAY_TASK');
+    if ($taskID <= 0) {
+        return 0;
+    }
+
+    if (!isset($existingTaskIDs[$taskID])) {
+        $resql                    = $db->query('SELECT rowid FROM ' . MAIN_DB_PREFIX . 'projet_task WHERE rowid = ' . $taskID);
+        $existingTaskIDs[$taskID] = ($resql && $db->num_rows($resql) > 0) ? $taskID : 0;
+    }
+
+    return $existingTaskIDs[$taskID];
+}
+
+/**
+ * Does a public holiday count in the expected time?
+ *
+ * Rule of the timesheet document (#739): a public holiday keeps the working hours of its weekday and is justified by
+ * the public holiday task. Without that task, nothing can justify it: it is left out of the expected time.
+ *
+ * @return bool True when a public holiday counts in the expected time.
+ */
+function dolisirh_is_public_holiday_expected(): bool
+{
+    return dolisirh_get_public_holiday_task_id() > 0;
+}
+
+/**
+ * Is a weekday a public holiday?
+ *
+ * num_public_holiday() reads its dates in GMT and counts the week-end too: the day is read in GMT, week-end left out.
+ *
+ * @param  int  $date Day, in the timezone of the server.
+ * @return bool       True on a public holiday from Monday to Friday.
+ */
+function dolisirh_is_public_holiday(int $date): bool
+{
+    if ((int) date('N', $date) >= 6) {
+        return false;
+    }
+
+    $gmtDay = dol_mktime(0, 0, 0, (int) date('m', $date), (int) date('d', $date), (int) date('Y', $date), 'gmt');
+
+    return num_public_holiday($gmtDay, $gmtDay + 86400) > 0;
+}
+
+/**
+ * Get the availability of a user on a day, as the expected time counts it.
+ *
+ * Entry of the $daysAvailable arrays: morning and afternoon available on a working day, otherwise the reason of the
+ * day off (week_end, public_holiday), which greys the day. A public holiday stays a day off, greyed, but keeps the
+ * working hours of its weekday in the expected time ('expected') when the public holiday task can justify it.
+ *
+ * @param  int   $date   Day, at midnight in the timezone of the server.
+ * @param  int   $userID User ID. Their approved leaves do not change the availability: see is_day_available().
+ * @return array         Availability of the day.
+ */
+function dolisirh_get_day_availability(int $date, int $userID): array
+{
+    if (is_day_available($date)) {
+        return ['morning' => 1, 'afternoon' => 1];
+    }
+
+    if ((int) date('N', $date) >= 6) {
+        return ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
+    }
+
+    $dayOff = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
+    if (dolisirh_is_public_holiday_expected() && dolisirh_is_public_holiday($date)) {
+        $dayOff['expected'] = true;
+    }
+
+    return $dayOff;
+}
+
+/**
+ * Does a day count in the expected time?
+ *
+ * @param  array $dayAvailability Availability of the day, from dolisirh_get_day_availability().
+ * @return bool                   True on a working day, or on a public holiday that keeps its working hours.
+ */
+function dolisirh_is_day_expected(array $dayAvailability): bool
+{
+    return (!empty($dayAvailability['morning']) && !empty($dayAvailability['afternoon'])) || !empty($dayAvailability['expected']);
 }
 
 /**

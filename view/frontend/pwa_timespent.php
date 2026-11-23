@@ -88,6 +88,9 @@ dolisirh_pwa_purge_temp_dirs($conf, $uploadToken);
 
 $initialState = dolisirh_pwa_get_state($db, $langs, $user, $selectedDate, $calMonth);
 
+// Same right as the working hours card for one's own working hours
+$canEditWorkingHours = $user->admin || $user->hasRight('dolisirh', 'workinghours', 'everyone') || $user->hasRight('dolisirh', 'workinghours', 'myworkinghours');
+
 // One-tap durations of the stop panel, in minutes: they set the end from the start
 $durationChips = [];
 foreach ([15, 30, 60, 120, 210, 420] as $minutes) {
@@ -128,7 +131,8 @@ $labels = [
 require_once __DIR__ . '/../../core/tpl/frontend/dolisirh_pwa_header.tpl.php';
 ?>
 
-<main class="dolisirh-pwa-main ts-card" id="dolisirh-pwa-app" data-ajax-url="<?php echo dol_escape_htmltag($_SERVER['PHP_SELF']); ?>">
+<?php // The day states and the legend take the time spent colors of the module setup, as the days band of the timesheet ?>
+<main class="dolisirh-pwa-main ts-card" id="dolisirh-pwa-app" data-ajax-url="<?php echo dol_escape_htmltag($_SERVER['PHP_SELF']); ?>" style="<?php echo dol_escape_htmltag(dolisirh_time_spent_color_vars()); ?>">
 	<input type="hidden" name="token" id="dolisirh-pwa-token" value="<?php echo newToken(); ?>">
 
 	<!-- 3-Tab Mode Switcher: Pointer / Semaine / Mensuel -->
@@ -149,6 +153,23 @@ require_once __DIR__ . '/../../core/tpl/frontend/dolisirh_pwa_header.tpl.php';
 
 	<!-- Status Toast Message -->
 	<div id="pwa-status-msg" class="ts-msg" hidden></div>
+
+	<?php if (empty($initialState['has_working_hours'])) : ?>
+		<?php // Without working hours the expected time is 0, as on the timesheet: said once, with the way out ?>
+		<div id="pwa-no-working-hours" class="wpeo-notice notice-warning">
+			<div class="notice-content">
+				<div class="notice-title"><?php echo $langs->trans('PwaNoWorkingHoursTitle'); ?></div>
+				<div class="notice-subtitle">
+					<?php echo $langs->trans('PwaNoWorkingHours'); ?>
+					<?php if ($canEditWorkingHours) : ?>
+						<a href="<?php echo dol_escape_htmltag(dol_buildpath('/dolisirh/view/workinghours_card.php', 1) . '?id=' . (int) $user->id); ?>" target="_blank"><?php echo $langs->trans('PwaNoWorkingHoursEdit'); ?></a>
+					<?php else : ?>
+						<?php echo $langs->trans('PwaNoWorkingHoursAsk'); ?>
+					<?php endif; ?>
+				</div>
+			</div>
+		</div>
+	<?php endif; ?>
 
 	<!-- HR Project Info & Monthly Summary (Semaine mode) -->
 	<div id="pwa-hr-top-bars">

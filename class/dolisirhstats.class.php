@@ -668,13 +668,7 @@ abstract class DoliSIRHStats
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
             $dayInLoop =  dolisirh_add_days($firstdaytoshow, $idw);
-            if (is_day_available($dayInLoop, $userID)) {
-                $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
-            } else if (date('N', $dayInLoop) >= 6) {
-                $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
-            } else {
-                $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday'];
-            }
+            $isavailable[$dayInLoop] = dolisirh_get_day_availability($dayInLoop, $userID);
         }
 
         $workinghours = new Workinghours($db);
@@ -764,13 +758,7 @@ abstract class DoliSIRHStats
             $isavailable = [];
             for ($idw = 0; $idw < $daysInMonth; $idw++) {
                 $dayInLoop =  dolisirh_add_days($firstdaytoshow, $idw);
-                if (is_day_available($dayInLoop, $userID)) {
-                    $isavailable[$dayInLoop] = ['morning'=>1, 'afternoon'=>1];
-                } else if (date('N', $dayInLoop) >= 6) {
-                    $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'week_end', 'afternoon_reason'=>'week_end'];
-                } else {
-                    $isavailable[$dayInLoop] = ['morning'=>false, 'afternoon'=>false, 'morning_reason'=>'public_holiday', 'afternoon_reason'=>'public_holiday'];
-                }
+                $isavailable[$dayInLoop] = dolisirh_get_day_availability($dayInLoop, $userID);
             }
 
             $planned_working_time = load_planned_time_within_range($firstdaytoshow, dolisirh_add_days($lastdayofmonth, 1), $workingHours, $isavailable);
@@ -838,14 +826,7 @@ abstract class DoliSIRHStats
         $isavailable = [];
         for ($idw = 0; $idw < $daysInMonth; $idw++) {
             $dayInLoop =  dolisirh_add_days($firstdaytoshow, $idw);
-            if (is_day_available($dayInLoop, $userID)) {
-                $isavailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
-            } else if (date('N', $dayInLoop) >= 6) {
-                $isavailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
-            } else {
-                $isavailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
-            }
-
+            $isavailable[$dayInLoop] = dolisirh_get_day_availability($dayInLoop, $userID);
         }
 
         $timeSpentOnTasks = load_time_spent_on_tasks_within_range($firstdaytoshow, dolisirh_add_days($lastdaytoshow, 1), $isavailable, $userID);

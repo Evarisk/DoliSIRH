@@ -64,12 +64,12 @@ class ActionsDoliSIRH
     /**
      * Overloading the doActions function : replacing the parent's function with the one below
      *
-     * @param  array  $parameters Hook metadata (context, etc...)
-     * @param  object $object     The object to process
-     * @param  string $action     Current action (if set). Generally create or edit or null
-     * @return int                0 < on error, 0 on success, 1 to replace standard code
+     * @param  array       $parameters Hook metadata (context, etc...)
+     * @param  object      $object     The object to process
+     * @param  string|null $action     Current action (if set). Generally create or edit or null
+     * @return int                     0 < on error, 0 on success, 1 to replace standard code
      */
-    public function doActions(array $parameters, $object, string $action): int
+    public function doActions(array $parameters, $object, ?string $action): int
     {
         global $conf, $langs, $user;
 
@@ -806,12 +806,12 @@ class ActionsDoliSIRH
 	/**
 	 * Overloading the formObjectOptions function : replacing the parent's function with the one below
 	 *
-	 * @param array  $parameters Hook metadata (context, etc...)
-	 * @param object $object     Object
-	 * @param string $action     Current action (if set). Generally create or edit or null
+	 * @param array       $parameters Hook metadata (context, etc...)
+	 * @param object      $object     Object
+	 * @param string|null $action     Current action (if set). Generally create or edit or null
 	 * @return void
 	 */
-	public function formObjectOptions(array $parameters, $object, string $action)
+	public function formObjectOptions(array $parameters, $object, ?string $action)
 	{
 		global $conf, $langs;
 
@@ -1203,7 +1203,7 @@ class ActionsDoliSIRH
 
         if ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {
             // Filter on categories.
-            if (isModEnabled('categorie') && $user->rights->categorie->lire) {
+            if (isModEnabled('categorie') && $user->hasRight('categorie', 'lire')) {
                 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formcategory.class.php';
                 $formCategory = new FormCategory($db);
                 switch ($this->getActiveContext($parameters, ['invoicelist', 'invoicereclist'])) {

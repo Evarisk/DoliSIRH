@@ -115,8 +115,8 @@ if (empty($resHook)) {
                 $task->timespent_fk_user  = (int) $object->fk_user_assign;
 
                 if ($task->timespent_duration > 0) {
-                    // The day at midnight, the start hour added to it when given
-                    dolisirh_add_time_spent($task, $user, $timestamp, ($dateHour > 0 || $dateMin > 0) ? $timestamp + ($dateHour * 3600) + ($dateMin * 60) : 0);
+                    // The day of the cell, the start hour read in the timezone of the core pages when given
+                    dolisirh_add_time_spent($task, $user, $timestamp, dolisirh_get_time_spent_start($timestamp, $dateHour, $dateMin));
                 }
             }
         }
@@ -135,7 +135,7 @@ saturne_header(0, '', $title, $help_url);
 if ($object->id > 0) {
     $object->fetch_optionals();
 
-    saturne_get_fiche_head($object, 'timespent', $title);
+    saturne_get_fiche_head($object, 'timesheet_timespent', $title);
     saturne_banner_tab($object);
 
     $userTmp->fetch((int) $object->fk_user_assign);
@@ -150,13 +150,7 @@ if ($object->id > 0) {
     $isAvailable = [];
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
-        if (is_day_available($dayInLoop, (int) $object->fk_user_assign)) {
-            $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
-        } elseif (date('N', $dayInLoop) >= 6) {
-            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
-        } else {
-            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
-        }
+        $isAvailable[$dayInLoop] = dolisirh_get_day_availability($dayInLoop, (int) $object->fk_user_assign);
     }
 
     $workingHours = $workingHours->fetchCurrentWorkingHours((int) $object->fk_user_assign, 'user');
@@ -181,8 +175,6 @@ if ($object->id > 0) {
     $timeSpendingInfos = load_time_spending_infos_within_range($firstDayToShow, dolisirh_add_days($lastDayToShow, 1), $workingHours, $isAvailable, (int) $object->fk_user_assign, $allHrTaskIDs);
     $timeSpentOnTasks  = $timeSpendingInfos['spent'];
     $plannedWorking    = $timeSpendingInfos['planned'];
-    $passedWorking     = $timeSpendingInfos['passed'];
-    $diffTotalMinutes  = $timeSpendingInfos['difference'];
 
     print '<div class="fichecenter">';
     print timesheet_render_daily_calendar($object, $firstDayToShow, $lastDayToShow, $workingHours);
@@ -254,6 +246,23 @@ if ($object->id > 0) {
         }
     }
 
+    // Time due each day: a day to come is not due yet, unless time is already clocked on it, as on the days band.
+    // The expected time of the whole period is the planned working hours row.
+    $today       = dol_mktime(0, 0, 0, (int) date('m'), (int) date('d'), (int) date('Y'), 'tzserver');
+    $dueSecByDay = [];
+    $totalDueSec = 0;
+    for ($idw = 0; $idw < $daysInRange; $idw++) {
+        $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
+        if ($dayInLoop > $today && $dailyConsumedByTaskGroup['all'][$idw] <= 0) {
+            $dueSecByDay[$idw] = null;
+            continue;
+        }
+
+        $passedHoursOnDay   = load_passed_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable);
+        $dueSecByDay[$idw]  = (int) $passedHoursOnDay['minutes'] * 60;
+        $totalDueSec       += $dueSecByDay[$idw];
+    }
+
     print '<tbody>';
 
     // HR Project banner row.
@@ -275,7 +284,7 @@ if ($object->id > 0) {
     $inc            = 0;
     $restrictBefore = null;
     if (getDolGlobalInt('PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS')) {
-        $restrictBefore = dol_time_plus_duree(dol_now(), -(int) $conf->global->PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS, 'm');
+        $restrictBefore = dol_time_plus_duree(dol_now(), -getDolGlobalInt('PROJECT_TIMESHEET_PREVENT_AFTER_MONTHS'), 'm');
     }
 
     $blocksToRender = [
@@ -437,17 +446,16 @@ if ($object->id > 0) {
     }
     print '</tr>';
 
-    // Row 2: Due working hours.
+    // Row 2: Due working hours, up to today.
     print '<tr class="liste_total planned-working-hours">';
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040; max-width: 250px; white-space: normal;">';
     print $langs->trans('TimeSheetExpectedTime');
     print '</td>';
-    print '<td class="liste_total right"><strong>' . (($passedWorking['minutes'] != 0) ? convertSecondToTime($passedWorking['minutes'] * 60, 'allhourmin') : '00:00') . '</strong></td>';
+    print '<td class="liste_total right"><strong>' . (($totalDueSec != 0) ? convertSecondToTime($totalDueSec, 'allhourmin') : '00:00') . '</strong></td>';
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $cellCSS          = '';
-        $dayInLoop        = dolisirh_add_days($firstDayToShow, $idw);
-        $passedHoursOnDay = load_passed_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable);
+        $cellCSS   = '';
+        $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
         if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
             if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                 $cellCSS = 'onholidayallday';
@@ -456,7 +464,11 @@ if ($object->id > 0) {
             }
         }
         print '<td class="liste_total ' . $idw . ' ' . $cellCSS . '" align="center">';
-        print (($passedHoursOnDay['minutes'] != 0) ? convertSecondToTime($passedHoursOnDay['minutes'] * 60, 'allhourmin') : '00:00') . '</td>';
+        if ($dueSecByDay[$idw] === null) {
+            print '<span class="opacitymedium">00:00</span></td>';
+        } else {
+            print (($dueSecByDay[$idw] != 0) ? convertSecondToTime($dueSecByDay[$idw], 'allhourmin') : '00:00') . '</td>';
+        }
     }
     print '</tr>';
 
@@ -466,7 +478,7 @@ if ($object->id > 0) {
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040; max-width: 250px; white-space: normal;">';
     print $langs->trans('ConsumedWorkingHours');
     print '</td>';
-    print '<td class="liste_total right"><strong>' . convertSecondToTime($totalConsumedSec, 'allhourmin') . '</strong></td>';
+    print '<td class="liste_total right"><strong>' . ($totalConsumedSec > 0 ? convertSecondToTime($totalConsumedSec, 'allhourmin') : '00:00') . '</strong></td>';
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
@@ -484,29 +496,34 @@ if ($object->id > 0) {
     }
     print '</tr>';
 
-    // Row 4: Difference between due & consumed working hours.
-    $diffTotalSec = $diffTotalMinutes * 60;
-    if ($diffTotalSec < 0) {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-    } elseif ($diffTotalSec > 0) {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-    } else {
-        $morecss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
-    }
+    // Row 4: Difference, logged minus expected as on the timesheet document and the days band (+ excess, - missing),
+    // in the colors of the module setup: time spent exceeded, time spent not exceeded or missing, perfect.
+    $exceededColor    = colorStringToArray(getDolGlobalString('DOLISIRH_EXCEEDED_TIME_SPENT_COLOR'));
+    $notExceededColor = colorStringToArray(getDolGlobalString('DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR'));
+    $perfectColor     = colorStringToArray(getDolGlobalString('DOLISIRH_PERFECT_TIME_SPENT_COLOR'));
+    $differenceCell   = static function (int $differenceSec) use ($exceededColor, $notExceededColor, $perfectColor): array {
+        if ($differenceSec > 0) {
+            return ['+' . convertSecondToTime($differenceSec, 'allhourmin'), $exceededColor];
+        }
+        if ($differenceSec < 0) {
+            return ['-' . convertSecondToTime(-$differenceSec, 'allhourmin'), $notExceededColor];
+        }
+
+        return ['00:00', $perfectColor];
+    };
+
+    // The difference of the period is spent minus due: a day to come counts once time is clocked on it
+    [$differenceLabel, $differenceColor] = $differenceCell($totalConsumedSec - $totalDueSec);
 
     print '<tr class="liste_total planned-working-difference">';
     print '<td class="liste_total" style="position: sticky; left: 0; background-color: var(--colorbacklineimpair2); z-index: 1040; max-width: 250px; white-space: normal;">';
     print $langs->trans('TimeSheetDifference');
     print '</td>';
-    print '<td class="liste_total right" style="color: rgb(' . $morecss[0] . ',' . $morecss[1] . ',' . $morecss[2] . ');"><strong>' . (($diffTotalSec != 0) ? convertSecondToTime(abs($diffTotalSec), 'allhourmin') : '00:00') . '</strong></td>';
+    print '<td class="liste_total right" style="color: rgb(' . (int) $differenceColor[0] . ',' . (int) $differenceColor[1] . ',' . (int) $differenceColor[2] . ');"><strong>' . $differenceLabel . '</strong></td>';
 
     for ($idw = 0; $idw < $daysInRange; $idw++) {
-        $cellCSS          = '';
-        $dayInLoop        = dolisirh_add_days($firstDayToShow, $idw);
-        $passedHoursOnDay = load_passed_time_within_range($dayInLoop, dolisirh_add_days($firstDayToShow, $idw + 1), $workingHours, $isAvailable);
-        $daySpentMinutes  = (int) floor($dailyConsumedByTaskGroup['all'][$idw] / 60);
-        $dayDiffMinutes   = (int) $passedHoursOnDay['minutes'] - $daySpentMinutes;
-
+        $cellCSS   = '';
+        $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
         if (!$isAvailable[$dayInLoop]['morning'] && !$isAvailable[$dayInLoop]['afternoon']) {
             if ($isAvailable[$dayInLoop]['morning_reason'] == 'public_holiday') {
                 $cellCSS = 'onholidayallday';
@@ -515,16 +532,17 @@ if ($object->id > 0) {
             }
         }
 
-        if ($dayDiffMinutes < 0) {
-            $dayCss = colorStringToArray($conf->global->DOLISIRH_EXCEEDED_TIME_SPENT_COLOR);
-        } elseif ($dayDiffMinutes > 0) {
-            $dayCss = colorStringToArray($conf->global->DOLISIRH_NOT_EXCEEDED_TIME_SPENT_COLOR);
-        } else {
-            $dayCss = colorStringToArray($conf->global->DOLISIRH_PERFECT_TIME_SPENT_COLOR);
+        // A day to come, not clocked yet: nothing to compare
+        if ($dueSecByDay[$idw] === null) {
+            print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS . '" align="center">';
+            print '<div class="' . $idw . '"><span class="opacitymedium">00:00</span></div></td>';
+            continue;
         }
 
-        print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS . '" align="center" style="color: rgb(' . $dayCss[0] . ',' . $dayCss[1] . ',' . $dayCss[2] . ');">';
-        print '<div class="' . $idw . '">' . (($dayDiffMinutes != 0) ? convertSecondToTime(abs($dayDiffMinutes * 60), 'allhourmin') : '00:00') . '</div></td>';
+        [$dayDifferenceLabel, $dayDifferenceColor] = $differenceCell((int) $dailyConsumedByTaskGroup['all'][$idw] - $dueSecByDay[$idw]);
+
+        print '<td class="liste_total bold ' . $idw . ' ' . $cellCSS . '" align="center" style="color: rgb(' . (int) $dayDifferenceColor[0] . ',' . (int) $dayDifferenceColor[1] . ',' . (int) $dayDifferenceColor[2] . ');">';
+        print '<div class="' . $idw . '">' . $dayDifferenceLabel . '</div></td>';
     }
     print '</tr>';
 

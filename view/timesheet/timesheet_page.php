@@ -180,7 +180,8 @@ print '<a class="ts-page-nav-btn" href="' . dol_buildpath('/dolisirh/view/timesh
 print '</div>';
 print '</div>';
 
-print '<div class="ts-emp-list">';
+// The employee cards take the time spent colors of the module setup, as the days bands
+print '<div class="ts-emp-list" style="' . dol_escape_htmltag(dolisirh_time_spent_color_vars()) . '">';
 
 foreach ($employees as $empID => $empUser) {
     $empTimeSheet = $timesheetsByUser[$empID] ?? null;
@@ -193,13 +194,7 @@ foreach ($employees as $empID => $empUser) {
     $isAvailable = [];
     for ($idw = 0; $idw < $daysInRange; $idw++) {
         $dayInLoop = dolisirh_add_days($firstDayToShow, $idw);
-        if (is_day_available($dayInLoop, $empID)) {
-            $isAvailable[$dayInLoop] = ['morning' => 1, 'afternoon' => 1];
-        } elseif ((int) date('N', $dayInLoop) >= 6) {
-            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'week_end', 'afternoon_reason' => 'week_end'];
-        } else {
-            $isAvailable[$dayInLoop] = ['morning' => false, 'afternoon' => false, 'morning_reason' => 'public_holiday', 'afternoon_reason' => 'public_holiday'];
-        }
+        $isAvailable[$dayInLoop] = dolisirh_get_day_availability($dayInLoop, $empID);
     }
 
     $empWorkingHours         = $workingHours->fetchCurrentWorkingHours($empID, 'user');
@@ -218,22 +213,24 @@ foreach ($employees as $empID => $empUser) {
     $spentHours   = ($workingTime['total'] != 0) ? convertSecondToTime($workingTime['total'], 'allhourmin') : '00:00';
     $diffHours    = ($diffTotalTime != 0) ? convertSecondToTime(abs($diffTotalTime * 60), 'allhourmin') : '00:00';
 
+    // Fewer days clocked than planned: not exceeded or not clocked; more days: exceeded
     if ($plannedDays > $spentDays) {
-        $morecssDays = $exceededColor;
-    } elseif ($plannedDays < $spentDays) {
         $morecssDays = $notExceededColor;
+    } elseif ($plannedDays < $spentDays) {
+        $morecssDays = $exceededColor;
     } else {
         $morecssDays = $perfectColor;
     }
 
+    // Same states as the days band: over for the exceeded time, ko for the time not exceeded or not clocked
     if ($diffTotalTime < 0 || !empty($outsideWorkingHoursDays)) {
         $moreCssHours = $exceededColor;
         $cardState    = 'is-ko';
-        $ttStatusCls  = 'cal-day-ko';
+        $ttStatusCls  = 'cal-day-over';
     } elseif ($diffTotalTime > 0) {
         $moreCssHours = $notExceededColor;
         $cardState    = 'is-warn';
-        $ttStatusCls  = 'cal-day-over';
+        $ttStatusCls  = 'cal-day-ko';
     } else {
         $moreCssHours = $perfectColor;
         $cardState    = 'is-ok';
