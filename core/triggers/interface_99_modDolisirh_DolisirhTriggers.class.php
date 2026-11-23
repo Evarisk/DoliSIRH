@@ -60,7 +60,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $this->family      = 'demo';
         $this->description = 'DoliSIRH triggers.';
         $this->version     = '23.2.0';
-        $this->picto       = 'dolisirh@dolisirh';
+        $this->picto       = 'dolisirh_color@dolisirh';
     }
 
     /**
@@ -284,7 +284,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     if ((int) $userTmp->fk_user > 0) {
                         $signatory->setSignatory($object->id, $object->element, 'user', [(int) $userTmp->fk_user], 'Responsible');
                     } elseif (!headers_sent()) {
-                        $langs->load('dolisirh@dolisirh');
+                        $langs->load('dolisirh_color@dolisirh');
                         setEventMessages($langs->trans('TimeSheetNoResponsible', $userTmp->getFullName($langs)), [], 'warnings');
                     }
                 }
