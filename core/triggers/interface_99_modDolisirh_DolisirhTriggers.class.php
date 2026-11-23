@@ -60,7 +60,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $this->family      = 'demo';
         $this->description = 'DoliSIRH triggers.';
         $this->version     = '23.2.0';
-        $this->picto       = 'dolisirh@dolisirh';
+        $this->picto       = 'dolisirh_color@dolisirh';
     }
 
     /**
