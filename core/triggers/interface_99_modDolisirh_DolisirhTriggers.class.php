@@ -284,7 +284,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
                     if ((int) $userTmp->fk_user > 0) {
                         $signatory->setSignatory($object->id, $object->element, 'user', [(int) $userTmp->fk_user], 'Responsible');
                     } elseif (!headers_sent()) {
-                        $langs->load('dolisirh_color@dolisirh');
+                        $langs->load('dolisirh@dolisirh');
                         setEventMessages($langs->trans('TimeSheetNoResponsible', $userTmp->getFullName($langs)), [], 'warnings');
                     }
                 }
