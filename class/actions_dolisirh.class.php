@@ -1004,61 +1004,63 @@ class ActionsDoliSIRH
 		}
 	}
 
-	/**
-	 * Overloading the printFieldListTitle function : replacing the parent's function with the one below
-	 *
-	 * @param array $parameters Hook metadata (context, etc...)
-	 * @return void
-	 */
-	public function printFieldListTitle(array $parameters)
-	{
-		if ($this->getActiveContext($parameters, 'projecttasktime')) {
-			global $langs;
+    /**
+     * Overloading the printFieldListTitle function : replacing the parent's function with the one below
+     *
+     * @param array $parameters Hook metadata (context, etc...)
+     * @return void
+     */
+    public function printFieldListTitle(array $parameters)
+    {
+        // The form to add time spent calls this hook too, without the sort parameters of the list
+        if ($this->isTimeSpentList($parameters)) {
+            global $langs;
 
-			$parameters['arrayfields']['fk_timesheet'] = array(
-				'label' => $langs->trans('TimeSheet'),
-				'checked' => 1,
-				'enabled' => 1
-			);
+            $parameters['arrayfields']['fk_timesheet'] = array(
+                'label' => $langs->trans('TimeSheet'),
+                'checked' => 1,
+                'enabled' => 1
+            );
 
-			if (!empty($parameters['arrayfields']['fk_timesheet']['checked'])) {
-				print_liste_field_titre($parameters['arrayfields']['fk_timesheet']['label'], $_SERVER['PHP_SELF'], 'fk_timesheet', '', $parameters['param'], '', $parameters['sortfield'], $parameters['sortorder'], 'center ');
-			}
-		}
-	}
+            if (!empty($parameters['arrayfields']['fk_timesheet']['checked'])) {
+                print_liste_field_titre($parameters['arrayfields']['fk_timesheet']['label'], $_SERVER['PHP_SELF'], 'fk_timesheet', '', $parameters['param'], '', $parameters['sortfield'], $parameters['sortorder'], 'center ');
+            }
+        }
+    }
 
-	/**
-	 * Overloading the printFieldListValue function : replacing the parent's function with the one below
-	 *
-	 * @param array $parameters Hook metadata (context, etc...)
-	 * @return void
-	 */
-	public function printFieldListValue(array $parameters)
-	{
-		if ($this->getActiveContext($parameters, 'projecttasktime')) {
-			global $langs;
+    /**
+     * Overloading the printFieldListValue function : replacing the parent's function with the one below
+     *
+     * @param array $parameters Hook metadata (context, etc...)
+     * @return void
+     */
+    public function printFieldListValue(array $parameters)
+    {
+        // The form to add time spent calls this hook too, without any time spent line to look the time sheet for
+        if ($this->isTimeSpentList($parameters)) {
+            global $langs;
 
-			require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
+            require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 
-			$task = new Task($this->db);
+            $task = new Task($this->db);
 
-			$parameters['arrayfields']['fk_timesheet'] = array(
-				'label' => $langs->trans('TimeSheet'),
-				'checked' => 1,
-				'enabled' => 1
-			);
+            $parameters['arrayfields']['fk_timesheet'] = array(
+                'label' => $langs->trans('TimeSheet'),
+                'checked' => 1,
+                'enabled' => 1
+            );
 
-			if (!empty($parameters['arrayfields']['fk_timesheet']['checked'])) {
-				print '<td class="center">';
-				$task->fetchObjectLinked(null, '', $parameters['obj']->rowid, 'project_task_time');
-				if (isset($task->linkedObjects['dolisirh_timesheet'])) {
-					$timesheet = (reset($task->linkedObjects['dolisirh_timesheet']));
-					print $timesheet->getNomUrl(1);
-				}
-				print '</td>';
-			}
-		}
-	}
+            if (!empty($parameters['arrayfields']['fk_timesheet']['checked'])) {
+                print '<td class="center">';
+                $task->fetchObjectLinked(null, '', $parameters['obj']->rowid, 'project_task_time');
+                if (isset($task->linkedObjects['dolisirh_timesheet'])) {
+                    $timesheet = (reset($task->linkedObjects['dolisirh_timesheet']));
+                    print $timesheet->getNomUrl(1);
+                }
+                print '</td>';
+            }
+        }
+    }
 
     /**
      * Tell if the current user is allowed to assign time spent lines to an invoice service line. The assignment
@@ -1378,5 +1380,20 @@ class ActionsDoliSIRH
         }
 
         return '';
+    }
+
+    /**
+     * Tell if a list hook of the time spent page is called for the list itself, where the time sheet column is shown
+     *
+     * The page also calls printFieldListTitle and printFieldListValue for its form to add time spent, with only
+     * mode = 'create' in the parameters : a line being created is linked to no time sheet, so the column is left out
+     * there, title and cell together to keep the form aligned
+     *
+     * @param  array $parameters Hook metadata (context, mode, etc...)
+     * @return bool              True on the time spent list, false elsewhere and on the form to add time spent
+     */
+    private function isTimeSpentList(array $parameters): bool
+    {
+        return $this->getActiveContext($parameters, 'projecttasktime') !== '' && ($parameters['mode'] ?? '') !== 'create';
     }
 }

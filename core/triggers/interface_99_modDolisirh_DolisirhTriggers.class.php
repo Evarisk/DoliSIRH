@@ -59,7 +59,7 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
         $this->name        = preg_replace('/^Interface/i', '', get_class($this));
         $this->family      = 'demo';
         $this->description = 'DoliSIRH triggers.';
-        $this->version     = '23.2.1';
+        $this->version     = '23.2.2';
         $this->picto       = 'dolisirh_color@dolisirh';
     }
 
@@ -100,6 +100,13 @@ class InterfaceDoliSIRHTriggers extends DolibarrTriggers
     {
         if (!isModEnabled('dolisirh')) {
             return 0; // If module is not enabled, we do nothing.
+        }
+
+        // Every event of the instance comes through here, also those another module sends with an object that is not
+        // a CommonObject (ExternalAccess passes its Context on externalAccessInitController): none of them concerns
+        // DoliSIRH, and the event prepared below reads an id and element that such an object may lack
+        if (!($object instanceof CommonObject)) {
+            return 0;
         }
 
         // Data and type of action are stored into $object and $action.
