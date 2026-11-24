@@ -407,19 +407,19 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
             $sql .= ' AND elel.fk_source = ' . $filterOnProjUser;
         }
         if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) > 0) {
-            // Period shown by the page, as calendar days: no week number (MySQL WEEK() and PHP date('W') disagree), so it follows MAIN_START_WEEK like the columns.
-            $timeSpentDateField = $versionEighteenOrMore ? 'ptt.element_date' : 'ptt.task_date';
-            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $timeArray['start'] ?? '') && preg_match('/^\d{4}-\d{2}-\d{2}$/', $timeArray['end'] ?? '')) {
-                $timeSpentPeriodFilter = ' AND ' . $timeSpentDateField . " BETWEEN '" . $db->escape($timeArray['start']) . "' AND '" . $db->escape($timeArray['end']) . "'";
-            } else {
-                $timeSpentPeriodFilter = ' AND YEAR(' . $timeSpentDateField . ') = ' . ((int) ($timeArray['year'] ?? date('Y')));
-            }
             if ($versionEighteenOrMore) {
                 $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' OR (' : ' AND ') . '(ptt.fk_element = t.rowid AND ptt.elementtype = "task") AND ptt.fk_user = ' . $filterOnProjUser;
+                $timeSpentDateField = 'ptt.element_date';
             } else {
                 $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
+                $timeSpentDateField = 'ptt.task_date';
             }
-            $sql .= $timeSpentPeriodFilter;
+            // Period shown by the page, as calendar days: no week number (MySQL WEEK() and PHP date('W') disagree), so it follows MAIN_START_WEEK like the columns.
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $timeArray['start'] ?? '') && preg_match('/^\d{4}-\d{2}-\d{2}$/', $timeArray['end'] ?? '')) {
+                $sql .= ' AND ' . $timeSpentDateField . " BETWEEN '" . $db->escape($timeArray['start']) . "' AND '" . $db->escape($timeArray['end']) . "'";
+            } else {
+                $sql .= ' AND YEAR(' . $timeSpentDateField . ') = ' . ((int) ($timeArray['year'] ?? date('Y')));
+            }
         }
         $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) ? '))' : '');
     } elseif ($mode == 1) {
