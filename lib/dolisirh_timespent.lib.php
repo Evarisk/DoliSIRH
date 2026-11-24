@@ -316,6 +316,8 @@ function load_time_spending_infos_within_range(int $timestampStart, int $timesta
  * @param  int              $includeBillTime      Calculate also the time to bill and billed.
  * @param  array            $search_array_options Array of search.
  * @param  int              $loadExtras           Fetch all Extrafields on each task.
+ * @param  array            $timeArray            Period shown: 'start' and 'end' (Y-m-d, both included) filter the "only tasks with time spent" option ; 'year' is the fallback.
+ * @param  string           $timeMode             View mode (month, week or day), kept for compatibility: the period comes from $timeArray.
  * @return array|string     $tasks                Array of tasks or string error.
  * @throws Exception
  */
@@ -407,24 +409,16 @@ function get_tasks_array($userT = null, $userP = null, int $projectID = 0, int $
         if ((!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) > 0) {
             if ($versionEighteenOrMore) {
                 $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' OR (' : ' AND ') . '(ptt.fk_element = t.rowid AND ptt.elementtype = "task") AND ptt.fk_user = ' . $filterOnProjUser;
-                if ($timeMode == 'month') {
-                    $sql .= ' AND MONTH(ptt.element_date) = ' . $timeArray['month'];
-                } elseif ($timeMode == 'week') {
-                    $sql .= ' AND WEEK(ptt.element_date, 7) = ' . $timeArray['week'];
-                } elseif ($timeMode == 'day') {
-                    $sql .= ' AND DAY(ptt.element_date) = ' . $timeArray['day'];
-                }
-                $sql .= ' AND YEAR(ptt.element_date) = ' . $timeArray['year'];
+                $timeSpentDateField = 'ptt.element_date';
             } else {
                 $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) ? ' OR (' : ' AND ') . 'ptt.fk_task = t.rowid AND ptt.fk_user = ' . $filterOnProjUser;
-                if ($timeMode == 'month') {
-                    $sql .= ' AND MONTH(ptt.task_date) = ' . $timeArray['month'];
-                } elseif ($timeMode == 'week') {
-                    $sql .= ' AND WEEK(ptt.task_date, 7) = ' . $timeArray['week'];
-                } elseif ($timeMode == 'day') {
-                    $sql .= ' AND DAY(ptt.task_date) = ' . $timeArray['day'];
-                }
-                $sql .= ' AND YEAR(ptt.task_date) = ' . $timeArray['year'];
+                $timeSpentDateField = 'ptt.task_date';
+            }
+            // Period shown by the page, as calendar days: no week number (MySQL WEEK() and PHP date('W') disagree), so it follows MAIN_START_WEEK like the columns.
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $timeArray['start'] ?? '') && preg_match('/^\d{4}-\d{2}-\d{2}$/', $timeArray['end'] ?? '')) {
+                $sql .= ' AND ' . $timeSpentDateField . " BETWEEN '" . $db->escape($timeArray['start']) . "' AND '" . $db->escape($timeArray['end']) . "'";
+            } else {
+                $sql .= ' AND YEAR(' . $timeSpentDateField . ') = ' . ((int) ($timeArray['year'] ?? date('Y')));
             }
         }
         $sql .= ((!empty($user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE) ? $user->conf->DOLISIRH_SELECT_LOGIC_OPERATORS_MODE : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS) ? $user->conf->DOLISIRH_SHOW_ONLY_FAVORITE_TASKS : 0) && (!empty($user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT) ? $user->conf->DOLISIRH_SHOW_ONLY_TASKS_WITH_TIMESPENT : 0) ? '))' : '');
