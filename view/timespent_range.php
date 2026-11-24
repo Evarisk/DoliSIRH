@@ -127,6 +127,8 @@ $prevDay        = 0;
 $nextYear       = 0;
 $nextMonth      = 0;
 $nextDay        = 0;
+$periodStart    = ''; // First and last calendar day of the range (Y-m-d), used by the "only tasks with time spent" filter.
+$periodEnd      = '';
 switch ($viewMode) {
     case 'month' :
         $prev       = dol_get_prev_month($month, $year);
@@ -141,6 +143,8 @@ switch ($viewMode) {
         $lastDayOfRange = strtotime(date('Y-m-t', $firstDayToShow));
         $rangeDate      = 'm';
         $range          = $month;
+        $periodStart    = sprintf('%04d-%02d-01', $year, $month);
+        $periodEnd      = (new DateTime($periodStart))->format('Y-m-t');
         break;
     case 'week' :
         $prev       = dol_get_first_day_week($day, $month, $year);
@@ -161,6 +165,8 @@ switch ($viewMode) {
         $lastDayOfRange = dolisirh_add_days($firstDayToShow, 6);
         $rangeDate      = 'W';
         $range          = $week;
+        $periodStart    = sprintf('%04d-%02d-%02d', $firstYear, $firstMonth, $firstDay);
+        $periodEnd      = (new DateTime($periodStart))->modify('+6 days')->format('Y-m-d');
         break;
     case 'day' :
         $prev      = dol_get_prev_day($day, $month, $year);
@@ -177,6 +183,8 @@ switch ($viewMode) {
         $lastDayOfRange = dol_mktime(0, 0, 0, $month, $day, $year);
         $rangeDate      = 'd';
         $range          = $day;
+        $periodStart    = sprintf('%04d-%02d-%02d', $year, $month, $day);
+        $periodEnd      = $periodStart;
         break;
 }
 
@@ -436,7 +444,7 @@ if (isModEnabled('categorie')) {
     $moreWhereFilter .= Categorie::getFilterSelectQuery(Categorie::TYPE_PROJECT, 'p.rowid', $searchCategoryArray);
 }
 
-$timeArray  = ['year' => $year, 'month' => $month, 'day' => $day, 'week' => $week];
+$timeArray  = ['year' => $year, 'month' => $month, 'day' => $day, 'week' => $week, 'start' => $periodStart, 'end' => $periodEnd];
 $tasksArray = get_tasks_array(0, 0, ($project->id ?: 0), 0, 0, $searchProjectRef, $onlyOpenedProject, $moreWhereFilter, ($searchUserID ?: 0), 0, $extraFields,0, [], 0,$timeArray, $viewMode);
 
 $tasksRole    = $task->getUserRolesForProjectsOrTasks(0, $userTmp, ($project->id ?: 0), 0, $onlyOpenedProject);
