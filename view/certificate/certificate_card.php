@@ -89,9 +89,9 @@ include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be incl
 $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
 
 // Security check - Protection if external user.
-$permissionToRead   = $user->rights->dolisirh->certificate->read;
-$permissiontoadd    = $user->rights->dolisirh->certificate->write;
-$permissiontodelete = $user->rights->dolisirh->certificate->delete || ($permissiontoadd && isset($object->status) && $object->status == SaturneCertificate::STATUS_DRAFT);
+$permissionToRead   = $user->hasRight('dolisirh', 'certificate', 'read');
+$permissiontoadd    = $user->hasRight('dolisirh', 'certificate', 'write');
+$permissiontodelete = $user->hasRight('dolisirh', 'certificate', 'delete') || ($permissiontoadd && isset($object->status) && $object->status == SaturneCertificate::STATUS_DRAFT);
 saturne_check_access($permissionToRead);
 
 /*

@@ -52,7 +52,7 @@ $value      = GETPOST('value', 'alpha');
 $backtopage = GETPOST('backtopage', 'alpha');
 
 // Security check - Protection if external user.
-$permissiontoread = $user->rights->dolisirh->adminpage->read;
+$permissiontoread = $user->hasRight('dolisirh', 'adminpage', 'read');
 saturne_check_access($permissiontoread);
 
 /*
