@@ -354,13 +354,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             $object->fields['fk_element']['type'] = 'integer:User:user/class/user.class.php';
             $object->fields['fk_element']['picto'] = 'user';
             $object->fields['fk_element']['label'] = $langs->trans('User');
-            $object->fields['element_type']['picto'] = 'user';
             break;
         case 'product' :
             $object->fields['fk_element']['type'] = 'integer:Product:product/class/product.class.php';
             $object->fields['fk_element']['picto'] = 'product';
             $object->fields['fk_element']['label'] = $langs->trans('Product');
-            $object->fields['element_type']['picto'] = 'product';
             break;
     }
 
