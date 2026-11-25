@@ -476,7 +476,7 @@ class ActionsDoliSIRH
 			}
             if (((GETPOST('action') != 'edit_extras') || (GETPOST('action') == 'edit_extras') && GETPOST('attribute') != 'fk_task') && GETPOST('action') != 'create') {
                 if (!empty($object->id)) {
-                    require_once __DIR__ . '/../../../projet/class/task.class.php';
+                    require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 
                     $task   = new Task($this->db);
                     $ticket = new Ticket($this->db);
