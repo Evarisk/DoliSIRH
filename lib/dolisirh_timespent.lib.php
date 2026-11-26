@@ -800,7 +800,7 @@ function task_lines_within_range(int &$inc, int $timestampStart, int $timestampE
 
                 $disabledTask = 1;
 
-                if ($lines[$i]->public || !empty($projectsRole[$lines[$i]->fk_project]) || $user->rights->projet->all->creer) {
+                if ($lines[$i]->public || !empty($projectsRole[$lines[$i]->fk_project]) || $user->hasRight('projet', 'all', 'creer')) {
                     $disabledTask = 0;
                 }
                 if ($restrictEditForMyTask && empty($tasksRole[$lines[$i]->id])) {

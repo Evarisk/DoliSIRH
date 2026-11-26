@@ -149,9 +149,9 @@ $object->fields = dol_sort_array($object->fields, 'position');
 $arrayfields    = dol_sort_array($arrayfields, 'position');
 
 // Security check (enable the most restrictive one) - Protection if external user
-$permissiontoread   = $user->rights->dolisirh->timesheet->read;
-$permissiontoadd    = $user->rights->dolisirh->timesheet->write;
-$permissiontodelete = $user->rights->dolisirh->timesheet->delete;
+$permissiontoread   = $user->hasRight('dolisirh', 'timesheet', 'read');
+$permissiontoadd    = $user->hasRight('dolisirh', 'timesheet', 'write');
+$permissiontodelete = $user->hasRight('dolisirh', 'timesheet', 'delete');
 saturne_check_access($permissiontoread);
 
 /*

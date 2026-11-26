@@ -47,7 +47,7 @@ $langs->load('tools@dolisirh');
 $usertmp = new User($db);
 
 // Security check
-$permissiontoread = $user->rights->dolisirh->adminpage->read;
+$permissiontoread = $user->hasRight('dolisirh', 'adminpage', 'read');
 
 if (!$permissiontoread) accessforbidden();
 
@@ -85,7 +85,7 @@ llxHeader('', $langs->trans('Tools'), $help_url, '', '', '', $morejs, $morecss, 
 
 print load_fiche_titre($langs->trans('Tools'), '', 'wrench');
 
-if ($user->rights->dolisirh->adminpage->read) { ?>
+if ($user->hasRight('dolisirh', 'adminpage', 'read')) { ?>
     <div class="wpeo-notice notice-info">
         <div class="notice-content">
             <div class="notice-title"><strong><?php echo $langs->trans('UserStatusTitle'); ?></strong></div>
@@ -128,7 +128,7 @@ if ($user->rights->dolisirh->adminpage->read) { ?>
 	print '</td>';
 
 	print '<td class="center">';
-    if ($user->rights->user->user->creer) {
+    if ($user->hasRight('user', 'user', 'creer')) {
         print '<input type="submit" class="button" name="updateEmployeeExternalUsers" value="' . $langs->trans('Validate') . '">';
     } else {
         print '<span class="butActionRefused classfortooltip" title="' . dol_escape_htmltag($langs->trans('PermissionDenied')) . '">' . $langs->trans('Validate') . '</span>';

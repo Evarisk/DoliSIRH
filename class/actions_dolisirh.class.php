@@ -243,7 +243,7 @@ class ActionsDoliSIRH
                 $document = new ProjectDocument($this->db);
 
                 $moduleNameLowerCase = 'dolisirh';
-                $permissiontoadd     = $user->rights->projet->creer;
+                $permissiontoadd     = $user->hasRight('projet', 'creer');
 
                 require_once dol_buildpath('/saturne/core/tpl/documents/documents_action.tpl.php');
             }

@@ -106,9 +106,9 @@ $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
 $now = dol_now();
 
 // Security check - Protection if external user
-$permissionToRead   = $user->rights->dolisirh->timesheet->read;
-$permissiontoadd    = $user->rights->dolisirh->timesheet->write;
-$permissiontodelete = $user->rights->dolisirh->timesheet->delete || ($permissiontoadd && isset($object->status) && $object->status == TimeSheet::STATUS_DRAFT);
+$permissionToRead   = $user->hasRight('dolisirh', 'timesheet', 'read');
+$permissiontoadd    = $user->hasRight('dolisirh', 'timesheet', 'write');
+$permissiontodelete = $user->hasRight('dolisirh', 'timesheet', 'delete') || ($permissiontoadd && isset($object->status) && $object->status == TimeSheet::STATUS_DRAFT);
 saturne_check_access($permissionToRead);
 
 /*
