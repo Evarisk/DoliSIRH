@@ -252,6 +252,7 @@ class ActionsDoliSIRH
                 $moduleName          = 'DoliSIRH';
                 $moduleNameLowerCase = strtolower($moduleName);
                 $upload_dir          = $conf->dolisirh->multidir_output[$conf->entity ?? 1];
+                $permissiontoadd     = $user->hasRight('projet', 'creer');
 
                 // Action to generate pdf from odt file
                 require_once dol_buildpath('/saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php');
