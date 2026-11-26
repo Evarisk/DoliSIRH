@@ -682,7 +682,10 @@ class ActionsDoliSIRH
             if (GETPOST('action') != 'create') {
                 global $user;
 
-                print '<link rel="stylesheet" type="text/css" href="' . dol_buildpath('/saturne/css/saturne.min.css', 1) . '">';
+                // saturne_asset_full_url() for the assets printed below: without a version, the browser keeps serving the previous release
+                dol_include_once('/saturne/lib/asset.lib.php');
+
+                print '<link rel="stylesheet" type="text/css" href="' . saturne_asset_full_url('/saturne/css/saturne.min.css') . '">';
 
                 $moduleNameLowerCase = 'dolisirh';
 
@@ -706,7 +709,7 @@ class ActionsDoliSIRH
                 $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', '', $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
                 ?>
 
-                <script src="<?php echo dol_buildpath('/saturne/js/saturne.min.js', 1); ?>"></script>
+                <script src="<?php echo saturne_asset_full_url('/saturne/js/saturne.min.js'); ?>"></script>
                 <script>
                     jQuery('.fichehalfleft .div-table-responsive-no-min').append(<?php echo json_encode($html) ; ?>)
                 </script>
@@ -723,7 +726,8 @@ class ActionsDoliSIRH
 		}
 
 		if (preg_match('/categoryindex/', $parameters['context'])) {
-			print '<script src="' . dol_buildpath('/dolisirh/js/dolisirh.js', 1) . '"></script>';
+			dol_include_once('/saturne/lib/asset.lib.php');
+			print '<script src="' . saturne_asset_full_url('/dolisirh/js/dolisirh.js') . '"></script>';
 		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
             toggle_task_favorite(GETPOSTINT('taskId'), $user->id);
