@@ -274,6 +274,28 @@ class TimeSheet extends SaturneObject
     }
 
     /**
+     * Rights of the user on the timesheets, as the line templates of Dolibarr read them
+     *
+     * The line templates show the edit and delete buttons of a line on ->creer, while DoliSIRH grants the right to modify
+     * a timesheet as ->write: a user holding only that right added lines but could neither modify nor delete them. The
+     * lines follow the same right as the timesheet, as the actions of the card do.
+     *
+     * @return null|int|stdClass Rights of the user on the timesheets, as CommonObject::getRights()
+     */
+    public function getRights()
+    {
+        global $user;
+
+        $rights = parent::getRights();
+        if (is_object($rights)) {
+            $rights        = clone $rights;
+            $rights->creer = $user->hasRight('dolisirh', 'timesheet', 'write');
+        }
+
+        return $rights;
+    }
+
+    /**
      * Delete a line of object in database.
      *
      * @param  User $user      User that delete.
