@@ -79,8 +79,8 @@ $extrafields->fetch_name_optionals_label($object->table_element);
 require_once DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php';
 
 // Security check.
-$permissionToRead = $user->rights->dolisirh->timesheet->read;
-$permissionToAdd  = (($object->status >= TimeSheet::STATUS_LOCKED) ? 0 : $user->rights->dolisirh->timesheet->write);
+$permissionToRead = $user->hasRight('dolisirh', 'timesheet', 'read');
+$permissionToAdd  = (($object->status >= TimeSheet::STATUS_LOCKED) ? 0 : $user->hasRight('dolisirh', 'timesheet', 'write'));
 saturne_check_access($permissionToRead);
 
 /*

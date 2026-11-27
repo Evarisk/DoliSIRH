@@ -89,9 +89,9 @@ include DOL_DOCUMENT_ROOT . '/core/actions_fetchobject.inc.php'; // Must be incl
 $upload_dir = $conf->dolisirh->multidir_output[$object->entity ?? 1];
 
 // Security check - Protection if external user.
-$permissionToRead   = $user->rights->dolisirh->certificate->read;
-$permissiontoadd    = $user->rights->dolisirh->certificate->write;
-$permissiontodelete = $user->rights->dolisirh->certificate->delete || ($permissiontoadd && isset($object->status) && $object->status == SaturneCertificate::STATUS_DRAFT);
+$permissionToRead   = $user->hasRight('dolisirh', 'certificate', 'read');
+$permissiontoadd    = $user->hasRight('dolisirh', 'certificate', 'write');
+$permissiontodelete = $user->hasRight('dolisirh', 'certificate', 'delete') || ($permissiontoadd && isset($object->status) && $object->status == SaturneCertificate::STATUS_DRAFT);
 saturne_check_access($permissionToRead);
 
 /*
@@ -354,13 +354,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             $object->fields['fk_element']['type'] = 'integer:User:user/class/user.class.php';
             $object->fields['fk_element']['picto'] = 'user';
             $object->fields['fk_element']['label'] = $langs->trans('User');
-            $object->fields['element_type']['picto'] = 'user';
             break;
         case 'product' :
             $object->fields['fk_element']['type'] = 'integer:Product:product/class/product.class.php';
             $object->fields['fk_element']['picto'] = 'product';
             $object->fields['fk_element']['label'] = $langs->trans('Product');
-            $object->fields['element_type']['picto'] = 'product';
             break;
     }
 
@@ -438,9 +436,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // Send email.
             $displayButton = $onPhone ? '<i class="fas fa-paper-plane fa-2x"></i>' : '<i class="fas fa-paper-plane"></i>' . ' ' . $langs->trans('SendMail') . ' ';
             if ($object->status >= SaturneCertificate::STATUS_VALIDATED) {
+                // No document on the disk: the email builds it
                 $fileParams = dol_most_recent_file($upload_dir . '/' . $object->element . 'document' . '/' . $object->ref);
-                $file       = $fileParams['fullname'];
-                if (file_exists($file) && !strstr($fileParams['name'], 'specimen')) {
+                if (is_array($fileParams) && file_exists($fileParams['fullname']) && !strstr($fileParams['name'], 'specimen')) {
                     $forcebuilddoc = 0;
                 } else {
                     $forcebuilddoc = 1;
