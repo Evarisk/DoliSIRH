@@ -174,9 +174,9 @@ foreach ($arrayfields as $key => $val) {
 	}
 }
 
-$permissiontoread   = $user->rights->projet->lire;
-$permissiontoadd    = $user->rights->projet->creer;
-$permissiontodelete = $user->rights->projet->supprimer;
+$permissiontoread   = $user->hasRight('projet', 'lire');
+$permissiontoadd    = $user->hasRight('projet', 'creer');
+$permissiontodelete = $user->hasRight('projet', 'supprimer');
 
 
 // Security check (enable the most restrictive one)

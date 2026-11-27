@@ -53,7 +53,7 @@ $backToPage = GETPOST('backtopage', 'alpha');
 $timesheetProductAndServices = get_timesheet_product_service();
 
 // Security check - Protection if external user
-$permissionToRead = $user->rights->dolisirh->adminpage->read;
+$permissionToRead = $user->hasRight('dolisirh', 'adminpage', 'read');
 saturne_check_access($permissionToRead);
 
 /*

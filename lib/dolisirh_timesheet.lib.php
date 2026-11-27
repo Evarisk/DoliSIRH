@@ -48,7 +48,7 @@ function timesheet_prepare_head(TimeSheet $object): array
 
     $head = saturne_object_prepare_head($object, [], $moreParams, true);
 
-    if (!empty($user->rights->dolisirh->timesheet->read)) {
+    if ($user->hasRight('dolisirh', 'timesheet', 'read')) {
         $head[] = [
             dol_buildpath('/dolisirh/view/timesheet/timesheet_timespent.php', 1) . '?id=' . $object->id,
             $conf->browser->layout != 'phone' ? '<i class="fas fa-clock pictofixedwidth"></i>' . $langs->trans('ConsumedTime') : '<i class="fas fa-clock"></i>',

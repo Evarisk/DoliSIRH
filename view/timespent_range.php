@@ -218,8 +218,8 @@ $arrayFields['timeconsumed'] = ['label' => 'TimeConsumed', 'checked' => 1, 'enab
 $arrayFields                 = dol_sort_array($arrayFields, 'position');
 
 // Security check.
-$permissiontoRead = $user->rights->projet->lire;
-$permissiontoAdd  = $user->rights->projet->time;
+$permissiontoRead = $user->hasRight('projet', 'lire');
+$permissiontoAdd  = $user->hasRight('projet', 'time');
 
 // Security check - Protection if external user.
 saturne_check_access($permissiontoRead, $task);
@@ -504,7 +504,7 @@ $tooltipTaskInfo = '';
 if ($mine || ($userTmp->id == $user->id)) {
     $tooltipTaskInfo = $langs->trans('MyTasksDesc').'.'.($onlyOpenedProject ? ' ' . '<b style="color: #ff0000;">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
 } elseif (empty($userTmp->id) || $userTmp->id < 0) {
-    if ($user->rights->projet->all->lire) {
+    if ($user->hasRight('projet', 'all', 'lire')) {
         $tooltipTaskInfo .= $langs->trans('ProjectsDesc') . '.' . ($onlyOpenedProject ? ' ' . '<b style="color: #ff0000;">' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
     } else {
         $tooltipTaskInfo .= $langs->trans('ProjectsPublicTaskDesc') . '.' . ($onlyOpenedProject ? ' ' . $langs->trans('OnlyOpenedProject') : '') . '</b><br>';
@@ -556,7 +556,7 @@ print '<thead style="position: sticky; top: 0; background-color: var(--colorback
 // If the user can view user other than himself.
 $moreForFilter = '<tr class="liste_titre"><td class="liste_titre" style="position: sticky; left: 0; background-color: var(--colorbacktitle1); z-index: 1100;">';
 $includeOnly   = '';
-if (empty($user->rights->user->user->lire)) {
+if (!$user->hasRight('user', 'user', 'lire')) {
     $includeOnly = [$user->id];
 }
 
