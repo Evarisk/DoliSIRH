@@ -151,8 +151,9 @@ if (empty($resHook)) {
         }
         $timeSpents = $task->fetchAllTimeSpent($userTmp, $filter);
         foreach ($timeSpents as $timespent) {
-            $task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
-            if (isset($task->linkedObjects['dolisirh_timesheet'])) {
+            // A deleted timesheet no longer holds its time spent: the month can have a timesheet again
+            $timeSheetIDs = $object->fetchTimeSheetIDsOfTimeSpent((int) $timespent->timespent_id);
+            if (!is_array($timeSheetIDs) || !empty($timeSheetIDs)) {
                 $error++;
             }
         }
