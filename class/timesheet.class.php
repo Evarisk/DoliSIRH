@@ -307,6 +307,70 @@ class TimeSheet extends SaturneObject
     }
 
     /**
+     * Set deleted status
+     *
+     * The time spent linked to the timesheet at its lock are released, as when its document is deleted: a timesheet of the
+     * same month can be created and locked again. The timesheet itself stays in base with the deleted status.
+     *
+     * @param  User      $user      Object user that modify
+     * @param  int<0,1>  $noTrigger 0 = launch triggers after, 1 = disable triggers
+     * @return int<-1,1>            Return integer 0 < if KO, > 0 if OK
+     */
+    public function setDeleted(User $user, int $noTrigger = 0): int
+    {
+        $this->db->begin();
+
+        $result = parent::setDeleted($user, $noTrigger);
+        if ($result > 0) {
+            $sql  = 'DELETE FROM ' . MAIN_DB_PREFIX . 'element_element';
+            $sql .= " WHERE sourcetype = 'dolisirh_timesheet' AND fk_source = " . ((int) $this->id) . " AND targettype = 'project_task_time'";
+            if (!$this->db->query($sql)) {
+                $this->error = $this->db->lasterror();
+                $result      = -1;
+            }
+        }
+
+        if ($result > 0) {
+            $this->db->commit();
+        } else {
+            $this->db->rollback();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Timesheets holding a time spent, the deleted ones left out
+     *
+     * A timesheet deleted before its deletion released its time spent still holds them in base: it must not stop a new
+     * timesheet of the same month from being created or locked.
+     *
+     * @param  int       $timeSpentID ID of the time spent
+     * @return int[]|int              IDs of the timesheets, empty if none, -1 on error (message in $this->error)
+     */
+    public function fetchTimeSheetIDsOfTimeSpent(int $timeSpentID)
+    {
+        $sql  = 'SELECT t.rowid FROM ' . MAIN_DB_PREFIX . 'element_element AS ee';
+        $sql .= ' INNER JOIN ' . MAIN_DB_PREFIX . $this->table_element . ' AS t ON t.rowid = ee.fk_source';
+        $sql .= " WHERE ee.sourcetype = 'dolisirh_timesheet' AND ee.targettype = 'project_task_time'";
+        $sql .= ' AND ee.fk_target = ' . $timeSpentID . ' AND t.status <> ' . self::STATUS_DELETED;
+
+        $resql = $this->db->query($sql);
+        if (!$resql) {
+            $this->error = $this->db->lasterror();
+            return -1;
+        }
+
+        $timeSheetIDs = [];
+        while ($obj = $this->db->fetch_object($resql)) {
+            $timeSheetIDs[] = (int) $obj->rowid;
+        }
+        $this->db->free($resql);
+
+        return $timeSheetIDs;
+    }
+
+    /**
      * Expected, passed and spent time of the assigned user over the timesheet period, and the difference.
      *
      * Only the HR project tasks count, presence and absence, as in the timesheet document. A public holiday keeps the working
@@ -413,11 +477,13 @@ class TimeSheet extends SaturneObject
         // A time spent already linked to this timesheet (lock stopped half way before) is kept, not linked twice
         $timeSpentIDsToLink = [];
         foreach ($timeSpents as $timeSpent) {
-            $task->fetchObjectLinked(null, '', $timeSpent->timespent_id, 'project_task_time', 'OR', 1, 'sourcetype', 0);
-            $timeSheetIDs = $task->linkedObjectsIds['dolisirh_timesheet'] ?? [];
+            $timeSheetIDs = $this->fetchTimeSheetIDsOfTimeSpent((int) $timeSpent->timespent_id);
+            if (!is_array($timeSheetIDs)) {
+                return -1;
+            }
             if (empty($timeSheetIDs)) {
                 $timeSpentIDsToLink[] = (int) $timeSpent->timespent_id;
-            } elseif (!in_array($this->id, array_map('intval', $timeSheetIDs))) {
+            } elseif (!in_array((int) $this->id, $timeSheetIDs)) {
                 $this->error = $langs->trans('ErrorLinkedElementTimeSheetTimeSpent', $userAssign->getFullName($langs), dol_print_date($this->date_start, 'dayreduceformat'), dol_print_date($this->date_end, 'dayreduceformat'));
                 return -2;
             }

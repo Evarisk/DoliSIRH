@@ -151,8 +151,9 @@ if (empty($resHook)) {
         }
         $timeSpents = $task->fetchAllTimeSpent($userTmp, $filter);
         foreach ($timeSpents as $timespent) {
-            $task->fetchObjectLinked(null, '', $timespent->timespent_id, 'project_task_time');
-            if (isset($task->linkedObjects['dolisirh_timesheet'])) {
+            // A deleted timesheet no longer holds its time spent: the month can have a timesheet again
+            $timeSheetIDs = $object->fetchTimeSheetIDsOfTimeSpent((int) $timespent->timespent_id);
+            if (!is_array($timeSheetIDs) || !empty($timeSheetIDs)) {
                 $error++;
             }
         }
@@ -759,6 +760,8 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
                     setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
                 }
                 if (empty($reshook)) {
+                    // The line form of Dolibarr 23.0 prints socid as is in its script: empty, the whole script fails to parse
+                    $object->socid = (int) $object->fk_soc;
                     $object->formAddObjectLine(1, $mysoc, $mysoc);
                 } ?>
                 <script>
@@ -831,9 +834,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // Send email.
             $displayButton = $onPhone ? '<i class="fas fa-paper-plane fa-2x"></i>' : '<i class="fas fa-paper-plane"></i>' . ' ' . $langs->trans('SendMail') . ' ';
             if ($object->status == TimeSheet::STATUS_LOCKED) {
+                // No document on the disk: the email builds it
                 $fileParams = dol_most_recent_file($upload_dir . '/' . $object->element . 'document' . '/' . $object->ref);
-                $file       = $fileParams['fullname'];
-                if (file_exists($file) && !strstr($fileParams['name'], 'specimen')) {
+                if (is_array($fileParams) && file_exists($fileParams['fullname']) && !strstr($fileParams['name'], 'specimen')) {
                     $forcebuilddoc = 0;
                 } else {
                     $forcebuilddoc = 1;
