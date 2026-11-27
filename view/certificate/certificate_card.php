@@ -436,9 +436,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
             // Send email.
             $displayButton = $onPhone ? '<i class="fas fa-paper-plane fa-2x"></i>' : '<i class="fas fa-paper-plane"></i>' . ' ' . $langs->trans('SendMail') . ' ';
             if ($object->status >= SaturneCertificate::STATUS_VALIDATED) {
+                // No document on the disk: the email builds it
                 $fileParams = dol_most_recent_file($upload_dir . '/' . $object->element . 'document' . '/' . $object->ref);
-                $file       = $fileParams['fullname'];
-                if (file_exists($file) && !strstr($fileParams['name'], 'specimen')) {
+                if (is_array($fileParams) && file_exists($fileParams['fullname']) && !strstr($fileParams['name'], 'specimen')) {
                     $forcebuilddoc = 0;
                 } else {
                     $forcebuilddoc = 1;
