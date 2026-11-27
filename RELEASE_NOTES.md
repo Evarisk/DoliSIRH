@@ -1,31 +1,42 @@
-# [DoliSIRH] [23.2.2] - Filtre des temps consommés sur la bonne période - Formulaire de temps sans avertissement
+# [DoliSIRH] [23.2.3] - Saisie d'un événement préservée sans tâche - Conversion PDF soumise au droit de générer le document
 
-Description : le filtre « tâches avec temps consommé » de la saisie des temps porte de nouveau sur la semaine ou le jour affiché, et le formulaire d'ajout de temps d'une tâche n'affiche plus de colonne Navette vide. La version supprime aussi des avertissements PHP quand un autre module déclenche ses propres événements.
+Description : pointer du temps sur un événement sans tâche est refusé avant l'envoi sans perdre la saisie, la fiche ticket ne s'arrête plus sur une erreur quand DoliSIRH est installé par un lien, et la conversion en PDF depuis la fiche projet demande le droit de générer le document.
 
-**Cette version demande Saturne 23.9.1 ou supérieur.**
+**Cette version demande Saturne 23.10.1 ou supérieur.**
+
+**À installer avant Saturne 23.11.0, ou en même temps.** Avec une version antérieure de DoliSIRH, Saturne 23.11.0 refuserait la conversion en PDF sur la fiche projet.
 
 ## Améliorations & corrections
 
-### Saisie des temps
+### Agenda et temps passé
 
-* En vue semaine, cocher l'horloge (« tâches avec temps consommé ») montrait en 2025 et 2026 les tâches de la semaine suivante. Le filtre porte maintenant sur la semaine affichée.
-* En vue jour, le même filtre ne tenait compte que du jour du mois, quel que soit le mois. Il porte maintenant sur le jour affiché.
+* Un événement avec du temps passé mais sans tâche est refusé avant l'envoi, avec un message : la saisie reste à l'écran au lieu d'être perdue.
 
-### Formulaire d'ajout de temps d'une tâche
+### Documents
 
-* Le formulaire n'affiche plus de colonne Navette : une ligne en cours de saisie n'est liée à aucune navette. Cette colonne vide laissait cinq avertissements dans le journal PHP à chaque affichage. La liste des temps garde sa colonne.
+* La conversion en PDF d'un document depuis la fiche projet demande le droit de générer ce document, comme le bouton « Générer ».
 
-### Cohabitation avec les autres modules
+### Fiches et droits
 
-* Un module qui déclenche un événement sur un objet qui n'est pas un objet Dolibarr (ExternalAccess, par exemple) ne laisse plus d'avertissements dans le journal PHP.
+* La fiche ticket ne s'arrête plus sur une erreur fatale quand DoliSIRH est installé par un lien symbolique.
+* Un utilisateur à qui un droit DoliSIRH n'est pas accordé ne fait plus écrire d'avertissements dans le journal PHP.
+* La fiche certificat n'écrit plus d'avertissement dans le journal PHP à chaque affichage.
+
+### Affichage
+
+* Après une mise à jour de DoliSIRH ou de Saturne, les pages chargent les nouveaux styles et scripts : plus besoin de vider le cache du navigateur (Ctrl+F5).
+* Si Saturne est absent, DoliSIRH affiche un message clair au lieu d'une erreur.
 
 ## Testez les nouveautés maintenant
 
-**Allez tester la saisie des temps sur la démo : [https://demodoli.digirisk.com/](https://demodoli.digirisk.com/)**
+**Allez tester la saisie de temps depuis l'agenda sur la démo : [https://demodoli.digirisk.com/](https://demodoli.digirisk.com/)**
 
-## Comparaison des versions [23.2.1](https://github.com/Evarisk/DoliSIRH/compare/23.2.1...23.2.2) et 23.2.2
+## Comparaison des versions [23.2.2](https://github.com/Evarisk/DoliSIRH/compare/23.2.2...23.2.3) et 23.2.3
 
-* [#850] [Trigger] fix: plus d'avertissement sur un événement dont l'objet n'est pas un CommonObject [`e0a1018a`](https://github.com/Evarisk/DoliSIRH/commit/e0a1018a)
-* [#848] [TimeSpent] fix: pas de colonne Navette dans le formulaire d'ajout de temps [`90ca968e`](https://github.com/Evarisk/DoliSIRH/commit/90ca968e)
-* [#846] [TimeSpent] fix: colonne de date choisie dans le if/else existant (PHPStan) [`7f5d9592`](https://github.com/Evarisk/DoliSIRH/commit/7f5d9592)
-* [#846] [TimeSpent] fix: filtre « tâches avec temps consommé » sur la période affichée [`d179accb`](https://github.com/Evarisk/DoliSIRH/commit/d179accb)
+* [#573] [Agenda] fix: temps passé sans tâche refusé avant l'envoi, la saisie de l'événement reste [`7950ce7a`](https://github.com/Evarisk/DoliSIRH/commit/7950ce7a)
+* [#864] [Assets] fix: version the assets printed by hand through saturne_asset_full_url [`1f251179`](https://github.com/Evarisk/DoliSIRH/commit/1f251179)
+* [Documents] fix: génération PDF manuelle soumise au droit de générer le document [`7e30ed84`](https://github.com/Evarisk/DoliSIRH/commit/7e30ed84)
+* [#861] [Certificate] fix: ne plus recréer element_type sans visible sur la fiche [`7757d3bf`](https://github.com/Evarisk/DoliSIRH/commit/7757d3bf)
+* [#859] [Rights] fix: lire les droits par hasRight() pour ne plus avertir quand un droit manque [`6ff738e3`](https://github.com/Evarisk/DoliSIRH/commit/6ff738e3)
+* [#857] [Saturne] fix: message explicite quand l'amorçage ne trouve pas Saturne [`f331aa13`](https://github.com/Evarisk/DoliSIRH/commit/f331aa13)
+* [#855] [Ticket] fix: inclure task.class.php du cœur par DOL_DOCUMENT_ROOT [`163ff727`](https://github.com/Evarisk/DoliSIRH/commit/163ff727)
