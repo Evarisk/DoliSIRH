@@ -310,12 +310,33 @@ window.dolisirh.task.showStickyTotalTimeSpentInfo = function() {
 };
 
 /**
+ * Filters and period of the time spent table, as parameters to add to an URL
+ *
+ * The filters of the table and the day, month and year it shows are posted with the form of the page, not kept in its
+ * URL: a table reloaded from document.URL after an action came back unfiltered, on the current month.
+ *
+ * @memberof DoliSIRH_Task
+ *
+ * @since   23.2.4
+ * @version 23.2.4
+ *
+ * @return {string} Parameters starting with '&', empty when the page has no such form
+ */
+window.dolisirh.task.getTableParams = function() {
+  let fields = $('#addtimeform').serializeArray().filter(function(field) {
+    return field.value !== '' && /^(search_|contextpage$|view_mode$|mode$|day$|month$|year$)/.test(field.name);
+  });
+
+  return fields.length ? '&' + $.param(fields) : '';
+};
+
+/**
  * Action create timespent.
  *
  * @memberof DoliSIRH_Task
  *
  * @since   1.1.0
- * @version 1.4.0
+ * @version 23.2.4
  *
  * @return {void}
  */
@@ -338,7 +359,7 @@ window.dolisirh.task.createTimeSpent = function() {
     document.URL.match(/\?/) ? querySeparator = '&' : 1;
 
     $.ajax({
-        url: document.URL + querySeparator + 'action=add_timespent&token=' + token,
+        url: document.URL + querySeparator + 'action=add_timespent&token=' + token + window.dolisirh.task.getTableParams(),
         data: JSON.stringify({
             taskID: taskID,
             timestamp: timestamp,
@@ -404,7 +425,7 @@ window.dolisirh.task.toggleTaskFavorite = function() {
  * @memberof DoliSIRH_Task
  *
  * @since   23.1.2
- * @version 23.1.2
+ * @version 23.2.4
  *
  * @return {void}
  */
@@ -419,7 +440,8 @@ window.dolisirh.task.unassign = function() {
     window.saturne.loader.display(element.closest('tr'));
 
     $.ajax({
-        url: document.URL + querySeparator + params + '&token=' + token,
+        // The user shown by the table is the one unassigned, as the action reads him from search_user_id
+        url: document.URL + querySeparator + params + '&token=' + token + window.dolisirh.task.getTableParams(),
         type: "POST",
         processData: false,
         contentType: false,
