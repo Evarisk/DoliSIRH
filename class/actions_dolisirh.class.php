@@ -243,7 +243,7 @@ class ActionsDoliSIRH
                 $document = new ProjectDocument($this->db);
 
                 $moduleNameLowerCase = 'dolisirh';
-                $permissiontoadd     = $user->rights->projet->creer;
+                $permissiontoadd     = $user->hasRight('projet', 'creer');
 
                 require_once dol_buildpath('/saturne/core/tpl/documents/documents_action.tpl.php');
             }
@@ -252,6 +252,7 @@ class ActionsDoliSIRH
                 $moduleName          = 'DoliSIRH';
                 $moduleNameLowerCase = strtolower($moduleName);
                 $upload_dir          = $conf->dolisirh->multidir_output[$conf->entity ?? 1];
+                $permissiontoadd     = $user->hasRight('projet', 'creer');
 
                 // Action to generate pdf from odt file
                 require_once dol_buildpath('/saturne/core/tpl/documents/saturne_manual_pdf_generation_action.tpl.php');
@@ -445,7 +446,7 @@ class ActionsDoliSIRH
 	{
         global $conf, $form, $langs, $object, $user;
 
-		$langs->load('projects');
+		$langs->loadLangs(['projects', 'dolisirh@dolisirh']);
 		if (in_array('ticketcard', explode(':', $parameters['context']))) {
 			if (GETPOST('action') == 'presend_addmessage') {
 				$ticket = new Ticket($this->db);
@@ -476,7 +477,7 @@ class ActionsDoliSIRH
 			}
             if (((GETPOST('action') != 'edit_extras') || (GETPOST('action') == 'edit_extras') && GETPOST('attribute') != 'fk_task') && GETPOST('action') != 'create') {
                 if (!empty($object->id)) {
-                    require_once __DIR__ . '/../../../projet/class/task.class.php';
+                    require_once DOL_DOCUMENT_ROOT . '/projet/class/task.class.php';
 
                     $task   = new Task($this->db);
                     $ticket = new Ticket($this->db);
@@ -652,6 +653,30 @@ class ActionsDoliSIRH
                         getDiffTimestampEvent();
                     }, 100);
                 });
+
+                // Time spent needs a task and an end date: refused by the trigger, the creation form would come back empty (issue #573)
+                $('form[name="formaction"]').has('input[name="action"][value="add"]').on('submit', function (event) {
+                    if (!$('input[name="options_timespent"]').is(':checked')) {
+                        return true;
+                    }
+                    let taskId  = parseInt($('#taskid').val(), 10);
+                    let message = '';
+                    if (!(taskId > 0)) {
+                        message = <?php echo json_encode($langs->transnoentities('MissingTaskWithTimeSpentOption')); ?>;
+                    } else if ($('#p2').val() === '') {
+                        message = <?php echo json_encode($langs->transnoentities('MissingEndDateWithTimeSpentOption')); ?>;
+                    }
+                    if (message === '') {
+                        return true;
+                    }
+                    event.preventDefault();
+                    if (typeof $.jnotify === 'function') {
+                        $.jnotify(message, 'error', true);
+                    } else {
+                        alert(message);
+                    }
+                    return false;
+                });
             </script>
 		<?php }
 
@@ -681,7 +706,10 @@ class ActionsDoliSIRH
             if (GETPOST('action') != 'create') {
                 global $user;
 
-                print '<link rel="stylesheet" type="text/css" href="' . dol_buildpath('/saturne/css/saturne.min.css', 1) . '">';
+                // saturne_asset_full_url() for the assets printed below: without a version, the browser keeps serving the previous release
+                dol_include_once('/saturne/lib/asset.lib.php');
+
+                print '<link rel="stylesheet" type="text/css" href="' . saturne_asset_full_url('/saturne/css/saturne.min.css') . '">';
 
                 $moduleNameLowerCase = 'dolisirh';
 
@@ -705,7 +733,7 @@ class ActionsDoliSIRH
                 $html = saturne_show_documents('dolisirh:ProjectDocument', $dirFiles, $fileDir, $urlSource, $permissionToAdd, $permissionToDelete, '', 1, 0, 0, 0, 0, '', 0, '', '', $object, 0, 'remove_file', (($object->status > Project::STATUS_DRAFT) ? 1 : 0));
                 ?>
 
-                <script src="<?php echo dol_buildpath('/saturne/js/saturne.min.js', 1); ?>"></script>
+                <script src="<?php echo saturne_asset_full_url('/saturne/js/saturne.min.js'); ?>"></script>
                 <script>
                     jQuery('.fichehalfleft .div-table-responsive-no-min').append(<?php echo json_encode($html) ; ?>)
                 </script>
@@ -722,7 +750,8 @@ class ActionsDoliSIRH
 		}
 
 		if (preg_match('/categoryindex/', $parameters['context'])) {
-			print '<script src="' . dol_buildpath('/dolisirh/js/dolisirh.js', 1) . '"></script>';
+			dol_include_once('/saturne/lib/asset.lib.php');
+			print '<script src="' . saturne_asset_full_url('/dolisirh/js/dolisirh.js') . '"></script>';
 		}
 		if (GETPOST('action') == 'toggleTaskFavorite') {
             toggle_task_favorite(GETPOSTINT('taskId'), $user->id);

@@ -56,10 +56,10 @@ $HEIGHT = DolGraph::getDefaultGraphSizeForStats('height');
 $langs->loadLangs(array('bills', 'companies', 'other'));
 
 $mode = GETPOST("mode") ? GETPOST("mode") : 'customer';
-if ($mode == 'customer' && !$user->rights->facture->lire) {
+if ($mode == 'customer' && !$user->hasRight('facture', 'lire')) {
 	accessforbidden();
 }
-//if ($mode == 'supplier' && empty($user->rights->fournisseur->facture->lire)) {
+//if ($mode == 'supplier' && !$user->hasRight('fournisseur', 'facture', 'lire')) {
 //	accessforbidden();
 //}
 
@@ -208,7 +208,7 @@ if (!$mesg) {
 // Build graphic average amount of object
 $data = $stats->getAverageByMonthWithPrevYear($endyear, $startyear, 0, $conf->global->SOCIETE_FISCAL_MONTH_START);
 
-if (empty($user->rights->societe->client->voir) || $user->socid) {
+if (!$user->hasRight('societe', 'client', 'voir') || $user->socid) {
 	$filename_avg = $dir.'/invoicerecsaverage-'.$user->id.'-'.$year.'.png';
 	if ($mode == 'customer') {
 		$fileurl_avg = DOL_URL_ROOT.'/viewimage.php?modulepart=dolisirh&file=invoicerecsaverage-'.$user->id.'-'.$year.'.png';

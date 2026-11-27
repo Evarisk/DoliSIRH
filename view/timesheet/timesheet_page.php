@@ -61,7 +61,7 @@ $form         = new Form($db);
 $hookmanager->initHooks(['timesheetpage']);
 
 // Security check.
-$permissionToRead = $user->rights->dolisirh->timesheet->read;
+$permissionToRead = $user->hasRight('dolisirh', 'timesheet', 'read');
 saturne_check_access($permissionToRead);
 
 // Default to the latest timesheet month if year/month are not specified, otherwise current month.

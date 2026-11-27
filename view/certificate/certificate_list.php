@@ -142,9 +142,9 @@ $object->fields = dol_sort_array($object->fields, 'position');
 $arrayfields    = dol_sort_array($arrayfields, 'position');
 
 // Security check (enable the most restrictive one) - Protection if external user
-$permissiontoread   = $user->rights->dolisirh->certificate->read;
-$permissiontoadd    = $user->rights->dolisirh->certificate->write;
-$permissiontodelete = $user->rights->dolisirh->certificate->delete;
+$permissiontoread   = $user->hasRight('dolisirh', 'certificate', 'read');
+$permissiontoadd    = $user->hasRight('dolisirh', 'certificate', 'write');
+$permissiontodelete = $user->hasRight('dolisirh', 'certificate', 'delete');
 saturne_check_access($permissiontoread);
 
 /*

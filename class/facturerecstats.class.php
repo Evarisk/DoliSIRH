@@ -118,7 +118,7 @@ class FactureRecStats extends DoliSIRHStats
 
 		$this->where = " fr.suspended >= 0";
 		$this->where .= " AND fr.entity IN (".getEntity('invoicerec').")";
-		if (empty($user->rights->societe->client->voir) && !$this->socid) {
+		if (!$user->hasRight('societe', 'client', 'voir') && !$this->socid) {
 			$this->where .= " AND fr.fk_soc = sc.fk_soc AND sc.fk_user = ".((int) $user->id);
 		}
 		//      if ($mode == 'customer') {
@@ -168,7 +168,7 @@ class FactureRecStats extends DoliSIRHStats
 
 		$sql = "SELECT date_format(fr.date_when,'%m') as dm, COUNT(*) as nb";
 		$sql .= " FROM ".$this->from;
-		if (empty($user->rights->societe->client->voir) && !$this->socid) {
+		if (!$user->hasRight('societe', 'client', 'voir') && !$this->socid) {
 			$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 		}
 		$sql .= $this->join;
@@ -193,7 +193,7 @@ class FactureRecStats extends DoliSIRHStats
 
 		$sql = "SELECT date_format(fr.date_when,'%Y') as dm, COUNT(*), SUM(c.".$this->field.")";
 		$sql .= " FROM ".$this->from;
-		if (empty($user->rights->societe->client->voir) && !$this->socid) {
+		if (!$user->hasRight('societe', 'client', 'voir') && !$this->socid) {
 			$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 		}
 		$sql .= $this->join;
@@ -219,7 +219,7 @@ class FactureRecStats extends DoliSIRHStats
 
 		$sql = "SELECT date_format(date_when,'%m') as dm, SUM(fr.".$this->field.")";
 		$sql .= " FROM ".$this->from;
-		if (empty($user->rights->societe->client->voir) && !$this->socid) {
+		if (!$user->hasRight('societe', 'client', 'voir') && !$this->socid) {
 			$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 		}
 		$sql .= $this->join;
@@ -245,7 +245,7 @@ class FactureRecStats extends DoliSIRHStats
 
 		$sql = "SELECT date_format(date_when,'%m') as dm, AVG(fr.".$this->field.")";
 		$sql .= " FROM ".$this->from;
-		if (empty($user->rights->societe->client->voir) && !$this->socid) {
+		if (!$user->hasRight('societe', 'client', 'voir') && !$this->socid) {
 			$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 		}
 		$sql .= $this->join;
@@ -269,7 +269,7 @@ class FactureRecStats extends DoliSIRHStats
 
 		$sql = "SELECT date_format(date_when,'%Y') as year, COUNT(*) as nb, SUM(fr.".$this->field.") as total, AVG(fr.".$this->field.") as avg";
 		$sql .= " FROM ".$this->from;
-		if (empty($user->rights->societe->client->voir) && !$this->socid) {
+		if (!$user->hasRight('societe', 'client', 'voir') && !$this->socid) {
 			$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 		}
 		$sql .= $this->join;
@@ -294,7 +294,7 @@ class FactureRecStats extends DoliSIRHStats
 		$startYear = $endYear - $numberYears;
 		$sql = "SELECT date_format(date_when,'%Y') as dm, SUM(fr.".$this->field.")";
 		$sql .= " FROM ".$this->from;
-		if (empty($user->rights->societe->client->voir) && !$this->socid) {
+		if (!$user->hasRight('societe', 'client', 'voir') && !$this->socid) {
 			$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 		}
 		$sql .= $this->join;
