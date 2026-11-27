@@ -446,7 +446,7 @@ class ActionsDoliSIRH
 	{
         global $conf, $form, $langs, $object, $user;
 
-		$langs->load('projects');
+		$langs->loadLangs(['projects', 'dolisirh@dolisirh']);
 		if (in_array('ticketcard', explode(':', $parameters['context']))) {
 			if (GETPOST('action') == 'presend_addmessage') {
 				$ticket = new Ticket($this->db);
@@ -652,6 +652,30 @@ class ActionsDoliSIRH
                     setTimeout(function () {
                         getDiffTimestampEvent();
                     }, 100);
+                });
+
+                // Time spent needs a task and an end date: refused by the trigger, the creation form would come back empty (issue #573)
+                $('form[name="formaction"]').has('input[name="action"][value="add"]').on('submit', function (event) {
+                    if (!$('input[name="options_timespent"]').is(':checked')) {
+                        return true;
+                    }
+                    let taskId  = parseInt($('#taskid').val(), 10);
+                    let message = '';
+                    if (!(taskId > 0)) {
+                        message = <?php echo json_encode($langs->transnoentities('MissingTaskWithTimeSpentOption')); ?>;
+                    } else if ($('#p2').val() === '') {
+                        message = <?php echo json_encode($langs->transnoentities('MissingEndDateWithTimeSpentOption')); ?>;
+                    }
+                    if (message === '') {
+                        return true;
+                    }
+                    event.preventDefault();
+                    if (typeof $.jnotify === 'function') {
+                        $.jnotify(message, 'error', true);
+                    } else {
+                        alert(message);
+                    }
+                    return false;
                 });
             </script>
 		<?php }
